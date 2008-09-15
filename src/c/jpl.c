@@ -194,7 +194,7 @@ refactoring (trivial):
     )
 
 #define JNI_term_to_non_neg_jint(T,J) \
-    ( PL_get_long((T),&i) \
+    ( PL_get_intptr((T),&i) \
 	  && i >= 0 \
 	  && ( (J)=(jint)i, TRUE) \
     )
@@ -466,7 +466,7 @@ struct Hr_Table {
 	HrEntry	    **slots;	/* pointer to slot array */
 	};
 
-typedef	    uintptr_t    pointer;	/* for JPL */
+typedef	    intptr_t    pointer;	/* for JPL */
 typedef	    int	    bool;	/* for JNI/JPL functions returning only TRUE or FALSE */
 
 
@@ -677,45 +677,41 @@ static int	    jni_hr_del(JNIEnv*, pointer);
 /*=== JNI functions (NB first 6 are cited in macros used subsequently) ============================= */
 
 static bool
-jni_tag_to_iref2(
-    const char  *s,
-    pointer		*iref
-    )
-    {
-    pointer r;
+jni_tag_to_iref2(const char  *s, pointer *iref)
+{ if ( s[0] == 'J'
+       && s[1] == '#'
+       && isdigit(s[2])
+       && isdigit(s[3])
+       && isdigit(s[4])
+       && isdigit(s[5])
+       && isdigit(s[6])
+       && isdigit(s[7])
+       && isdigit(s[8])
+       && isdigit(s[9])
+       && isdigit(s[10])
+       && isdigit(s[11])
+       && isdigit(s[12])
+       && isdigit(s[13])
+       && isdigit(s[14])
+       && isdigit(s[15])
+       && isdigit(s[16])
+       && isdigit(s[17])
+       && isdigit(s[18])
+       && isdigit(s[19])
+       && isdigit(s[20])
+       && isdigit(s[21]))			 /* s is like 'J#01234567890123456789' */
+    { pointer r;
+      char *endptr;
 
-	if (s[0] == 'J'
-	 && s[1] == '#'
-	 && isdigit(s[2])
-	 && isdigit(s[3])
-	 && isdigit(s[4])
-	 && isdigit(s[5])
-	 && isdigit(s[6])
-	 && isdigit(s[7])
-	 && isdigit(s[8])
-	 && isdigit(s[9])
-	 && isdigit(s[10])
-	 && isdigit(s[11])
-	 && isdigit(s[12])
-	 && isdigit(s[13])
-	 && isdigit(s[14])
-	 && isdigit(s[15])
-	 && isdigit(s[16])
-	 && isdigit(s[17])
-	 && isdigit(s[18])
-	 && isdigit(s[19])
-	 && isdigit(s[20])
-	 && isdigit(s[21])			 /* s is like 'J#01234567890123456789' */
-	 && (r=(pointer)strtoul(&s[2], (char**)NULL, 10)) != ULONG_MAX)
-		{
-		*iref = r;
-      return 1;
+      r = strtoul(&s[2], &endptr, 10);
+      if ( endptr == s+22 )
+      { *iref = r;
+        return 1;
+      }
     }
-	else
-		{
-    return 0;
-    }
-	}
+
+  return 0;
+}
 
 
 static bool
@@ -5013,6 +5009,7 @@ JNIEXPORT jobject JNICALL
 		jni_tag_to_iref2((char*)(*env)->GetStringUTFChars(env,tag,0), (pointer *)&jobj);
 		return jobj;
 	}
+	return 0;
 	}
 
 
@@ -5037,6 +5034,8 @@ JNIEXPORT jboolean JNICALL
 		jni_tag_to_iref2((char*)(*env)->GetStringUTFChars(env,tag,0), (pointer *)&jobj);
 		return jobj != 0;
 	}
+
+	return 0;
     }
 
 
