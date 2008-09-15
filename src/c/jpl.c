@@ -64,6 +64,13 @@ refactoring (trivial):
 /* but not if we use the .NET 2.0 C compiler */
 #include    <windows.h>
 #define	    SIZEOF_WCHAR_T 2
+#define     SIZEOF_LONG 4
+#define     SIZEOF_LONG_LONG 8
+#ifdef WIN64
+#define	    SIZEOF_VOIDP 8
+#else
+#define	    SIZEOF_VOIDP 4
+#endif
 #endif
 
 /* SWI-Prolog headers: */
@@ -744,6 +751,15 @@ jni_tag_to_iref(
 	}
 
 
+#if SIZEOF_LONG == SIZEOF_VOIDP
+#define IREF_FMT "J#%020lu"
+#define IREF_INTTYPE unsigned long
+#elif SIZEOF_LONG_LONG == SIZEOF_VOIDP
+#define IREF_FMT "J#%020llu"
+#define IREF_INTTYPE unsigned long long
+#else
+#error "Cannot determine format for irefs"
+#endif
 
 static bool
 jni_iref_to_tag(
@@ -753,7 +769,7 @@ jni_iref_to_tag(
     {
 	char		abuf[23];
 
-	sprintf( abuf, "J#%020lu", iref);	/* oughta encapsulate this mapping... */
+	sprintf( abuf, IREF_FMT, (IREF_INTTYPE)iref);	/* oughta encapsulate this mapping... */
     *a = PL_new_atom(abuf);
     PL_unregister_atom(*a);		/* empirically decrement reference count... */
     return TRUE;			/* can't fail (?!) */
@@ -1017,8 +1033,8 @@ jni_atom_freed(
       return TRUE; /* oughta log an error, at least the first time... */
     if ( jni_tag_to_iref( a, &iref) )	/* check format and convert digits to int if ok */
         {
-        sprintf( cs, "%020lu", iref);	/* reconstruct digits part of tag in cs */
-        if ( strcmp(&cp[2],cs) != 0 )	/* original digits != reconstructed digits? */
+        sprintf( cs, IREF_FMT, (IREF_INTTYPE)iref);	/* reconstruct digits part of tag in cs */
+        if ( strcmp(cp,cs) != 0 )	/* original digits != reconstructed digits? */
             {
 	      DEBUG(0, Sdprintf( "[JPL: garbage-collected tag '%s'=%u is bogus (not canonical)]\n", cp, iref));
 	    }
@@ -4762,7 +4778,7 @@ JNIEXPORT jobject JNICALL
 	jobject 	jobj
     )
     {
-	long		iref;
+	intptr_t	iref;
 	char		abuf[23];
     
 	/* empirically, unless the two 'ensure' macros are called in this order, */
@@ -4784,7 +4800,7 @@ JNIEXPORT jobject JNICALL
 
 	if ( jobj!=NULL && jni_object_to_iref(env,jobj,&iref) ) {
 		/* Sdprintf("jni_object_to_iref() done\n"); */
-		sprintf( abuf, "J#%020lu", iref);	/* oughta encapsulate this mapping... */
+		sprintf( abuf, IREF_FMT, (IREF_INTTYPE)iref);	/* oughta encapsulate this mapping... */
 		/* Sdprintf("sprintf() done\n"); */
 		return (*env)->NewStringUTF(env,abuf); /* a tag is always Latin-1 */
 	} else {
@@ -4975,7 +4991,7 @@ JNIEXPORT void JNICALL
 	term_t		term;
 	jobject		j;		// temp for JNI_jobject_to_term(+,-)
 	atom_t		a;		//  "
-	long		i;		//  "
+	intptr_t	i;		//  "
 
 	if	(	jpl_ensure_pvm_init(env)
 		&&	jni_ensure_jvm()
@@ -5350,7 +5366,7 @@ Java_jpl_fli_Prolog_pool_1engine_1id(
 	{
 	return -2; /* libpl could not be initialised (oughta throw exception) */
 	}
-    if	( !getPointerValue(env,jengine,(long*)&engine) )			/* checks jengine isn't null */
+    if	( !getPointerValue(env,jengine,(intptr_t*)&engine) )			/* checks jengine isn't null */
 	{
 	return -3; /* null engine holder */
 	}
@@ -5401,7 +5417,7 @@ static foreign_t
     {
 	jobject 	term1;
 	atom_t		a;		/*	" */
-	long 		i;		/*	" */
+	intptr_t	i;		/*	" */
 	jobject 	j;		/*	" */
 	JNIEnv		*env;
 
@@ -5444,7 +5460,7 @@ static foreign_t
 	functor_t	fn;
 	term_t		arg = PL_new_term_ref();
 	atom_t		a;
-	long		iterm;
+	intptr_t	iterm;
 	jobject 	jterm;
 	term_t		term = PL_new_term_ref();	/* jni_jobject_to_term_byval() will *put* the constructed term in here */
 	JNIEnv		*env;

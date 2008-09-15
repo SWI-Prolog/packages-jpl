@@ -158,6 +158,9 @@ AC_ARG_WITH(junit, [  --with-junit=PATH	  Specify location of the junit JAR file
 
 AC_CHECK_HEADERS(wchar.h)
 AC_CHECK_SIZEOF(wchar_t, 4)
+AC_CHECK_SIZEOF(void*, 4)
+AC_CHECK_SIZEOF(long, 4)
+AC_CHECK_SIZEOF(long long, 8)
 
 AC_OUTPUT(Makefile src/java/Makefile)
 
