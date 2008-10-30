@@ -76,7 +76,7 @@ jpl_doc::
 
 check:		check_pl check_java
 
-check_pl::		
+check_pl:	jpltest.jar
 		$(PL) -q -f test_jpl.pl -g run_tests,halt -t 'halt(1)'
 check_java:	jpltest.jar
 		CLASSPATH=$(JUNIT):jpl.jar:jpltest.jar $(JAVA) junit.textui.TestRunner jpl.test.TestJUnit
@@ -149,7 +149,7 @@ expl-install::
 		    $(INSTALL_DATA) examples/prolog/$$f $(DESTDIR)$(EXPL)/$$f; \
 		done
 
-exjava-compile::
+exjava-compile:	jpl.jar
 		echo "Compiling Java examples"
 		PL=`(cd .. && pwd)`/pl.sh; export PL; \
 		JPLJAR=`pwd`/jpl.jar; export JPLJAR; \
