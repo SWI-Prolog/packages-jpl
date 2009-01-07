@@ -1,6 +1,12 @@
-dnl Available from the GNU Autoconf Macro Archive at:
+dnl Modified by Peter Green <plugwash@p10link.net> to correct include paths
+dnl with OpenJDK on all architectures other than i386 and amd64
+
+
+dnl Original version is available from the GNU Autoconf Macro Archive at:
 dnl http://www.gnu.org/software/ac-archive/htmldoc/ac_jni_include_dirs.html
 dnl
+
+
 AC_DEFUN([AC_JNI_INCLUDE_DIR],[
 
 JNI_INCLUDE_DIRS=""
@@ -65,15 +71,18 @@ case "$host_cpu" in
 	powerpc)
 		case "$host_os" in
 		linux*)
-			_JNI_LIBDIRS="bin"
-			_JNI_LIBSUBDIR="classic"
+			_JNI_LIBDIRS="lib/ppc"
+			_JNI_LIBSUBDIR="server"
 			;;
 		*)
 			_JNI_LIBDIRS=""
 		esac
 		;;
 	*)	
-		_JNI_LIBDIRS=""
+		# Fallback option should work on all architectures except
+		# amd64 and powerpc which are special cased above.
+		_JNI_LIBDIRS="lib/$host_cpu"
+		_JNI_LIBSUBDIR="server"
 esac
 
 for d in $_JNI_LIBDIRS; do
