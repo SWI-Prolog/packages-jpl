@@ -84,7 +84,7 @@ $(JPLDOC):	$(JPLJAVA)
 		$(JAVADOC) -public -d $(JPLDOC) $(JPLJAVA)
 
 clean::
-	rm -f *~ $(JPLJAVA:.java=.class) $(TSTJAVA:.java=.class)
+	rm -f *~ *.class
 
 distclean: clean
 	rm -f $(JPLJAR) $(TSTJAR) 

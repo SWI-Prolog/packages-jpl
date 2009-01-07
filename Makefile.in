@@ -215,6 +215,7 @@ $(TEX):		$(DOCTOTEX)
 clean:
 		rm -f $(OBJ) *~ *.o *% a.out core config.log
 		rm -f TestJPL.class
+		find examples/java -name '*.class' -delete
 		(cd src/java && $(MAKE) clean)
 
 distclean:	clean
