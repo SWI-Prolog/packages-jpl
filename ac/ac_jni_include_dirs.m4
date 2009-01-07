@@ -62,17 +62,17 @@ done
 case "$host_cpu" in
 	i?86)
 		_JNI_LIBDIRS="lib/i386"
-		_JNI_LIBSUBDIR="client"
+		_JNI_LIBSUBDIRS="client"
 		;;
 	x86_64)
 		_JNI_LIBDIRS="lib/amd64"
-		_JNI_LIBSUBDIR="server"
+		_JNI_LIBSUBDIRS="server"
 		;;
 	powerpc)
 		case "$host_os" in
 		linux*)
-			_JNI_LIBDIRS="lib/ppc"
-			_JNI_LIBSUBDIR="server"
+			_JNI_LIBDIRS="lib/ppc bin"
+			_JNI_LIBSUBDIRS="server classic"
 			;;
 		*)
 			_JNI_LIBDIRS=""
@@ -82,14 +82,16 @@ case "$host_cpu" in
 		# Fallback option should work on all architectures except
 		# amd64 and powerpc which are special cased above.
 		_JNI_LIBDIRS="lib/$host_cpu"
-		_JNI_LIBSUBDIR="server"
+		_JNI_LIBSUBDIRS="server"
 esac
 
 for d in $_JNI_LIBDIRS; do
-	echo "Trying $_JTOPDIR/jre/$d/$_JNI_LIBSUBDIR"
-	if test -d $_JTOPDIR/jre/$d/$_JNI_LIBSUBDIR; then
-		JNI_CLIENT_DIRS="$JNI_CLIENT_DIRS $_JTOPDIR/jre/$d/$_JNI_LIBSUBDIR $_JTOPDIR/jre/$d"
- 	fi
+	for subd in $_JNI_LIBSUBDIRS; do
+		echo "Trying $_JTOPDIR/jre/$d/$subd"
+		if test -d $_JTOPDIR/jre/$d/$subd; then
+			JNI_CLIENT_DIRS="$JNI_CLIENT_DIRS $_JTOPDIR/jre/$d/$subd $_JTOPDIR/jre/$d"
+		fi
+	done
 done
 
 ])
