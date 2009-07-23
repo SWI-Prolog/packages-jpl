@@ -1,3 +1,7 @@
+[Jan 29 2009]
+
+ * CLEANUP: generalisations in the socket library design to allow TIPC to reuse parts of it.  Contributed by Jeff Rosenwald.
+   
 [May 21 2008]
 
   * Enhanced: Bug#247: build test only conditionally.  Keri Harris.
