@@ -124,7 +124,7 @@ jpl_assert_policy( jpl_method_spec_is_cached(_), YN) :-
 
 % jpl_tidy_iref_type_cache( +Iref) :-
 %   delete the cached type info, if any, under Iref;
-%   called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache() 
+%   called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
 
 jpl_tidy_iref_type_cache( Iref) :-
   % write( '[decaching types for iref='), write( Iref), write( ']'), nl,
@@ -192,7 +192,7 @@ jpl_call(X, Mspec, Params, R) :-
 		jpl_datums_to_types(Params, Taps),
 		error(type_error(acyclic,Te),context(jpl_datum_to_type/2,Msg)),
 		throw(error(type_error(acyclic,Te),context(jpl_call/4,Msg)))
-	    )   
+	    )
 	->  true
 	;   throw(error(type_error(method_params,Params),
 		    context(jpl_call/4, 'not all actual parameters are convertible to Java values or references')))
@@ -220,7 +220,7 @@ jpl_call(X, Mspec, Params, R) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_call_instance(+ObjectType, +Object, +MethodName, Params, 
+%%	jpl_call_instance(+ObjectType, +Object, +MethodName, Params,
 %%			  ActualParamTypes, Arity, -Result)
 %
 %	call the MethodName-d method  (instance   or  static)  of Object
@@ -430,7 +430,7 @@ jpl_fergus_is_the_greatest([X|Xs], Greatest) :-
 %------------------------------------------------------------------------------
 
 %%	jpl_get(+X, +Fspec, -V)
-%	
+%
 %   X can be:
 %     * a classname, a descriptor, or an (object or array) type
 %       (for static fields);
@@ -555,7 +555,7 @@ jpl_get_instance(class(_,_), Type, Obj, Fname, Vx) :-
 	    ->  jpl_object_to_class(Obj, ClassObj),
 		jpl_get_static_field(Tf, ClassObj, FID, Vx)
 	    ;   jpl_get_instance_field(Tf, Obj, FID, Vx)
-	    )   
+	    )
 	;   throw(error(existence_error(unique_field,Fname),
 		    context(jpl_get/3,
 			    'more than one field is found with the given name')))
@@ -622,7 +622,7 @@ jpl_get_instance(array(ElementType), _, Array, Fspec, Vx) :-
 %	(unified with a JPL repn  of)   its  Index-th  (numbered from 0)
 %	element Java values are now  converted   to  Prolog terms within
 %	foreign code
-%	
+%
 %	@tbd	more of this could be done within foreign code ...
 
 jpl_get_array_element(Type, Array, Index, Vc) :-
@@ -3270,7 +3270,7 @@ jpl_class_to_raw_classname_chars(Cobj, CsCN) :-
 jpl_class_to_super_class(C, Cx) :-
 	jGetSuperclass(C, Cx),
 	Cx \== @(null),         % as returned when C is java.lang.Object, i.e. no superclass
-	jpl_cache_type_of_ref(class([java,lang],['Class']), Cx).    
+	jpl_cache_type_of_ref(class([java,lang],['Class']), Cx).
 
 %------------------------------------------------------------------------------
 
@@ -4037,7 +4037,7 @@ jpl_type_to_super_type(T, Tx) :-
 %   Type must be a canonical JPL type,
 %   possibly a pseudo (inferred) type such as char_int or array(char_byte);
 %   ConcreteType is the preferred concrete (Java-instantiable) type;
-%   introduced 16/Apr/2005 to fix bug whereby jpl_list_to_array([1,2,3],A) failed 
+%   introduced 16/Apr/2005 to fix bug whereby jpl_list_to_array([1,2,3],A) failed
 %   because the lists's inferred type of array(char_byte) is not Java-instantiable
 
 jpl_type_to_preferred_concrete_type( T, Tc) :-
@@ -4118,7 +4118,7 @@ jpl_value_to_type_1(A, class([java,lang],['String'])) :-   % yes it's a "value"
 	atom(A), !.
 jpl_value_to_type_1(I, T) :-
 	integer(I), !,
-	(   I >= 0 
+	(   I >= 0
 	->  (   I  < 128
 	    ->  T  = char_byte
 	    ;   I  < 32768   		 ->  T = char_short
@@ -4131,7 +4131,7 @@ jpl_value_to_type_1(I, T) :-
 	;   I >= -32768		      ->  T = short
 	;   I >= -2147483648          ->  T = int
 	;   I >= -9223372036854775808 ->  T = long
-				       ;  T = overlong 
+				       ;  T = overlong
 	).
 jpl_value_to_type_1(F, float) :-
 	float(F).
@@ -4355,7 +4355,7 @@ multimap_to_atom_1([K-V|KVs], T, Cs1, Cs0) :-
 %%	term_to_codes(+Term, ?Codes)
 %
 %	unifies Codes with a printed representation of Term.
-%	
+%
 %	@tbd Sort of quoting requirements and use format(codes(Codes),
 %	...)
 
@@ -4397,7 +4397,7 @@ user:file_search_path(jar, swi(lib)).
 %	Add value to the end of  search-path   Var.  Value is normally a
 %	directory. Does not change the environment  if Dir is already in
 %	Var.
-%	
+%
 %	@param Value	Path to add in OS notation.
 
 add_search_path(Path, Dir) :-
@@ -4429,18 +4429,18 @@ search_path_separator(:).
 		 *******************************/
 
 %%      check_java_environment
-%       
+%
 %       Verify the Java environment.  Preferably   we  would create, but
 %       most Unix systems do not   allow putenv("LD_LIBRARY_PATH=..." in
 %       the current process. A suggesting found on  the net is to modify
 %       LD_LIBRARY_PATH right at startup and  next execv() yourself, but
 %       this doesn't work if we want to load Java on demand or if Prolog
 %       itself is embedded in another application.
-%       
+%
 %       So, after reading lots of pages on   the web, I decided checking
 %       the environment and producing a sensible   error  message is the
 %       best we can do.
-%       
+%
 %       Please not that Java2 doesn't require   $CLASSPATH to be set, so
 %       we do not check for that.
 
@@ -4465,7 +4465,7 @@ check_lib(Name) :-
 %%	check_shared_object(+Lib, -File, -EnvVar, -AbsFile) is semidet.
 %
 %	True if AbsFile is existing .so/.dll file for Lib.
-%	
+%
 %	@param File	Full name of Lib (i.e. libjpl.so or jpl.dll)
 %	@param EnvVar	Search-path for shared objects.
 
@@ -4507,7 +4507,7 @@ library_search_path(Path, EnvVar) :-
 
 
 %%      add_jpl_to_classpath
-%       
+%
 %       Add jpl.jar to =CLASSPATH= to facilitate callbacks
 
 add_jpl_to_classpath :-
@@ -4527,7 +4527,7 @@ add_jpl_to_classpath :-
 
 
 %%      libjpl(-Spec) is det.
-%       
+%
 %       Return the spec for loading the   JPL shared object. This shared
 %       object must be called libjpl.so as the Java System.loadLibrary()
 %       call used by jpl.jar adds the lib* prefix.
@@ -4554,7 +4554,7 @@ add_jpl_to_ldpath(JPL) :-
 add_jpl_to_ldpath(_).
 
 %%	add_java_to_ldpath is det.
-%       
+%
 %	Adds the directories holding jvm.dll and java.dll to the %PATH%.
 %	This appears to work on Windows. Unfortunately most Unix systems
 %	appear to inspect the content of LD_LIBRARY_PATH only once.
@@ -4587,7 +4587,7 @@ add_java_dir(DLL, SubPath, Dirs) :-
 	    (exists_directory(ClientDir) -> Dirs = [ClientDir] ; Dirs = [])
 	;   Dirs = []
 	).
-	    
+
 %%	java_home(-Home) is semidet
 %
 %	Find the home location of Java.
@@ -4634,5 +4634,4 @@ report_java_setup_problem(E) :-
 	print_message(error, E),
 	check_java_environment.
 
-:- initialization
-   setup_jvm.
+:- initialization(setup_jvm, now).
