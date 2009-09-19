@@ -1,21 +1,17 @@
-[Jan 29 2009]
-
- * CLEANUP: generalisations in the socket library design to allow TIPC to reuse parts of it.  Contributed by Jeff Rosenwald.
-   
 [May 21 2008]
 
   * Enhanced: Bug#247: build test only conditionally.  Keri Harris.
 
 Nov 28, 2006
 
- * PORT: Bug#357: Updated config.{guess,sub}, needed for development version of FC.
-   Mary Ellen Foster.
-   
+ * PORT: Bug#357: Updated config.{guess,sub}, needed for development
+   version of FC. Mary Ellen Foster.
+
 [Jan 30 2008]
 
  * FIXED: Bug#347: JPL pointer conversion.  Mary Ellen Foster.
    See remark with the bug-report for further info.
-   
+
 [Jan 23 2008]
 
  * PORT: Bug#346: Allow overriding COFLAGS and CWFLAGS in package
@@ -27,7 +23,7 @@ Oct 23, 2007
 
 Aug 8, 2007
 
-  * FIXED: JRef handling on 64-bit non-Windows platforms. 
+  * FIXED: JRef handling on 64-bit non-Windows platforms.
     Fixed by Paul Singleton.
 
 May 24, 2007
@@ -102,8 +98,8 @@ May 14, 2004
     hook for normal readable error messages.
 
 May 12, 2004
- 
+
   * JW: Removed jpl_demo/0
   * JW: Included library(lists) and removed list predicates
   * JW: Cleanup of is_pairs/1 and is_pair/1.
-  
+
