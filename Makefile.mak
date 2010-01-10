@@ -2,7 +2,7 @@
 # Build the SWI-Prolog tabling package for MS-Windows
 #
 # Author: Jan Wielemaker
-# 
+#
 # Use:
 #	nmake /f Makefile.mak
 #	nmake /f Makefile.mak install
@@ -45,6 +45,7 @@ checkenv::
 
 $(PKGDLL).dll:	$(OBJ)
 		$(LD) /dll /out:$@ $(LDFLAGS) $(OBJ) $(PLLIB) $(LIBS)
+		$(MTEXE) -manifest $(PKGDLL).dll.manifest -outputresource:$(PKGDLL).dll;2
 
 !IF "$(CFG)" == "rt"
 install:	idll
@@ -97,7 +98,7 @@ uninstall::
 
 check:		check_pl check_java
 
-check_pl::		
+check_pl::
 		"$(PLCON)" -q -f test_jpl.pl -g run_tests,halt -t 'halt(1)'
 check_java::
 		set CLASSPATH=$(JUNIT);jpl.jar;jpltest.jar
