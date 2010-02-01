@@ -114,7 +114,7 @@ install:	$(TARGETS) $(LIBPL)
 		for f in $(TARGETS); do \
 		  $(INSTALL_PROGRAM) $$f $(DESTDIR)$(PLBASE)/lib/$(PLARCH); \
 		done
-ifeq (@SO@,dylib)		
+ifeq (@SO@,dylib)
 		(cd $(DESTDIR)$(PLBASE)/lib/$(PLARCH) && ln -sf libjpl.@SO@ libjpl.jnilib)
 endif
 		mkdir -p $(DESTDIR)$(PLBASE)/library
@@ -151,7 +151,7 @@ expl-install::
 
 exjava-compile:	jpl.jar
 		echo "Compiling Java examples"
-		PL=`(cd .. && pwd)`/pl.sh; export PL; \
+		PL=`(cd .. && pwd)`/swipl.sh; export PL; \
 		JPLJAR=`pwd`/jpl.jar; export JPLJAR; \
 		for d in $(EXJAVAS); do \
 		    (cd examples/java/$$d && env JPL_COMPILE_ONLY=yes ./run.sh); \
