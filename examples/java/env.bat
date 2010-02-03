@@ -7,7 +7,7 @@ REM in this script.
 
 REM Find the Prolog coordinates
 
-plcon.exe -dump-runtime-variables=cmd > %TEMP%\plrtvars.bat
+swipl.exe -dump-runtime-variables=cmd > %TEMP%\plrtvars.bat
 call %TEMP%\plrtvars.bat
 del %TEMP%\plrtvars.bat
 
