@@ -19,3 +19,5 @@ jpl.html
 jpl.pdf
 src/java/Makefile
 libjpl.so
+jpltest.jar
+.pl-history
