@@ -39,8 +39,8 @@ public class TestJUnit extends TestCase {
 	}
 	protected void setUp() {
 		// initialization code
-		// Prolog.set_default_init_args(new String[] { "libpl.dll", "-f", "none", "-g", "set_prolog_flag(debug_on_error,false)", "-q" });
-		Prolog.set_default_init_args(new String[] { "libpl.dll", "-f", "none", "-g", "true", "-q" });
+		// Prolog.set_default_init_args(new String[] { "swipl.dll", "-f", "none", "-g", "set_prolog_flag(debug_on_error,false)", "-q" });
+		Prolog.set_default_init_args(new String[] { "swipl.dll", "-f", "none", "-g", "true", "-q" });
 		assertTrue((new Query("consult(test_jpl)")).hasSolution());
 	}
 	protected void tearDown() {
