@@ -20,7 +20,6 @@ PLINCL=@PLINCL@
 PKGDOC=$(PLBASE)/doc/packages
 EXDIR=$(PKGDOC)/examples/jpl
 PCEHOME=../xpce
-DESTDIR=
 
 CC=@CC@
 COFLAGS=@COFLAGS@
