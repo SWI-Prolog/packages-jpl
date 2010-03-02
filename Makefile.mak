@@ -45,7 +45,6 @@ checkenv::
 
 $(PKGDLL).dll:	$(OBJ)
 		$(LD) /dll /out:$@ $(LDFLAGS) $(OBJ) $(PLLIB) $(LIBS)
-		$(MTEXE) -manifest $(PKGDLL).dll.manifest -outputresource:$(PKGDLL).dll;2
 
 !IF "$(CFG)" == "rt"
 install:	idll
