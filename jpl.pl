@@ -4600,20 +4600,20 @@ java_home_win_key(jdk, 'HKEY_LOCAL_MACHINE/Software/JavaSoft/Java Development Ki
 java_home(Home) :-
 	getenv('JAVA_HOME', Home),
 	exists_directory(Home), !.
-
+:- if(current_prolog_flag(windows, true)).
 java_home(Home) :-
-	current_prolog_flag(windows, true), !,
 	java_home_win_key(_, Key0),	% currently user can't specify whether jre or jdk is preferable
 	catch(win_registry_get_value(Key0, 'CurrentVersion', Version), _, fail),
 	concat_atom([Key0, Version], /, Key),
 	win_registry_get_value(Key, 'JavaHome', Home),
 	exists_directory(Home), !.
+:- else.
 java_home(Home) :-
-	current_prolog_flag(unix, true),
 	member(Home, [ '/usr/lib/java',
 		       '/usr/local/lib/java'
 		     ]),
 	exists_directory(Home), !.
+:- endif.
 
 :- dynamic
 	jvm_ready/0.
