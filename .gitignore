@@ -1,6 +1,13 @@
 *~
 *.o
 *.so
+*.dll
+*.manifest
+*.obj
+*.exp
+*.pdb
+*.lib
+*.ilk
 *.dylib
 *.jnilib
 *.class
