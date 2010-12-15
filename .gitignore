@@ -25,6 +25,9 @@ jpl.jar
 jpl.log
 jpl.out
 jpl.tex
+jpl.ilg
+jpl.ind
+jpl.toc
 jpl.html
 jpl.pdf
 src/java/Makefile
