@@ -7,6 +7,8 @@ AC_CONFIG_HEADER(config.h)
 AC_SUBST(JAVA_HOME)
 AC_SUBST(JAVALIBS)
 AC_SUBST(JUNIT)
+AC_SUBST(JAVACFLAGS)
+AC_SUBST(JAVALDFLAGS)
 
 m4_include([../ac_swi_c.m4])
 
@@ -64,11 +66,11 @@ AC_PROG_JAVADOC(javadoc)
 
 AC_JNI_INCLUDE_DIR
 for d in $JNI_INCLUDE_DIRS; do
-  CIFLAGS="$CIFLAGS -I$d"
+  JAVACFLAGS="$JAVACFLAGS -I$d"
 done
 
 for d in $JNI_CLIENT_DIRS; do
-  LDSOFLAGS="$LDSOFLAGS -L$d"
+  JAVALDFLAGS="$JAVALDFLAGS -L$d"
 done
 
 if test "$java_abs_paths" = yes; then
