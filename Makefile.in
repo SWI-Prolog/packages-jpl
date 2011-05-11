@@ -49,7 +49,7 @@ check:		check_pl check_java
 check_pl:	jpltest.jar
 		$(PL) -q -f test_jpl.pl -g run_tests,halt -t 'halt(1)'
 check_java:	jpltest.jar
-		CLASSPATH=$(JUNIT):jpl.jar:jpltest.jar $(JAVA) junit.textui.TestRunner jpl.test.TestJUnit
+		JUNIT=$(JUNIT) JAVA=$(JAVA) ./test-java.sh
 
 jpltest.jar:
 		(cd src/java && $(MAKE) test_jar)
