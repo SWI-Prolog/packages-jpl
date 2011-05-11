@@ -85,7 +85,13 @@ AC_ARG_WITH(junit, [  --with-junit=PATH	  Specify location of the junit JAR file
 			;;
 		 *) JUNIT="$withval"
 			;;
-	     esac])
+	     esac
+	     ],
+	     [ if test "x$JUNIT" = "x" -a -r /usr/share/java/junit.jar; then
+		  JUNIT=/usr/share/java/junit.jar
+	       fi
+	     ]
+	     )
 
 AC_CHECK_HEADERS(wchar.h)
 AC_CHECK_SIZEOF(wchar_t, 4)
