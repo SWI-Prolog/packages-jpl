@@ -3993,6 +3993,25 @@ setLongValue(
     }
 
 
+static bool
+setUIntPtrValue(
+    JNIEnv     *env,
+    jobject	jlong_holder,
+    uintptr_t   iv
+    )
+    { jlong lv;
+
+#if SIZEOF_VOIDP == 4
+      uint64_t i64 = iv;		/* unsigned 32->64 */
+      lv = (jlong)i64;
+#else
+      lv = iv;
+#endif
+
+      return setLongValue(env, jlong_holder, lv);
+    }
+
+
 /*-----------------------------------------------------------------------
  * setDoubleValue
  *
@@ -4343,7 +4362,7 @@ JNIEXPORT jobject JNICALL
 			&&	getUIntPtrValue(env,jfrom,&term)		/* SWI RM implies must be non-null */
 			&&	(rval=(*env)->AllocObject(env,jTermT_c)) != NULL
 			&&	( (term2=PL_copy_term_ref(term)) , TRUE )	/* SWI RM -> always succeeds */
-			&&	setLongValue(env,rval,(jlong)term2)
+			&&	setUIntPtrValue(env,rval,term2)
 	    ?	rval
 	    :	NULL							/* oughta warn of failure? */
 	    )
@@ -4427,8 +4446,8 @@ JNIEXPORT jobject JNICALL
 			&&	( DEBUG(1, Sdprintf("  ok: ( (term=PL_exception(qid)), TRUE)\n")), TRUE )
 			&&	(term_t=(*env)->AllocObject(env,jTermT_c)) != NULL
 			&&	( DEBUG(1, Sdprintf( "	ok: (term_t=(*env)->AllocObject(env,jTermT_c)) != NULL\n")), TRUE )
-			&&	setLongValue(env,term_t,(jlong)term)
-			&&	( DEBUG(1, Sdprintf( "	ok: setLongValue(env,term_t,(long)term)\n")), TRUE )
+			&&	setUIntPtrValue(env,term_t,term)
+			&&	( DEBUG(1, Sdprintf( "	ok: setUIntPtrValue(env,term_t,term)\n")), TRUE )
 			?	(
 					DEBUG(1, Sdprintf("  =%lu\n",(long)term_t)),
 					term_t
@@ -4461,7 +4480,7 @@ JNIEXPORT jboolean JNICALL
 		&&	getUIntPtrValue(env,jterm,&term)				/* checks that jterm isn't null */
 		&&	( arg=PL_new_term_ref() , TRUE )				/* Fred used jarg's original term ref (?) */
 		&&	PL_get_arg(jindex,term,arg)
-		&&	setLongValue(env,jarg,(jlong)arg)
+		&&	setUIntPtrValue(env,jarg,arg)
 	;
     }
 
@@ -4634,7 +4653,7 @@ JNIEXPORT jobject JNICALL
 			&&	jname != NULL
 			&&	jni_String_to_atom(env,jname,&atom)
 			&&	(rval=(*env)->AllocObject(env,jAtomT_c)) != NULL			/* doesn't call any constructor */
-			&&	setLongValue(env,rval,(jlong)atom)
+			&&	setUIntPtrValue(env,rval,atom)
 			?	rval
 			:	NULL														/* oughta warn of failure? */
 			)
@@ -4664,7 +4683,7 @@ JNIEXPORT jobject JNICALL
 			&&	getUIntPtrValue(env,jatom,&atom)						/* checks jatom isn't null */
 			&&	(rval=(*env)->AllocObject(env,jFunctorT_c)) != NULL
 			&&	(functor=PL_new_functor(atom,(int)jarity)) != 0L
-			&&	setLongValue(env,rval,(jlong)functor)
+			&&	setUIntPtrValue(env,rval,functor)
 			?	rval
 			:	NULL													/* oughta warn of failure? */
     )
@@ -4715,7 +4734,7 @@ JNIEXPORT jobject JNICALL
 
 	return	(	jpl_ensure_pvm_init(env)
 			&&	(rval=(*env)->AllocObject(env,jTermT_c)) != NULL
-			&&	setLongValue(env,rval,(jlong)PL_new_term_ref())
+			&&	setUIntPtrValue(env,rval,PL_new_term_ref())
 			?	rval
 			:	NULL
     )
@@ -4744,7 +4763,7 @@ JNIEXPORT jobject JNICALL
 			&&	jn >= 0										/* I hope PL_new_term_refs(0) is defined [ISSUE] */
 			&&	(rval=(*env)->AllocObject(env,jTermT_c)) != NULL
 			&&	( trefs=PL_new_term_refs((int)jn), TRUE )
-			&&	setLongValue(env,rval,(jlong)trefs)
+			&&	setUIntPtrValue(env,rval,trefs)
 			&&	( DEBUG(1, Sdprintf("  ok: stashed trefs=%ld into new term_t object\n",(long)trefs)), TRUE )
 			?	rval
 			:	NULL
@@ -4858,8 +4877,8 @@ Java_jpl_fli_Prolog_open_1query(
 	    &&	( DEBUG(1, Sdprintf("  ok: PL_open_query(module=%lu,jflags=%u,predicate=%lu,term0=%lu)=%lu\n",(long)module,jflags,(long)predicate,(long)term0,(long)qid)), TRUE )
 	    &&	(jqid=(*env)->AllocObject(env,jQidT_c)) != NULL
 	    &&	( DEBUG(1, Sdprintf("  ok: AllocObject(env,jQidT_c)=%lu\n",(long)jqid)), TRUE )
-	    &&	setLongValue(env,jqid,(jlong)qid)
-	    &&	( DEBUG(1, Sdprintf("  ok: setLongValue(env,%lu,%lu)\n",(long)jqid,(long)qid)), TRUE )
+	    &&	setUIntPtrValue(env,jqid,qid)
+	    &&	( DEBUG(1, Sdprintf("  ok: setUIntPtrValue(env,%lu,%lu)\n",(long)jqid,(long)qid)), TRUE )
 	    &&	( DEBUG(1, Sdprintf("[open_query module = %s]\n", (module==NULL?"(null)":PL_atom_chars(PL_module_name(module))))), TRUE )
 	    ?	(
 		    DEBUG(1, Sdprintf("  =%lu\n",(long)jqid)),
@@ -5152,7 +5171,7 @@ JNIEXPORT jobject JNICALL
 
 	if	(	jpl_ensure_pvm_init(env)
 		&&	(rval=(*env)->AllocObject(env,jFidT_c)) != NULL			// get a new fid_t object
-		&&	setLongValue(env,rval,(jlong)PL_open_foreign_frame())	// open a frame only if alloc succeeds
+		&&	setUIntPtrValue(env,rval,PL_open_foreign_frame())	// open a frame only if alloc succeeds
 		)
 		{
 		return rval;
@@ -5434,7 +5453,7 @@ static foreign_t
 	return jni_ensure_jvm()			/* untypically... */
 		&& jpl_ensure_pvm_init(env)	/* ...this requires both inits */
 		&& (term1=(*env)->AllocObject(env,termt_class)) != NULL
-		&& setLongValue(env,term1,(jlong)tref1)				/* requires jLongHolderValue_f to be initialised */
+		&& setUIntPtrValue(env,term1,tref1) /* requires jLongHolderValue_f to be initialised */
 		&& JNI_jobject_to_term((*env)->CallStaticObjectMethod(env,term_class,term_getTerm,term1),tref2)
 		&& jni_check_exception(env);
 	}
@@ -5452,7 +5471,7 @@ static bool
 
 	return	/* jni_ensure_jvm() && jpl_ensure_pvm_init(env) && */
 		(termt=(*env)->AllocObject(env,termt_class)) != NULL
-		&& setLongValue(env,termt,(jlong)term)			/* requires jLongHolderValue_f to be initialised */
+		&& setUIntPtrValue(env,termt,term)			/* requires jLongHolderValue_f to be initialised */
 		&& ( (*env)->CallStaticVoidMethod(env,term_class,term_putTerm,jobj,termt) , TRUE )
 		&& jni_check_exception(env)
 		;
