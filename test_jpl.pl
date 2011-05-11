@@ -242,7 +242,7 @@ test(
 		))
 	]
 ) :-
-	jpl_get( A, 3, V). % should bind V = 7 i.e. a[3] i.e. the fourth array element counting from zero 
+	jpl_get( A, 3, V). % should bind V = 7 i.e. a[3] i.e. the fourth array element counting from zero
 
 test(
 	get_array_elements_1,
@@ -254,7 +254,7 @@ test(
 		))
 	]
 ) :-
-	jpl_get( A, 1-2, V). % should bind V = [5,6] i.e. a[1-2] i.e. the 2nd to 3rd array elements counting from zero 
+	jpl_get( A, 1-2, V). % should bind V = [5,6] i.e. a[1-2] i.e. the 2nd to 3rd array elements counting from zero
 
 test(
 	get_array_length_1,
@@ -1162,7 +1162,7 @@ user:jpl_test_fac( N, F) :-
 test(fac10,
      [ true(N==3628800)
      ]) :-
-     jpl_test_fac(10, N).
+     user:jpl_test_fac(10, N).
 
 test(threads1,
 	[	true((
