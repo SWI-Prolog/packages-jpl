@@ -2,7 +2,7 @@ ELF systems and libpl.so
 ========================
 
 On Unix systems, SWI-Prolog is normally   compiled as an application and
-static library (lib/$arch/libpl.a). First of all   this is easier ported
+static library (lib/$PLARCH/libpl.a). First of all this is easier ported
 on  may  Unix  systems  and  second,   shared  object  require  position
 independent code (-fpic) and  this  is   (depending  on  the  processor)
 generally slower than application code running at a fixed address.
@@ -34,9 +34,9 @@ Make install installs the following components:
 
 	* $PLBASE/library/jpl.pl
 	* $PLBASE/lib/jpl.jar
-	* $PLBASE/lib/$ARCH/libjpl.so
+	* $PLBASE/lib/$PLARCH/libjpl.so
 
-The  disadvantage  of  this  is  that    $PLBASE/lib/$ARCH  must  be  in
+The  disadvantage  of  this  is  that  $PLBASE/lib/$PLARCH  must  be  in
 $LD_LIBRARY_PATH to be able  to  call   Prolog  from  Java  (either when
 embedding Prolog in Java or using a  Prolog -> Java -> Prolog callback).
 Unfortunately all the other Prolog .so   files are loaded by explicitely
