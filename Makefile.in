@@ -150,7 +150,7 @@ pdf-install::
 		$(INSTALL) -m 644 $(DOC).pdf $(DESTDIR)$(PKGDOCDIR)
 
 uninstall::
-		(cd $(PLBASE)/lib/$(PLARCH) && rm -f $(TARGETS))
+		(cd $(PLBASE)/lib/$(INSTALL_PLARCH) && rm -f $(TARGETS))
 		(cd $(PLBASE)/library && rm -f $(LIBPL))
 		$(PL) -f none -g make -t halt
 
