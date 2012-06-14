@@ -22,6 +22,9 @@ if test "x$JAVALIBS" = "x"; then
      *powerpc-linux*)
 	  JAVALIBS="-ljava -ljvm"
 	  ;;
+     *win32*)
+	  JAVALIBS="-ljvm"
+	  ;;
      *)
 	  JAVALIBS="-ljava -lverify -ljvm"
 	  ;;

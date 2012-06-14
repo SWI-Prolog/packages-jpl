@@ -6,7 +6,8 @@ AC_REQUIRE([AC_EXEEXT])dnl
 if test x$JAVAPREFIX = x; then
         test x$JAVA = x && AC_CHECK_PROGS(JAVA, kaffe$EXEEXT java$EXEEXT)
 else
-        test x$JAVA = x && AC_CHECK_PROGS(JAVA, kaffe$EXEEXT java$EXEEXT, $JAVAPREFIX)
+        AC_PATH_PROGS(_JAVA, kaffe$EXEEXT java$EXEEXT, , $JAVAPREFIX)
+        JAVA="$_JAVA"
 fi
 test x$JAVA = x && AC_MSG_ERROR([no acceptable Java virtual machine found in \$PATH])
 AC_PROG_JAVA_WORKS

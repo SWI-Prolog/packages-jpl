@@ -46,6 +46,7 @@ fi
 case "$host_os" in
 bsdi*)          _JNI_INC_SUBDIRS="bsdos";;
 linux*)         _JNI_INC_SUBDIRS="linux genunix";;
+mingw32*)       _JNI_INC_SUBDIRS="win32";;
 osf*)           _JNI_INC_SUBDIRS="alpha";;
 solaris*)       _JNI_INC_SUBDIRS="solaris";;
 *)              _JNI_INC_SUBDIRS="genunix";;
@@ -59,7 +60,11 @@ do
         fi
 done
 
-case "$host_cpu" in
+case "$host_os" in
+mingw32*)       JNI_CLIENT_DIRS="$_JTOPDIR/lib"
+                ;;
+
+*)  case "$host_cpu" in
 	i?86)
 		_JNI_LIBDIRS="lib/i386"
 		_JNI_LIBSUBDIRS="client"
@@ -93,6 +98,9 @@ for d in $_JNI_LIBDIRS; do
 		fi
 	done
 done
+
+;;
+esac
 
 ])
 

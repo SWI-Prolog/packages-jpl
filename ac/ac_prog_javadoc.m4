@@ -6,7 +6,8 @@ AC_REQUIRE([AC_EXEEXT])dnl
 if test "x$JAVAPREFIX" = x; then
         test "x$JAVADOC" = x && AC_CHECK_PROGS(JAVADOC, javadoc$EXEEXT)
 else
-        test "x$JAVADOC" = x && AC_CHECK_PROGS(JAVADOC, javadoc, $JAVAPREFIX)
+        AC_PATH_PROGS(_JAVADOC, javadoc$EXEEXT, , $JAVAPREFIX)
+        JAVADOC="$_JAVADOC"
 fi
 test "x$JAVADOC" = x && AC_MSG_ERROR([no acceptable javadoc generator found in \$PATH])
 AC_PROVIDE([$0])dnl

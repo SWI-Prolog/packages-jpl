@@ -17,6 +17,8 @@ PKGLDFLAGS=@JAVALDFLAGS@
 
 include ../Makefile.defs
 
+LIBS=@LIBS@
+
 JAVA_HOME=@JAVA_HOME@
 JAVAC=@JAVAC@
 JAVA=@JAVA@
@@ -30,7 +32,7 @@ OBJ=		src/c/jpl.o
 all:		$(TARGETS) jpl.jar exjava-compile jpl_doc
 
 libjpl.@SO@:	$(OBJ)
-		$(LD) $(LDSOFLAGS) -o $@ $(OBJ) $(JAVALIBS)
+		$(LD) $(LDSOFLAGS) -o $@ $(OBJ) $(LIBS) $(JAVALIBS) $(LIBPLSO)
 		if [ -r libjpl.dylib ]; then \
 		  rm -f libjpl.jnilib && ln -s libjpl.dylib libjpl.jnilib ; \
 		fi
@@ -125,10 +127,11 @@ expl-install::
 
 exjava-compile:	jpl.jar
 		echo "Compiling Java examples"
-		PL=`(cd .. && pwd)`/swipl.sh; export PL; \
-		JPLJAR=`pwd`/jpl.jar; export JPLJAR; \
 		for d in $(EXJAVAS); do \
-		    (cd examples/java/$$d && env JPL_COMPILE_ONLY=yes ./run.sh); \
+		    if [ ! -f examples/java/$$d/$$d.class ]; then \
+		        echo $$d; \
+		        (cd examples/java/$$d && $(JAVAC) -classpath "../../../jpl.jar" $$d.java); \
+		    fi; \
 		done
 
 exjava-install:	exjava-compile
