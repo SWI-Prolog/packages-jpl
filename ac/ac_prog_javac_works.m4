@@ -10,7 +10,7 @@ cat << \EOF > $JAVA_TEST
 public class Test {
 }
 EOF
-if AC_TRY_COMMAND($JAVAC $JAVACFLAGS $JAVA_TEST) >/dev/null 2>&1; then
+if AC_TRY_COMMAND("$JAVAC" $JAVACFLAGS $JAVA_TEST) >/dev/null 2>&1; then
   ac_cv_prog_javac_works=yes
 else
   AC_MSG_ERROR([The Java compiler $JAVAC failed (see config.log, check the CLASSPATH?)])

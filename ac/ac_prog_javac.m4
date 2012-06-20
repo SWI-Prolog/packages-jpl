@@ -6,7 +6,7 @@ AC_REQUIRE([AC_EXEEXT])dnl
 if test "x$JAVAPREFIX" = x; then
         test "x$JAVAC" = x && AC_CHECK_PROGS(JAVAC, "gcj$EXEEXT -C" guavac$EXEEXT jikes$EXEEXT javac$EXEEXT)
 else
-        AC_PATH_PROGS(_JAVAC, "gcj$EXEEXT -C" guavac$EXEEXT jikes$EXEEXT javac$EXEEXT, , $JAVAPREFIX)
+        AC_PATH_PROGS(_JAVAC, "gcj$EXEEXT -C" guavac$EXEEXT jikes$EXEEXT javac$EXEEXT, , "$JAVAPREFIX")
         JAVAC="$_JAVAC"
 fi
 test "x$JAVAC" = x && AC_MSG_ERROR([no acceptable Java compiler found in \$PATH])
