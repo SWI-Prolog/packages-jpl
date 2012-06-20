@@ -9,6 +9,7 @@ AC_SUBST(JAVALIBS)
 AC_SUBST(JUNIT)
 AC_SUBST(JAVACFLAGS)
 AC_SUBST(JAVALDFLAGS)
+AC_SUBST(LIBJPL)
 
 m4_include([../ac_swi_c.m4])
 
@@ -30,6 +31,13 @@ if test "x$JAVALIBS" = "x"; then
 	  ;;
   esac
 fi
+
+case "$PLARCH" in
+  *win32*)	LIBJPL=jpl
+		;;
+  *)		LIBJPL=libjpl
+		;;
+esac
 
 dnl ================================================================
 dnl Java stuff

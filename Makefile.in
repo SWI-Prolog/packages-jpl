@@ -26,15 +26,16 @@ JUNIT=@JUNIT@
 JAVALIBS=@JAVALIBS@
 
 LIBPL=		jpl.pl
-TARGETS=	libjpl.@SO@
+LIBJPL=		@LIBJPL@.@SO@
+TARGETS=	$(LIBJPL)
 OBJ=		src/c/jpl.o
 
 all:		$(TARGETS) jpl.jar exjava-compile jpl_doc
 
-libjpl.@SO@:	$(OBJ)
+$(LIBJPL):	$(OBJ)
 		$(LD) $(LDSOFLAGS) -o $@ $(OBJ) $(LIBS) $(JAVALIBS) $(LIBPLSO)
-		if [ -r libjpl.dylib ]; then \
-		  rm -f libjpl.jnilib && ln -s libjpl.dylib libjpl.jnilib ; \
+		if [ -r @LIBJPL@.dylib ]; then \
+		  rm -f @LIBJPL@.jnilib && ln -s @LIBJPL@.dylib @LIBJPL@.jnilib ; \
 		fi
 
 jpl.jar::
@@ -73,32 +74,32 @@ DOCDIRS=	. ./java_api ./java_api/javadoc ./java_api/javadoc/jpl \
 		./prolog_api/overview
 DOCFILES=	$(shell cd ./docs && find . -name '*.html' -o -name '*.gif' -o -name '*.jpg')
 
-EXPL=		$(PKGEXDIR)/prolog
+EXPL=		$(PKGEXDIR)/jpl/prolog
 EXPLS=		jpl_colour_choose_demo.pl \
 		jpl_jlist_demo.pl \
 		jpl_midi_demo.pl \
 		jpl_table_demo.pl \
 		jpl_text_entry_demo.pl \
 		jpl_versions_demo.pl
-EXJAVA=		$(PKGEXDIR)/java
+EXJAVA=		$(PKGEXDIR)/jpl/java
 EXJAVAS=	Exceptions Exceptions2 Family FamilyMT Test Test2 Time \
 		Versions Zahed SemWeb
 
 
 install:	$(TARGETS) $(LIBPL)
-		mkdir -p $(DESTDIR)$(SOLIBDIR)
+		mkdir -p "$(DESTDIR)$(SOLIBDIR)"
 		for f in $(TARGETS); do \
-		  $(INSTALL_PROGRAM) $$f $(DESTDIR)$(SOLIBDIR); \
+		  $(INSTALL_PROGRAM) "$$f" "$(DESTDIR)$(SOLIBDIR)"; \
 		done
 ifeq (@SO@,dylib)
-		(cd $(DESTDIR)$(SOLIBDIR) && ln -sf libjpl.@SO@ libjpl.jnilib)
+		(cd $(DESTDIR)$(SOLIBDIR) && ln -sf @LIBJPL@.@SO@ @LIBJPL@.jnilib)
 endif
-		mkdir -p $(DESTDIR)$(PLLIBDIR)
+		mkdir -p "$(DESTDIR)$(PLLIBDIR)"
 		for f in $(LIBPL); do \
 		  $(INSTALL_DATA) $$f $(DESTDIR)$(PLLIBDIR); \
 		done
 		$(INSTALL_DATA) jpl.jar $(DESTDIR)$(PLBASE)/lib
-		$(PL) -f none -g make -t halt
+		$(MKINDEX)
 
 ln-install::
 		@$(MAKE) INSTALL_DATA='../ln-install' install

@@ -4121,11 +4121,11 @@ jpl_value_to_type_1(I, T) :-
 	(   I >= 0
 	->  (   I  < 128
 	    ->  T  = char_byte
-	    ;   I  < 32768   		 ->  T = char_short
-	    ;   I  < 65536   		 ->  T = char_int
-	    ;   I  < 2147483648   	 ->  T = int
+	    ;   I  < 32768		 ->  T = char_short
+	    ;   I  < 65536		 ->  T = char_int
+	    ;   I  < 2147483648		 ->  T = int
 	    ;   I =< 9223372036854775807 ->  T = long
-	    				  ;  T = overlong
+					  ;  T = overlong
 	    )
 	;   I >= -128		      ->  T = byte
 	;   I >= -32768		      ->  T = short
