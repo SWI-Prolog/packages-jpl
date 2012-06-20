@@ -69,19 +69,19 @@ test_jar:	$(TSTJAR)
 jpl_doc:	$(JPLDOC)
 
 $(JPLJAR):	$(JPLJAVA)
-		$(JAVAC) $(JPLJAVA)
-		$(JAR) cf $(JPLJAR) $(JPLJAVA:.java=.class)
+		"$(JAVAC)" $(JPLJAVA)
+		"$(JAR)" cf $(JPLJAR) $(JPLJAVA:.java=.class)
 
 ifneq ($(JUNIT),)
 $(TSTJAR):	$(JPLJAR) $(TSTJAVA)
-		$(JAVAC) -classpath $(JPLJAR):$(JUNIT) $(TSTJAVA)
-		$(JAR) cf $(TSTJAR) $(TSTJAVA:.java=.class)
+		"$(JAVAC)" -classpath $(JPLJAR):$(JUNIT) $(TSTJAVA)
+		"$(JAR)" cf $(TSTJAR) $(TSTJAVA:.java=.class)
 else
 $(TSTJAR)::
 endif
 
 $(JPLDOC):	$(JPLJAVA)
-		$(JAVADOC) -public -d $(JPLDOC) $(JPLJAVA)
+		"$(JAVADOC)" -public -d $(JPLDOC) $(JPLJAVA)
 
 clean::
 	rm -f *~ jpl/*.class jpl/test/*.class jpl/fli/*.class

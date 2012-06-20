@@ -130,31 +130,31 @@ exjava-compile:	jpl.jar
 		for d in $(EXJAVAS); do \
 		    if [ ! -f examples/java/$$d/$$d.class ]; then \
 		        echo $$d; \
-		        (cd examples/java/$$d && $(JAVAC) -classpath "../../../jpl.jar" $$d.java); \
+		        (cd examples/java/$$d && "$(JAVAC)" -classpath "../../../jpl.jar" $$d.java); \
 		    fi; \
 		done
 
 exjava-install:	exjava-compile
 		echo "Installing Java examples"
-		mkdir -p $(DESTDIR)$(EXJAVA)
-		$(INSTALL_DATA) $(srcdir)/examples/java/README $(DESTDIR)$(EXJAVA)
-		$(INSTALL_DATA) $(srcdir)/examples/java/env.sh $(DESTDIR)$(EXJAVA)
+		mkdir -p "$(DESTDIR)$(EXJAVA)"
+		$(INSTALL_DATA) $(srcdir)/examples/java/README "$(DESTDIR)$(EXJAVA)"
+		$(INSTALL_DATA) $(srcdir)/examples/java/env.sh "$(DESTDIR)$(EXJAVA)"
 		for d in $(EXJAVAS); do \
 		    mkdir -p $(DESTDIR)$(EXJAVA)/$$d; \
-		    $(INSTALL_SCRIPT) $(srcdir)/examples/java/$$d/run.sh $(DESTDIR)$(EXJAVA)/$$d ;\
-		    $(INSTALL_DATA) $(srcdir)/examples/java/$$d/README $(DESTDIR)$(EXJAVA)/$$d ;\
-		    $(INSTALL_DATA) $(srcdir)/examples/java/$$d/$$d.java $(DESTDIR)$(EXJAVA)/$$d ;\
+		    $(INSTALL_SCRIPT) $(srcdir)/examples/java/$$d/run.sh "$(DESTDIR)$(EXJAVA)/$$d" ;\
+		    $(INSTALL_DATA) $(srcdir)/examples/java/$$d/README "$(DESTDIR)$(EXJAVA)/$$d" ;\
+		    $(INSTALL_DATA) $(srcdir)/examples/java/$$d/$$d.java "$(DESTDIR)$(EXJAVA)/$$d" ;\
 		    plfile=`echo $$d.pl | tr A-Z a-z`; \
 		    if [ -f examples/java/$$d/$$plfile ]; then \
-			$(INSTALL_DATA) $(srcdir)/examples/java/$$d/$$plfile $(DESTDIR)$(EXJAVA)/$$d ;\
+			$(INSTALL_DATA) $(srcdir)/examples/java/$$d/$$plfile "$(DESTDIR)$(EXJAVA)/$$d" ;\
 		    fi; \
-		    $(INSTALL_DATA) $(srcdir)/examples/java/$$d/$$d*.class $(DESTDIR)$(EXJAVA)/$$d ;\
+		    $(INSTALL_DATA) $(srcdir)/examples/java/$$d/$$d*.class "$(DESTDIR)$(EXJAVA)/$$d" ;\
 		done
-		$(INSTALL_DATA) $(srcdir)/examples/java/SemWeb/test.rdf $(DESTDIR)$(EXJAVA)/SemWeb
+		$(INSTALL_DATA) $(srcdir)/examples/java/SemWeb/test.rdf "$(DESTDIR)$(EXJAVA)/SemWeb"
 
 pdf-install::
 		mkdir -p $(DESTDIR)$(PKGDOCDIR)
-		$(INSTALL) -m 644 $(DOC).pdf $(DESTDIR)$(PKGDOCDIR)
+		$(INSTALL) -m 644 $(DOC).pdf "$(DESTDIR)$(PKGDOCDIR)"
 
 uninstall::
 		(cd $(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH) && rm -f $(TARGETS))

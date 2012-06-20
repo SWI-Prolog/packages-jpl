@@ -68,13 +68,15 @@ AC_PROG_JAR(jar)
 AC_PROG_JAVADOC(javadoc)
 
 AC_JNI_INCLUDE_DIR
-for d in $JNI_INCLUDE_DIRS; do
+for d in $(echo $JNI_INCLUDE_DIRS | sed 's/Program Files/Program_Files/g'); do
   JAVACFLAGS="$JAVACFLAGS -I$d"
 done
+JAVACFLAGS="$(echo $JAVACFLAGS | sed 's/Program_Files/"Program Files"/g')"
 
-for d in $JNI_CLIENT_DIRS; do
+for d in $(echo $JNI_CLIENT_DIRS | sed 's/Program Files/Program_Files/g'); do
   JAVALDFLAGS="$JAVALDFLAGS -L$d"
 done
+JAVALDFLAGS="$(echo $JAVALDFLAGS | sed 's/Program_Files/"Program Files"/g')"
 
 if test "$java_abs_paths" = yes; then
   JAVA_CC="$JAVA_BINDIR/$JAVA_CC"
