@@ -23,7 +23,7 @@ if test "x$JAVALIBS" = "x"; then
      *powerpc-linux*)
 	  JAVALIBS="-ljava -ljvm"
 	  ;;
-     *win32*)
+     *win32*|*win64*)
 	  JAVALIBS="-ljvm"
 	  ;;
      *)
@@ -62,12 +62,6 @@ if test -r /etc/java/java2.conf; then
     PATH="$PATH:$JAVA_BINDIR"
     java_abs_paths=yes
   fi
-fi
-
-dnl So far, JPL only works with Sun Java and IBM Java
-
-if test "x$JAVAC" = x; then
-  JAVAC=javac
 fi
 
 AC_PROG_JAVAC(javac)

@@ -11,20 +11,24 @@ AC_DEFUN([AC_JNI_INCLUDE_DIR],[
 
 JNI_INCLUDE_DIRS=""
 
-test "x$JAVAC" = x && AC_MSG_ERROR(['$JAVAC' undefined])
+if test "x$JAVAPREFIX" = x; then
+  test "x$JAVAC" = x && AC_MSG_ERROR(['$JAVAC' undefined])
 
-case "$JAVAC" in
+  case "$JAVAC" in
     /*)	_ACJNI_JAVAC="$JAVAC"
 	;;
      *) AC_PATH_PROG(_ACJNI_JAVAC, $JAVAC, no)
         ;;
-esac
+  esac
 
-AC_PATH_PROG(_ACJNI_JAVAC, $JAVAC, no)
-test "x$_ACJNI_JAVAC" = xno && AC_MSG_ERROR([$JAVAC could not be found in path])
+  AC_PATH_PROG(_ACJNI_JAVAC, $JAVAC, no)
+  test "x$_ACJNI_JAVAC" = xno && AC_MSG_ERROR([$JAVAC could not be found in path])
 
-_ACJNI_FOLLOW_SYMLINKS("$_ACJNI_JAVAC")
-_JTOPDIR=`echo "$_ACJNI_FOLLOWED" | sed -e 's://*:/:g' -e 's:/[[^/]]*$::'`
+  _ACJNI_FOLLOW_SYMLINKS("$_ACJNI_JAVAC")
+  _JTOPDIR=`echo "$_ACJNI_FOLLOWED" | sed -e 's://*:/:g' -e 's:/[[^/]]*$::'`
+else
+  _JTOPDIR="$(dirname "$JAVAPREFIX")"
+fi
 
 case "$host_os" in
         darwin*)        _JTOPDIR=`echo "$_JTOPDIR" | sed -e 's:/[[^/]]*$::'`
@@ -83,7 +87,7 @@ mingw32*)       JNI_CLIENT_DIRS="$_JTOPDIR/lib"
 			_JNI_LIBDIRS=""
 		esac
 		;;
-	*)	
+	*)
 		# Fallback option should work on all architectures except
 		# amd64 and powerpc which are special cased above.
 		_JNI_LIBDIRS="lib/$host_cpu"
