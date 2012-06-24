@@ -71,16 +71,25 @@ AC_PROG_JAVA(java)
 AC_PROG_JAR(jar)
 AC_PROG_JAVADOC(javadoc)
 
-AC_JNI_INCLUDE_DIR
-for d in $(echo $JNI_INCLUDE_DIRS | sed 's/Program Files/Program_Files/g'); do
-  JAVACFLAGS="$JAVACFLAGS -I$d"
-done
-JAVACFLAGS="$(echo $JAVACFLAGS | sed 's/Program_Files/"Program Files"/g')"
+escape_space()
+{ sed -e "s/Program Files/Program-SPACE-Files/g" -e "s/ (x86)/SPACEX86/g"
+}
 
-for d in $(echo $JNI_CLIENT_DIRS | sed 's/Program Files/Program_Files/g'); do
-  JAVALDFLAGS="$JAVALDFLAGS -L$d"
+unescape_space()
+{ sed -e "s/-SPACE-/ /g" -e "s/SPACEX86/ (x86)/g"
+}
+
+AC_JNI_INCLUDE_DIR
+for d in $(echo $JNI_INCLUDE_DIRS | escape_space); do
+  JAVACFLAGS="$JAVACFLAGS -I'$d'"
 done
-JAVALDFLAGS="$(echo $JAVALDFLAGS | sed 's/Program_Files/"Program Files"/g')"
+JAVACFLAGS="$(echo $JAVACFLAGS | unescape_space)"
+echo JAVACFLAGS=$JAVACFLAGS
+
+for d in $(echo $JNI_CLIENT_DIRS | escape_space); do
+  JAVALDFLAGS="$JAVALDFLAGS -L'$d'"
+done
+JAVALDFLAGS="$(echo $JAVALDFLAGS | unescape_space)"
 
 if test "$java_abs_paths" = yes; then
   JAVA_CC="$JAVA_BINDIR/$JAVA_CC"
