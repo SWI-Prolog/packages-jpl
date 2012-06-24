@@ -33,10 +33,12 @@ if test "x$JAVALIBS" = "x"; then
 fi
 
 case "$PLARCH" in
-  *win32*)	LIBJPL=jpl
-		;;
-  *)		LIBJPL=libjpl
-		;;
+  *win32*|*win64*)
+	LIBJPL=jpl
+	;;
+  *)
+	LIBJPL=libjpl
+	;;
 esac
 
 dnl ================================================================
