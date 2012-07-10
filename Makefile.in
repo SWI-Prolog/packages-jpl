@@ -12,8 +12,8 @@
 ################################################################
 
 PACKAGE=jpl
-PKGCFLAGS=@JAVACFLAGS@
-PKGLDFLAGS=@JAVALDFLAGS@
+PKGCFLAGS=@JPLCFLAGS@
+PKGLDFLAGS=@JPLLDFLAGS@
 
 include ../Makefile.defs
 

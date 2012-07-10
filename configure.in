@@ -7,8 +7,8 @@ AC_CONFIG_HEADER(config.h)
 AC_SUBST(JAVA_HOME)
 AC_SUBST(JAVALIBS)
 AC_SUBST(JUNIT)
-AC_SUBST(JAVACFLAGS)
-AC_SUBST(JAVALDFLAGS)
+AC_SUBST(JPLCFLAGS)
+AC_SUBST(JPLLDFLAGS)
 AC_SUBST(LIBJPL)
 
 m4_include([../ac_swi_c.m4])
@@ -81,15 +81,14 @@ unescape_space()
 
 AC_JNI_INCLUDE_DIR
 for d in $(echo $JNI_INCLUDE_DIRS | escape_space); do
-  JAVACFLAGS="$JAVACFLAGS -I'$d'"
+  JPLCFLAGS="$JPLCFLAGS -I'$d'"
 done
-JAVACFLAGS="$(echo $JAVACFLAGS | unescape_space)"
-echo JAVACFLAGS=$JAVACFLAGS
+JPLCFLAGS="$(echo $JPLCFLAGS | unescape_space)"
 
 for d in $(echo $JNI_CLIENT_DIRS | escape_space); do
-  JAVALDFLAGS="$JAVALDFLAGS -L'$d'"
+  JPLLDFLAGS="$JPLLDFLAGS -L'$d'"
 done
-JAVALDFLAGS="$(echo $JAVALDFLAGS | unescape_space)"
+JPLLDFLAGS="$(echo $JPLLDFLAGS | unescape_space)"
 
 if test "$java_abs_paths" = yes; then
   JAVA_CC="$JAVA_BINDIR/$JAVA_CC"
