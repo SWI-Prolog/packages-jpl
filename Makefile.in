@@ -21,6 +21,7 @@ LIBS=@LIBS@
 
 JAVA_HOME=@JAVA_HOME@
 JAVAC=@JAVAC@
+JAVACFLAGS=-source 1.4 -target 1.4
 JAVA=@JAVA@
 JUNIT=@JUNIT@
 JAVALIBS=@JAVALIBS@
@@ -131,7 +132,7 @@ exjava-compile:	jpl.jar
 		for d in $(EXJAVAS); do \
 		    if [ ! -f examples/java/$$d/$$d.class ]; then \
 		        echo $$d; \
-		        (cd examples/java/$$d && "$(JAVAC)" -classpath "../../../jpl.jar" $$d.java); \
+		        (cd examples/java/$$d && "$(JAVAC)" $(JAVACFLAGS) -classpath "../../../jpl.jar" $$d.java); \
 		    fi; \
 		done
 
