@@ -34,7 +34,7 @@ OBJ=		src/c/jpl.o
 all:		$(TARGETS) jpl.jar exjava-compile jpl_doc
 
 $(LIBJPL):	$(OBJ)
-		$(LD) $(LDSOFLAGS) -o $@ $(OBJ) $(LIBS) $(JAVALIBS) $(LIBPLSO)
+		$(LD) $(LDSOFLAGS) -o $@ $(OBJ) $(LIBS) $(JAVALIBS) $(LIBPLEMBED)
 		if [ -r @LIBJPL@.dylib ]; then \
 		  rm -f @LIBJPL@.jnilib && ln -s @LIBJPL@.dylib @LIBJPL@.jnilib ; \
 		fi
