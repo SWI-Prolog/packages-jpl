@@ -140,10 +140,10 @@ exjava-install:	exjava-compile
 		echo "Installing Java examples"
 		mkdir -p "$(DESTDIR)$(EXJAVA)"
 		$(INSTALL_DATA) $(srcdir)/examples/java/README "$(DESTDIR)$(EXJAVA)"
-		$(INSTALL_DATA) $(srcdir)/examples/java/env.sh "$(DESTDIR)$(EXJAVA)"
+		$(INSTALL_DATA) $(srcdir)/examples/java/env.@CMDEXT@ "$(DESTDIR)$(EXJAVA)"
 		for d in $(EXJAVAS); do \
 		    mkdir -p $(DESTDIR)$(EXJAVA)/$$d; \
-		    $(INSTALL_SCRIPT) $(srcdir)/examples/java/$$d/run.sh "$(DESTDIR)$(EXJAVA)/$$d" ;\
+		    $(INSTALL_SCRIPT) $(srcdir)/examples/java/$$d/run.@CMDEXT@ "$(DESTDIR)$(EXJAVA)/$$d" ;\
 		    $(INSTALL_DATA) $(srcdir)/examples/java/$$d/README "$(DESTDIR)$(EXJAVA)/$$d" ;\
 		    $(INSTALL_DATA) $(srcdir)/examples/java/$$d/$$d.java "$(DESTDIR)$(EXJAVA)/$$d" ;\
 		    plfile=`echo $$d.pl | tr A-Z a-z`; \

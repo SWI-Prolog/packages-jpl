@@ -10,10 +10,11 @@ AC_SUBST(JUNIT)
 AC_SUBST(JPLCFLAGS)
 AC_SUBST(JPLLDFLAGS)
 AC_SUBST(LIBJPL)
+AC_SUBST(CMDEXT)
 
 m4_include([../ac_swi_c.m4])
 
-dnl Note that we are using plld frontend.  Hence the -cc-options
+CMDEXT=sh
 
 if test "x$JAVALIBS" = "x"; then
   case "$PLARCH" in
@@ -25,6 +26,7 @@ if test "x$JAVALIBS" = "x"; then
 	  ;;
      *win32*|*win64*)
 	  JAVALIBS="-ljvm"
+	  CMDEXT=bat
 	  ;;
      *)
 	  JAVALIBS="-ljava -lverify -ljvm"
