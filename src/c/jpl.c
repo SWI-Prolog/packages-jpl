@@ -1,6 +1,4 @@
-/*	$Id$
-
-    Part of JPL -- SWI-Prolog/Java interface
+/*  Part of JPL -- SWI-Prolog/Java interface
 
     Author:	   Paul Singleton, Fred Dushin and Jan Wielemaker
     E-mail:	   paul@jbgb.com
@@ -578,7 +576,7 @@ static jfieldID    jBooleanHolderValue_f;
 
 /*=== JPL's default args for PL_initialise() (NB these are not really good enough) ================= */
 
-const char  *default_args[] = { "pl",
+const char  *default_args[] = { "swipl",
 				"-g", "true",
 				"-nosignals",
 				NULL
