@@ -35,7 +35,11 @@ if test "x$JAVALIBS" = "x"; then
 fi
 
 case "$PLARCH" in
-  *win32*|*win64*)
+  *win32*)
+	JPLLDFLAGS="$JPLLDFLAGS -Wl,--kill-at"
+	LIBJPL=jpl
+	;;
+  *win64*)
 	LIBJPL=jpl
 	;;
   *)
