@@ -7,6 +7,12 @@ if [ ! -z "$LD_LIBRARY_PATH" ]; then
   LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
 fi
 
+if [ ! -z "$LD_PRELOAD" ]; then
+  export LD_PRELOAD="$JAVA_PRELOAD $LD_PRELOAD"
+else
+  export LD_PRELOAD="$JAVA_PRELOAD"
+fi
+
 if [ -z "$JUNIT" -a -r /usr/share/java/junit.jar ]; then
   JUNIT=/usr/share/java/junit.jar
 fi

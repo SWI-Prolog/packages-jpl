@@ -25,6 +25,7 @@ JAVACFLAGS=-source 1.4 -target 1.4
 JAVA=@JAVA@
 JUNIT=@JUNIT@
 JAVALIBS=@JAVALIBS@
+JAVA_PRELOAD=@JAVA_PRELOAD@
 
 LIBPL=		jpl.pl
 LIBJPL=		@LIBJPL@.@SO@
@@ -57,7 +58,7 @@ check_pl:	jpltest.jar
 		  echo "No jpltest.jar; maybe junit is not installed?" ; \
 		fi
 check_java:	jpltest.jar
-		JUNIT=$(JUNIT) JAVA=$(JAVA) ./test-java.sh
+		JUNIT=$(JUNIT) JAVA=$(JAVA) JAVA_PRELOAD=$(JAVA_PRELOAD) ./test-java.sh
 
 jpltest.jar:
 		(cd src/java && $(MAKE) test_jar)
