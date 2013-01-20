@@ -5,6 +5,7 @@ AC_PREREQ([2.50])
 AC_CONFIG_HEADER(config.h)
 
 AC_SUBST(JAVA_HOME)
+AC_SUBST(JAVACFLAGS)
 AC_SUBST(JAVALIBS)
 AC_SUBST(JUNIT)
 AC_SUBST(JPLCFLAGS)
@@ -53,6 +54,10 @@ dnl Java stuff
 dnl ================================================================
 
 AC_CANONICAL_HOST			dnl needed to get $host_os
+
+if test "x$JAVACFLAGS" = x; then
+  JAVACFLAGS="-source 1.4 -target 1.4"
+fi
 
 m4_include([ac/ac_prog_java.m4])
 m4_include([ac/ac_prog_java_works.m4])

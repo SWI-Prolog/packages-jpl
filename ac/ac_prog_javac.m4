@@ -11,8 +11,14 @@ if test "x$JAVAC" = x; then
   fi
 fi
 test "x$JAVAC" = x && AC_MSG_ERROR([no acceptable Java compiler found in \$PATH])
-if test "$JAVAC" = "gcj$EXEEXT" -a "x$JAVACFLAGS" = "x"; then
-  JAVACFLAGS="-C"
+if test "$JAVAC" = "gcj$EXEEXT"; then
+  case "$JAVACFLAGS" in
+    *-C*)
+	;;
+    *)
+	JAVACFLAGS="$JAVACFLAGS -C"
+	;;
+  esac
 fi
 AC_PROG_JAVAC_WORKS
 AC_PROVIDE([$0])dnl
