@@ -39,8 +39,11 @@ public class TestJUnit extends TestCase {
 	}
 	protected void setUp() {
 		// initialization code
-		// Prolog.set_default_init_args(new String[] { "swipl.dll", "-f", "none", "-g", "set_prolog_flag(debug_on_error,false)", "-q" });
-		Prolog.set_default_init_args(new String[] { "swipl.dll", "-x", "../../src/swipl.prc", "-f", "none", "-g", "true", "-q", "--home=../.." });
+		String startup = System.getenv("SWIPL_BOOT_FILE");
+		if ( startup == null ) {
+		  startup = "../../src/swipl.prc";
+		}
+		Prolog.set_default_init_args(new String[] { "swipl.dll", "-x", startup, "-f", "none", "-g", "true", "-q", "--home=../.." });
 		assertTrue((new Query("consult(test_jpl)")).hasSolution());
 		assertTrue((new Query("use_module(library(jpl))")).hasSolution());
 	}
