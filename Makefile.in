@@ -110,14 +110,14 @@ rpm-install:	install html-install
 
 html-install::	expl-install exjava-install
 		mkdir -p $(DESTDIR)$(PKGDOCDIR)/jpl
-		@echo -n "Creating directories "
+		@printf "Creating directories "
 		@for d in $(DOCDIRS); do \
-		    mkdir -p $(DESTDIR)$(PKGDOCDIR)/jpl/$$d; echo -n .; \
+		    mkdir -p $(DESTDIR)$(PKGDOCDIR)/jpl/$$d; printf "."; \
 		done
 		@echo "ok"
-		@echo -n "Copying documentation files "
+		@printf "Copying documentation files "
 		@for f in $(DOCFILES); do \
-		    $(INSTALL_DATA) docs/$$f $(DESTDIR)$(PKGDOCDIR)/jpl/$$f; echo -n .; \
+		    $(INSTALL_DATA) docs/$$f $(DESTDIR)$(PKGDOCDIR)/jpl/$$f; printf "."; \
 		done
 		@echo "ok"
 
