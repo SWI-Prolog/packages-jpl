@@ -4968,7 +4968,7 @@ Java_jpl_fli_Prolog_put_1integer(JNIEnv *env,
 
   if ( jpl_ensure_pvm_init(env) &&
        getUIntPtrValue(env, jterm, &term) )
-  { return PL_put_integer( term, (int)ji);
+  { return PL_put_int64( term, ji);
   }
 
   return FALSE;
