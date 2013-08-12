@@ -1421,7 +1421,7 @@ jpl_z5s_to_most_specific_z5(Zs, Z) :-
 
 jpl_pl_lib_version(VersionString) :-
 	jpl_pl_lib_version(Major, Minor, Patch, Status),
-	concat_atom([Major,'.',Minor,'.',Patch,'-',Status], VersionString).
+	atomic_list_concat([Major,'.',Minor,'.',Patch,'-',Status], VersionString).
 
 
 jpl_pl_lib_version(3, 1, 4, alpha).
@@ -2946,26 +2946,26 @@ jpl_servlet_byref(Config, Request, Response) :-
 	jpl_call(Context, getInitParameterNames, [], ContextInitParameterNameEnum),
 	jpl_enumeration_to_list(ContextInitParameterNameEnum, ContextInitParameterNames),
 	length(ContextInitParameterNames, NContextInitParameterNames),
-	concat_atom(['\tContext.InitParameters = ',NContextInitParameterNames], NContextInitParameterNamesMsg),
+	atomic_list_concat(['\tContext.InitParameters = ',NContextInitParameterNames], NContextInitParameterNamesMsg),
 	jpl_call(W, println, [NContextInitParameterNamesMsg], _),
 	(   member(ContextInitParameterName, ContextInitParameterNames),
 	jpl_call(Context, getInitParameter, [ContextInitParameterName], ContextInitParameter),
-	concat_atom(['\t\tContext.InitParameter[',ContextInitParameterName,'] = ',ContextInitParameter], ContextInitParameterMsg),
+	atomic_list_concat(['\t\tContext.InitParameter[',ContextInitParameterName,'] = ',ContextInitParameter], ContextInitParameterMsg),
 	jpl_call(W, println, [ContextInitParameterMsg], _),
 	fail
 	;   true
 	),
 
 	jpl_call(Context, getMajorVersion, [], MajorVersion),
-	concat_atom(['\tContext.MajorVersion = ',MajorVersion], MajorVersionMsg),
+	atomic_list_concat(['\tContext.MajorVersion = ',MajorVersion], MajorVersionMsg),
 	jpl_call(W, println, [MajorVersionMsg], _),
 
 	jpl_call(Context, getMinorVersion, [], MinorVersion),
-	concat_atom(['\tContext.MinorVersion = ',MinorVersion], MinorVersionMsg),
+	atomic_list_concat(['\tContext.MinorVersion = ',MinorVersion], MinorVersionMsg),
 	jpl_call(W, println, [MinorVersionMsg], _),
 
 	jpl_call(Context, getServerInfo, [], ServerInfo),
-	concat_atom(['\tContext.ServerInfo = ',ServerInfo], ServerInfoMsg),
+	atomic_list_concat(['\tContext.ServerInfo = ',ServerInfo], ServerInfoMsg),
 	jpl_call(W, println, [ServerInfoMsg], _),
 
 	jpl_call(W, println, ['\nservlet config stuff:'], _),
@@ -2975,17 +2975,17 @@ jpl_servlet_byref(Config, Request, Response) :-
 	->  ServletNameAtom = null
 	;   ServletNameAtom = ServletName
 	),
-	concat_atom(['\tConfig.ServletName = ',ServletNameAtom], ServletNameMsg),
+	atomic_list_concat(['\tConfig.ServletName = ',ServletNameAtom], ServletNameMsg),
 	jpl_call(W, println, [ServletNameMsg], _),
 
 	jpl_call(Config, getInitParameterNames, [], ConfigInitParameterNameEnum),
 	jpl_enumeration_to_list(ConfigInitParameterNameEnum, ConfigInitParameterNames),
 	length(ConfigInitParameterNames, NConfigInitParameterNames),
-	concat_atom(['\tConfig.InitParameters = ',NConfigInitParameterNames], NConfigInitParameterNamesMsg),
+	atomic_list_concat(['\tConfig.InitParameters = ',NConfigInitParameterNames], NConfigInitParameterNamesMsg),
 	jpl_call(W, println, [NConfigInitParameterNamesMsg], _),
 	(   member(ConfigInitParameterName, ConfigInitParameterNames),
 	jpl_call(Config, getInitParameter, [ConfigInitParameterName], ConfigInitParameter),
-	concat_atom(['\t\tConfig.InitParameter[',ConfigInitParameterName,'] = ',ConfigInitParameter], ConfigInitParameterMsg),
+	atomic_list_concat(['\t\tConfig.InitParameter[',ConfigInitParameterName,'] = ',ConfigInitParameter], ConfigInitParameterMsg),
 	jpl_call(W, println, [ConfigInitParameterMsg], _),
 	fail
 	;   true
@@ -2996,12 +2996,12 @@ jpl_servlet_byref(Config, Request, Response) :-
 	jpl_call(Request, getAttributeNames, [], AttributeNameEnum),
 	jpl_enumeration_to_list(AttributeNameEnum, AttributeNames),
 	length(AttributeNames, NAttributeNames),
-	concat_atom(['\tRequest.Attributes = ',NAttributeNames], NAttributeNamesMsg),
+	atomic_list_concat(['\tRequest.Attributes = ',NAttributeNames], NAttributeNamesMsg),
 	jpl_call(W, println, [NAttributeNamesMsg], _),
 	(   member(AttributeName, AttributeNames),
 	jpl_call(Request, getAttribute, [AttributeName], Attribute),
 	jpl_call(Attribute, toString, [], AttributeString),
-	concat_atom(['\t\tRequest.Attribute[',AttributeName,'] = ',AttributeString], AttributeMsg),
+	atomic_list_concat(['\t\tRequest.Attribute[',AttributeName,'] = ',AttributeString], AttributeMsg),
 	jpl_call(W, println, [AttributeMsg], _),
 	fail
 	;   true
@@ -3012,11 +3012,11 @@ jpl_servlet_byref(Config, Request, Response) :-
 	->  CharacterEncodingAtom = ''
 	;   CharacterEncodingAtom = CharacterEncoding
 	),
-	concat_atom(['\tRequest.CharacterEncoding',' = ',CharacterEncodingAtom], CharacterEncodingMsg),
+	atomic_list_concat(['\tRequest.CharacterEncoding',' = ',CharacterEncodingAtom], CharacterEncodingMsg),
 	jpl_call(W, println, [CharacterEncodingMsg], _),
 
 	jpl_call(Request, getContentLength, [], ContentLength),
-	concat_atom(['\tRequest.ContentLength',' = ',ContentLength], ContentLengthMsg),
+	atomic_list_concat(['\tRequest.ContentLength',' = ',ContentLength], ContentLengthMsg),
 	jpl_call(W, println, [ContentLengthMsg], _),
 
 	jpl_call(Request, getContentType, [], ContentType),
@@ -3024,48 +3024,48 @@ jpl_servlet_byref(Config, Request, Response) :-
 	->  ContentTypeAtom = ''
 	;   ContentTypeAtom = ContentType
 	),
-	concat_atom(['\tRequest.ContentType',' = ',ContentTypeAtom], ContentTypeMsg),
+	atomic_list_concat(['\tRequest.ContentType',' = ',ContentTypeAtom], ContentTypeMsg),
 	jpl_call(W, println, [ContentTypeMsg], _),
 
 	jpl_call(Request, getParameterNames, [], ParameterNameEnum),
 	jpl_enumeration_to_list(ParameterNameEnum, ParameterNames),
 	length(ParameterNames, NParameterNames),
-	concat_atom(['\tRequest.Parameters = ',NParameterNames], NParameterNamesMsg),
+	atomic_list_concat(['\tRequest.Parameters = ',NParameterNames], NParameterNamesMsg),
 	jpl_call(W, println, [NParameterNamesMsg], _),
 	(   member(ParameterName, ParameterNames),
 	jpl_call(Request, getParameter, [ParameterName], Parameter),
-	concat_atom(['\t\tRequest.Parameter[',ParameterName,'] = ',Parameter], ParameterMsg),
+	atomic_list_concat(['\t\tRequest.Parameter[',ParameterName,'] = ',Parameter], ParameterMsg),
 	jpl_call(W, println, [ParameterMsg], _),
 	fail
 	;   true
 	),
 
 	jpl_call(Request, getProtocol, [], Protocol),
-	concat_atom(['\tRequest.Protocol',' = ',Protocol], ProtocolMsg),
+	atomic_list_concat(['\tRequest.Protocol',' = ',Protocol], ProtocolMsg),
 	jpl_call(W, println, [ProtocolMsg], _),
 
 	jpl_call(Request, getRemoteAddr, [], RemoteAddr),
-	concat_atom(['\tRequest.RemoteAddr',' = ',RemoteAddr], RemoteAddrMsg),
+	atomic_list_concat(['\tRequest.RemoteAddr',' = ',RemoteAddr], RemoteAddrMsg),
 	jpl_call(W, println, [RemoteAddrMsg], _),
 
 	jpl_call(Request, getRemoteHost, [], RemoteHost),
-	concat_atom(['\tRequest.RemoteHost',' = ',RemoteHost], RemoteHostMsg),
+	atomic_list_concat(['\tRequest.RemoteHost',' = ',RemoteHost], RemoteHostMsg),
 	jpl_call(W, println, [RemoteHostMsg], _),
 
 	jpl_call(Request, getScheme, [], Scheme),
-	concat_atom(['\tRequest.Scheme',' = ',Scheme], SchemeMsg),
+	atomic_list_concat(['\tRequest.Scheme',' = ',Scheme], SchemeMsg),
 	jpl_call(W, println, [SchemeMsg], _),
 
 	jpl_call(Request, getServerName, [], ServerName),
-	concat_atom(['\tRequest.ServerName',' = ',ServerName], ServerNameMsg),
+	atomic_list_concat(['\tRequest.ServerName',' = ',ServerName], ServerNameMsg),
 	jpl_call(W, println, [ServerNameMsg], _),
 
 	jpl_call(Request, getServerPort, [], ServerPort),
-	concat_atom(['\tRequest.ServerPort',' = ',ServerPort], ServerPortMsg),
+	atomic_list_concat(['\tRequest.ServerPort',' = ',ServerPort], ServerPortMsg),
 	jpl_call(W, println, [ServerPortMsg], _),
 
 	jpl_call(Request, isSecure, [], @(Secure)),
-	concat_atom(['\tRequest.Secure',' = ',Secure], SecureMsg),
+	atomic_list_concat(['\tRequest.Secure',' = ',Secure], SecureMsg),
 	jpl_call(W, println, [SecureMsg], _),
 
 	jpl_call(W, println, ['\nHTTP request stuff:'], _),
@@ -3075,7 +3075,7 @@ jpl_servlet_byref(Config, Request, Response) :-
 	->  AuthTypeAtom = ''
 	;   AuthTypeAtom = AuthType
 	),
-	concat_atom(['\tRequest.AuthType',' = ',AuthTypeAtom], AuthTypeMsg),
+	atomic_list_concat(['\tRequest.AuthType',' = ',AuthTypeAtom], AuthTypeMsg),
 	jpl_call(W, println, [AuthTypeMsg], _),
 
 	jpl_call(Request, getContextPath, [], ContextPath),
@@ -3083,7 +3083,7 @@ jpl_servlet_byref(Config, Request, Response) :-
 	->  ContextPathAtom = ''
 	;   ContextPathAtom = ContextPath
 	),
-	concat_atom(['\tRequest.ContextPath',' = ',ContextPathAtom], ContextPathMsg),
+	atomic_list_concat(['\tRequest.ContextPath',' = ',ContextPathAtom], ContextPathMsg),
 	jpl_call(W, println, [ContextPathMsg], _),
 
 	jpl_call(Request, getCookies, [], CookieArray),
@@ -3092,18 +3092,18 @@ jpl_servlet_byref(Config, Request, Response) :-
 	;   jpl_array_to_list(CookieArray, Cookies)
 	),
 	length(Cookies, NCookies),
-	concat_atom(['\tRequest.Cookies',' = ',NCookies], NCookiesMsg),
+	atomic_list_concat(['\tRequest.Cookies',' = ',NCookies], NCookiesMsg),
 	jpl_call(W, println, [NCookiesMsg], _),
 	(   nth0(NCookie, Cookies, Cookie),
-	concat_atom(['\t\tRequest.Cookie[',NCookie,']'], CookieMsg),
+	atomic_list_concat(['\t\tRequest.Cookie[',NCookie,']'], CookieMsg),
 	jpl_call(W, println, [CookieMsg], _),
 
 	jpl_call(Cookie, getName, [], CookieName),
-	concat_atom(['\t\t\tRequest.Cookie.Name = ',CookieName], CookieNameMsg),
+	atomic_list_concat(['\t\t\tRequest.Cookie.Name = ',CookieName], CookieNameMsg),
 	jpl_call(W, println, [CookieNameMsg], _),
 
 	jpl_call(Cookie, getValue, [], CookieValue),
-	concat_atom(['\t\t\tRequest.Cookie.Value = ',CookieValue], CookieValueMsg),
+	atomic_list_concat(['\t\t\tRequest.Cookie.Value = ',CookieValue], CookieValueMsg),
 	jpl_call(W, println, [CookieValueMsg], _),
 
 	jpl_call(Cookie, getPath, [], CookiePath),
@@ -3111,7 +3111,7 @@ jpl_servlet_byref(Config, Request, Response) :-
 	->  CookiePathAtom = ''
 	;   CookiePathAtom = CookiePath
 	),
-	concat_atom(['\t\t\tRequest.Cookie.Path = ',CookiePathAtom], CookiePathMsg),
+	atomic_list_concat(['\t\t\tRequest.Cookie.Path = ',CookiePathAtom], CookiePathMsg),
 	jpl_call(W, println, [CookiePathMsg], _),
 
 	jpl_call(Cookie, getComment, [], CookieComment),
@@ -3119,7 +3119,7 @@ jpl_servlet_byref(Config, Request, Response) :-
 	->  CookieCommentAtom = ''
 	;   CookieCommentAtom = CookieComment
 	),
-	concat_atom(['\t\t\tRequest.Cookie.Comment = ',CookieCommentAtom], CookieCommentMsg),
+	atomic_list_concat(['\t\t\tRequest.Cookie.Comment = ',CookieCommentAtom], CookieCommentMsg),
 	jpl_call(W, println, [CookieCommentMsg], _),
 
 	jpl_call(Cookie, getDomain, [], CookieDomain),
@@ -3127,19 +3127,19 @@ jpl_servlet_byref(Config, Request, Response) :-
 	->  CookieDomainAtom = ''
 	;   CookieDomainAtom = CookieDomain
 	),
-	concat_atom(['\t\t\tRequest.Cookie.Domain = ',CookieDomainAtom], CookieDomainMsg),
+	atomic_list_concat(['\t\t\tRequest.Cookie.Domain = ',CookieDomainAtom], CookieDomainMsg),
 	jpl_call(W, println, [CookieDomainMsg], _),
 
 	jpl_call(Cookie, getMaxAge, [], CookieMaxAge),
-	concat_atom(['\t\t\tRequest.Cookie.MaxAge = ',CookieMaxAge], CookieMaxAgeMsg),
+	atomic_list_concat(['\t\t\tRequest.Cookie.MaxAge = ',CookieMaxAge], CookieMaxAgeMsg),
 	jpl_call(W, println, [CookieMaxAgeMsg], _),
 
 	jpl_call(Cookie, getVersion, [], CookieVersion),
-	concat_atom(['\t\t\tRequest.Cookie.Version = ',CookieVersion], CookieVersionMsg),
+	atomic_list_concat(['\t\t\tRequest.Cookie.Version = ',CookieVersion], CookieVersionMsg),
 	jpl_call(W, println, [CookieVersionMsg], _),
 
 	jpl_call(Cookie, getSecure, [], @(CookieSecure)),
-	concat_atom(['\t\t\tRequest.Cookie.Secure',' = ',CookieSecure], CookieSecureMsg),
+	atomic_list_concat(['\t\t\tRequest.Cookie.Secure',' = ',CookieSecure], CookieSecureMsg),
 	jpl_call(W, println, [CookieSecureMsg], _),
 
 	fail
@@ -3161,7 +3161,7 @@ jpl_servlet_byref(Config, Request, Response) :-
 jpl_servlet_byval(MM, CT, Ba) :-
 	CT = 'text/html',
 	multimap_to_atom(MM, MMa),
-	concat_atom(['<html><head></head><body>',
+	atomic_list_concat(['<html><head></head><body>',
 		     '<h2>jpl_servlet_byval/3 says:</h2><pre>',
 		     MMa,
 		     '</pre></body></html>'
@@ -4406,10 +4406,10 @@ add_search_path(Path, Dir) :-
 	    ->	Sep = (;)
 	    ;	Sep = (:)
 	    ),
-	    (	concat_atom(Current, Sep, Old),
+	    (	atomic_list_concat(Current, Sep, Old),
 		memberchk(Dir, Current)
 	    ->	true			% already present
-	    ;	concat_atom([Old, Sep, Dir], New),
+	    ;	atomic_list_concat([Old, Sep, Dir], New),
 		setenv(Path, New)
 	    )
 	;   setenv(Path, Dir)
@@ -4473,7 +4473,7 @@ check_shared_object(Name, File, EnvVar, Absolute) :-
 	libfile(Name, File),
 	library_search_path(Path, EnvVar),
 	(   member(Dir, Path),
-	    concat_atom([Dir, File], /, Absolute),
+	    atomic_list_concat([Dir, File], /, Absolute),
 	    exists_file(Absolute)
 	->  true
 	;   Absolute = (-)
@@ -4500,7 +4500,7 @@ library_search_path(Path, EnvVar) :-
 	current_prolog_flag(shared_object_search_path, EnvVar),
 	search_path_separator(Sep),
 	(   getenv(EnvVar, Env),
-	    concat_atom(Path, Sep, Env)
+	    atomic_list_concat(Path, Sep, Env)
 	->  true
 	;   Path = []
 	).
@@ -4522,7 +4522,7 @@ add_jpl_to_classpath :-
 	->      Separator = ';'
 	;       Separator = ':'
 	),
-	concat_atom([JplJAR, Old], Separator, New),
+	atomic_list_concat([JplJAR, Old], Separator, New),
 	setenv('CLASSPATH', New).
 
 
@@ -4546,7 +4546,10 @@ libjpl(File) :-
 %	picked up correctly.
 
 add_jpl_to_ldpath(JPL) :-
-	absolute_file_name(JPL, File, [file_type(executable), file_errors(fail)]), !,
+	absolute_file_name(JPL, File,
+			   [ file_type(executable),
+			     file_errors(fail)
+			   ]), !,
 	file_directory_name(File, Dir),
 	prolog_to_os_filename(Dir, OsDir),
 	current_prolog_flag(shared_object_search_path, PathVar),
@@ -4561,32 +4564,41 @@ add_jpl_to_ldpath(_).
 
 add_java_to_ldpath :-
 	current_prolog_flag(windows, true), !,
-	% JDK directories
-	add_java_dir(jvm, '\\jre\\bin\\client', Extra1),
-	add_java_dir(java, '\\jre\\bin', Extra2),
-	% JRE directories
-	add_java_dir(jvm, '\\bin\\client', Extra3),
-	add_java_dir(java, '\\bin', Extra4), % Will add unneeded JAVA_HOME/bin to PATH, when JDK is used, but it shouldn't affect dll loading
-	flatten([Extra1, Extra2, Extra3, Extra4], Extra),
+	phrase(java_dirs, Extra),
 	(   Extra \== []
-	->  print_message(informational,
-			  format('Added ~w to %PATH%', [Extra])),
-	    getenv('PATH', Path0),
-	    concat_atom([Path0|Extra], ';', Path),
-	    setenv('PATH', Path)
+	->  print_message(informational, extend_ld_path(Extra)),
+	    maplist(win_add_dll_directory, Extra)
 	;   true
 	).
 add_java_to_ldpath.
 
-add_java_dir(DLL, SubPath, Dirs) :-
-	(   check_shared_object(DLL, _, _Var, Abs),
-	    Abs \== (-)
-	->  Dirs = []
-	;   java_home(JavaHome)
-	->  atom_concat(JavaHome, SubPath, ClientDir),
-	    (exists_directory(ClientDir) -> Dirs = [ClientDir] ; Dirs = [])
-	;   Dirs = []
-	).
+%%	java_dirs// is det.
+%
+%	DCG that produces existing candidate directories holding
+%	Java related DLLs
+
+java_dirs -->
+	% JDK directories
+	java_dir(jvm, '/jre/bin/client'),
+	java_dir(jvm, '/jre/bin/server'),
+	java_dir(java, '/jre/bin'),
+	% JRE directories
+	java_dir(jvm, '/bin/client'),
+	java_dir(jvm, '/bin/server'),
+	java_dir(java, '/bin').
+
+java_dir(DLL, _SubPath) -->
+	{ check_shared_object(DLL, _, _Var, Abs),
+	  Abs \== (-)
+	}, !.
+java_dir(_DLL, SubPath) -->
+	{ java_home(JavaHome),
+	  atom_concat(JavaHome, SubPath, SubDir),
+	  exists_directory(SubDir)
+	}, !,
+	[SubDir].
+java_dir(_, _) --> [].
+
 
 %%	java_home(-Home) is semidet
 %
@@ -4594,18 +4606,23 @@ add_java_dir(DLL, SubPath, Dirs) :-
 %
 %	@param Home	JAVA home in OS notation
 
-java_home_win_key(jre, 'HKEY_LOCAL_MACHINE/Software/JavaSoft/Java Runtime Environment').
-java_home_win_key(jdk, 'HKEY_LOCAL_MACHINE/Software/JavaSoft/Java Development Kit').
+java_home_win_key(
+    jre,
+    'HKEY_LOCAL_MACHINE/Software/JavaSoft/Java Runtime Environment').
+java_home_win_key(
+    jdk,
+    'HKEY_LOCAL_MACHINE/Software/JavaSoft/Java Development Kit').
 
 java_home(Home) :-
 	getenv('JAVA_HOME', Home),
 	exists_directory(Home), !.
 :- if(current_prolog_flag(windows, true)).
 java_home(Home) :-
-	java_home_win_key(_, Key0),	% currently user can't specify whether jre or jdk is preferable
+	java_home_win_key(_, Key0),	% TBD: user can't choose jre or jdk
 	catch(win_registry_get_value(Key0, 'CurrentVersion', Version), _, fail),
-	concat_atom([Key0, Version], /, Key),
-	win_registry_get_value(Key, 'JavaHome', Home),
+	atomic_list_concat([Key0, Version], /, Key),
+	win_registry_get_value(Key, 'JavaHome', WinHome),
+	prolog_to_os_filename(Home, WinHome),
 	exists_directory(Home), !.
 :- else.
 java_home(Home) :-
@@ -4634,4 +4651,22 @@ report_java_setup_problem(E) :-
 	print_message(error, E),
 	check_java_environment.
 
-:- initialization(setup_jvm, now).
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
+:- multifile
+	prolog:message//1.
+
+prolog:message(extend_ld_path(Dirs)) -->
+	[ 'Extended DLL search path with'-[] ],
+	dir_per_line(Dirs).
+
+dir_per_line([]) --> [].
+dir_per_line([H|T]) -->
+	[ nl, '  ~q'-[H] ],
+	dir_per_line(T).
+
+% Initialize JVM
+
+:- initialization(setup_jvm, now).		% must be ready before export
