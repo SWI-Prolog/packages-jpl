@@ -71,7 +71,7 @@ jpl_doc:	$(JPLDOC)
 
 $(JPLJAR):	$(JPLJAVA)
 		"$(JAVAC)" $(JAVACFLAGS) $(JPLJAVA)
-		"$(JAR)" cf $(JPLJAR) $(JPLJAVA:.java=.class)
+		"$(JAR)" cf $(JPLJAR) $(foreach basename,$(JPLJAVA:.java=),$(basename).class $(subst $$,\$$,$(wildcard $(basename)$$*.class)))
 
 ifneq ($(JUNIT),)
 $(TSTJAR):	$(JPLJAR) $(TSTJAVA)
