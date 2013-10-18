@@ -78,6 +78,7 @@
 	    jpl_set_element/2
 	  ]).
 :- use_module(library(lists)).
+:- use_module(library(apply)).
 
 % suppress debugging this library
 :- set_prolog_flag(generate_debug_info, false).
@@ -4312,59 +4313,54 @@ jpl_set_element(S, E) :-
 % is_pair(?T) :-
 %   I define a half-decent "pair" as having a ground key (any val)
 
-is_pair(0) :- !, fail.
 is_pair(Key-_Val) :-
 	ground(Key).
 
 %------------------------------------------------------------------------------
 
-is_pairs(0) :- !, fail.
-is_pairs([]).
-is_pairs([H|T]) :-
-	is_pair(H),
-	is_pairs(T).
+is_pairs(List) :-
+	is_list(List),
+	maplist(is_pair, List).
 
 %------------------------------------------------------------------------------
 
 multimap_to_atom(KVs, A) :-
-	multimap_to_atom_1(KVs, "", Cz, []),
+	multimap_to_atom_1(KVs, '', Cz, []),
 	flatten(Cz, Cs),
-	atom_codes(A, Cs).
+	atomic_list_concat(Cs, A).
 
 %------------------------------------------------------------------------------
 
 multimap_to_atom_1([], _, Cs, Cs).
 multimap_to_atom_1([K-V|KVs], T, Cs1, Cs0) :-
-	atom_codes(K, CsK),
-	Cs1 = [T,CsK," = "|Cs2],
+	Cs1 = [T,K,' = '|Cs2],
 	(   is_list(V)
 	->  (   is_pairs(V)
 	    ->  V = V2
 	    ;   findall(N-Ve, nth1(N, V, Ve), V2)
 	    ),
-	    T2 = ["    ",T],
-	    Cs2 = [10|Cs2a],
+	    T2 = ['    ',T],
+	    Cs2 = ['\n'|Cs2a],
 	    multimap_to_atom_1(V2, T2, Cs2a, Cs3)
-	;   term_to_codes(V, CsV),
-	    Cs2 = [CsV,10|Cs3]
+	;   to_atom(V, AV),
+	    Cs2 = [AV,'\n'|Cs3]
 	),
 	multimap_to_atom_1(KVs, T, Cs3, Cs0).
 
 %------------------------------------------------------------------------------
 
-%%	term_to_codes(+Term, ?Codes)
+%%	to_atom(+Term, -Atom)
 %
-%	unifies Codes with a printed representation of Term.
+%	unifies Atom with a printed representation of Term.
 %
 %	@tbd Sort of quoting requirements and use format(codes(Codes),
 %	...)
 
-term_to_codes(Term, Codes) :-
+to_atom(Term, Atom) :-
 	(   atom(Term)
-	->  Term = A                % avoid superfluous quotes
-	;   system:term_to_atom(Term, A)
-	),
-	atom_codes(A, Codes).
+	->  Atom = Term                % avoid superfluous quotes
+	;   term_to_atom(Term, Atom)
+	).
 
 %------------------------------------------------------------------------------
 
