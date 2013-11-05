@@ -1,20 +1,23 @@
-Readme about Java on the Mac:
+# Compiling JPL for MacOS
 
-	* http://devworld.apple.com/java/
-	* http://developer.apple.com/documentation/Java/Conceptual/Java14Development/Core_APIs/chapter_6_section_4.html
+Updated: Nov 5, 2013 for MacOS 10.9
 
-General stuff on dynamic link libraries
+# Using Apple's Java distribution
 
-	* http://qin.laya.com/tech_coding_help/dylib_linking.html
-	* http://developer.apple.com/documentation/DeveloperTools/Conceptual/MachORuntime/index.html
+Somehow MacOS did not install the Java SDK correctly, so I ended up without
+jni.h.  I did not find a resolution for that.
 
+# Using Oracle's SDK
 
-Notes on MacOS with dynamic libraries:
+Download from
 
-	* Compile using -fno-common
-	* install_name_tool -change <oldlib> @executable_path... exe
-	
+  - http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html
 
-Link options:
+which installs
 
-	* http://www.fortran-2000.com/ArnaudRecipes/sharedlib.html
+  - /Library/Java/JavaVirtualMachines/jdk1.7.0_45.jdk/Contents/Home
+
+Set $JAVAPREFIX to
+
+  - /Library/Java/JavaVirtualMachines/jdk1.7.0_45.jdk/Contents/Home/bin
+ 
