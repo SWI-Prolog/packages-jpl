@@ -30,21 +30,26 @@ else
   _JTOPDIR="$(dirname "$JAVAPREFIX")"
 fi
 
-case "$host_os" in
-        darwin*)        _JTOPDIR=`echo "$_JTOPDIR" | sed -e 's:/[[^/]]*$::'`
-                        _JINC="$_JTOPDIR/Headers";;
-        *)              _JINC="$_JTOPDIR/include";;
-esac
-if test -f "$_JINC/jni.h"; then
-        JNI_INCLUDE_DIRS="$JNI_INCLUDE_DIRS $_JINC"
-else
-        _JTOPDIR=`echo "$_JTOPDIR" | sed -e 's:/[[^/]]*$::'`
+found=no
+while test $found = no; do
         if test -f "$_JTOPDIR/include/jni.h"; then
                 JNI_INCLUDE_DIRS="$JNI_INCLUDE_DIRS $_JTOPDIR/include"
+		found=yes
+	elif test -f "$_JTOPDIR/Headers/jni.h"; then
+	        JNI_INCLUDE_DIRS="$JNI_INCLUDE_DIRS $_JTOPDIR/Headers"
+		found=yes
         else
-                AC_MSG_ERROR([cannot find java include files])
+	        _JTOPDIR2=`echo "$_JTOPDIR" | sed -e 's:/[[^/]]*$::'`
+		if test "$_JTOPDIR2" = "$_JTOPDIR"; then
+                   	AC_MSG_ERROR([cannot find java include files])
+			found=oops
+		else
+			_JTOPDIR="$_JTOPDIR2"
+		fi
         fi
-fi
+done
+
+AC_MSG_RESULT(_JTOPDIR="$_JTOPDIR")
 
 # get the likely subdirectories for system specific java includes
 case "$host_os" in
@@ -53,6 +58,7 @@ linux*)         _JNI_INC_SUBDIRS="linux genunix";;
 mingw32*)       _JNI_INC_SUBDIRS="win32";;
 osf*)           _JNI_INC_SUBDIRS="alpha";;
 solaris*)       _JNI_INC_SUBDIRS="solaris";;
+darwin*)	_JNI_INC_SUBDIRS="darwin";;
 *)              _JNI_INC_SUBDIRS="genunix";;
 esac
 
