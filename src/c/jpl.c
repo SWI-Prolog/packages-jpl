@@ -579,6 +579,7 @@ static jfieldID    jBooleanHolderValue_f;
 const char  *default_args[] = { "swipl",
 				"-g", "true",
 				"-nosignals",
+				"--traditional",
 				NULL
 			    };	/* *must* have final NULL */
 

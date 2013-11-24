@@ -53,7 +53,7 @@ check:		check_pl check_java
 
 check_pl:	jpltest.jar
 		if [ -r jpltest.jar ]; then \
-		  $(PL) -q -f test_jpl.pl -g run_tests,halt -t 'halt(1)' ; \
+		  $(PL) --traditional -q -f test_jpl.pl -g run_tests,halt -t 'halt(1)' ; \
 		else \
 		  echo "No jpltest.jar; maybe junit is not installed?" ; \
 		fi
