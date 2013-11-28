@@ -27,6 +27,8 @@ JUNIT=@JUNIT@
 JAVALIBS=@JAVALIBS@
 JAVA_PRELOAD=@JAVA_PRELOAD@
 
+PLFLAGS=--traditional
+
 LIBPL=		jpl.pl
 LIBJPL=		@LIBJPL@.@SO@
 TARGETS=	$(LIBJPL)
@@ -53,7 +55,7 @@ check:		check_pl check_java
 
 check_pl:	jpltest.jar
 		if [ -r jpltest.jar ]; then \
-		  $(PL) --traditional -q -f test_jpl.pl -g run_tests,halt -t 'halt(1)' ; \
+		  $(PL) $(PLFLAGS) -q -f test_jpl.pl -g run_tests,halt -t 'halt(1)' ; \
 		else \
 		  echo "No jpltest.jar; maybe junit is not installed?" ; \
 		fi
