@@ -12,6 +12,7 @@ AC_SUBST(JPLCFLAGS)
 AC_SUBST(JPLLDFLAGS)
 AC_SUBST(LIBJPL)
 AC_SUBST(JAVA_PRELOAD)
+AC_SUBST(JAVA_LIBRARY_PATH)
 AC_SUBST(CMDEXT)
 
 m4_include([../ac_swi_c.m4])
@@ -101,6 +102,8 @@ for d in $(echo $JNI_CLIENT_DIRS | escape_space); do
   JPLLDFLAGS="$JPLLDFLAGS -L'$d'"
 done
 JPLLDFLAGS="$(echo $JPLLDFLAGS | unescape_space)"
+
+JAVA_LIBRARY_PATH=$(echo $JNI_CLIENT_DIRS | escape_space | sed 's/ /:/' | unescape_space)
 
 for d in $(echo $JNI_CLIENT_DIRS | escape_space); do
   if test -f "$d/libjsig.$SO"; then
