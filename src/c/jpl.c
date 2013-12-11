@@ -5106,6 +5106,23 @@ JNIEXPORT void JNICALL	/* maybe oughta return jboolean (false iff given object i
     }
 
 
+static int
+PL_old_term_type(term_t term)
+{ int t = PL_term_type(term);
+
+#ifdef PL_NIL
+  switch(t)
+  { case PL_NIL:
+      return PL_ATOM;
+    case PL_LIST_PAIR:
+      return PL_TERM;
+  }
+#endif
+
+  return t;
+}
+
+
 /*
  * Class:	  jpl_fli_Prolog
  * Method:	  term_type
@@ -5122,7 +5139,7 @@ JNIEXPORT jint JNICALL
 
     return  (	jpl_ensure_pvm_init(env)
 			&&	getUIntPtrValue(env,jterm,&term)					/* checks jterm isn't null */
-			?	PL_term_type(term)
+			?	PL_old_term_type(term)
 			:	-1													/* i.e. when jterm is null */
 	    )
 	;
