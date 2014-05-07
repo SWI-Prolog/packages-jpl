@@ -7,6 +7,7 @@ AC_CONFIG_HEADER(config.h)
 AC_SUBST(JAVA_HOME)
 AC_SUBST(JAVACFLAGS)
 AC_SUBST(JAVALIBS)
+AC_SUBST(JAVADOCFLAGS)
 AC_SUBST(JUNIT)
 AC_SUBST(JPLCFLAGS)
 AC_SUBST(JPLLDFLAGS)
@@ -83,6 +84,16 @@ AC_PROG_JAVAC(javac)
 AC_PROG_JAVA(java)
 AC_PROG_JAR(jar)
 AC_PROG_JAVADOC(javadoc)
+
+dnl Our javadoc is not strict, while javadoc v8 enforces this
+
+AC_CHECKING(javadoc -Xdoclint)
+if "$JAVADOC" -Xdoclint:none -help >/dev/null 2>/dev/null; then
+  AC_MSG_RESULT(yes)
+  JAVADOCFLAGS="-Xdoclint:none"
+else
+  AC_MSG_RESULT(no)
+fi
 
 escape_space()
 { sed -e "s/Program Files/Program-SPACE-Files/g" -e "s/ (x86)/SPACEX86/g"

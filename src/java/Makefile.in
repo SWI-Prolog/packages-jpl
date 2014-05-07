@@ -9,6 +9,7 @@ JAVACFLAGS=-source 1.4 -target 1.4
 JAR=@JAR@
 JUNIT=@JUNIT@
 JAVADOC=@JAVADOC@
+JAVADOCFLAGS=@JAVADOCFLAGS@
 JPLJAR=../../jpl.jar
 TSTJAR=../../jpltest.jar
 JPLDOC=../../docs/java_api/javadoc
@@ -82,7 +83,7 @@ $(TSTJAR)::
 endif
 
 $(JPLDOC):	$(JPLJAVA)
-		"$(JAVADOC)" -public -d $(JPLDOC) $(JPLJAVA)
+		"$(JAVADOC)" $(JAVADOCFLAGS) -public -d $(JPLDOC) $(JPLJAVA)
 
 clean::
 	rm -f *~ jpl/*.class jpl/test/*.class jpl/fli/*.class
