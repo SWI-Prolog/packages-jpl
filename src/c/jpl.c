@@ -42,10 +42,10 @@ refactoring (trivial):
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* update this to distinguish releases of this C library: */
-#define	JPL_C_LIB_VERSION	 "3.1.4-alpha"
+#define	JPL_C_LIB_VERSION	 "3.1.5-alpha"
 #define	JPL_C_LIB_VERSION_MAJOR	 3
 #define	JPL_C_LIB_VERSION_MINOR	 1
-#define	JPL_C_LIB_VERSION_PATCH	 4
+#define	JPL_C_LIB_VERSION_PATCH	 5
 #define	JPL_C_LIB_VERSION_STATUS "alpha"
 
 /*#define DEBUG(n, g) ((void)0) */
@@ -143,6 +143,10 @@ refactoring (trivial):
 #define	    JPL_MAX_POOL_ENGINES	10 /* max pooled Prolog engines */
 #define	    JPL_INITIAL_POOL_ENGINES	 1 /* initially created ones */
 
+/* legit values for jpl_syntax */
+#define     JPL_SYNTAX_UNDEFINED		201
+#define     JPL_SYNTAX_TRADITIONAL		202
+#define     JPL_SYNTAX_MODERN		203
 
 /*=== JNI Prolog<->Java conversion macros ========================================================== */
 
@@ -612,6 +616,8 @@ static pthread_cond_t	engines_cond =	PTHREAD_COND_INITIALIZER;  /* for controlli
 
 static pthread_mutex_t	jvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;	/* for controlling lazy initialisation */
 static pthread_mutex_t	pvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;	/* for controlling lazy initialisation */
+
+static int		jpl_syntax =	JPL_SYNTAX_UNDEFINED;	/* init sets JPL_SYNTAX_TRADITIONAL or JPL_SYNTAX_MODERN */
 
 
 /*=== common functions ============================================================================= */
@@ -4978,6 +4984,26 @@ Java_jpl_fli_Prolog_put_1integer(JNIEnv *env,
 
 /*
  * Class:	  jpl_fli_Prolog
+ * Method:	  put_nil
+ * Signature: (Ljpl/fli/term_t;)V
+ */
+JNIEXPORT jboolean JNICALL
+Java_jpl_fli_Prolog_put_1nil(JNIEnv *env, // 1/Feb/2015
+				 jclass	jProlog,
+				 jobject jterm)
+{ term_t term;
+
+  if ( jpl_ensure_pvm_init(env) &&
+       getUIntPtrValue(env, jterm, &term) )
+  { return PL_put_nil( term);
+  }
+
+  return FALSE;
+}
+
+
+/*
+ * Class:	  jpl_fli_Prolog
  * Method:	  put_term
  * Signature: (Ljpl/fli/term_t;Ljpl/fli/term_t;)V
  */
@@ -5106,23 +5132,6 @@ JNIEXPORT void JNICALL	/* maybe oughta return jboolean (false iff given object i
     }
 
 
-static int
-PL_old_term_type(term_t term)
-{ int t = PL_term_type(term);
-
-#ifdef PL_NIL
-  switch(t)
-  { case PL_NIL:
-      return PL_ATOM;
-    case PL_LIST_PAIR:
-      return PL_TERM;
-  }
-#endif
-
-  return t;
-}
-
-
 /*
  * Class:	  jpl_fli_Prolog
  * Method:	  term_type
@@ -5139,7 +5148,7 @@ JNIEXPORT jint JNICALL
 
     return  (	jpl_ensure_pvm_init(env)
 			&&	getUIntPtrValue(env,jterm,&term)					/* checks jterm isn't null */
-			?	PL_old_term_type(term)
+			?	PL_term_type(term)
 			:	-1													/* i.e. when jterm is null */
 	    )
 	;
@@ -5648,6 +5657,35 @@ static foreign_t
     {
 
 	return jni_get_jvm_opts(args,jvm_aia);
+    }
+
+
+static int
+ jpl_get_syntax(
+    JNIEnv		*env
+	)
+    {
+    if ( jpl_syntax == JPL_SYNTAX_UNDEFINED && jpl_ensure_pvm_init(env) )
+        {
+        jpl_syntax = ( ATOM_nil == PL_new_atom("[]") ? JPL_SYNTAX_TRADITIONAL : JPL_SYNTAX_MODERN );
+        }
+    return jpl_syntax;
+	}
+
+
+/*
+ * Class:	  jpl_fli_Prolog
+ * Method:    get_syntax
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL
+Java_jpl_fli_Prolog_get_1syntax(
+    JNIEnv	*env,
+    jclass	 jProlog
+    )
+    {
+
+    return jpl_get_syntax(env);
     }
 
 

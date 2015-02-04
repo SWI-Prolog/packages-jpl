@@ -6,11 +6,12 @@
  */
 package jpl.test;
 
-
 public class ShadowB extends ShadowA {
-	public String	shadow;
+	public String shadow;
+
 	public ShadowB(String s) {
 		shadow = s;
 	}
+
 	public static int fieldStaticInt;
 }

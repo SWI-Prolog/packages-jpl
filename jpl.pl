@@ -1425,7 +1425,7 @@ jpl_pl_lib_version(VersionString) :-
 	atomic_list_concat([Major,'.',Minor,'.',Patch,'-',Status], VersionString).
 
 
-jpl_pl_lib_version(3, 1, 4, alpha).
+jpl_pl_lib_version(3, 1, 5, alpha).
 
 %------------------------------------------------------------------------------
 

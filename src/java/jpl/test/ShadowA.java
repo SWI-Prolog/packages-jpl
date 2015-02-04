@@ -6,8 +6,7 @@
  */
 package jpl.test;
 
-
 public class ShadowA {
-	public int	shadow	= -1;
+	public int shadow = -1;
 	public static int fieldStaticInt;
 }

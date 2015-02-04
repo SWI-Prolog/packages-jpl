@@ -5,9 +5,11 @@ public class Garbo {
 	public static int destroyed = 0;
 	//
 	public final int i;
-	public Garbo( ) {
+
+	public Garbo() {
 		this.i = created++;
 	}
+
 	protected void finalize() throws Throwable {
 		try {
 			destroyed++;

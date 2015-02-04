@@ -1,11 +1,11 @@
 package jpl.test;
 
 import java.util.Map;
+
 import jpl.Atom;
 import jpl.Compound;
 import jpl.Integer;
 import jpl.JPL;
-import jpl.PrologException;
 import jpl.Query;
 import jpl.Term;
 import jpl.Util;
@@ -25,16 +25,18 @@ public class TestOLD {
 		System.err.println("  os.version = " + System.getProperty("os.version"));
 		System.err.println();
 	}
+
 	private static void test10j() {
 		Term l2 = Util.termArrayToList(new Term[] { new Atom("a"), new Atom("b"), new Atom("c"), new Atom("d"), new Atom("e") });
 		Query q9 = new Query(new Compound("append", new Term[] { new Variable("Xs"), new Variable("Ys"), l2 }));
-		Map[] s9s = q9.allSolutions();
+		Map<String, Term>[] s9s = q9.allSolutions();
 		System.err.println("test10j:");
 		for (int i = 0; i < s9s.length; i++) {
 			System.err.println("  append(Xs,Ys,[a,b,c,d,e]) -> " + Util.toString(s9s[i]));
 		}
 		System.err.println();
 	}
+
 	private static void test10k() {
 		String[] args = jpl.fli.Prolog.get_default_init_args();
 		String which;
@@ -51,19 +53,21 @@ public class TestOLD {
 		}
 		System.err.println("  " + which + "_init_args = " + s + '\n');
 	}
+
 	private static void test10l() {
 		Query q5 = new Query(new Compound("length", new Term[] { new Variable("Zs"), new jpl.Integer(5) }));
-		Map s5 = q5.oneSolution();
+		Map<String, Term> s5 = q5.oneSolution();
 		System.err.println("test10l:");
 		System.err.println("  length(Zs,5)");
 		System.err.println("  " + Util.toString(s5));
 		System.err.println("  Zs = " + (Term) s5.get("Zs"));
 		System.err.println();
 	}
+
 	private static void test10m() {
 		String text = "append(Xs,Ys,[_,_,_,_,_])";
 		Query q = new Query(text);
-		Map[] ss = q.allSolutions();
+		Map<String, Term>[] ss = q.allSolutions();
 		System.err.println("test10m:");
 		System.err.println("  all solutions of " + text);
 		for (int i = 0; i < ss.length; i++) {
@@ -71,21 +75,25 @@ public class TestOLD {
 		}
 		System.err.println();
 	}
+
 	private static void test10o() {
 		System.err.println("test10o:");
 		Term l2b = Util.termArrayToList(new Term[] { new Variable("A"), new Variable("B"), new Variable("C"), new Variable("D"), new Variable("E") });
 		Query q9b = new Query(new Compound("append", new Term[] { new Variable("Xs"), new Variable("Ys"), l2b }));
-		Map[] s9bs = q9b.allSolutions();
+		Map<String, Term>[] s9bs = q9b.allSolutions();
 		for (int i = 0; i < s9bs.length; i++) {
 			System.err.println("  append(Xs,Ys,[A,B,C,D,E]) -> " + Util.toString(s9bs[i]));
 		}
 		System.err.println();
 	}
+
 	private static void test10q() {
 		System.err.println("test10q:");
 		System.err.println((new Compound("Bad Name", new Term[] { new Atom("3 3") })).toString());
 		System.err.println();
 	}
+
+	@SuppressWarnings("unused")
 	private static void test10s() {
 		final Query q = new Query("jpl_slow_goal"); // 10 successive sleep(1)
 		System.err.println("test10s:");
@@ -106,11 +114,12 @@ public class TestOLD {
 		} catch (InterruptedException e) {
 			;
 		} // wait a coupla seconds for it to get started
-		// (new Query("set_prolog_flag(abort_with_exception, true)")).hasSolution();
+			// (new Query("set_prolog_flag(abort_with_exception, true)")).hasSolution();
 		System.err.println("calling q.abort()...");
 		q.abort();
 		System.err.println();
 	}
+
 	public static void main(String argv[]) {
 		Prolog.set_default_init_args(new String[] { "libpl.dll", "-f", "none", "-g", "set_prolog_flag(debug_on_error,false)", "-q" });
 		System.err.println("tag = " + Prolog.object_to_tag(new Query("hello")));
@@ -124,7 +133,7 @@ public class TestOLD {
 		test10m();
 		// test10n();
 		test10o();
-		//test10p();
+		// test10p();
 		test10q();
 		// test10r();
 		// test10s();

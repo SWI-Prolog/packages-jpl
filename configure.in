@@ -58,7 +58,7 @@ dnl ================================================================
 AC_CANONICAL_HOST			dnl needed to get $host_os
 
 if test "x$JAVACFLAGS" = x; then
-  JAVACFLAGS="-source 1.4 -target 1.4"
+  JAVACFLAGS="-target 1.4"
 fi
 
 m4_include([ac/ac_prog_java.m4])
