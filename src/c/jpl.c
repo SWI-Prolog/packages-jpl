@@ -4277,7 +4277,8 @@ JNIEXPORT void JNICALL
     {
 	qid_t		qid;
 
-	DEBUG(1, Sdprintf( ">close_query(env=%lu,jProlog=%lu,jquid=%u)...\n", (long)env, (long)jProlog, (long)jqid));
+	DEBUG(1, Sdprintf( ">close_query(env=%p,jProlog=%p,jquid=%p)...\n",
+			   env, jProlog, jqid));
     if	(   jpl_ensure_pvm_init(env)
 		&&	getUIntPtrValue(env,jqid,&qid)							/* checks that jqid != NULL */
 	)
@@ -4304,7 +4305,7 @@ JNIEXPORT jint JNICALL													/* returns -1, 0 or 1 (or -2 for error) */
 	term_t		term1;
 	term_t		term2;
 
-	DEBUG(1, Sdprintf( ">compare(term1=%lu,term2=%lu)\n", (long)jterm1, (long)jterm2));
+	DEBUG(1, Sdprintf( ">compare(term1=%p,term2=%p)\n", jterm1, jterm2));
 	if	(	jpl_ensure_pvm_init(env)
 		&&	getUIntPtrValue(env,jterm1,&term1) /* checks jterm1 isn't null */
 		&&	getUIntPtrValue(env,jterm2,&term2) /* checks jterm2 isn't null */
@@ -4444,7 +4445,7 @@ JNIEXPORT jobject JNICALL
     term_t	term;
 	jobject		term_t;		/* return value */
 
-	DEBUG(1, Sdprintf( ">exception(jqid=%lu)\n", (long)jqid));
+	DEBUG(1, Sdprintf( ">exception(jqid=%p)\n", jqid));
 	return	(	jpl_ensure_pvm_init(env)
 			&&	( DEBUG(1, Sdprintf( "	ok: jpl_ensure_pvm_init(env)\n")), TRUE )
 		 /* &&	jqid != NULL	// redundant */
@@ -4458,7 +4459,7 @@ JNIEXPORT jobject JNICALL
 			&&	setUIntPtrValue(env,term_t,term)
 			&&	( DEBUG(1, Sdprintf( "	ok: setUIntPtrValue(env,term_t,term)\n")), TRUE )
 			?	(
-					DEBUG(1, Sdprintf("  =%lu\n",(long)term_t)),
+					DEBUG(1, Sdprintf("  =%p\n",term_t)),
 					term_t
 				)
 			:	NULL													/* oughta diagnose failure? */
@@ -4766,7 +4767,8 @@ JNIEXPORT jobject JNICALL
 	jobject		rval;
 	term_t		trefs;
 
-	DEBUG(1, Sdprintf( ">new_term_refs(env=%lu,jProlog=%lu,jn=%lu)...\n", (long)env, (long)jProlog, (long)jn));
+	DEBUG(1, Sdprintf( ">new_term_refs(env=%p,jProlog=%p,jn=%p)...\n",
+			   env, jProlog, jn));
 
 	return	(	jpl_ensure_pvm_init(env)
 			&&	jn >= 0										/* I hope PL_new_term_refs(0) is defined [ISSUE] */
@@ -4796,7 +4798,8 @@ JNIEXPORT jboolean JNICALL
 	qid_t		qid;
 	int		rval;		/* for boolean return value */
 
-	DEBUG(1, Sdprintf( ">next_solution(env=%lu,jProlog=%lu,jqid=%lu)...\n", (long)env, (long)jProlog, (long)jqid));
+	DEBUG(1, Sdprintf( ">next_solution(env=%p,jProlog=%p,jqid=%p)...\n",
+			   env, jProlog, jqid));
 	return	jpl_ensure_pvm_init(env)
 		&&	getUIntPtrValue(env,jqid,&qid)						/* checks that jqid isn't null */
 		&&	( DEBUG(1, Sdprintf( "	ok: getUIntPtrValue(env,jqid,&qid(%lu))\n",(long)qid)), TRUE )
@@ -4874,23 +4877,23 @@ Java_jpl_fli_Prolog_open_1query(
     qid_t	qid;
     jobject	jqid;		/* for returned new QidT object */
 
-    DEBUG(1, Sdprintf( ">open_query(env=%lu,jProlog=%lu,jmodule=%lu,jflags=%lu,jpredicate=%lu,jterm0=%lu)...\n",
-		       (long)env, (long)jProlog, (long)jmodule, (long)jflags, (long)jpredicate, (long)jterm0));
+    DEBUG(1, Sdprintf( ">open_query(env=%lu,jProlog=%p,jmodule=%p,jflags=%p,jpredicate=%p,jterm0=%p)...\n",
+		       env, jProlog, jmodule, jflags, jpredicate, jterm0));
     return  (	jpl_ensure_pvm_init(env)
 	    &&	( getPointerValue(env,jmodule,(pointer*)&module) , TRUE )	/* NULL module is OK below... */
-	    &&	( DEBUG(1, Sdprintf("  ok: getPointerValue(env,jmodule=%lu,&(pointer)module=%lu)\n",(long)jmodule,(long)module)), TRUE )
+	    &&	( DEBUG(1, Sdprintf("  ok: getPointerValue(env,jmodule=%p,&(pointer)module=%p)\n",jmodule,module)), TRUE )
 	    &&	getPointerValue(env,jpredicate,(pointer*)&predicate)		/* checks that jpredicate != NULL */
-	    &&	( DEBUG(1, Sdprintf("  ok: getPointerValue(env,jpredicate=%lu,&(pointer)predicate=%lu)\n",(long)jpredicate,(long)predicate)), TRUE )
+	    &&	( DEBUG(1, Sdprintf("  ok: getPointerValue(env,jpredicate=%p,&(pointer)predicate=%p)\n",jpredicate,predicate)), TRUE )
 	    &&	getUIntPtrValue(env,jterm0,&term0)			    /* jterm0!=NULL */
 	    &&	( (qid=PL_open_query(module,jflags,predicate,term0)) , TRUE )	/* NULL module is OK (?) [ISSUE] */
-	    &&	( DEBUG(1, Sdprintf("  ok: PL_open_query(module=%lu,jflags=%u,predicate=%lu,term0=%lu)=%lu\n",(long)module,jflags,(long)predicate,(long)term0,(long)qid)), TRUE )
+	    &&	( DEBUG(1, Sdprintf("  ok: PL_open_query(module=%p,jflags=%u,predicate=%p,term0=%p)=%p\n",module,jflags,predicate,term0,qid)), TRUE )
 	    &&	(jqid=(*env)->AllocObject(env,jQidT_c)) != NULL
-	    &&	( DEBUG(1, Sdprintf("  ok: AllocObject(env,jQidT_c)=%lu\n",(long)jqid)), TRUE )
+	    &&	( DEBUG(1, Sdprintf("  ok: AllocObject(env,jQidT_c)=%p\n",jqid)), TRUE )
 	    &&	setUIntPtrValue(env,jqid,qid)
-	    &&	( DEBUG(1, Sdprintf("  ok: setUIntPtrValue(env,%lu,%lu)\n",(long)jqid,(long)qid)), TRUE )
+	    &&	( DEBUG(1, Sdprintf("  ok: setUIntPtrValue(env,%p,%p)\n",jqid,qid)), TRUE )
 	    &&	( DEBUG(1, Sdprintf("[open_query module = %s]\n", (module==NULL?"(null)":PL_atom_chars(PL_module_name(module))))), TRUE )
 	    ?	(
-		    DEBUG(1, Sdprintf("  =%lu\n",(long)jqid)),
+		    DEBUG(1, Sdprintf("  =%p\n",jqid)),
 		    jqid
 		)
 	    :	NULL							    /* oughta diagnose failure? raise JPL exception? */
@@ -4920,8 +4923,8 @@ JNIEXPORT jobject JNICALL
 	predicate_t predicate;
 	jobject		rval;
 
-	DEBUG(1, Sdprintf(">predicate(env=%lu,jProlog=%lu,jname=%lu,jarity=%lu,jmodule=%lu)...\n",
-					  (long)env, (long)jProlog, (long)jname, (long)jarity, (long)jmodule));
+	DEBUG(1, Sdprintf(">predicate(env=%p,jProlog=%p,jname=%p,jarity=%p,jmodule=%p)...\n",
+					  env, jProlog, jname, jarity, jmodule));
 	return	(	jpl_ensure_pvm_init(env)
 			&&	jni_String_to_atom(env,jname,&pname)			/* checks that jname isn't NULL */
 			&&	jarity >= 0
@@ -5173,7 +5176,8 @@ JNIEXPORT void JNICALL
     {
 	atom_t		atom;
 
-	DEBUG(1, Sdprintf( ">unregister_atom(env=%lu,jProlog=%lu,jatom=%u)...\n", (long)env, (long)jProlog, (long)jatom));
+	DEBUG(1, Sdprintf( ">unregister_atom(env=%p,jProlog=%p,jatom=%p)...\n",
+			   env, jProlog, jatom));
 
 	if	(	jpl_ensure_pvm_init(env)
 		&&	getUIntPtrValue(env,jatom,&atom)							/* checks that jatom isn't null */
