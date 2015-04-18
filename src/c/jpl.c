@@ -756,12 +756,16 @@ jni_tag_to_iref(
 	}
 
 
+#define IREF_INTTYPE uintptr_t
+
 #if SIZEOF_LONG == SIZEOF_VOIDP
 #define IREF_FMT "J#%020lu"
-#define IREF_INTTYPE unsigned long
 #elif SIZEOF_LONG_LONG == SIZEOF_VOIDP
+#ifdef __WINDOWS__
+#define IREF_FMT "J#%020I64d"
+#else
 #define IREF_FMT "J#%020llu"
-#define IREF_INTTYPE unsigned long long
+#endif
 #else
 #error "Cannot determine format for irefs"
 #endif
