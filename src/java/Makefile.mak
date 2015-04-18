@@ -66,11 +66,11 @@ TSTJAVA=$(TEST)
 all:	$(JPLJAR) $(TSTJAR) $(JPLDOC)
 
 $(JPLJAR):	$(JPLJAVA)
-		$(JAVAC) -source 1.4 -target 1.4 $(JPLJAVA)
+		$(JAVAC) $(JPLJAVA)
 		$(JAR) cf $(JPLJAR) $(JPLJAVA:.java=.class)
 
-$(TSTJAR):	$(JPLJAR) $(TSTJAVA) 
-		$(JAVAC) -source 1.4 -target 1.4 -classpath "$(JPLJAR);$(JUNIT)" $(TSTJAVA)
+$(TSTJAR):	$(JPLJAR) $(TSTJAVA)
+		$(JAVAC) -classpath "$(JPLJAR);$(JUNIT)" $(TSTJAVA)
 		$(JAR) cf $(TSTJAR) $(TSTJAVA:.java=.class)
 
 $(JPLDOC):	$(JPLJAVA)
