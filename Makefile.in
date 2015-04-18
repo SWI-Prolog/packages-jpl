@@ -12,6 +12,7 @@
 ################################################################
 
 PACKAGE=jpl
+DOC=jpl
 PKGCFLAGS=@JPLCFLAGS@
 PKGLDFLAGS=@JPLLDFLAGS@
 
@@ -120,6 +121,7 @@ html-install::	expl-install exjava-install
 		done
 		@echo "ok"
 		@printf "Copying documentation files "
+		$(INSTALL_DATA) jpl.html $(DESTDIR)$(PKGDOCDIR)
 		@for f in $(DOCFILES); do \
 		    $(INSTALL_DATA) docs/$$f $(DESTDIR)$(PKGDOCDIR)/jpl/$$f; printf "."; \
 		done
@@ -167,6 +169,12 @@ uninstall::
 		(cd $(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH) && rm -f $(TARGETS))
 		(cd $(PLBASE)/library && rm -f $(LIBPL))
 		$(PL) -f none -g make -t halt
+
+################################################################
+# Documentation
+################################################################
+
+
 
 ################################################################
 # Clean
