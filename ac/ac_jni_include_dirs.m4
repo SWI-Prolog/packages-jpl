@@ -41,7 +41,7 @@ while test $found = no; do
         else
 	        _JTOPDIR2=`echo "$_JTOPDIR" | sed -e 's:/[[^/]]*$::'`
 		if test "$_JTOPDIR2" = "$_JTOPDIR"; then
-                   	AC_MSG_ERROR([cannot find java include files])
+			AC_MSG_ERROR([cannot find java include files])
 			found=oops
 		else
 			_JTOPDIR="$_JTOPDIR2"
@@ -81,6 +81,10 @@ mingw32*)       JNI_CLIENT_DIRS="$_JTOPDIR/lib"
 		;;
 	x86_64)
 		_JNI_LIBDIRS="lib/amd64"
+		_JNI_LIBSUBDIRS="server"
+		;;
+	arm*)
+		_JNI_LIBDIRS="lib/arm"
 		_JNI_LIBSUBDIRS="server"
 		;;
 	powerpc)
