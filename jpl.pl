@@ -80,15 +80,30 @@
 :- use_module(library(lists)).
 :- use_module(library(apply)).
 
+/** <module> A Java interface for SWI Prolog 7.x
+
+The library(jpl) provides a bidirectional interface to a Java Virtual Machine.
+
+@see http://jpl7.org/
+*/
+
 % suppress debugging this library
 :- set_prolog_flag(generate_debug_info, false).
 
 %------------------------------------------------------------------------------
 
+%%  jpl_get_default_jvm_opts(-Opts:list(atom))
+%
+%   Returns (as a list of atoms) the options which will be passed to the JVM when it is initialised.
+
 jpl_get_default_jvm_opts( Opts) :-
 	jni_get_default_jvm_opts( Opts).
 
 %------------------------------------------------------------------------------
+
+%%  jpl_set_default_jvm_opts(+Opts:list(atom)) is det.
+%
+%   Replaces the default JVM initialisation options with those supplied.
 
 jpl_set_default_jvm_opts( Opts) :-
 	is_list( Opts),
@@ -96,6 +111,11 @@ jpl_set_default_jvm_opts( Opts) :-
 	jni_set_default_jvm_opts( N, Opts).
 
 %------------------------------------------------------------------------------
+
+%%  jpl_get_actual_jvm_opts(-Opts:list(atom)) is semidet.
+%
+%   Returns (as a list of atoms) the options with which the JVM was initialised
+%   (fails if a JVM has not yet been started).
 
 jpl_get_actual_jvm_opts( Opts) :-
 	jni_get_actual_jvm_opts( Opts).
@@ -123,7 +143,8 @@ jpl_assert_policy( jpl_method_spec_is_cached(_), YN) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_tidy_iref_type_cache( +Iref) :-
+%%  jpl_tidy_iref_type_cache(+Iref) is det.
+%
 %   delete the cached type info, if any, under Iref;
 %   called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
 
@@ -134,7 +155,8 @@ jpl_tidy_iref_type_cache( Iref) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_call(+X, +MethodSpec, +Params, -Result) :-
+%%  jpl_call(+X, +MethodSpec, +Params, -Result) is det.
+%
 %   X should be:
 %     an object reference
 %       (for static or instance methods)
@@ -221,13 +243,12 @@ jpl_call(X, Mspec, Params, R) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_call_instance(+ObjectType, +Object, +MethodName, Params,
-%%			  ActualParamTypes, Arity, -Result)
+%%  jpl_call_instance(+ObjectType, +Object, +MethodName, +Params, +ActualParamTypes, +Arity, -Result)
 %
-%	call the MethodName-d method  (instance   or  static)  of Object
-%	(which is of ObjectType),  which   most  specifically applies to
-%	Params,  which  we  have   found    to   be   (respectively)  of
-%	ActualParamTypes, and of which there are Arity, yielding Result
+%   call the MethodName-d method  (instance   or  static)  of Object
+%   (which is of ObjectType),  which   most  specifically applies to
+%   Params,  which  we  have   found    to   be   (respectively)  of
+%   ActualParamTypes, and of which there are Arity, yielding Result
 
 jpl_call_instance(Type, Obj, Mname, Params, Taps, A, Rx) :-
 	findall(                    % get remaining details of all accessible methods of Obj's class (as denoted by Type)
@@ -268,14 +289,13 @@ jpl_call_instance(Type, Obj, Mname, Params, Taps, A, Rx) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_call_static(+ClassType, +ClassObject, +MethodName, Params,
-%%			ActualParamTypes, Arity, -Result)
+%%  jpl_call_static(+ClassType, +ClassObject, +MethodName, +Params, +ActualParamTypes, +Arity, -Result)
 %
-%	call the MethodName-d static method of   the  class (which is of
-%	ClassType, and which  is  represented   by  the  java.lang.Class
-%	instance ClassObject) which most specifically applies to Params,
-%	which we have found to   be  (respectively) of ActualParamTypes,
-%	and of which there are Arity, yielding Result
+%   call the MethodName-d static method of   the  class (which is of
+%   ClassType, and which  is  represented   by  the  java.lang.Class
+%   instance ClassObject) which most specifically applies to Params,
+%   which we have found to   be  (respectively) of ActualParamTypes,
+%   and of which there are Arity, yielding Result
 
 jpl_call_static(Type, ClassObj, Mname, Params, Taps, A, Rx) :-
 	findall(                    % get all accessible static methods of the class denoted by Type and ClassObj
@@ -313,7 +333,7 @@ jpl_call_static(Type, ClassObj, Mname, Params, Taps, A, Rx) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_call_instance_method(+Type, +ClassObject, +MethodID, +FormalParamTypes, +Params, -Result) :-
+%%  jpl_call_instance_method(+Type, +ClassObject, +MethodID, +FormalParamTypes, +Params, -Result)
 
 jpl_call_instance_method(void, Class, MID, Tfps, Ps, R) :-
 	jCallVoidMethod(Class, MID, Tfps, Ps),
@@ -351,7 +371,7 @@ jpl_call_instance_method(class(_,_), Class, MID, Tfps, Ps, R) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_call_static_method(+Type, +ClassObject, +MethodID, +FormalParamTypes, +Params, -Result) :-
+%% jpl_call_static_method(+Type, +ClassObject, +MethodID, +FormalParamTypes, +Params, -Result)
 
 jpl_call_static_method(void, Class, MID, Tfps, Ps, R) :-
 	jCallStaticVoidMethod(Class, MID, Tfps, Ps),
@@ -413,7 +433,7 @@ jpl_fergus_greater(z3(_,_,Tps1), z3(_,_,Tps2)) :-
 
 %type   jpl_fergus_is_the_greatest(list(T), T)
 
-%%	jpl_fergus_is_the_greatest(Xs, GreatestX)
+%%	jpl_fergus_is_the_greatest(+Xs, -GreatestX)
 %
 %	Xs is a list of things  for which jpl_fergus_greater/2 defines a
 %	partial ordering; GreatestX is one of  those, than which none is
@@ -430,7 +450,7 @@ jpl_fergus_is_the_greatest([X|Xs], Greatest) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_get(+X, +Fspec, -V)
+%%  jpl_get(+X, +Fspec, -V) is det.
 %
 %   X can be:
 %     * a classname, a descriptor, or an (object or array) type
@@ -496,12 +516,12 @@ jpl_get(X, Fspec, V) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_get_static(+Type, +ClassObject, +FieldName, -Value)
+%%  jpl_get_static(+Type, +ClassObject, +FieldName, -Value) is det.
 %
-%	ClassObject is an instance of   java.lang.Class which represents
-%	the same class as Type; Value   (Vx below) is guaranteed unbound
-%	on entry, and will, before exit,   be unified with the retrieved
-%	value
+%   ClassObject is an instance of   java.lang.Class which represents
+%   the same class as Type; Value   (Vx below) is guaranteed unbound
+%   on entry, and will, before exit,   be unified with the retrieved
+%   value
 
 jpl_get_static(Type, ClassObj, Fname, Vx) :-
 	(   atom(Fname)             % assume it's a field name
@@ -533,7 +553,7 @@ jpl_get_static(Type, ClassObj, Fname, Vx) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_get_instance(+Type, +Type, +Object, +FieldSpecifier, -Value) :-
+%%  jpl_get_instance(+Type, +Type, +Object, +FieldSpecifier, -Value) is det.
 
 jpl_get_instance(class(_,_), Type, Obj, Fname, Vx) :-
 	(   atom(Fname)                 % the usual case
@@ -617,14 +637,14 @@ jpl_get_instance(array(ElementType), _, Array, Fspec, Vx) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_get_array_element(+ElementType, +Array, +Index, -Vc)
+%%  jpl_get_array_element(+ElementType, +Array, +Index, -Vc) is det.
 %
-%	Array is (a  reference  to)  an   array  of  ElementType;  Vc is
-%	(unified with a JPL repn  of)   its  Index-th  (numbered from 0)
-%	element Java values are now  converted   to  Prolog terms within
-%	foreign code
+%   Array is (a  reference  to)  an   array  of  ElementType;  Vc is
+%   (unified with a JPL repn  of)   its  Index-th  (numbered from 0)
+%   element Java values are now  converted   to  Prolog terms within
+%   foreign code
 %
-%	@tbd	more of this could be done within foreign code ...
+%   @tbd	more of this could be done within foreign code ...
 
 jpl_get_array_element(Type, Array, Index, Vc) :-
 	(   (   Type = class(_,_)
@@ -642,9 +662,9 @@ jpl_get_array_element(Type, Array, Index, Vc) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_get_array_elements(+ElementType, +Array, +N, +M, -Vs)
+%%  jpl_get_array_elements(+ElementType, +Array, +N, +M, -Vs)
 %
-%	serves only jpl_get_instance Vs will always be unbound on entry
+%   serves only jpl_get_instance Vs will always be unbound on entry
 
 jpl_get_array_elements(ElementType, Array, N, M, Vs) :-
 	(   (   ElementType = class(_,_)
@@ -679,14 +699,14 @@ jpl_get_instance_field(array(_), Obj, FieldID, V) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs)
+%%  jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs) is det.
 %
-%	Array should be a (zero-based) array   of  some object (array or
-%	non-array)  type;  LoIndex  is  an  integer,   0  =<  LoIndex  <
-%	length(Array); HiIndex is an  integer,   LoIndex-1  =< HiIndex <
-%	length(Array); at call, Vcs will be   unbound; at exit, Vcs will
-%	be  a  list   of   (references    to)   the   array's   elements
-%	[LoIndex..HiIndex] inclusive
+%   Array should be a (zero-based) array   of  some object (array or
+%   non-array)  type;  LoIndex  is  an  integer,   0  =<  LoIndex  <
+%   length(Array); HiIndex is an  integer,   LoIndex-1  =< HiIndex <
+%   length(Array); at call, Vcs will be   unbound; at exit, Vcs will
+%   be  a  list   of   (references    to)   the   array's   elements
+%   [LoIndex..HiIndex] inclusive
 
 jpl_get_object_array_elements(Array, Lo, Hi, Vcs) :-
 	(   Lo =< Hi
@@ -699,12 +719,12 @@ jpl_get_object_array_elements(Array, Lo, Hi, Vcs) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs)
+%%  jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs) is det.
 %
-%	Array  should  be  a  (zero-based)  Java  array  of  (primitive)
-%	ElementType; Vcs should be unbound on entry, and on exit will be
-%	a list of (JPL representations of   the  values of) the elements
-%	[LoIndex..HiIndex] inclusive
+%   Array  should  be  a  (zero-based)  Java  array  of  (primitive)
+%   ElementType; Vcs should be unbound on entry, and on exit will be
+%   a list of (JPL representations of   the  values of) the elements
+%   [LoIndex..HiIndex] inclusive
 
 jpl_get_primitive_array_elements(ElementType, Array, Lo, Hi, Vcs) :-
 	Size is Hi-Lo+1,
@@ -761,7 +781,7 @@ jpl_get_static_field(array(_), Array, FieldID, V) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_new(+X, +Params, -V)
+%%  jpl_new(+X, +Params, -V) is det.
 %
 %   X can be:
 %    * an atomic classname
@@ -822,7 +842,8 @@ jpl_new(X, Params, V) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_new_1(+Tx, +Params, -Vx) :-
+%%  jpl_new_1(+Tx, +Params, -Vx)
+%
 %   (serves only jpl_new/3)
 %
 %   Tx can be:
@@ -961,7 +982,9 @@ jpl_new_1( T, _, _) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_new_array(+ElementType, +Length, -NewArray) :-
+%%  jpl_new_array(+ElementType, +Length, -NewArray) is det.
+%
+%   binds NewArray to a jref to a newly created Java array of ElementType and Length
 
 jpl_new_array(boolean, Len, A) :-
 	jNewBooleanArray(Len, A).
@@ -997,8 +1020,9 @@ jpl_new_array(class(Ps,Cs), Len, A) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_set(+X, +Fspec, +V) :-
-%   basically, sets the Fspec-th field of class or object X to value V
+%%  jpl_set(+X, +Fspec, +V) is det.
+%
+%   sets the Fspec-th field of class or object X to value V
 %   iff it is assignable
 %
 %   X can be:
@@ -1064,7 +1088,8 @@ jpl_set(X, Fspec, V) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_set_instance(+Type, +Type, +ObjectReference, +FieldName, +Value) :-
+%%  jpl_set_instance(+Type, +Type, +ObjectReference, +FieldName, +Value) is det.
+%
 %   ObjectReference is a JPL reference to a Java object
 %   of the class denoted by Type (which is passed twice for first agument indexing);
 %   FieldName should name a public, non-final (static or non-static) field of this object,
@@ -1116,7 +1141,6 @@ jpl_set_instance(class(_,_), Type, Obj, Fname, V) :-    % a non-array object
 		    context(jpl_set/3,
 			    'more than one public field of the object has this name (this should not happen)')))
 	).
-
 
 jpl_set_instance(array(Type), _, Obj, Fspec, V) :-
 	(   is_list(V)                  % a list of array element values
@@ -1187,7 +1211,8 @@ jpl_set_instance(array(Type), _, Obj, Fspec, V) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_set_static(+Type, +ClassObj, +FieldName, +Value) :-
+%%  jpl_set_static(+Type, +ClassObj, +FieldName, +Value) is det.
+%
 %   we can rely on:
 %       Type being a class/2 type representing some accessible class
 %       ClassObj being an instance of java.lang.Class which represents the same class as Type
@@ -1243,12 +1268,12 @@ jpl_set_static(Type, ClassObj, Fname, V) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_set_array(+ElementType, +Array, +Offset, +DatumQty, +Datums)
+%%  jpl_set_array(+ElementType, +Array, +Offset, +DatumQty, +Datums) is det.
 %
-%	Datums, of which there are DatumQty,   are stashed in successive
-%	elements of Array which is an   array of ElementType starting at
-%	the      Offset-th      (numbered      from       0)      throws
-%	error(type_error(acyclic,_),context(jpl_datum_to_type/2,_))
+%   Datums, of which there are DatumQty,   are stashed in successive
+%   elements of Array which is an   array of ElementType starting at
+%   the      Offset-th      (numbered      from       0)      throws
+%   error(type_error(acyclic,_),context(jpl_datum_to_type/2,_))
 
 jpl_set_array(T, A, N, I, Ds) :-
 	(   jpl_datums_to_types(Ds, Tds)        % most specialised types of given values
@@ -1288,12 +1313,13 @@ jpl_set_array(T, A, N, I, Ds) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_set_array_1(+Values, +Type, +BufferIndex, +BufferPointer)
+%%  jpl_set_array_1(+Values, +Type, +BufferIndex, +BufferPointer) is det.
 %
-%	successive members of Values  are   stashed  as (primitive) Type
-%	from the BufferIndex-th element (numbered from 0) onwards of the
-%	buffer indicated by BufferPointer NB  this   could  be done more
-%	efficiently (?) within foreign code...
+%   successive members of Values  are   stashed  as (primitive) Type
+%   from the BufferIndex-th element (numbered from 0) onwards of the
+%   buffer indicated by BufferPointer
+%
+%   NB  this   could  be done more efficiently (?) within foreign code...
 
 jpl_set_array_1([], _, _, _).
 jpl_set_array_1([V|Vs], Tprim, Ib, Bp) :-
@@ -1323,10 +1349,10 @@ jpl_set_elements(double, Obj, N, I, Bp) :-
 
 %------------------------------------------------------------------------------
 
-%%	jpl_set_instance_field(+Type, +Obj, +FieldID, +V)
+%%  jpl_set_instance_field(+Type, +Obj, +FieldID, +V) is det.
 %
-%	we can rely on Type, Obj and FieldID being valid, and on V being
-%	assignable (if V is a quoted term then it is converted here)
+%   we can rely on Type, Obj and FieldID being valid, and on V being
+%   assignable (if V is a quoted term then it is converted here)
 
 jpl_set_instance_field(boolean, Obj, FieldID, V) :-
 	jSetBooleanField(Obj, FieldID, V).
@@ -1355,7 +1381,8 @@ jpl_set_instance_field(array(_), Obj, FieldID, V) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_set_static_field(+Type, +ClassObj, +FieldID, +V) :-
+%%  jpl_set_static_field(+Type, +ClassObj, +FieldID, +V)
+%
 %   we can rely on Type, ClassObj and FieldID being valid,
 %   and on V being assignable (if V is a quoted term then it is converted here)
 
@@ -1395,7 +1422,8 @@ jpl_set_static_field(array(_), Obj, FieldID, V) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_z3s_to_most_specific_z3(+Zs, -Z) :-
+%%  jpl_z3s_to_most_specific_z3(+Zs, -Z)
+%
 %   Zs is a list of arity-matching, type-suitable z3(I,MID,Tfps)
 %   Z is the single most specific element of Zs,
 %   i.e. that than which no other z3/3 has a more specialised signature;
@@ -1406,7 +1434,8 @@ jpl_z3s_to_most_specific_z3(Zs, Z) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_z5s_to_most_specific_z5(+Zs, -Z) :-
+%%  jpl_z5s_to_most_specific_z5(+Zs, -Z)
+%
 %   Zs is a list of arity-matching, type-suitable z5(I,Mods,MID,Tr,Tfps)
 %   Z is the single most specific element of Zs,
 %   i.e. that than which no other z5/5 has a more specialised signature
@@ -1417,15 +1446,18 @@ jpl_z5s_to_most_specific_z5(Zs, Z) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_pl_lib_version(-VersionString) :-
-% jpl_pl_lib_version(-Major, -Minor, -Patch, -Status) :-
+%%  jpl_pl_lib_version(-VersionString)
+%%  jpl_pl_lib_version(-Major, -Minor, -Patch, -Status)
+%
+%   returns a version identifier for this version of jpl.pl,
+%   which 
 
 jpl_pl_lib_version(VersionString) :-
 	jpl_pl_lib_version(Major, Minor, Patch, Status),
 	atomic_list_concat([Major,'.',Minor,'.',Patch,'-',Status], VersionString).
 
 
-jpl_pl_lib_version(3, 1, 5, alpha).
+jpl_pl_lib_version(7, 0, 0, alpha).
 
 %------------------------------------------------------------------------------
 
