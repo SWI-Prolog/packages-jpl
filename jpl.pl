@@ -96,8 +96,8 @@ The library(jpl) provides a bidirectional interface to a Java Virtual Machine.
 %
 %   Returns (as a list of atoms) the options which will be passed to the JVM when it is initialised.
 
-jpl_get_default_jvm_opts( Opts) :-
-	jni_get_default_jvm_opts( Opts).
+jpl_get_default_jvm_opts(Opts) :-
+	jni_get_default_jvm_opts(Opts).
 
 %------------------------------------------------------------------------------
 
@@ -105,10 +105,10 @@ jpl_get_default_jvm_opts( Opts) :-
 %
 %   Replaces the default JVM initialisation options with those supplied.
 
-jpl_set_default_jvm_opts( Opts) :-
-	is_list( Opts),
-	length( Opts, N),
-	jni_set_default_jvm_opts( N, Opts).
+jpl_set_default_jvm_opts(Opts) :-
+	is_list(Opts),
+	length(Opts, N),
+	jni_set_default_jvm_opts(N, Opts).
 
 %------------------------------------------------------------------------------
 
@@ -117,29 +117,29 @@ jpl_set_default_jvm_opts( Opts) :-
 %   Returns (as a list of atoms) the options with which the JVM was initialised
 %   (fails if a JVM has not yet been started).
 
-jpl_get_actual_jvm_opts( Opts) :-
-	jni_get_actual_jvm_opts( Opts).
+jpl_get_actual_jvm_opts(Opts) :-
+	jni_get_actual_jvm_opts(Opts).
 
 %------------------------------------------------------------------------------
 
-jpl_assert( Fact) :-
-	(   jpl_assert_policy( Fact, yes)
-	->  assert( Fact)
+jpl_assert(Fact) :-
+	(   jpl_assert_policy(Fact, yes)
+	->  assert(Fact)
 	;   true
 	).
 
 %------------------------------------------------------------------------------
 
-jpl_assert_policy( jpl_field_spec_cache(_,_,_,_,_,_), yes).
-jpl_assert_policy( jpl_method_spec_cache(_,_,_,_,_,_,_,_), yes).
-jpl_assert_policy( jpl_class_tag_type_cache(_,_), yes).
-jpl_assert_policy( jpl_classname_type_cache(_,_), yes).
-jpl_assert_policy( jpl_iref_type_cache(_,_), no).   % must correspond to JPL_CACHE_TYPE_OF_REF in jpl.c
+jpl_assert_policy(jpl_field_spec_cache(_,_,_,_,_,_), yes).
+jpl_assert_policy(jpl_method_spec_cache(_,_,_,_,_,_,_,_), yes).
+jpl_assert_policy(jpl_class_tag_type_cache(_,_), yes).
+jpl_assert_policy(jpl_classname_type_cache(_,_), yes).
+jpl_assert_policy(jpl_iref_type_cache(_,_), no).   % must correspond to JPL_CACHE_TYPE_OF_REF in jpl.c
 
-jpl_assert_policy( jpl_field_spec_is_cached(_), YN) :-
-	jpl_assert_policy( jpl_field_spec_cache(_,_,_,_,_,_), YN).
-jpl_assert_policy( jpl_method_spec_is_cached(_), YN) :-
-	jpl_assert_policy( jpl_method_spec_cache(_,_,_,_,_,_,_,_), YN).
+jpl_assert_policy(jpl_field_spec_is_cached(_), YN) :-
+	jpl_assert_policy(jpl_field_spec_cache(_,_,_,_,_,_), YN).
+jpl_assert_policy(jpl_method_spec_is_cached(_), YN) :-
+	jpl_assert_policy(jpl_method_spec_cache(_,_,_,_,_,_,_,_), YN).
 
 %------------------------------------------------------------------------------
 
@@ -148,9 +148,9 @@ jpl_assert_policy( jpl_method_spec_is_cached(_), YN) :-
 %   delete the cached type info, if any, under Iref;
 %   called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
 
-jpl_tidy_iref_type_cache( Iref) :-
-  % write( '[decaching types for iref='), write( Iref), write( ']'), nl,
-	retractall( jpl_iref_type_cache(Iref,_)),
+jpl_tidy_iref_type_cache(Iref) :-
+  % write('[decaching types for iref='), write(Iref), write(']'), nl,
+	retractall(jpl_iref_type_cache(Iref,_)),
 	true.
 
 %------------------------------------------------------------------------------
@@ -181,8 +181,8 @@ jpl_call(X, Mspec, Params, R) :-
 			context(jpl_call/4,
 				'1st arg must be bound to an object, classname, descriptor or type')))
 	;   atom(X)
-	->  (   jpl_classname_to_type( X, Type)     % does this attempt to load the class?
-	->  (   jpl_type_to_class( Type, ClassObj)
+	->  (   jpl_classname_to_type(X, Type)     % does this attempt to load the class?
+	->  (   jpl_type_to_class(Type, ClassObj)
 	    ->  Kind = static
 	    ;   throw(error(existence_error(class,X),
 			context(jpl_call/4,
@@ -193,7 +193,7 @@ jpl_call(X, Mspec, Params, R) :-
 	)
 	;   X = class(_,_)
 	->  Type = X,
-	    jpl_type_to_class( Type, ClassObj),
+	    jpl_type_to_class(Type, ClassObj),
 	    Kind = static
 	;   X = array(_)
 	->  throw(error(type_error(object_or_class,X),
@@ -220,7 +220,7 @@ jpl_call(X, Mspec, Params, R) :-
 	;   throw(error(type_error(method_params,Params),
 		    context(jpl_call/4, 'not all actual parameters are convertible to Java values or references')))
 	),
-	length( Params, A)
+	length(Params, A)
 	;   var(Params)
 	->  throw(error(instantiation_error,
 		    context(jpl_call/4, '3rd arg must be a proper list of actual parameters for the named method')))
@@ -233,7 +233,7 @@ jpl_call(X, Mspec, Params, R) :-
 	),
 	(   nonvar(R),
 	    R = {Term}  % yucky way of requesting Term->term conversion
-	->  (   jni_jref_to_term( Rx, TermX)    % fails if Rx isn't a JRef to a jpl.Term
+	->  (   jni_jref_to_term(Rx, TermX)    % fails if Rx isn't a JRef to a jpl.Term
 	->  Term = TermX
 	;   throw(error(type_error,
 			context(jpl_call/4, 'result is not a jpl.Term instance as required')))
@@ -474,7 +474,7 @@ jpl_fergus_is_the_greatest([X|Xs], Greatest) :-
 jpl_get(X, Fspec, V) :-
 	(   jpl_object_to_type(X, Type)
 	->  Obj = X,
-	    jpl_get_instance( Type, Type, Obj, Fspec, Vx)   % pass Type twice for FAI
+	    jpl_get_instance(Type, Type, Obj, Fspec, Vx)   % pass Type twice for FAI
 	;   var(X)
 	->  throw(error(instantiation_error,
 		    context(jpl_get/3,
@@ -482,16 +482,16 @@ jpl_get(X, Fspec, V) :-
 	;   jpl_is_type(X)          % e.g. class([java,lang],['String']), array(int)
 	->  Type = X,
 	    (   jpl_type_to_class(Type, ClassObj)
-	    ->  jpl_get_static( Type, ClassObj, Fspec, Vx)
-	    ;   jpl_type_to_classname( Type, Classname),
+	    ->  jpl_get_static(Type, ClassObj, Fspec, Vx)
+	    ;   jpl_type_to_classname(Type, Classname),
 		throw(error(existence_error(class,Classname),
 			    context(jpl_get/3,
 				    'the named class cannot be found')))
 	    )
 	;   atom(X)
-	->  (   jpl_classname_to_type( X, Type)     % does this attempt to load the class?
-	    ->  (   jpl_type_to_class( Type, ClassObj)
-		->  jpl_get_static( Type, ClassObj, Fspec, Vx)
+	->  (   jpl_classname_to_type(X, Type)     % does this attempt to load the class?
+	    ->  (   jpl_type_to_class(Type, ClassObj)
+		->  jpl_get_static(Type, ClassObj, Fspec, Vx)
 		;   throw(error(existence_error(class,X),
 				context(jpl_get/3,
 					'the named class cannot be found')))
@@ -506,7 +506,7 @@ jpl_get(X, Fspec, V) :-
 	),
 	(   nonvar(V),
 	    V = {Term}  % yucky way of requesting Term->term conversion
-	->  (   jni_jref_to_term( Vx, TermX)    % fails if Rx is not a JRef to a jpl.Term
+	->  (   jni_jref_to_term(Vx, TermX)    % fails if Rx is not a JRef to a jpl.Term
 	    ->  Term = TermX
 	    ;   throw(error(type_error,
 			    context(jpl_call/4, 'result is not a jpl.Term instance as required')))
@@ -832,7 +832,7 @@ jpl_new(X, Params, V) :-
 	jpl_new_1(Type, Params, Vx),
 	(   nonvar(V),
 	    V = {Term}  % yucky way of requesting Term->term conversion
-	->  (   jni_jref_to_term( Vx, TermX)    % fails if Rx is not a JRef to a jpl.Term
+	->  (   jni_jref_to_term(Vx, TermX)    % fails if Rx is not a JRef to a jpl.Term
 	    ->  Term = TermX
 	    ;   throw(error(type_error,
 			    context(jpl_call/4, 'result is not a jpl.Term instance as required')))
@@ -877,8 +877,8 @@ jpl_new_1(class(Ps,Cs), Params, Vx) :-
 	Z3s
 	),
 	(   Z3s == []               % no constructors which require the given qty of parameters?
-	->  jpl_type_to_classname( Tx, Cn),
-	(   jpl_call( Cx, isInterface, [], @(true))
+	->  jpl_type_to_classname(Tx, Cn),
+	(   jpl_call(Cx, isInterface, [], @(true))
 	->  throw(error(type_error(concrete_class,Cn),
 			context(jpl_new/3,
 				'cannot create instance of an interface')))
@@ -924,7 +924,7 @@ jpl_new_1(class(Ps,Cs), Params, Vx) :-
 	catch(
 	jNewObject(Cx, MID, Tfps, Params, Vx),
 	error(java_exception(@(_)), 'java.lang.InstantiationException'),
-	(   jpl_type_to_classname( Tx, Cn),
+	(   jpl_type_to_classname(Tx, Cn),
 	    throw(error(type_error(concrete_class,Cn),
 			context(jpl_new/3,
 				'cannot create instance of an abstract class')))
@@ -975,7 +975,7 @@ jpl_new_1(T, _Params, _Vx) :-       % doomed attempt to create new primitive typ
   %                         'when constructing a new instance of a primitive type, 2nd arg must either be an empty list (indicating that the default value of that type is required) or a list containing exactly one representation of a suitable value)')))
   % ).
 
-jpl_new_1( T, _, _) :-
+jpl_new_1(T, _, _) :-
 	throw(error(domain_error(jpl_type,T),
 		    context(jpl_new/3,
 			    '1st arg must denote a known or plausible type'))).
@@ -1069,9 +1069,9 @@ jpl_set(X, Fspec, V) :-
 	    )
 	->  Type = X
 	),
-	(   jpl_type_to_class( Type, ClassObj)      % ...whose Class object is available
+	(   jpl_type_to_class(Type, ClassObj)      % ...whose Class object is available
 	->  true
-	;   jpl_type_to_classname( Type, Classname),
+	;   jpl_type_to_classname(Type, Classname),
 	    throw(error(existence_error(class,Classname),
 		    context(jpl_set/3,
 			    'the class cannot be found')))
@@ -1121,14 +1121,14 @@ jpl_set_instance(class(_,_), Type, Obj, Fname, V) :-    % a non-array object
 	->  throw(error(permission_error(modify,final_field,Fname),
 		    context(jpl_set/3,
 			    'cannot assign a value to a final field (actually you could but I''ve decided not to let you)')))
-	;   jpl_datum_to_type( V, Tv)
-	->  (   jpl_type_fits_type( Tv, Tf)
+	;   jpl_datum_to_type(V, Tv)
+	->  (   jpl_type_fits_type(Tv, Tf)
 	    ->  (   member(static, Mods)
 		->  jpl_object_to_class(Obj, ClassObj),
 		    jpl_set_static_field(Tf, ClassObj, FID, V)
 		;   jpl_set_instance_field(Tf, Obj, FID, V)         % oughta be jpl_set_instance_field?
 		)
-	    ;   jpl_type_to_nicename( Tf, NNf),
+	    ;   jpl_type_to_nicename(Tf, NNf),
 		throw(error(type_error(NNf,V),
 		    context(jpl_set/3,
 			    'the value is not assignable to the named field of the class')))
@@ -2584,7 +2584,7 @@ jni_params_put_1([], _, [], _).
 jni_params_put_1([A|As], N, [Tjni|Ts], ParamBuf) :-     % type checking?
 	(   jni_type_to_xput_code(Tjni, Xc)
 	->  (       A = {Term}                              % a quoted general term?
-	->      jni_term_to_jref( Term, Ax)             % convert it to a @(Tag) ref to a new Term instance
+	->      jni_term_to_jref(Term, Ax)             % convert it to a @(Tag) ref to a new Term instance
 	;       A = Ax
 	),
 	jni_param_put(N, Xc, Ax, ParamBuf)              % foreign
@@ -3212,7 +3212,7 @@ jpl_servlet_byval(MM, CT, Ba) :-
 %   NB obsolete lemmas must be watched-out-for and removed
 
 jpl_cache_type_of_ref(T, @(Tag)) :-
-	(   jpl_assert_policy( jpl_iref_type_cache(_,_), no)
+	(   jpl_assert_policy(jpl_iref_type_cache(_,_), no)
 	->  true
 	;   \+ ground(T)                            % shouldn't happen (implementation error)
 	->  write('[jpl_cache_type_of_ref/2: arg 1 is not ground]'), nl,    % oughta throw an exception
@@ -3374,7 +3374,7 @@ jpl_classname_to_type(CN, T) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_classname_type_cache( -Classname, -Type) :-
+% jpl_classname_type_cache(-Classname, -Type) :-
 %   Classname is the atomic name of Type;
 %   NB may denote a class which cannot be found
 
@@ -3397,18 +3397,18 @@ jpl_datum_to_type(D, T) :-
 	->  true
 	;   jpl_ref_to_type(D, T)
 	->  true
-	;   nonvar( D),
+	;   nonvar(D),
 	D = {Term}
 	->  (   cyclic_term(Term)
 	->  throw(error(type_error(acyclic,Term),
 			context(jpl_datum_to_type/2,'must be acyclic')))
-	;   atom( Term)
+	;   atom(Term)
 	->  T = class([jpl],['Atom'])
-	;   integer( Term)
+	;   integer(Term)
 	->  T = class([jpl],['Integer'])
-	;   float( Term)
+	;   float(Term)
 	->  T = class([jpl],['Float'])
-	;   var( Term)
+	;   var(Term)
 	->  T = class([jpl],['Variable'])
 	;   T = class([jpl],['Compound'])
 	)
@@ -3999,7 +3999,7 @@ jpl_type_to_class(T, @(Tag)) :-
 %cf jpl_type_to_classname/2
 
 jpl_type_to_nicename(T, NN) :-
-	(   jpl_primitive_type( T)
+	(   jpl_primitive_type(T)
 	->  NN = T
 	;   (   phrase(jpl_type_classname_1(T), Cs)
 	->  atom_codes(CNx, Cs),                                % green commit to first solution
@@ -4066,30 +4066,30 @@ jpl_type_to_super_type(T, Tx) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_preferred_concrete_type( +Type, -ConcreteType) :-
+% jpl_type_to_preferred_concrete_type(+Type, -ConcreteType) :-
 %   Type must be a canonical JPL type,
 %   possibly a pseudo (inferred) type such as char_int or array(char_byte);
 %   ConcreteType is the preferred concrete (Java-instantiable) type;
 %   introduced 16/Apr/2005 to fix bug whereby jpl_list_to_array([1,2,3],A) failed
 %   because the lists's inferred type of array(char_byte) is not Java-instantiable
 
-jpl_type_to_preferred_concrete_type( T, Tc) :-
-	(   jpl_type_to_preferred_concrete_type_1( T, TcX)
+jpl_type_to_preferred_concrete_type(T, Tc) :-
+	(   jpl_type_to_preferred_concrete_type_1(T, TcX)
 	->  Tc = TcX
 	).
 
 %------------------------------------------------------------------------------
 
-jpl_type_to_preferred_concrete_type_1( char_int, int).
+jpl_type_to_preferred_concrete_type_1(char_int, int).
 
-jpl_type_to_preferred_concrete_type_1( char_short, short).
+jpl_type_to_preferred_concrete_type_1(char_short, short).
 
-jpl_type_to_preferred_concrete_type_1( char_byte, byte).
+jpl_type_to_preferred_concrete_type_1(char_byte, byte).
 
-jpl_type_to_preferred_concrete_type_1( array(T), array(Tc)) :-
-	jpl_type_to_preferred_concrete_type_1( T, Tc).
+jpl_type_to_preferred_concrete_type_1(array(T), array(Tc)) :-
+	jpl_type_to_preferred_concrete_type_1(T, Tc).
 
-jpl_type_to_preferred_concrete_type_1( T, T).
+jpl_type_to_preferred_concrete_type_1(T, T).
 
 %------------------------------------------------------------------------------
 
@@ -4219,7 +4219,7 @@ jpl_array_to_list(A, Es) :-
 jpl_datums_to_array(Ds, A) :-
 	ground(Ds),
 	jpl_datums_to_most_specific_common_ancestor_type(Ds, T),    % T may be pseudo e.g. char_byte
-	jpl_type_to_preferred_concrete_type( T, Tc),    % bugfix added 16/Apr/2005
+	jpl_type_to_preferred_concrete_type(T, Tc),    % bugfix added 16/Apr/2005
 	jpl_new(array(Tc), Ds, A).
 
 %------------------------------------------------------------------------------
@@ -4307,7 +4307,7 @@ jpl_list_to_array(Ds, A) :-
 
 jpl_terms_to_array(Ts, A) :-
 	jpl_terms_to_array_1(Ts, Ts2),
-	jpl_new( array(class([jpl],['Term'])), Ts2, A).
+	jpl_new(array(class([jpl],['Term'])), Ts2, A).
 
 %------------------------------------------------------------------------------
 
