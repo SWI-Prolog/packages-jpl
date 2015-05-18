@@ -92,68 +92,194 @@ The library(jpl) provides a bidirectional interface to a Java Virtual Machine.
 
 %------------------------------------------------------------------------------
 
-%! jpl_get_default_jvm_opts(-Opts:list(atom)) is det
+%! jpl_new(+X, +Params, -V) is det.
 %
-% Returns (as a list of atoms) the options which will be passed to the JVM when it is initialised,
-% e.g. =|['-Xrs']|=
-
-jpl_get_default_jvm_opts(Opts) :-
-    jni_get_default_jvm_opts(Opts).
-
-%------------------------------------------------------------------------------
-
-%! jpl_set_default_jvm_opts(+Opts:list(atom)) is det
+%   X can be:
+%  * an atomic classname, e.g. =|'java.lang.String'|=
+%  * or an atomic descriptor, e.g. =|'[I'|= or =|'Ljava.lang.String;'|=
+%  * or a suitable type, i.e. any class(_,_) or array(_), e.g. class([java,util],['Date'])
 %
-%   Replaces the default JVM initialisation options with those supplied.
-
-jpl_set_default_jvm_opts(Opts) :-
-    is_list(Opts),
-    length(Opts, N),
-    jni_set_default_jvm_opts(N, Opts).
-
-%------------------------------------------------------------------------------
-
-%!	jpl_get_actual_jvm_opts(-Opts:list(atom)) is semidet
+% If X is an object (non-array)  type   or  descriptor and Params is a
+%   list of values or references, then V  is the result of an invocation
+%   of  that  type's  most  specifically-typed    constructor  to  whose
+%   respective formal parameters the actual   Params are assignable (and
+% assigned).
 %
-% Returns (as a list of atoms) the options with which the JVM was initialised.
+% If X is an array type or descriptor   and Params is a list of values
+%   or references, each of which is   (independently)  assignable to the
+%   array element type, then V is a  new   array  of as many elements as
+%   Params has members,  initialised  with   the  respective  members of
+% Params.
 %
-% Fails silently if a JVM has not yet been started, and can thus be used to test for this.
+% If X is an array type  or   descriptor  and Params is a non-negative
+%   integer N, then V is a new array of that type, with N elements, each
+% initialised to Java's appropriate default value for the type.
+%
+%   If V is {Term} then we attempt to convert a new jpl.Term instance to
+%   a corresponding term; this is of  little   obvious  use here, but is
+% consistent with jpl_call/4 and jpl_get/3.
 
-jpl_get_actual_jvm_opts(Opts) :-
-    jni_get_actual_jvm_opts(Opts).
-
-%------------------------------------------------------------------------------
-
-jpl_assert(Fact) :-
-    (   jpl_assert_policy(Fact, yes)
-    ->  assert(Fact)
-    ;   true
+jpl_new(X, Params, V) :-
+    (   var(X)
+    ->  throw(error(instantiation_error,context(jpl_new/3,'1st arg must be bound to a classname, descriptor or object type')))
+    ;   jpl_is_type(X)                  % NB only class(_,_) or array(_)
+    ->  Type = X
+    ;   atom(X)                 % e.g. 'java.lang.String', '[L', 'boolean'
+    ->  (   jpl_classname_to_type(X, Type)
+        ->  true
+        ;   throw(error(domain_error(classname,X),context(jpl_new/3,'if 1st arg is an atom, it must be a classname or descriptor')))
+        )
+    ;   throw(error(type_error(instantiable,X),context(jpl_new/3,'1st arg must be a classname, descriptor or object type')))
+    ),
+    jpl_new_1(Type, Params, Vx),
+    (   nonvar(V),
+        V = {Term}  % yucky way of requesting Term->term conversion
+    ->  (   jni_jref_to_term(Vx, TermX)    % fails if Rx is not a JRef to a jpl.Term
+        ->  Term = TermX
+        ;   throw(error(type_error,context(jpl_call/4, 'result is not a jpl.Term instance as required')))
+        )
+    ;   V = Vx
     ).
 
 %------------------------------------------------------------------------------
 
-jpl_assert_policy(jpl_field_spec_cache(_,_,_,_,_,_), yes).
-jpl_assert_policy(jpl_method_spec_cache(_,_,_,_,_,_,_,_), yes).
-jpl_assert_policy(jpl_class_tag_type_cache(_,_), yes).
-jpl_assert_policy(jpl_classname_type_cache(_,_), yes).
-jpl_assert_policy(jpl_iref_type_cache(_,_), no).   % must correspond to JPL_CACHE_TYPE_OF_REF in jpl.c
-jpl_assert_policy(jpl_field_spec_is_cached(_), YN) :-
-    jpl_assert_policy(jpl_field_spec_cache(_,_,_,_,_,_), YN).
-jpl_assert_policy(jpl_method_spec_is_cached(_), YN) :-
-    jpl_assert_policy(jpl_method_spec_cache(_,_,_,_,_,_,_,_), YN).
+%%  jpl_new_1(+Tx, +Params, -Vx)
+%
+%   (serves only jpl_new/3)
+%
+%   Tx can be:
+%     a class(_,_) or array(_) type;
+%
+%   Params must be:
+%     a proper list of constructor parameters
+%
+%   at exit, Vx is bound to a JPL reference to a new, initialised instance of Tx
+
+jpl_new_1(class(Ps,Cs), Params, Vx) :-
+    !,                                      % green (see below)
+    Tx = class(Ps,Cs),
+    (   var(Params)
+    ->  throw(error(instantiation_error,context(jpl_new/3,'2nd arg must be a proper list of valid parameters for a constructor')))
+    ;   \+ is_list(Params)
+    ->  throw(error(type_error(list,Params),context(jpl_new/3,'2nd arg must be a proper list of valid parameters for a constructor')))
+    ;   true
+    ),
+    length(Params, A),          % the "arity" of the required constructor
+    jpl_type_to_class(Tx, Cx),  % throws Java exception if class is not found
+    N = '<init>',               % JNI's constructor naming convention for GetMethodID()
+    Tr = void,                  % all constructors have this return "type"
+    findall(
+        z3(I,MID,Tfps),
+        jpl_method_spec(Tx, I, N, A, _Mods, MID, Tr, Tfps), % cached
+        Z3s
+    ),
+    (   Z3s == []               % no constructors which require the given qty of parameters?
+    ->  jpl_type_to_classname(Tx, Cn),
+        (   jpl_call(Cx, isInterface, [], @(true))
+        ->  throw(error(type_error(concrete_class,Cn),context(jpl_new/3,'cannot create instance of an interface')))
+        ;   throw(error(existence_error(constructor,Cn/A),context(jpl_new/3,'no constructor found with the corresponding quantity of parameters')))
+        )
+    ;   (   catch(
+                jpl_datums_to_types(Params, Taps),  % infer actual parameter types
+                error(type_error(acyclic,Te),context(jpl_datum_to_type/2,Msg)),
+                throw(error(type_error(acyclic,Te),context(jpl_new/3,Msg)))
+            )
+        ->  true
+        ;   throw(error(domain_error(list(jpl_datum),Params),context(jpl_new/3,'one or more of the actual parameters is not a valid representation of any Java value or object')))
+        ),
+        findall(
+            z3(I,MID,Tfps),                 % select constructors to which actual parameters are assignable
+            (   member(z3(I,MID,Tfps), Z3s),
+                jpl_types_fit_types(Taps, Tfps) % assignability test: actual parameter types "fit" formal parameter types?
+            ),
+            Z3sA
+        ),
+        (   Z3sA == []                      % no type-assignable constructors?
+        ->  (   Z3s = [_]
+            ->  throw(error(existence_error(constructor,Tx/A),context(jpl_new/3,'the actual parameters are not assignable to the formal parameter types of the only constructor which takes this qty of parameters')))
+            ;   throw(error(type_error(constructor_args,Params),context(jpl_new/3,'the actual parameters are not assignable to the formal parameter types of any of the constructors which take this qty of parameters')))
+            )
+        ;   Z3sA = [z3(I,MID,Tfps)]
+        ->  true
+        ;   jpl_z3s_to_most_specific_z3(Z3sA, z3(I,MID,Tfps))
+        ->  true
+        ;   throw(error(type_error(constructor_params,Params),context(jpl_new/3,'more than one most-specific matching constructor (shouldn''t happen)')))
+        )
+    ),
+    catch(
+        jNewObject(Cx, MID, Tfps, Params, Vx),
+        error(java_exception(@(_)), 'java.lang.InstantiationException'),
+        (   jpl_type_to_classname(Tx, Cn),
+            throw(error(type_error(concrete_class,Cn),context(jpl_new/3,'cannot create instance of an abstract class')))
+        )
+    ),
+    jpl_cache_type_of_ref(Tx, Vx).          % since we know it
+jpl_new_1(array(T), Params, Vx) :-
+    !,
+    (   var(Params)
+    ->  throw(error(instantiation_error,context(jpl_new/3,'when constructing a new array, 2nd arg must either be a non-negative integer (denoting the required array length) or a proper list of valid element values')))
+    ;   integer(Params)         % integer I -> array[0..I-1] of default values
+    ->  (   Params >= 0
+        ->  Len is Params
+        ;   throw(error(domain_error(array_length,Params),context(jpl_new/3,'when constructing a new array, if the 2nd arg is an integer (denoting the required array length) then it must be non-negative')))
+        )
+    ;   is_list(Params)     % [V1,..VN] -> array[0..N-1] of respective values
+    ->  length(Params, Len)
+    ),
+    jpl_new_array(T, Len, Vx), % NB may throw out-of-memory exception
+    (   nth0(I, Params, Param),     % nmember fails silently when Params is integer
+        jpl_set(Vx, I, Param),
+        fail
+    ;   true
+    ),
+    jpl_cache_type_of_ref(array(T), Vx).   % since we know it
+jpl_new_1(T, _Params, _Vx) :-       % doomed attempt to create new primitive type instance (formerly a dubious completist feature :-)
+    jpl_primitive_type(T),
+    !,
+    throw(error(domain_error(object_type,T),context(jpl_new/3,'cannot construct an instance of a primitive type'))).
+  % (   var(Params)
+  % ->  throw(error(instantiation_error,
+  %                 context(jpl_new/3,
+  %                         'when constructing a new instance of a primitive type, 2nd arg must be bound (to a representation of a suitable value)')))
+  % ;   Params == []
+  % ->  jpl_primitive_type_default_value(T, Vx)
+  % ;   Params = [Param]
+  % ->  jpl_primitive_type_term_to_value(T, Param, Vx)
+  % ;   throw(error(domain_error(constructor_args,Params),
+  %                 context(jpl_new/3,
+  %                         'when constructing a new instance of a primitive type, 2nd arg must either be an empty list (indicating that the default value of that type is required) or a list containing exactly one representation of a suitable value)')))
+  % ).
+jpl_new_1(T, _, _) :-
+    throw(error(domain_error(jpl_type,T),context(jpl_new/3,'1st arg must denote a known or plausible type'))).
 
 %------------------------------------------------------------------------------
 
-%! jpl_tidy_iref_type_cache(+Iref) is det.
+%%  jpl_new_array(+ElementType, +Length, -NewArray) is det.
 %
-% Delete the cached type info, if any, under Iref.
-%
-% Called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
+%   binds NewArray to a jref to a newly created Java array of ElementType and Length
 
-jpl_tidy_iref_type_cache(Iref) :-
-  % write('[decaching types for iref='), write(Iref), write(']'), nl,
-    retractall(jpl_iref_type_cache(Iref,_)),
-    true.
+jpl_new_array(boolean, Len, A) :-
+    jNewBooleanArray(Len, A).
+jpl_new_array(byte, Len, A) :-
+    jNewByteArray(Len, A).
+jpl_new_array(char, Len, A) :-
+    jNewCharArray(Len, A).
+jpl_new_array(short, Len, A) :-
+    jNewShortArray(Len, A).
+jpl_new_array(int, Len, A) :-
+    jNewIntArray(Len, A).
+jpl_new_array(long, Len, A) :-
+    jNewLongArray(Len, A).
+jpl_new_array(float, Len, A) :-
+    jNewFloatArray(Len, A).
+jpl_new_array(double, Len, A) :-
+    jNewDoubleArray(Len, A).
+jpl_new_array(array(T), Len, A) :-
+    jpl_type_to_class(array(T), C),
+    jNewObjectArray(Len, C, @(null), A).        % initialise each element to null
+jpl_new_array(class(Ps,Cs), Len, A) :-
+    jpl_type_to_class(class(Ps,Cs), C),
+    jNewObjectArray(Len, C, @(null), A).
 
 %------------------------------------------------------------------------------
 
@@ -366,46 +492,6 @@ jpl_call_static_method(class(_,_), Class, MID, Tfps, Ps, R) :-
 
 %------------------------------------------------------------------------------
 
-%type   jpl_fergus_find_candidate(list(T), T, T, list(T))
-
-jpl_fergus_find_candidate([], Candidate, Candidate, []).
-jpl_fergus_find_candidate([X|Xs], Candidate0, Candidate, Rest) :-
-    (   jpl_fergus_greater(X, Candidate0)
-    ->  Candidate1 = X,
-        Rest = [Candidate0|Rest1]
-    ;   Candidate1 = Candidate0,
-        Rest = [X|Rest1]
-    ),
-    jpl_fergus_find_candidate(Xs, Candidate1, Candidate, Rest1).
-
-%------------------------------------------------------------------------------
-
-jpl_fergus_greater(z5(_,_,_,_,Tps1), z5(_,_,_,_,Tps2)) :-
-    jpl_types_fit_types(Tps1, Tps2).
-jpl_fergus_greater(z3(_,_,Tps1), z3(_,_,Tps2)) :-
-    jpl_types_fit_types(Tps1, Tps2).
-
-%------------------------------------------------------------------------------
-
-%type   jpl_fergus_is_the_greatest(list(T), T)
-
-%%    jpl_fergus_is_the_greatest(+Xs, -GreatestX)
-%
-%    Xs is a list of things  for which jpl_fergus_greater/2 defines a
-%    partial ordering; GreatestX is one of  those, than which none is
-%    greater; fails if there is more   than  one such; this algorithm
-%    was contributed to c.l.p by Fergus   Henderson in response to my
-%    "there must be a better way" challenge: there was, this is it
-
-jpl_fergus_is_the_greatest([X|Xs], Greatest) :-
-    jpl_fergus_find_candidate(Xs, X, Greatest, Rest),
-    forall(
-        member(R, Rest),
-        jpl_fergus_greater(Greatest, R)
-    ).
-
-%------------------------------------------------------------------------------
-
 %! jpl_get(+X, +Fspec, -V:datum) is det
 %
 % X can be
@@ -471,10 +557,10 @@ jpl_get(X, Fspec, V) :-
 
 %! jpl_get_static(+Type:type, +ClassObject:jref, +FieldName:atom, -Value:datum) is det
 %
-%   ClassObject is an instance of   java.lang.Class which represents
-%   the same class as Type; Value   (Vx below) is guaranteed unbound
-%   on entry, and will, before exit,   be unified with the retrieved
-%   value
+% ClassObject is an instance of   java.lang.Class which represents
+% the same class as Type; Value   (Vx below) is guaranteed unbound
+% on entry, and will, before exit,   be unified with the retrieved
+% value
 
 jpl_get_static(Type, ClassObj, Fname, Vx) :-
     (   atom(Fname)             % assume it's a field name
@@ -564,9 +650,9 @@ jpl_get_instance(array(ElementType), _, Array, Fspec, Vx) :-
 %! jpl_get_array_element(+ElementType:type, +Array:jref, +Index, -Vc) is det
 %
 % Array is a JPL reference to a Java array of ElementType;  Vc is
-%   (unified with a JPL repn  of)   its  Index-th  (numbered from 0)
-%   element Java values are now  converted   to  Prolog terms within
-%   foreign code
+% (unified with a JPL repn  of)   its  Index-th  (numbered from 0)
+% element Java values are now  converted   to  Prolog terms within
+% foreign code
 %
 % @tbd more of this could be done within foreign code
 
@@ -703,197 +789,6 @@ jpl_get_static_field(class(_,_), Array, FieldID, V) :-
     jGetStaticObjectField(Array, FieldID, V).
 jpl_get_static_field(array(_), Array, FieldID, V) :-
     jGetStaticObjectField(Array, FieldID, V).
-
-%------------------------------------------------------------------------------
-
-%! jpl_new(+X, +Params, -V) is det.
-%
-%   X can be:
-%  * an atomic classname, e.g. =|'java.lang.String'|=
-%  * or an atomic descriptor, e.g. =|'[I'|= or =|'Ljava.lang.String;'|=
-%  * or a suitable type, i.e. any class(_,_) or array(_), e.g. class([java,util],['Date'])
-%
-% If X is an object (non-array)  type   or  descriptor and Params is a
-%   list of values or references, then V  is the result of an invocation
-%   of  that  type's  most  specifically-typed    constructor  to  whose
-%   respective formal parameters the actual   Params are assignable (and
-% assigned).
-%
-% If X is an array type or descriptor   and Params is a list of values
-%   or references, each of which is   (independently)  assignable to the
-%   array element type, then V is a  new   array  of as many elements as
-%   Params has members,  initialised  with   the  respective  members of
-% Params.
-%
-% If X is an array type  or   descriptor  and Params is a non-negative
-%   integer N, then V is a new array of that type, with N elements, each
-% initialised to Java's appropriate default value for the type.
-%
-%   If V is {Term} then we attempt to convert a new jpl.Term instance to
-%   a corresponding term; this is of  little   obvious  use here, but is
-% consistent with jpl_call/4 and jpl_get/3.
-
-jpl_new(X, Params, V) :-
-    (   var(X)
-    ->  throw(error(instantiation_error,context(jpl_new/3,'1st arg must be bound to a classname, descriptor or object type')))
-    ;   jpl_is_type(X)                  % NB only class(_,_) or array(_)
-    ->  Type = X
-    ;   atom(X)                 % e.g. 'java.lang.String', '[L', 'boolean'
-    ->  (   jpl_classname_to_type(X, Type)
-        ->  true
-        ;   throw(error(domain_error(classname,X),context(jpl_new/3,'if 1st arg is an atom, it must be a classname or descriptor')))
-        )
-    ;   throw(error(type_error(instantiable,X),context(jpl_new/3,'1st arg must be a classname, descriptor or object type')))
-    ),
-    jpl_new_1(Type, Params, Vx),
-    (   nonvar(V),
-        V = {Term}  % yucky way of requesting Term->term conversion
-    ->  (   jni_jref_to_term(Vx, TermX)    % fails if Rx is not a JRef to a jpl.Term
-        ->  Term = TermX
-        ;   throw(error(type_error,context(jpl_call/4, 'result is not a jpl.Term instance as required')))
-        )
-    ;   V = Vx
-    ).
-
-%------------------------------------------------------------------------------
-
-%%  jpl_new_1(+Tx, +Params, -Vx)
-%
-%   (serves only jpl_new/3)
-%
-%   Tx can be:
-%     a class(_,_) or array(_) type;
-%
-%   Params must be:
-%     a proper list of constructor parameters
-%
-%   at exit, Vx is bound to a JPL reference to a new, initialised instance of Tx
-
-jpl_new_1(class(Ps,Cs), Params, Vx) :-
-    !,                                      % green (see below)
-    Tx = class(Ps,Cs),
-    (   var(Params)
-    ->  throw(error(instantiation_error,context(jpl_new/3,'2nd arg must be a proper list of valid parameters for a constructor')))
-    ;   \+ is_list(Params)
-    ->  throw(error(type_error(list,Params),context(jpl_new/3,'2nd arg must be a proper list of valid parameters for a constructor')))
-    ;   true
-    ),
-    length(Params, A),          % the "arity" of the required constructor
-    jpl_type_to_class(Tx, Cx),  % throws Java exception if class is not found
-    N = '<init>',               % JNI's constructor naming convention for GetMethodID()
-    Tr = void,                  % all constructors have this return "type"
-    findall(
-        z3(I,MID,Tfps),
-        jpl_method_spec(Tx, I, N, A, _Mods, MID, Tr, Tfps), % cached
-        Z3s
-    ),
-    (   Z3s == []               % no constructors which require the given qty of parameters?
-    ->  jpl_type_to_classname(Tx, Cn),
-        (   jpl_call(Cx, isInterface, [], @(true))
-        ->  throw(error(type_error(concrete_class,Cn),context(jpl_new/3,'cannot create instance of an interface')))
-        ;   throw(error(existence_error(constructor,Cn/A),context(jpl_new/3,'no constructor found with the corresponding quantity of parameters')))
-        )
-    ;   (   catch(
-                jpl_datums_to_types(Params, Taps),  % infer actual parameter types
-                error(type_error(acyclic,Te),context(jpl_datum_to_type/2,Msg)),
-                throw(error(type_error(acyclic,Te),context(jpl_new/3,Msg)))
-            )
-        ->  true
-        ;   throw(error(domain_error(list(jpl_datum),Params),context(jpl_new/3,'one or more of the actual parameters is not a valid representation of any Java value or object')))
-        ),
-        findall(
-            z3(I,MID,Tfps),                 % select constructors to which actual parameters are assignable
-            (   member(z3(I,MID,Tfps), Z3s),
-                jpl_types_fit_types(Taps, Tfps) % assignability test: actual parameter types "fit" formal parameter types?
-            ),
-            Z3sA
-        ),
-        (   Z3sA == []                      % no type-assignable constructors?
-        ->  (   Z3s = [_]
-            ->  throw(error(existence_error(constructor,Tx/A),context(jpl_new/3,'the actual parameters are not assignable to the formal parameter types of the only constructor which takes this qty of parameters')))
-            ;   throw(error(type_error(constructor_args,Params),context(jpl_new/3,'the actual parameters are not assignable to the formal parameter types of any of the constructors which take this qty of parameters')))
-            )
-        ;   Z3sA = [z3(I,MID,Tfps)]
-        ->  true
-        ;   jpl_z3s_to_most_specific_z3(Z3sA, z3(I,MID,Tfps))
-        ->  true
-        ;   throw(error(type_error(constructor_params,Params),context(jpl_new/3,'more than one most-specific matching constructor (shouldn''t happen)')))
-        )
-    ),
-    catch(
-        jNewObject(Cx, MID, Tfps, Params, Vx),
-        error(java_exception(@(_)), 'java.lang.InstantiationException'),
-        (   jpl_type_to_classname(Tx, Cn),
-            throw(error(type_error(concrete_class,Cn),context(jpl_new/3,'cannot create instance of an abstract class')))
-        )
-    ),
-    jpl_cache_type_of_ref(Tx, Vx).          % since we know it
-jpl_new_1(array(T), Params, Vx) :-
-    !,
-    (   var(Params)
-    ->  throw(error(instantiation_error,context(jpl_new/3,'when constructing a new array, 2nd arg must either be a non-negative integer (denoting the required array length) or a proper list of valid element values')))
-    ;   integer(Params)         % integer I -> array[0..I-1] of default values
-    ->  (   Params >= 0
-        ->  Len is Params
-        ;   throw(error(domain_error(array_length,Params),context(jpl_new/3,'when constructing a new array, if the 2nd arg is an integer (denoting the required array length) then it must be non-negative')))
-        )
-    ;   is_list(Params)     % [V1,..VN] -> array[0..N-1] of respective values
-    ->  length(Params, Len)
-    ),
-    jpl_new_array(T, Len, Vx), % NB may throw out-of-memory exception
-    (   nth0(I, Params, Param),     % nmember fails silently when Params is integer
-        jpl_set(Vx, I, Param),
-        fail
-    ;   true
-    ),
-    jpl_cache_type_of_ref(array(T), Vx).   % since we know it
-jpl_new_1(T, _Params, _Vx) :-       % doomed attempt to create new primitive type instance (formerly a dubious completist feature :-)
-    jpl_primitive_type(T),
-    !,
-    throw(error(domain_error(object_type,T),context(jpl_new/3,'cannot construct an instance of a primitive type'))).
-  % (   var(Params)
-  % ->  throw(error(instantiation_error,
-  %                 context(jpl_new/3,
-  %                         'when constructing a new instance of a primitive type, 2nd arg must be bound (to a representation of a suitable value)')))
-  % ;   Params == []
-  % ->  jpl_primitive_type_default_value(T, Vx)
-  % ;   Params = [Param]
-  % ->  jpl_primitive_type_term_to_value(T, Param, Vx)
-  % ;   throw(error(domain_error(constructor_args,Params),
-  %                 context(jpl_new/3,
-  %                         'when constructing a new instance of a primitive type, 2nd arg must either be an empty list (indicating that the default value of that type is required) or a list containing exactly one representation of a suitable value)')))
-  % ).
-jpl_new_1(T, _, _) :-
-    throw(error(domain_error(jpl_type,T),context(jpl_new/3,'1st arg must denote a known or plausible type'))).
-
-%------------------------------------------------------------------------------
-
-%%  jpl_new_array(+ElementType, +Length, -NewArray) is det.
-%
-%   binds NewArray to a jref to a newly created Java array of ElementType and Length
-
-jpl_new_array(boolean, Len, A) :-
-    jNewBooleanArray(Len, A).
-jpl_new_array(byte, Len, A) :-
-    jNewByteArray(Len, A).
-jpl_new_array(char, Len, A) :-
-    jNewCharArray(Len, A).
-jpl_new_array(short, Len, A) :-
-    jNewShortArray(Len, A).
-jpl_new_array(int, Len, A) :-
-    jNewIntArray(Len, A).
-jpl_new_array(long, Len, A) :-
-    jNewLongArray(Len, A).
-jpl_new_array(float, Len, A) :-
-    jNewFloatArray(Len, A).
-jpl_new_array(double, Len, A) :-
-    jNewDoubleArray(Len, A).
-jpl_new_array(array(T), Len, A) :-
-    jpl_type_to_class(array(T), C),
-    jNewObjectArray(Len, C, @(null), A).        % initialise each element to null
-jpl_new_array(class(Ps,Cs), Len, A) :-
-    jpl_type_to_class(class(Ps,Cs), C),
-    jNewObjectArray(Len, C, @(null), A).
 
 %------------------------------------------------------------------------------
 
@@ -1216,6 +1111,111 @@ jpl_set_static_field(class(_,_), Obj, FieldID, V) :-    % also handles byval ter
     jSetStaticObjectField(Obj, FieldID, V2).
 jpl_set_static_field(array(_), Obj, FieldID, V) :-
     jSetStaticObjectField(Obj, FieldID, V).
+
+%------------------------------------------------------------------------------
+
+%! jpl_get_default_jvm_opts(-Opts:list(atom)) is det
+%
+% Returns (as a list of atoms) the options which will be passed to the JVM when it is initialised,
+% e.g. =|['-Xrs']|=
+
+jpl_get_default_jvm_opts(Opts) :-
+    jni_get_default_jvm_opts(Opts).
+
+%------------------------------------------------------------------------------
+
+%! jpl_set_default_jvm_opts(+Opts:list(atom)) is det
+%
+%   Replaces the default JVM initialisation options with those supplied.
+
+jpl_set_default_jvm_opts(Opts) :-
+    is_list(Opts),
+    length(Opts, N),
+    jni_set_default_jvm_opts(N, Opts).
+
+%------------------------------------------------------------------------------
+
+%! jpl_get_actual_jvm_opts(-Opts:list(atom)) is semidet
+%
+% Returns (as a list of atoms) the options with which the JVM was initialised.
+%
+% Fails silently if a JVM has not yet been started, and can thus be used to test for this.
+
+jpl_get_actual_jvm_opts(Opts) :-
+    jni_get_actual_jvm_opts(Opts).
+
+%------------------------------------------------------------------------------
+
+jpl_assert(Fact) :-
+    (   jpl_assert_policy(Fact, yes)
+    ->  assert(Fact)
+    ;   true
+    ).
+
+%------------------------------------------------------------------------------
+
+jpl_assert_policy(jpl_field_spec_cache(_,_,_,_,_,_), yes).
+jpl_assert_policy(jpl_method_spec_cache(_,_,_,_,_,_,_,_), yes).
+jpl_assert_policy(jpl_class_tag_type_cache(_,_), yes).
+jpl_assert_policy(jpl_classname_type_cache(_,_), yes).
+jpl_assert_policy(jpl_iref_type_cache(_,_), no).   % must correspond to JPL_CACHE_TYPE_OF_REF in jpl.c
+jpl_assert_policy(jpl_field_spec_is_cached(_), YN) :-
+    jpl_assert_policy(jpl_field_spec_cache(_,_,_,_,_,_), YN).
+jpl_assert_policy(jpl_method_spec_is_cached(_), YN) :-
+    jpl_assert_policy(jpl_method_spec_cache(_,_,_,_,_,_,_,_), YN).
+
+%------------------------------------------------------------------------------
+
+%! jpl_tidy_iref_type_cache(+Iref) is det.
+%
+% Delete the cached type info, if any, under Iref.
+%
+% Called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
+
+jpl_tidy_iref_type_cache(Iref) :-
+  % write('[decaching types for iref='), write(Iref), write(']'), nl,
+    retractall(jpl_iref_type_cache(Iref,_)),
+    true.
+
+%------------------------------------------------------------------------------
+
+%type   jpl_fergus_find_candidate(list(T), T, T, list(T))
+
+jpl_fergus_find_candidate([], Candidate, Candidate, []).
+jpl_fergus_find_candidate([X|Xs], Candidate0, Candidate, Rest) :-
+    (   jpl_fergus_greater(X, Candidate0)
+    ->  Candidate1 = X,
+        Rest = [Candidate0|Rest1]
+    ;   Candidate1 = Candidate0,
+        Rest = [X|Rest1]
+    ),
+    jpl_fergus_find_candidate(Xs, Candidate1, Candidate, Rest1).
+
+%------------------------------------------------------------------------------
+
+jpl_fergus_greater(z5(_,_,_,_,Tps1), z5(_,_,_,_,Tps2)) :-
+    jpl_types_fit_types(Tps1, Tps2).
+jpl_fergus_greater(z3(_,_,Tps1), z3(_,_,Tps2)) :-
+    jpl_types_fit_types(Tps1, Tps2).
+
+%------------------------------------------------------------------------------
+
+%type   jpl_fergus_is_the_greatest(list(T), T)
+
+%%    jpl_fergus_is_the_greatest(+Xs, -GreatestX)
+%
+%    Xs is a list of things  for which jpl_fergus_greater/2 defines a
+%    partial ordering; GreatestX is one of  those, than which none is
+%    greater; fails if there is more   than  one such; this algorithm
+%    was contributed to c.l.p by Fergus   Henderson in response to my
+%    "there must be a better way" challenge: there was, this is it
+
+jpl_fergus_is_the_greatest([X|Xs], Greatest) :-
+    jpl_fergus_find_candidate(Xs, X, Greatest, Rest),
+    forall(
+        member(R, Rest),
+        jpl_fergus_greater(Greatest, R)
+    ).
 
 %------------------------------------------------------------------------------
 
@@ -2761,211 +2761,6 @@ jpl_modifier_int_to_modifiers(I, Ms) :-
 
 %------------------------------------------------------------------------------
 
-%! jpl_servlet_byref(+Config, +Request, +Response)
-%
-% This serves the "byref" servlet demo,
-%   exemplifying one tactic for implementing a servlet in Prolog
-%   by accepting the Request and Response objects as JPL references
-%   and accessing their members via JPL as required;
-%
-% @see jpl_servlet_byval/3
-
-jpl_servlet_byref(Config, Request, Response) :-
-    jpl_call(Config, getServletContext, [], Context),
-    jpl_call(Response, setStatus, [200], _),
-    jpl_call(Response, setContentType, ['text/html'], _),
-    jpl_call(Response, getWriter, [], W),
-    jpl_call(W, println, ['<html><head></head><body><h2>jpl_servlet_byref/3 says:</h2><pre>'], _),
-    jpl_call(W, println, ['\nservlet context stuff:'], _),
-    jpl_call(Context, getInitParameterNames, [], ContextInitParameterNameEnum),
-    jpl_enumeration_to_list(ContextInitParameterNameEnum, ContextInitParameterNames),
-    length(ContextInitParameterNames, NContextInitParameterNames),
-    atomic_list_concat(['\tContext.InitParameters = ',NContextInitParameterNames], NContextInitParameterNamesMsg),
-    jpl_call(W, println, [NContextInitParameterNamesMsg], _),
-    (   member(ContextInitParameterName, ContextInitParameterNames),
-        jpl_call(Context, getInitParameter, [ContextInitParameterName], ContextInitParameter),
-        atomic_list_concat(['\t\tContext.InitParameter[',ContextInitParameterName,'] = ',ContextInitParameter], ContextInitParameterMsg),
-        jpl_call(W, println, [ContextInitParameterMsg], _),
-        fail
-    ;   true
-    ),
-    jpl_call(Context, getMajorVersion, [], MajorVersion),
-    atomic_list_concat(['\tContext.MajorVersion = ',MajorVersion], MajorVersionMsg),
-    jpl_call(W, println, [MajorVersionMsg], _),
-    jpl_call(Context, getMinorVersion, [], MinorVersion),
-    atomic_list_concat(['\tContext.MinorVersion = ',MinorVersion], MinorVersionMsg),
-    jpl_call(W, println, [MinorVersionMsg], _),
-    jpl_call(Context, getServerInfo, [], ServerInfo),
-    atomic_list_concat(['\tContext.ServerInfo = ',ServerInfo], ServerInfoMsg),
-    jpl_call(W, println, [ServerInfoMsg], _),
-    jpl_call(W, println, ['\nservlet config stuff:'], _),
-    jpl_call(Config, getServletName, [], ServletName),
-    (   ServletName == @(null)
-    ->  ServletNameAtom = null
-    ;   ServletNameAtom = ServletName
-    ),
-    atomic_list_concat(['\tConfig.ServletName = ',ServletNameAtom], ServletNameMsg),
-    jpl_call(W, println, [ServletNameMsg], _),
-    jpl_call(Config, getInitParameterNames, [], ConfigInitParameterNameEnum),
-    jpl_enumeration_to_list(ConfigInitParameterNameEnum, ConfigInitParameterNames),
-    length(ConfigInitParameterNames, NConfigInitParameterNames),
-    atomic_list_concat(['\tConfig.InitParameters = ',NConfigInitParameterNames], NConfigInitParameterNamesMsg),
-    jpl_call(W, println, [NConfigInitParameterNamesMsg], _),
-    (   member(ConfigInitParameterName, ConfigInitParameterNames),
-        jpl_call(Config, getInitParameter, [ConfigInitParameterName], ConfigInitParameter),
-        atomic_list_concat(['\t\tConfig.InitParameter[',ConfigInitParameterName,'] = ',ConfigInitParameter], ConfigInitParameterMsg),
-        jpl_call(W, println, [ConfigInitParameterMsg], _),
-        fail
-    ;   true
-    ),
-    jpl_call(W, println, ['\nrequest stuff:'], _),
-    jpl_call(Request, getAttributeNames, [], AttributeNameEnum),
-    jpl_enumeration_to_list(AttributeNameEnum, AttributeNames),
-    length(AttributeNames, NAttributeNames),
-    atomic_list_concat(['\tRequest.Attributes = ',NAttributeNames], NAttributeNamesMsg),
-    jpl_call(W, println, [NAttributeNamesMsg], _),
-    (   member(AttributeName, AttributeNames),
-        jpl_call(Request, getAttribute, [AttributeName], Attribute),
-        jpl_call(Attribute, toString, [], AttributeString),
-        atomic_list_concat(['\t\tRequest.Attribute[',AttributeName,'] = ',AttributeString], AttributeMsg),
-        jpl_call(W, println, [AttributeMsg], _),
-        fail
-    ;   true
-    ),
-    jpl_call(Request, getCharacterEncoding, [], CharacterEncoding),
-    (   CharacterEncoding == @(null)
-    ->  CharacterEncodingAtom = ''
-    ;   CharacterEncodingAtom = CharacterEncoding
-    ),
-    atomic_list_concat(['\tRequest.CharacterEncoding',' = ',CharacterEncodingAtom], CharacterEncodingMsg),
-    jpl_call(W, println, [CharacterEncodingMsg], _),
-    jpl_call(Request, getContentLength, [], ContentLength),
-    atomic_list_concat(['\tRequest.ContentLength',' = ',ContentLength], ContentLengthMsg),
-    jpl_call(W, println, [ContentLengthMsg], _),
-    jpl_call(Request, getContentType, [], ContentType),
-    (   ContentType == @(null)
-    ->  ContentTypeAtom = ''
-    ;   ContentTypeAtom = ContentType
-    ),
-    atomic_list_concat(['\tRequest.ContentType',' = ',ContentTypeAtom], ContentTypeMsg),
-    jpl_call(W, println, [ContentTypeMsg], _),
-    jpl_call(Request, getParameterNames, [], ParameterNameEnum),
-    jpl_enumeration_to_list(ParameterNameEnum, ParameterNames),
-    length(ParameterNames, NParameterNames),
-    atomic_list_concat(['\tRequest.Parameters = ',NParameterNames], NParameterNamesMsg),
-    jpl_call(W, println, [NParameterNamesMsg], _),
-    (   member(ParameterName, ParameterNames),
-        jpl_call(Request, getParameter, [ParameterName], Parameter),
-        atomic_list_concat(['\t\tRequest.Parameter[',ParameterName,'] = ',Parameter], ParameterMsg),
-        jpl_call(W, println, [ParameterMsg], _),
-        fail
-    ;   true
-    ),
-    jpl_call(Request, getProtocol, [], Protocol),
-    atomic_list_concat(['\tRequest.Protocol',' = ',Protocol], ProtocolMsg),
-    jpl_call(W, println, [ProtocolMsg], _),
-    jpl_call(Request, getRemoteAddr, [], RemoteAddr),
-    atomic_list_concat(['\tRequest.RemoteAddr',' = ',RemoteAddr], RemoteAddrMsg),
-    jpl_call(W, println, [RemoteAddrMsg], _),
-    jpl_call(Request, getRemoteHost, [], RemoteHost),
-    atomic_list_concat(['\tRequest.RemoteHost',' = ',RemoteHost], RemoteHostMsg),
-    jpl_call(W, println, [RemoteHostMsg], _),
-    jpl_call(Request, getScheme, [], Scheme),
-    atomic_list_concat(['\tRequest.Scheme',' = ',Scheme], SchemeMsg),
-    jpl_call(W, println, [SchemeMsg], _),
-    jpl_call(Request, getServerName, [], ServerName),
-    atomic_list_concat(['\tRequest.ServerName',' = ',ServerName], ServerNameMsg),
-    jpl_call(W, println, [ServerNameMsg], _),
-    jpl_call(Request, getServerPort, [], ServerPort),
-    atomic_list_concat(['\tRequest.ServerPort',' = ',ServerPort], ServerPortMsg),
-    jpl_call(W, println, [ServerPortMsg], _),
-    jpl_call(Request, isSecure, [], @(Secure)),
-    atomic_list_concat(['\tRequest.Secure',' = ',Secure], SecureMsg),
-    jpl_call(W, println, [SecureMsg], _),
-    jpl_call(W, println, ['\nHTTP request stuff:'], _),
-    jpl_call(Request, getAuthType, [], AuthType),
-    (   AuthType == @(null)
-    ->  AuthTypeAtom = ''
-    ;   AuthTypeAtom = AuthType
-    ),
-    atomic_list_concat(['\tRequest.AuthType',' = ',AuthTypeAtom], AuthTypeMsg),
-    jpl_call(W, println, [AuthTypeMsg], _),
-    jpl_call(Request, getContextPath, [], ContextPath),
-    (   ContextPath == @(null)
-    ->  ContextPathAtom = ''
-    ;   ContextPathAtom = ContextPath
-    ),
-    atomic_list_concat(['\tRequest.ContextPath',' = ',ContextPathAtom], ContextPathMsg),
-    jpl_call(W, println, [ContextPathMsg], _),
-    jpl_call(Request, getCookies, [], CookieArray),
-    (   CookieArray == @(null)
-    ->  Cookies = []
-    ;   jpl_array_to_list(CookieArray, Cookies)
-    ),
-    length(Cookies, NCookies),
-    atomic_list_concat(['\tRequest.Cookies',' = ',NCookies], NCookiesMsg),
-    jpl_call(W, println, [NCookiesMsg], _),
-    (   nth0(NCookie, Cookies, Cookie),
-        atomic_list_concat(['\t\tRequest.Cookie[',NCookie,']'], CookieMsg),
-        jpl_call(W, println, [CookieMsg], _),
-        jpl_call(Cookie, getName, [], CookieName),
-        atomic_list_concat(['\t\t\tRequest.Cookie.Name = ',CookieName], CookieNameMsg),
-        jpl_call(W, println, [CookieNameMsg], _),
-        jpl_call(Cookie, getValue, [], CookieValue),
-        atomic_list_concat(['\t\t\tRequest.Cookie.Value = ',CookieValue], CookieValueMsg),
-        jpl_call(W, println, [CookieValueMsg], _),
-        jpl_call(Cookie, getPath, [], CookiePath),
-        (   CookiePath == @(null)
-        ->  CookiePathAtom = ''
-        ;   CookiePathAtom = CookiePath
-        ),
-        atomic_list_concat(['\t\t\tRequest.Cookie.Path = ',CookiePathAtom], CookiePathMsg),
-        jpl_call(W, println, [CookiePathMsg], _),
-        jpl_call(Cookie, getComment, [], CookieComment),
-        (   CookieComment == @(null)
-        ->  CookieCommentAtom = ''
-        ;   CookieCommentAtom = CookieComment
-        ),
-        atomic_list_concat(['\t\t\tRequest.Cookie.Comment = ',CookieCommentAtom], CookieCommentMsg),
-        jpl_call(W, println, [CookieCommentMsg], _),
-        jpl_call(Cookie, getDomain, [], CookieDomain),
-        (   CookieDomain == @(null)
-        ->  CookieDomainAtom = ''
-        ;   CookieDomainAtom = CookieDomain
-        ),
-        atomic_list_concat(['\t\t\tRequest.Cookie.Domain = ',CookieDomainAtom], CookieDomainMsg),
-        jpl_call(W, println, [CookieDomainMsg], _),
-        jpl_call(Cookie, getMaxAge, [], CookieMaxAge),
-        atomic_list_concat(['\t\t\tRequest.Cookie.MaxAge = ',CookieMaxAge], CookieMaxAgeMsg),
-        jpl_call(W, println, [CookieMaxAgeMsg], _),
-        jpl_call(Cookie, getVersion, [], CookieVersion),
-        atomic_list_concat(['\t\t\tRequest.Cookie.Version = ',CookieVersion], CookieVersionMsg),
-        jpl_call(W, println, [CookieVersionMsg], _),
-        jpl_call(Cookie, getSecure, [], @(CookieSecure)),
-        atomic_list_concat(['\t\t\tRequest.Cookie.Secure',' = ',CookieSecure], CookieSecureMsg),
-        jpl_call(W, println, [CookieSecureMsg], _),
-        fail
-    ;   true
-    ),
-    jpl_call(W, println, ['</pre></body></html>'], _),
-    true.
-
-%------------------------------------------------------------------------------
-
-%! jpl_servlet_byval(+MultiMap, -ContentType, -BodyAtom)
-%
-%   this exemplifies an alternative (to jpl_servlet_byref) tactic
-%   for implementing a servlet in Prolog;
-%   most Request fields are extracted in Java before this is called,
-%   and passed in as a multimap (a map, some of whose values are maps)
-
-jpl_servlet_byval(MM, CT, Ba) :-
-    CT = 'text/html',
-    multimap_to_atom(MM, MMa),
-    atomic_list_concat(['<html><head></head><body>','<h2>jpl_servlet_byval/3 says:</h2><pre>', MMa,'</pre></body></html>'], Ba).
-
-%------------------------------------------------------------------------------
-
 %type   jpl_cache_type_of_ref(jpl_type, ref)
 
 %! jpl_cache_type_of_ref(+Type, +Ref)
@@ -3167,13 +2962,13 @@ jpl_classname_to_type(CN, T) :-
 
 %! jpl_datum_to_type(+Datum, -Type)
 %
-%   Datum must be a proper JPL representation of an instance of one (or more) Java types;
+% Datum must be a proper JPL representation of an instance of one (or more) Java types;
 %
-%   Type is the unique most specialised type of which Datum denotes an instance;
+% Type is the unique most specialised type of which Datum denotes an instance;
 %
 % NB 3 is an instance of byte, char, short, int and long,
-%   of which byte and char are the joint, overlapping most specialised types,
-%   so this relates 3 to the pseudo subtype 'char_byte';
+% of which byte and char are the joint, overlapping most specialised types,
+% so this relates 3 to the pseudo subtype 'char_byte';
 %
 % @see jpl_type_to_preferred_concrete_type/2 for converting inferred types to instantiable types
 
@@ -3232,16 +3027,6 @@ jpl_datums_to_types([D|Ds], [T|Ts]) :-
 
 %------------------------------------------------------------------------------
 
-%! jpl_false(-X)
-%
-%   X is (by unification) the proper JPL datum which represents the Java boolean value 'false'
-%
-%   see jpl_is_false/1
-
-jpl_false(@(false)).
-
-%------------------------------------------------------------------------------
-
 %! jpl_ground_is_type(+X)
 %
 %   X, known to be ground, is (or at least superficially resembles :-) a JPL type
@@ -3260,134 +3045,6 @@ jpl_ground_is_type(method(_,_)).
 
 %------------------------------------------------------------------------------
 
-%! jpl_is_class(@X)
-%
-% True if X is a JPL reference to an instance of java.lang.Class
-
-jpl_is_class(X) :-
-    jpl_is_object(X),
-    jpl_object_to_type(X, class([java,lang],['Class'])).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_false(@X)
-%
-% True if X is =|@(false)|=, the JPL representation of the Java boolean value 'false'.
-
-jpl_is_false(X) :-
-    X == @(false).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_fieldID(-X)
-%
-% X is a JPL field ID structure (jfieldID/1).
-%
-% NB JPL internal use only.
-%
-% NB applications should not be messing with these.
-%
-% NB a var arg may get bound.
-
-jpl_is_fieldID(jfieldID(X)) :-
-    integer(X).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_methodID(-X)
-%
-% X is a JPL method ID structure (jmethodID/1)
-%
-% NB JPL internal use only.
-%
-% NB applications should not be messing with these.
-%
-% NB a var arg may get bound.
-
-jpl_is_methodID(jmethodID(X)) :-   % NB a var arg may get bound...
-    integer(X).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_null(@X)
-%
-% True if X is =|@(null)|=, the JPL representation of Java's 'null' reference
-
-jpl_is_null(X) :-
-    X == @(null).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_object(@X)
-%
-% True if X is a well-formed JPL object reference.
-%
-% NB this checks only syntax, not whether the object exists.
-
-jpl_is_object(X) :-
-    jpl_is_ref(X),      % (syntactically, at least...)
-    X \== @(null).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_object_type(@T)
-%
-% True if T is an object (class or array) type, not e.g. a primitive, null or void
-
-jpl_is_object_type(T) :-
-    \+ var(T),
-    jpl_non_var_is_object_type(T).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_ref(@T)
-%
-% The arbitrary term T is a well-formed JPL reference,
-%   either to a Java object
-%   (which may not exist, although a jpl_is_current_ref/1 might be useful)
-% or to Java's notional but important 'null' non-object
-%
-% NB to distinguish tags from void/false/true, could check initial character(s) or length? or adopt strong/weak scheme.
-
-jpl_is_ref(@(Y)) :-
-    atom(Y),        % presumably a (garbage-collectable) tag
-    Y \== void,     % not a ref
-    Y \== false,    % not a ref
-    Y \== true.     % not a ref
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_true(@X)
-%
-% X is =|@(true)|=, the JPL representation of the Java boolean value 'true'
-
-jpl_is_true(X) :-
-    X == @(true).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_type(@X)
-%
-% True if X is a well-formed JPL type structure
-
-jpl_is_type(X) :-
-    ground(X),
-    jpl_ground_is_type(X).
-
-%------------------------------------------------------------------------------
-
-%! jpl_is_void(@X)
-%
-% True if X is =|@(void)|=, the JPL representation of the pseudo Java value 'void'
-% (which is returned by jpl_call/4 when invoked on void methods).
-%
-% NB you can try passing 'void' back to Java, but it won't ever be interested.
-
-jpl_is_void(X) :-
-    X == @(void).
-
-%------------------------------------------------------------------------------
-
 jpl_lineage_types_type_to_common_lineage_types(Ts, Tx, Ts0) :-
     (   append(_, [Tx|Ts2], Ts)
     ->  [Tx|Ts2] = Ts0
@@ -3403,19 +3060,9 @@ jpl_non_var_is_object_type(array(_)).
 
 %------------------------------------------------------------------------------
 
-%! jpl_null(-X)
-%
-% X is =|@(null)|=, the JPL representation of Java's 'null' reference
-%
-% @see jpl_is_null/1
-
-jpl_null(@(null)).
-
-%------------------------------------------------------------------------------
-
 %! jpl_object_array_to_list(+Array:jref, -Values:list(datum))
 %
-%   Values is a list of JPL values (primitive values or object references)
+% Values is a list of JPL values (primitive values or object references)
 % representing the respective elements of Array.
 
 jpl_object_array_to_list(A, Vs) :-
@@ -3441,7 +3088,7 @@ jpl_object_array_to_list_1(A, I, N, Xs) :-
 %
 % Object must be a valid object (should this throw an exception otherwise?)
 %
-%   Class is a (canonical) reference to the (canonical) class object
+% Class is a (canonical) reference to the (canonical) class object
 % which represents the class of Object
 %
 % NB what's the point of caching the type if we don't look there first?
@@ -3454,7 +3101,7 @@ jpl_object_to_class(Obj, C) :-
 
 %! jpl_object_to_type(+Object:jref, -Type:type)
 %
-%   Object must be a proper JPL reference to a Java object
+% Object must be a proper JPL reference to a Java object
 % (i.e. a class or array instance, but not null, void or String).
 % 
 % Type is the JPL type of that object.
@@ -3480,9 +3127,9 @@ jpl_object_type_to_super_type(T, Tx) :-
 %
 % Bp points to a buffer of (sufficient) Type values.
 %
-%   Vcs will be unbound on entry,
-%   and on exit will be a list of Size of them, starting at index I
-%   (the buffer is indexed from zero)
+% Vcs will be unbound on entry,
+% and on exit will be a list of Size of them, starting at index I
+% (the buffer is indexed from zero)
 
 jpl_primitive_buffer_to_array(T, Xc, Bp, I, Size, [Vc|Vcs]) :-
     jni_fetch_buffer_value(Bp, I, Vc, Xc),
@@ -3517,7 +3164,7 @@ jpl_primitive_type(double).
 %! jpl_primitive_type_default_value(-Type:type, -Value:datum)
 %
 % Each element of any array of (primitive) Type created by jpl_new/3,
-%   or any instance of (primitive) Type created by jpl_new/3,
+% or any instance of (primitive) Type created by jpl_new/3,
 % will be initialised to Value (to mimic Java semantics).
 
 jpl_primitive_type_default_value(boolean, @(false)).
@@ -3641,16 +3288,6 @@ jpl_tag_to_type(Tag, Type) :-
         jpl_assert(jpl_iref_type_cache(Iref,T))
     ),
     Type = T.
-
-%------------------------------------------------------------------------------
-
-%! jpl_true(-X)
-%
-% X is (by unification) the proper JPL datum which represents the Java boolean value 'true'
-%
-% see jpl_is_true/1
-
-jpl_true(@(true)).
 
 %------------------------------------------------------------------------------
 
@@ -3895,7 +3532,7 @@ jpl_type_to_super_type(T, Tx) :-
 
 %! jpl_type_to_preferred_concrete_type(+Type, -ConcreteType)
 %
-%   Type must be a canonical JPL type,
+% Type must be a canonical JPL type,
 % possibly an inferred pseudo type such as =|char_int|= or =|array(char_byte)|=
 %
 % ConcreteType is the preferred concrete (Java-instantiable) type
@@ -3906,7 +3543,7 @@ jpl_type_to_super_type(T, Tx) :-
 %  ==
 %
 % NB introduced 16/Apr/2005 to fix bug whereby jpl_list_to_array([1,2,3],A) failed
-%   because the lists's inferred type of array(char_byte) is not Java-instantiable
+% because the lists's inferred type of array(char_byte) is not Java-instantiable
 
 jpl_type_to_preferred_concrete_type(T, Tc) :-
     (   jpl_type_to_preferred_concrete_type_1(T, TcX)
@@ -3950,7 +3587,7 @@ jpl_types_fit_types([T1|T1s], [T2|T2s]) :-
 
 %! jpl_value_to_type(+Value, -Type)
 %
-%   Value must be a proper JPL datum other than a ref
+% Value must be a proper JPL datum other than a ref
 % i.e. primitive, String or void
 %
 % Type is its unique most specific type,
@@ -3970,8 +3607,8 @@ jpl_value_to_type(V, T) :-
 %
 % Called solely by jpl_value_to_type/2, which commits to first solution.
 %
-%    NB  some  integer  values  are  of  JPL-peculiar  uniquely  most
-%    specific subtypes, i.e. char_byte, char_short,  char_int but all
+% NB  some  integer  values  are  of  JPL-peculiar  uniquely  most
+% specific subtypes, i.e. char_byte, char_short,  char_int but all
 % are understood by JPL's internal utilities which call this proc.
 %
 % NB we regard float as subtype of double.
@@ -4002,6 +3639,164 @@ jpl_value_to_type_1(I, T) :-
     ).
 jpl_value_to_type_1(F, float) :-
     float(F).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_class(@X)
+%
+% True if X is a JPL reference to an instance of java.lang.Class
+
+jpl_is_class(X) :-
+    jpl_is_object(X),
+    jpl_object_to_type(X, class([java,lang],['Class'])).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_false(@X)
+%
+% True if X is =|@(false)|=, the JPL representation of the Java boolean value 'false'.
+
+jpl_is_false(X) :-
+    X == @(false).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_fieldID(-X)
+%
+% X is a JPL field ID structure (jfieldID/1).
+%
+% NB JPL internal use only.
+%
+% NB applications should not be messing with these.
+%
+% NB a var arg may get bound.
+
+jpl_is_fieldID(jfieldID(X)) :-
+    integer(X).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_methodID(-X)
+%
+% X is a JPL method ID structure (jmethodID/1)
+%
+% NB JPL internal use only.
+%
+% NB applications should not be messing with these.
+%
+% NB a var arg may get bound.
+
+jpl_is_methodID(jmethodID(X)) :-   % NB a var arg may get bound...
+    integer(X).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_null(@X)
+%
+% True if X is =|@(null)|=, the JPL representation of Java's 'null' reference
+
+jpl_is_null(X) :-
+    X == @(null).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_object(@X)
+%
+% True if X is a well-formed JPL object reference.
+%
+% NB this checks only syntax, not whether the object exists.
+
+jpl_is_object(X) :-
+    jpl_is_ref(X),      % (syntactically, at least...)
+    X \== @(null).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_object_type(@T)
+%
+% True if T is an object (class or array) type, not e.g. a primitive, null or void
+
+jpl_is_object_type(T) :-
+    \+ var(T),
+    jpl_non_var_is_object_type(T).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_ref(@T)
+%
+% The arbitrary term T is a well-formed JPL reference,
+% either to a Java object
+% (which may not exist, although a jpl_is_current_ref/1 might be useful)
+% or to Java's notional but important 'null' non-object
+%
+% NB to distinguish tags from void/false/true, could check initial character(s) or length? or adopt strong/weak scheme.
+
+jpl_is_ref(@(Y)) :-
+    atom(Y),        % presumably a (garbage-collectable) tag
+    Y \== void,     % not a ref
+    Y \== false,    % not a ref
+    Y \== true.     % not a ref
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_true(@X)
+%
+% X is =|@(true)|=, the JPL representation of the Java boolean value 'true'
+
+jpl_is_true(X) :-
+    X == @(true).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_type(@X)
+%
+% True if X is a well-formed JPL type structure
+
+jpl_is_type(X) :-
+    ground(X),
+    jpl_ground_is_type(X).
+
+%------------------------------------------------------------------------------
+
+%! jpl_is_void(@X)
+%
+% True if X is =|@(void)|=, the JPL representation of the pseudo Java value 'void'
+% (which is returned by jpl_call/4 when invoked on void methods).
+%
+% NB you can try passing 'void' back to Java, but it won't ever be interested.
+
+jpl_is_void(X) :-
+    X == @(void).
+
+%------------------------------------------------------------------------------
+
+%! jpl_false(-X)
+%
+%   X is (by unification) the proper JPL datum which represents the Java boolean value 'false'
+%
+%   see jpl_is_false/1
+
+jpl_false(@(false)).
+
+%------------------------------------------------------------------------------
+
+%! jpl_null(-X)
+%
+% X is =|@(null)|=, the JPL representation of Java's 'null' reference
+%
+% @see jpl_is_null/1
+
+jpl_null(@(null)).
+
+%------------------------------------------------------------------------------
+
+%! jpl_true(-X)
+%
+% X is (by unification) the proper JPL datum which represents the Java boolean value 'true'
+%
+% see jpl_is_true/1
+
+jpl_true(@(true)).
 
 %------------------------------------------------------------------------------
 
@@ -4071,7 +3866,7 @@ jpl_array_to_list(A, Es) :-
 %! jpl_datums_to_array(+Datums:list(datum), -A:jref)
 %
 % A will be a JPL reference to a new Java array,
-%   whose base type is the most specific Java type
+% whose base type is the most specific Java type
 % of which each member of Datums is (directly or indirectly) an instance
 %
 % NB this fails (without warning, currently) if
@@ -4135,8 +3930,8 @@ jpl_enumeration_to_list(Enumeration, Es) :-
 %
 % Generates Key-Value pairs from the given HashTable.
 %
-%   NB String is converted to atom but Integer is presumably returned as an object ref
-%   (i.e. as elsewhere, no auto unboxing);
+% NB String is converted to atom but Integer is presumably returned as an object ref
+% (i.e. as elsewhere, no auto unboxing);
 %
 % NB this is anachronistic: the Map interface is preferred.
 
@@ -4255,6 +4050,211 @@ jpl_map_element(Map, K-V) :-
 jpl_set_element(S, E) :-
     jpl_call(S, iterator, [], I),
     jpl_iterator_element(I, E).
+
+%------------------------------------------------------------------------------
+
+%! jpl_servlet_byref(+Config, +Request, +Response)
+%
+% This serves the "byref" servlet demo,
+% exemplifying one tactic for implementing a servlet in Prolog
+% by accepting the Request and Response objects as JPL references
+% and accessing their members via JPL as required;
+%
+% @see jpl_servlet_byval/3
+
+jpl_servlet_byref(Config, Request, Response) :-
+    jpl_call(Config, getServletContext, [], Context),
+    jpl_call(Response, setStatus, [200], _),
+    jpl_call(Response, setContentType, ['text/html'], _),
+    jpl_call(Response, getWriter, [], W),
+    jpl_call(W, println, ['<html><head></head><body><h2>jpl_servlet_byref/3 says:</h2><pre>'], _),
+    jpl_call(W, println, ['\nservlet context stuff:'], _),
+    jpl_call(Context, getInitParameterNames, [], ContextInitParameterNameEnum),
+    jpl_enumeration_to_list(ContextInitParameterNameEnum, ContextInitParameterNames),
+    length(ContextInitParameterNames, NContextInitParameterNames),
+    atomic_list_concat(['\tContext.InitParameters = ',NContextInitParameterNames], NContextInitParameterNamesMsg),
+    jpl_call(W, println, [NContextInitParameterNamesMsg], _),
+    (   member(ContextInitParameterName, ContextInitParameterNames),
+        jpl_call(Context, getInitParameter, [ContextInitParameterName], ContextInitParameter),
+        atomic_list_concat(['\t\tContext.InitParameter[',ContextInitParameterName,'] = ',ContextInitParameter], ContextInitParameterMsg),
+        jpl_call(W, println, [ContextInitParameterMsg], _),
+        fail
+    ;   true
+    ),
+    jpl_call(Context, getMajorVersion, [], MajorVersion),
+    atomic_list_concat(['\tContext.MajorVersion = ',MajorVersion], MajorVersionMsg),
+    jpl_call(W, println, [MajorVersionMsg], _),
+    jpl_call(Context, getMinorVersion, [], MinorVersion),
+    atomic_list_concat(['\tContext.MinorVersion = ',MinorVersion], MinorVersionMsg),
+    jpl_call(W, println, [MinorVersionMsg], _),
+    jpl_call(Context, getServerInfo, [], ServerInfo),
+    atomic_list_concat(['\tContext.ServerInfo = ',ServerInfo], ServerInfoMsg),
+    jpl_call(W, println, [ServerInfoMsg], _),
+    jpl_call(W, println, ['\nservlet config stuff:'], _),
+    jpl_call(Config, getServletName, [], ServletName),
+    (   ServletName == @(null)
+    ->  ServletNameAtom = null
+    ;   ServletNameAtom = ServletName
+    ),
+    atomic_list_concat(['\tConfig.ServletName = ',ServletNameAtom], ServletNameMsg),
+    jpl_call(W, println, [ServletNameMsg], _),
+    jpl_call(Config, getInitParameterNames, [], ConfigInitParameterNameEnum),
+    jpl_enumeration_to_list(ConfigInitParameterNameEnum, ConfigInitParameterNames),
+    length(ConfigInitParameterNames, NConfigInitParameterNames),
+    atomic_list_concat(['\tConfig.InitParameters = ',NConfigInitParameterNames], NConfigInitParameterNamesMsg),
+    jpl_call(W, println, [NConfigInitParameterNamesMsg], _),
+    (   member(ConfigInitParameterName, ConfigInitParameterNames),
+        jpl_call(Config, getInitParameter, [ConfigInitParameterName], ConfigInitParameter),
+        atomic_list_concat(['\t\tConfig.InitParameter[',ConfigInitParameterName,'] = ',ConfigInitParameter], ConfigInitParameterMsg),
+        jpl_call(W, println, [ConfigInitParameterMsg], _),
+        fail
+    ;   true
+    ),
+    jpl_call(W, println, ['\nrequest stuff:'], _),
+    jpl_call(Request, getAttributeNames, [], AttributeNameEnum),
+    jpl_enumeration_to_list(AttributeNameEnum, AttributeNames),
+    length(AttributeNames, NAttributeNames),
+    atomic_list_concat(['\tRequest.Attributes = ',NAttributeNames], NAttributeNamesMsg),
+    jpl_call(W, println, [NAttributeNamesMsg], _),
+    (   member(AttributeName, AttributeNames),
+        jpl_call(Request, getAttribute, [AttributeName], Attribute),
+        jpl_call(Attribute, toString, [], AttributeString),
+        atomic_list_concat(['\t\tRequest.Attribute[',AttributeName,'] = ',AttributeString], AttributeMsg),
+        jpl_call(W, println, [AttributeMsg], _),
+        fail
+    ;   true
+    ),
+    jpl_call(Request, getCharacterEncoding, [], CharacterEncoding),
+    (   CharacterEncoding == @(null)
+    ->  CharacterEncodingAtom = ''
+    ;   CharacterEncodingAtom = CharacterEncoding
+    ),
+    atomic_list_concat(['\tRequest.CharacterEncoding',' = ',CharacterEncodingAtom], CharacterEncodingMsg),
+    jpl_call(W, println, [CharacterEncodingMsg], _),
+    jpl_call(Request, getContentLength, [], ContentLength),
+    atomic_list_concat(['\tRequest.ContentLength',' = ',ContentLength], ContentLengthMsg),
+    jpl_call(W, println, [ContentLengthMsg], _),
+    jpl_call(Request, getContentType, [], ContentType),
+    (   ContentType == @(null)
+    ->  ContentTypeAtom = ''
+    ;   ContentTypeAtom = ContentType
+    ),
+    atomic_list_concat(['\tRequest.ContentType',' = ',ContentTypeAtom], ContentTypeMsg),
+    jpl_call(W, println, [ContentTypeMsg], _),
+    jpl_call(Request, getParameterNames, [], ParameterNameEnum),
+    jpl_enumeration_to_list(ParameterNameEnum, ParameterNames),
+    length(ParameterNames, NParameterNames),
+    atomic_list_concat(['\tRequest.Parameters = ',NParameterNames], NParameterNamesMsg),
+    jpl_call(W, println, [NParameterNamesMsg], _),
+    (   member(ParameterName, ParameterNames),
+        jpl_call(Request, getParameter, [ParameterName], Parameter),
+        atomic_list_concat(['\t\tRequest.Parameter[',ParameterName,'] = ',Parameter], ParameterMsg),
+        jpl_call(W, println, [ParameterMsg], _),
+        fail
+    ;   true
+    ),
+    jpl_call(Request, getProtocol, [], Protocol),
+    atomic_list_concat(['\tRequest.Protocol',' = ',Protocol], ProtocolMsg),
+    jpl_call(W, println, [ProtocolMsg], _),
+    jpl_call(Request, getRemoteAddr, [], RemoteAddr),
+    atomic_list_concat(['\tRequest.RemoteAddr',' = ',RemoteAddr], RemoteAddrMsg),
+    jpl_call(W, println, [RemoteAddrMsg], _),
+    jpl_call(Request, getRemoteHost, [], RemoteHost),
+    atomic_list_concat(['\tRequest.RemoteHost',' = ',RemoteHost], RemoteHostMsg),
+    jpl_call(W, println, [RemoteHostMsg], _),
+    jpl_call(Request, getScheme, [], Scheme),
+    atomic_list_concat(['\tRequest.Scheme',' = ',Scheme], SchemeMsg),
+    jpl_call(W, println, [SchemeMsg], _),
+    jpl_call(Request, getServerName, [], ServerName),
+    atomic_list_concat(['\tRequest.ServerName',' = ',ServerName], ServerNameMsg),
+    jpl_call(W, println, [ServerNameMsg], _),
+    jpl_call(Request, getServerPort, [], ServerPort),
+    atomic_list_concat(['\tRequest.ServerPort',' = ',ServerPort], ServerPortMsg),
+    jpl_call(W, println, [ServerPortMsg], _),
+    jpl_call(Request, isSecure, [], @(Secure)),
+    atomic_list_concat(['\tRequest.Secure',' = ',Secure], SecureMsg),
+    jpl_call(W, println, [SecureMsg], _),
+    jpl_call(W, println, ['\nHTTP request stuff:'], _),
+    jpl_call(Request, getAuthType, [], AuthType),
+    (   AuthType == @(null)
+    ->  AuthTypeAtom = ''
+    ;   AuthTypeAtom = AuthType
+    ),
+    atomic_list_concat(['\tRequest.AuthType',' = ',AuthTypeAtom], AuthTypeMsg),
+    jpl_call(W, println, [AuthTypeMsg], _),
+    jpl_call(Request, getContextPath, [], ContextPath),
+    (   ContextPath == @(null)
+    ->  ContextPathAtom = ''
+    ;   ContextPathAtom = ContextPath
+    ),
+    atomic_list_concat(['\tRequest.ContextPath',' = ',ContextPathAtom], ContextPathMsg),
+    jpl_call(W, println, [ContextPathMsg], _),
+    jpl_call(Request, getCookies, [], CookieArray),
+    (   CookieArray == @(null)
+    ->  Cookies = []
+    ;   jpl_array_to_list(CookieArray, Cookies)
+    ),
+    length(Cookies, NCookies),
+    atomic_list_concat(['\tRequest.Cookies',' = ',NCookies], NCookiesMsg),
+    jpl_call(W, println, [NCookiesMsg], _),
+    (   nth0(NCookie, Cookies, Cookie),
+        atomic_list_concat(['\t\tRequest.Cookie[',NCookie,']'], CookieMsg),
+        jpl_call(W, println, [CookieMsg], _),
+        jpl_call(Cookie, getName, [], CookieName),
+        atomic_list_concat(['\t\t\tRequest.Cookie.Name = ',CookieName], CookieNameMsg),
+        jpl_call(W, println, [CookieNameMsg], _),
+        jpl_call(Cookie, getValue, [], CookieValue),
+        atomic_list_concat(['\t\t\tRequest.Cookie.Value = ',CookieValue], CookieValueMsg),
+        jpl_call(W, println, [CookieValueMsg], _),
+        jpl_call(Cookie, getPath, [], CookiePath),
+        (   CookiePath == @(null)
+        ->  CookiePathAtom = ''
+        ;   CookiePathAtom = CookiePath
+        ),
+        atomic_list_concat(['\t\t\tRequest.Cookie.Path = ',CookiePathAtom], CookiePathMsg),
+        jpl_call(W, println, [CookiePathMsg], _),
+        jpl_call(Cookie, getComment, [], CookieComment),
+        (   CookieComment == @(null)
+        ->  CookieCommentAtom = ''
+        ;   CookieCommentAtom = CookieComment
+        ),
+        atomic_list_concat(['\t\t\tRequest.Cookie.Comment = ',CookieCommentAtom], CookieCommentMsg),
+        jpl_call(W, println, [CookieCommentMsg], _),
+        jpl_call(Cookie, getDomain, [], CookieDomain),
+        (   CookieDomain == @(null)
+        ->  CookieDomainAtom = ''
+        ;   CookieDomainAtom = CookieDomain
+        ),
+        atomic_list_concat(['\t\t\tRequest.Cookie.Domain = ',CookieDomainAtom], CookieDomainMsg),
+        jpl_call(W, println, [CookieDomainMsg], _),
+        jpl_call(Cookie, getMaxAge, [], CookieMaxAge),
+        atomic_list_concat(['\t\t\tRequest.Cookie.MaxAge = ',CookieMaxAge], CookieMaxAgeMsg),
+        jpl_call(W, println, [CookieMaxAgeMsg], _),
+        jpl_call(Cookie, getVersion, [], CookieVersion),
+        atomic_list_concat(['\t\t\tRequest.Cookie.Version = ',CookieVersion], CookieVersionMsg),
+        jpl_call(W, println, [CookieVersionMsg], _),
+        jpl_call(Cookie, getSecure, [], @(CookieSecure)),
+        atomic_list_concat(['\t\t\tRequest.Cookie.Secure',' = ',CookieSecure], CookieSecureMsg),
+        jpl_call(W, println, [CookieSecureMsg], _),
+        fail
+    ;   true
+    ),
+    jpl_call(W, println, ['</pre></body></html>'], _),
+    true.
+
+%------------------------------------------------------------------------------
+
+%! jpl_servlet_byval(+MultiMap, -ContentType, -BodyAtom)
+%
+%   this exemplifies an alternative (to jpl_servlet_byref) tactic
+%   for implementing a servlet in Prolog;
+%   most Request fields are extracted in Java before this is called,
+%   and passed in as a multimap (a map, some of whose values are maps)
+
+jpl_servlet_byval(MM, CT, Ba) :-
+    CT = 'text/html',
+    multimap_to_atom(MM, MMa),
+    atomic_list_concat(['<html><head></head><body>','<h2>jpl_servlet_byval/3 says:</h2><pre>', MMa,'</pre></body></html>'], Ba).
 
 %------------------------------------------------------------------------------
 
