@@ -92,16 +92,17 @@ The library(jpl) provides a bidirectional interface to a Java Virtual Machine.
 
 %------------------------------------------------------------------------------
 
-%%  jpl_get_default_jvm_opts(-Opts:list(atom))
+%! jpl_get_default_jvm_opts(-Opts:list(atom)) is det
 %
-%   Returns (as a list of atoms) the options which will be passed to the JVM when it is initialised.
+% Returns (as a list of atoms) the options which will be passed to the JVM when it is initialised,
+% e.g. =|['-Xrs']|=
 
 jpl_get_default_jvm_opts(Opts) :-
     jni_get_default_jvm_opts(Opts).
 
 %------------------------------------------------------------------------------
 
-%%  jpl_set_default_jvm_opts(+Opts:list(atom)) is det.
+%! jpl_set_default_jvm_opts(+Opts:list(atom)) is det
 %
 %   Replaces the default JVM initialisation options with those supplied.
 
@@ -112,10 +113,11 @@ jpl_set_default_jvm_opts(Opts) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_get_actual_jvm_opts(-Opts:list(atom)) is semidet.
+%!	jpl_get_actual_jvm_opts(-Opts:list(atom)) is semidet
 %
-%   Returns (as a list of atoms) the options with which the JVM was initialised
-%   (fails if a JVM has not yet been started).
+% Returns (as a list of atoms) the options with which the JVM was initialised.
+%
+% Fails silently if a JVM has not yet been started, and can thus be used to test for this.
 
 jpl_get_actual_jvm_opts(Opts) :-
     jni_get_actual_jvm_opts(Opts).
@@ -142,10 +144,11 @@ jpl_assert_policy(jpl_method_spec_is_cached(_), YN) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_tidy_iref_type_cache(+Iref) is det.
+%! jpl_tidy_iref_type_cache(+Iref) is det.
 %
-%   delete the cached type info, if any, under Iref;
-%   called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
+% Delete the cached type info, if any, under Iref.
+%
+% Called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
 
 jpl_tidy_iref_type_cache(Iref) :-
   % write('[decaching types for iref='), write(Iref), write(']'), nl,
@@ -154,22 +157,24 @@ jpl_tidy_iref_type_cache(Iref) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_call(+X, +MethodSpec, +Params, -Result) is det.
+%! jpl_call(+X, +MethodName:atom, +Params:list(datum), -Result:datum) is det
 %
-%   X should be:
-%     an object reference
-%       (for static or instance methods)
-%     a classname, descriptor or type
-%       (for static methods of the denoted class)
+% X should be either
+%  * an object reference, e.g. =|@('J#00000000000015552320')|= (for static or instance methods)
+%  * or a classname, e.g. =|'java.util.Date'|= (for static methods only)
+%  * or a descriptor, e.g. =|'Ljava.util.Date;'|= (for static methods only)
+%  * or type, e.g. =|class([java,util],['Date'])|= (for static methods only)
 %
-%   MethodSpec should be:
-%     a method name (as an atom)
-%       (may involve dynamic overload resolution based on inferred types of params)
+% MethodName should be a method name (as an atom) (may involve dynamic overload resolution based on inferred types of params)
 %
-%   Params should be:
-%     a proper list (perhaps empty) of suitable actual parameters for the named method
+% Params should be a proper list (perhaps empty) of suitable actual parameters for the named method.
 %
-%   finally, an attempt will be made to unify Result with the returned result
+% The class or object may have several methods with the given name;
+% JPL will resolve (per call) to the most appropriate method based on the quantity and inferred types of Params.
+% This resolution mimics the corresponding static resolution performed by Java compilers.
+%
+% Finally, an attempt will be made to unify Result with the method's returned value,
+% or with =|@(void)|= if it has none.
 
 jpl_call(X, Mspec, Params, R) :-
     (   jpl_object_to_type(X, Type)         % the usual case (goal fails safely if X is var or rubbish)
@@ -401,26 +406,34 @@ jpl_fergus_is_the_greatest([X|Xs], Greatest) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_get(+X, +Fspec, -V) is det.
+%! jpl_get(+X, +Fspec, -V:datum) is det
 %
-%   X can be:
-%     * a classname, a descriptor, or an (object or array) type
-%       (for static fields);
-%     * a non-array object
-%       (for static and non-static fields)
-%     * an array
-%       (for 'length' pseudo field, or indexed element retrieval),
-%   but not:
-%     * a String
-%       (clashes with class name; anyway, String has no fields to retrieve)
+% X can be
 %
-%   Fspec can be:
-%       * an atomic field name,
-%       * or an integral array index (to get an element from an array,
-%    * or a pair I-J of integers (to get a subrange (slice?) of an
-%      array)
+%  * a classname
+%  * or a descriptor
+%  * or an (object or array) type (for static fields)
+%  * or a non-array object (for static and non-static fields)
+%  * or an array (for 'length' pseudo field, or indexed element retrieval)
 %
-%   finally, an attempt will be made to unify V with the retrieved value
+% Fspec can be
+%
+%  * an atomic field name
+%  * or an integral array index (to get an element from an array)
+%  * or a pair I-J of integers (to get a subrange of an array).
+%
+% Finally, an attempt will be made to unify V with the retrieved value or object reference.
+%
+% Examples
+%
+%  ==
+%  jpl_get('java.awt.Cursor', 'NE_RESIZE_CURSOR', Q).
+%  Q = 7.
+%
+%  jpl_new(array(class([java,lang],['String'])), [for,while,do,if,then,else,try,catch,finally], A),
+%  jpl_get(A, 3-5, B).
+%  B = [if, then, else].
+%  ==
 
 jpl_get(X, Fspec, V) :-
     (   jpl_object_to_type(X, Type)
@@ -456,7 +469,7 @@ jpl_get(X, Fspec, V) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_get_static(+Type, +ClassObject, +FieldName, -Value) is det.
+%! jpl_get_static(+Type:type, +ClassObject:jref, +FieldName:atom, -Value:datum) is det
 %
 %   ClassObject is an instance of   java.lang.Class which represents
 %   the same class as Type; Value   (Vx below) is guaranteed unbound
@@ -487,7 +500,7 @@ jpl_get_static(Type, ClassObj, Fname, Vx) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_get_instance(+Type, +Type, +Object, +FieldSpecifier, -Value) is det.
+%! jpl_get_instance(+Type, +Type, +Object, +FieldSpecifier, -Value) is det
 
 jpl_get_instance(class(_,_), Type, Obj, Fname, Vx) :-
     (   atom(Fname)                 % the usual case
@@ -548,14 +561,14 @@ jpl_get_instance(array(ElementType), _, Array, Fspec, Vx) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_get_array_element(+ElementType, +Array, +Index, -Vc) is det.
+%! jpl_get_array_element(+ElementType:type, +Array:jref, +Index, -Vc) is det
 %
-%   Array is (a  reference  to)  an   array  of  ElementType;  Vc is
+% Array is a JPL reference to a Java array of ElementType;  Vc is
 %   (unified with a JPL repn  of)   its  Index-th  (numbered from 0)
 %   element Java values are now  converted   to  Prolog terms within
 %   foreign code
 %
-%   @tbd    more of this could be done within foreign code ...
+% @tbd more of this could be done within foreign code
 
 jpl_get_array_element(Type, Array, Index, Vc) :-
     (   (   Type = class(_,_)
@@ -573,9 +586,11 @@ jpl_get_array_element(Type, Array, Index, Vc) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_get_array_elements(+ElementType, +Array, +N, +M, -Vs)
+%! jpl_get_array_elements(+ElementType, +Array, +N, +M, -Vs)
 %
-%   serves only jpl_get_instance Vs will always be unbound on entry
+% serves only jpl_get_instance/5
+%
+% Vs will always be unbound on entry
 
 jpl_get_array_elements(ElementType, Array, N, M, Vs) :-
     (   (   ElementType = class(_,_)
@@ -610,10 +625,9 @@ jpl_get_instance_field(array(_), Obj, FieldID, V) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs) is det.
+%! jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs) is det
 %
-%   Array should be a (zero-based) array   of  some object (array or
-%   non-array)  type;  LoIndex  is  an  integer,   0  =<  LoIndex  <
+% Array should be a (zero-based) array of some object (array or non-array)  type;  LoIndex  is  an  integer,   0  =<  LoIndex  <
 %   length(Array); HiIndex is an  integer,   LoIndex-1  =< HiIndex <
 %   length(Array); at call, Vcs will be   unbound; at exit, Vcs will
 %   be  a  list   of   (references    to)   the   array's   elements
@@ -692,35 +706,32 @@ jpl_get_static_field(array(_), Array, FieldID, V) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_new(+X, +Params, -V) is det.
+%! jpl_new(+X, +Params, -V) is det.
 %
 %   X can be:
-%    * an atomic classname
-%       e.g. 'java.lang.String'
-%    * an atomic descriptor
-%       e.g. '[I' or 'Ljava.lang.String;'
-%    * a suitable type
-%       i.e. any class(_,_) or array(_)
+%  * an atomic classname, e.g. =|'java.lang.String'|=
+%  * or an atomic descriptor, e.g. =|'[I'|= or =|'Ljava.lang.String;'|=
+%  * or a suitable type, i.e. any class(_,_) or array(_), e.g. class([java,util],['Date'])
 %
-%   if X is an object (non-array)  type   or  descriptor and Params is a
+% If X is an object (non-array)  type   or  descriptor and Params is a
 %   list of values or references, then V  is the result of an invocation
 %   of  that  type's  most  specifically-typed    constructor  to  whose
 %   respective formal parameters the actual   Params are assignable (and
-%   assigned)
+% assigned).
 %
-%   if X is an array type or descriptor   and Params is a list of values
+% If X is an array type or descriptor   and Params is a list of values
 %   or references, each of which is   (independently)  assignable to the
 %   array element type, then V is a  new   array  of as many elements as
 %   Params has members,  initialised  with   the  respective  members of
-%   Params;
+% Params.
 %
-%   if X is an array type  or   descriptor  and Params is a non-negative
+% If X is an array type  or   descriptor  and Params is a non-negative
 %   integer N, then V is a new array of that type, with N elements, each
-%   initialised to Java's appropriate default value for the type;
+% initialised to Java's appropriate default value for the type.
 %
 %   If V is {Term} then we attempt to convert a new jpl.Term instance to
 %   a corresponding term; this is of  little   obvious  use here, but is
-%   consistent with jpl_call/4 and jpl_get/3
+% consistent with jpl_call/4 and jpl_get/3.
 
 jpl_new(X, Params, V) :-
     (   var(X)
@@ -886,30 +897,22 @@ jpl_new_array(class(Ps,Cs), Len, A) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_set(+X, +Fspec, +V) is det.
+%! jpl_set(+X, +Fspec, +V) is det.
 %
-%   sets the Fspec-th field of class or object X to value V
-%   iff it is assignable
+% sets the Fspec-th field of (class or object) X to value V iff it is assignable
 %
-%   X can be:
-%     a class instance
-%       (for static or non-static fields)
-%     an array
-%       (for indexed element or subrange assignment)
-%     a classname, or a class/2 or array/1 type
-%       (for static fields)
-%   but not:
-%     a String (no fields to retrieve)
+% X can be
+%  * a class instance (for static or non-static fields)
+%  * or an array (for indexed element or subrange assignment)
+%  * or a classname, or a class(_,_) or array(_) type (for static fields)
+%  * but not a String (no fields to retrieve)
 %
-%   Fspec can be:
-%     an atomic field name
-%       (overloading through shadowing has yet to be handled properly)
-%     an array index I
-%       (X must be an array object: V is assigned to X[I])
-%     a pair I-J of integers
-%       (X must be an array object, V must be a list of values: successive members of V are assigned to X[I..J])
+% Fspec can be
+%  * an atomic field name (overloading through shadowing has yet to be handled properly)
+%  * or an array index I (X must be an array object: V is assigned to X[I])
+%  * or a pair I-J of integers (X must be an array object, V must be a list of values: successive members of V are assigned to X[I..J])
 %
-%   V must be a suitable value or object
+% V must be a suitable value or object.
 
 jpl_set(X, Fspec, V) :-
     (   jpl_object_to_type(X, Type)         % the usual case (test is safe if X is var or rubbish)
@@ -946,12 +949,14 @@ jpl_set(X, Fspec, V) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_set_instance(+Type, +Type, +ObjectReference, +FieldName, +Value) is det.
+%! jpl_set_instance(+Type, +Type, +ObjectReference, +FieldName, +Value) is det.
 %
 %   ObjectReference is a JPL reference to a Java object
 %   of the class denoted by Type (which is passed twice for first agument indexing);
+%
 %   FieldName should name a public, non-final (static or non-static) field of this object,
 %   but could be anything, and is validated here;
+%
 %   Value should be assignable to the named field, but could be anything, and is validated here
 
 jpl_set_instance(class(_,_), Type, Obj, Fname, V) :-    % a non-array object
@@ -1031,16 +1036,17 @@ jpl_set_instance(array(Type), _, Obj, Fspec, V) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_set_static(+Type, +ClassObj, +FieldName, +Value) is det.
+%! jpl_set_static(+Type, +ClassObj, +FieldName, +Value) is det.
 %
-%   we can rely on:
-%       Type being a class/2 type representing some accessible class
-%       ClassObj being an instance of java.lang.Class which represents the same class as Type
+% We can rely on:
+%  * Type being a class/2 type representing some accessible class
+%  * ClassObj being an instance of java.lang.Class which represents the same class as Type
+%
 %   but FieldName could be anything, so we validate it here,
 %   look for a suitable (static) field of the target class,
 %   then call jpl_set_static_field/4 to attempt to assign Value (which could be anything) to it
 %
-%   NB this does not yet handle shadowed fields correctly...
+% NB this does not yet handle shadowed fields correctly.
 
 jpl_set_static(Type, ClassObj, Fname, V) :-
     (   atom(Fname)                     % the usual case
@@ -1074,12 +1080,12 @@ jpl_set_static(Type, ClassObj, Fname, V) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_set_array(+ElementType, +Array, +Offset, +DatumQty, +Datums) is det.
+%! jpl_set_array(+ElementType, +Array, +Offset, +DatumQty, +Datums) is det.
 %
 %   Datums, of which there are DatumQty,   are stashed in successive
 %   elements of Array which is an   array of ElementType starting at
-%   the      Offset-th      (numbered      from       0)      throws
-%   error(type_error(acyclic,_),context(jpl_datum_to_type/2,_))
+% the Offset-th (numbered from 0)
+% throws error(type_error(acyclic,_),context(jpl_datum_to_type/2,_))
 
 jpl_set_array(T, A, N, I, Ds) :-
     (   jpl_datums_to_types(Ds, Tds)        % most specialised types of given values
@@ -1113,7 +1119,7 @@ jpl_set_array(T, A, N, I, Ds) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_set_array_1(+Values, +Type, +BufferIndex, +BufferPointer) is det.
+%! jpl_set_array_1(+Values, +Type, +BufferIndex, +BufferPointer) is det.
 %
 %   successive members of Values  are   stashed  as (primitive) Type
 %   from the BufferIndex-th element (numbered from 0) onwards of the
@@ -1149,9 +1155,9 @@ jpl_set_elements(double, Obj, N, I, Bp) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_set_instance_field(+Type, +Obj, +FieldID, +V) is det.
+%! jpl_set_instance_field(+Type, +Obj, +FieldID, +V) is det.
 %
-%   we can rely on Type, Obj and FieldID being valid, and on V being
+% We can rely on Type, Obj and FieldID being valid, and on V being
 %   assignable (if V is a quoted term then it is converted here)
 
 jpl_set_instance_field(boolean, Obj, FieldID, V) :-
@@ -1181,10 +1187,10 @@ jpl_set_instance_field(array(_), Obj, FieldID, V) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_set_static_field(+Type, +ClassObj, +FieldID, +V)
+%! jpl_set_static_field(+Type, +ClassObj, +FieldID, +V)
 %
-%   we can rely on Type, ClassObj and FieldID being valid,
-%   and on V being assignable (if V is a quoted term then it is converted here)
+% We can rely on Type, ClassObj and FieldID being valid,
+% and on V being assignable (if V is a quoted term then it is converted here).
 
 jpl_set_static_field(boolean, Obj, FieldID, V) :-
     jSetStaticBooleanField(Obj, FieldID, V).
@@ -1213,11 +1219,13 @@ jpl_set_static_field(array(_), Obj, FieldID, V) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_z3s_to_most_specific_z3(+Zs, -Z)
+%! jpl_z3s_to_most_specific_z3(+Zs, -Z)
 %
 %   Zs is a list of arity-matching, type-suitable z3(I,MID,Tfps)
+%
 %   Z is the single most specific element of Zs,
 %   i.e. that than which no other z3/3 has a more specialised signature;
+%
 %   fails if there is more than one such
 
 jpl_z3s_to_most_specific_z3(Zs, Z) :-
@@ -1225,19 +1233,32 @@ jpl_z3s_to_most_specific_z3(Zs, Z) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_z5s_to_most_specific_z5(+Zs, -Z)
+%! jpl_z5s_to_most_specific_z5(+Zs, -Z)
 %
 %   Zs is a list of arity-matching, type-suitable z5(I,Mods,MID,Tr,Tfps)
+%
 %   Z is the single most specific element of Zs,
 %   i.e. that than which no other z5/5 has a more specialised signature
-%   (this fails if there is more than one such)
+%
+% fails if there is more than one such
 
 jpl_z5s_to_most_specific_z5(Zs, Z) :-
     jpl_fergus_is_the_greatest(Zs, Z).
 
 %------------------------------------------------------------------------------
 
-%%  jpl_pl_lib_version(-VersionString)
+%! jpl_pl_lib_version(-Version)
+%
+% Version is the fully qualified version identifier of the in-use Prolog component (jpl.pl) of JPL.
+%
+% It should exactly match the version identifiers of JPL's C (jpl.c) and Java (jpl.jar) components.
+%
+% Example
+%
+%  ==
+%  ?- jpl_pl_lib_version(V).
+%  V = '7.0.0-alpha'.
+%  ==
 
 jpl_pl_lib_version(VersionString) :-
     jpl_pl_lib_version(Major, Minor, Patch, Status),
@@ -1245,12 +1266,33 @@ jpl_pl_lib_version(VersionString) :-
 
 %------------------------------------------------------------------------------
 
-%%  jpl_pl_lib_version(-Major, -Minor, -Patch, -Status)
+%! jpl_pl_lib_version(-Major, -Minor, -Patch, -Status)
 %
-%   returns a version identifier for this version of jpl.pl,
-%   which 
+% Major, Minor, Patch and Status are the respective components of the version identifier of the in-use C component (jpl.c) of JPL.
+%
+% Example
+%
+%  ==
+%  ?- jpl:jpl_pl_lib_version(Major, Minor, Patch, Status).
+%  Major = 7,
+%  Minor = Patch, Patch = 0,
+%  Status = alpha.
+%  ==
 
 jpl_pl_lib_version(7, 0, 0, alpha).
+
+%! jpl_c_lib_version(-Version)
+%
+% Version is the fully qualified version identifier of the in-use C component (jpl.c) of JPL.
+%
+% It should exactly match the version identifiers of JPL's Prolog (jpl.pl) and Java (jpl.jar) components.
+%
+% Example
+%
+%  ==
+%  ?- jpl_c_lib_version(V).
+%  V = '7.0.0-alpha'.
+%  ==
 
 %------------------------------------------------------------------------------
 
@@ -1461,7 +1503,7 @@ jpl_type_void(void) -->
 
 %type   jCallBooleanMethod(object, method_id, types, datums, boolean)
 
-% jCallBooleanMethod(+Obj, +MethodID, +Types, +Params, -Rbool) :-
+%! jCallBooleanMethod(+Obj, +MethodID, +Types, +Params, -Rbool)
 
 jCallBooleanMethod(Obj, MethodID, Types, Params, Rbool) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1471,7 +1513,7 @@ jCallBooleanMethod(Obj, MethodID, Types, Params, Rbool) :-
 
 %type   jCallByteMethod(object, method_id, types, datums, byte)
 
-% jCallByteMethod(+Obj, +MethodID, +Types, +Params, -Rbyte) :-
+%! jCallByteMethod(+Obj, +MethodID, +Types, +Params, -Rbyte)
 
 jCallByteMethod(Obj, MethodID, Types, Params, Rbyte) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1481,7 +1523,7 @@ jCallByteMethod(Obj, MethodID, Types, Params, Rbyte) :-
 
 %type   jCallCharMethod(object, method_id, types, datums, char)
 
-% jCallCharMethod(+Obj, +MethodID, +Types, +Params, -Rchar) :-
+%! jCallCharMethod(+Obj, +MethodID, +Types, +Params, -Rchar)
 
 jCallCharMethod(Obj, MethodID, Types, Params, Rchar) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1491,7 +1533,7 @@ jCallCharMethod(Obj, MethodID, Types, Params, Rchar) :-
 
 %type   jCallDoubleMethod(object, method_id, types, datums, double)
 
-% jCallDoubleMethod(+Obj, +MethodID, +Types, +Params, -Rdouble) :-
+%! jCallDoubleMethod(+Obj, +MethodID, +Types, +Params, -Rdouble)
 
 jCallDoubleMethod(Obj, MethodID, Types, Params, Rdouble) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1501,7 +1543,7 @@ jCallDoubleMethod(Obj, MethodID, Types, Params, Rdouble) :-
 
 %type   jCallFloatMethod(object, method_id, types, datums, float)
 
-% jCallFloatMethod(+Obj, +MethodID, +Types, +Params, -Rfloat) :-
+%! jCallFloatMethod(+Obj, +MethodID, +Types, +Params, -Rfloat)
 
 jCallFloatMethod(Obj, MethodID, Types, Params, Rfloat) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1511,7 +1553,7 @@ jCallFloatMethod(Obj, MethodID, Types, Params, Rfloat) :-
 
 %type   jCallIntMethod(object, method_id, types, datums, int)
 
-% jCallIntMethod(+Obj, +MethodID, +Types, +Params, -Rint) :-
+%! jCallIntMethod(+Obj, +MethodID, +Types, +Params, -Rint)
 
 jCallIntMethod(Obj, MethodID, Types, Params, Rint) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1521,7 +1563,7 @@ jCallIntMethod(Obj, MethodID, Types, Params, Rint) :-
 
 %type   jCallLongMethod(object, method_id, types, datums, long)
 
-% jCallLongMethod(+Obj, +MethodID, +Types, +Params, -Rlong) :-
+%! jCallLongMethod(+Obj, +MethodID, +Types, +Params, -Rlong)
 
 jCallLongMethod(Obj, MethodID, Types, Params, Rlong) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1531,7 +1573,7 @@ jCallLongMethod(Obj, MethodID, Types, Params, Rlong) :-
 
 %type   jCallObjectMethod(object, method_id, types, datums, object)
 
-% jCallObjectMethod(+Obj, +MethodID, +Types, +Params, -Robj) :-
+%! jCallObjectMethod(+Obj, +MethodID, +Types, +Params, -Robj)
 
 jCallObjectMethod(Obj, MethodID, Types, Params, Robj) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1541,7 +1583,7 @@ jCallObjectMethod(Obj, MethodID, Types, Params, Robj) :-
 
 %type   jCallShortMethod(object, method_id, types, datums, short)
 
-% jCallShortMethod(+Obj, +MethodID, +Types, +Params, -Rshort) :-
+%! jCallShortMethod(+Obj, +MethodID, +Types, +Params, -Rshort)
 
 jCallShortMethod(Obj, MethodID, Types, Params, Rshort) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1551,7 +1593,7 @@ jCallShortMethod(Obj, MethodID, Types, Params, Rshort) :-
 
 %type   jCallStaticBooleanMethod(class, types, datums, boolean)
 
-% jCallStaticBooleanMethod(+Class, +MethodID, +Types, +Params, -Rbool) :-
+%! jCallStaticBooleanMethod(+Class, +MethodID, +Types, +Params, -Rbool)
 
 jCallStaticBooleanMethod(Class, MethodID, Types, Params, Rbool) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1561,7 +1603,7 @@ jCallStaticBooleanMethod(Class, MethodID, Types, Params, Rbool) :-
 
 %type   jCallStaticByteMethod(class, method_id, types, datums, byte)
 
-% jCallStaticByteMethod(+Class, +MethodID, +Types, +Params, -Rbyte) :-
+%! jCallStaticByteMethod(+Class, +MethodID, +Types, +Params, -Rbyte)
 
 jCallStaticByteMethod(Class, MethodID, Types, Params, Rbyte) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1571,7 +1613,7 @@ jCallStaticByteMethod(Class, MethodID, Types, Params, Rbyte) :-
 
 %type   jCallStaticCharMethod(class, method_id, types, datums, char)
 
-% jCallStaticCharMethod(+Class, +MethodID, +Types, +Params, -Rchar) :-
+%! jCallStaticCharMethod(+Class, +MethodID, +Types, +Params, -Rchar)
 
 jCallStaticCharMethod(Class, MethodID, Types, Params, Rchar) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1581,7 +1623,7 @@ jCallStaticCharMethod(Class, MethodID, Types, Params, Rchar) :-
 
 %type   jCallStaticDoubleMethod(class, method_id, types, datums, double)
 
-% jCallStaticDoubleMethod(+Class, +MethodID, +Types, +Params, -Rdouble) :-
+%! jCallStaticDoubleMethod(+Class, +MethodID, +Types, +Params, -Rdouble)
 
 jCallStaticDoubleMethod(Class, MethodID, Types, Params, Rdouble) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1591,7 +1633,7 @@ jCallStaticDoubleMethod(Class, MethodID, Types, Params, Rdouble) :-
 
 %type   jCallStaticFloatMethod(class, method_id, types, datums, float)
 
-% jCallStaticFloatMethod(+Class, +MethodID, +Types, +Params, -Rfloat) :-
+%! jCallStaticFloatMethod(+Class, +MethodID, +Types, +Params, -Rfloat)
 
 jCallStaticFloatMethod(Class, MethodID, Types, Params, Rfloat) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1601,7 +1643,7 @@ jCallStaticFloatMethod(Class, MethodID, Types, Params, Rfloat) :-
 
 %type   jCallStaticIntMethod(class, method_id, types, datums, int)
 
-% jCallStaticIntMethod(+Class, +MethodID, +Types, +Params, -Rint) :-
+%! jCallStaticIntMethod(+Class, +MethodID, +Types, +Params, -Rint)
 
 jCallStaticIntMethod(Class, MethodID, Types, Params, Rint) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1611,7 +1653,7 @@ jCallStaticIntMethod(Class, MethodID, Types, Params, Rint) :-
 
 %type   jCallStaticLongMethod(class, method_id, types, datums, long)
 
-% jCallStaticLongMethod(+Class, +MethodID, +Types, +Params, -Rlong) :-
+%! jCallStaticLongMethod(+Class, +MethodID, +Types, +Params, -Rlong)
 
 jCallStaticLongMethod(Class, MethodID, Types, Params, Rlong) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1621,7 +1663,7 @@ jCallStaticLongMethod(Class, MethodID, Types, Params, Rlong) :-
 
 %type   jCallStaticObjectMethod(class, method_id, types, datums, object)
 
-% jCallStaticObjectMethod(+Class, +MethodID, +Types, +Params, -Robj) :-
+%! jCallStaticObjectMethod(+Class, +MethodID, +Types, +Params, -Robj)
 
 jCallStaticObjectMethod(Class, MethodID, Types, Params, Robj) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1631,7 +1673,7 @@ jCallStaticObjectMethod(Class, MethodID, Types, Params, Robj) :-
 
 %type   jCallStaticShortMethod(class, method_id, types, datums, short)
 
-% jCallStaticShortMethod(+Class, +MethodID, +Types, +Params, -Rshort) :-
+%! jCallStaticShortMethod(+Class, +MethodID, +Types, +Params, -Rshort)
 
 jCallStaticShortMethod(Class, MethodID, Types, Params, Rshort) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1641,7 +1683,7 @@ jCallStaticShortMethod(Class, MethodID, Types, Params, Rshort) :-
 
 %type   jCallStaticVoidMethod(class, method_id, types, datums)
 
-% jCallStaticVoidMethod(+Class, +MethodID, +Types, +Params) :-
+%! jCallStaticVoidMethod(+Class, +MethodID, +Types, +Params)
 
 jCallStaticVoidMethod(Class, MethodID, Types, Params) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1651,7 +1693,7 @@ jCallStaticVoidMethod(Class, MethodID, Types, Params) :-
 
 %type   jCallVoidMethod(object, method_id, types, datums)
 
-% jCallVoidMethod(+Obj, +MethodID, +Types, +Params) :-
+%! jCallVoidMethod(+Obj, +MethodID, +Types, +Params)
 
 jCallVoidMethod(Obj, MethodID, Types, Params) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -1661,7 +1703,7 @@ jCallVoidMethod(Obj, MethodID, Types, Params) :-
 
 %type   jFindClass(findclassname, class)
 
-% jFindClass(+ClassName, -Class) :-
+%! jFindClass(+ClassName, -Class)
 
 jFindClass(ClassName, Class) :-
     jni_func(6, ClassName, Class).
@@ -1670,7 +1712,7 @@ jFindClass(ClassName, Class) :-
 
 %type   jGetArrayLength(array, int)
 
-% jGetArrayLength(+Array, -Size) :-
+%! jGetArrayLength(+Array, -Size)
 
 jGetArrayLength(Array, Size) :-
     jni_func(171, Array, Size).
@@ -1679,7 +1721,7 @@ jGetArrayLength(Array, Size) :-
 
 %type   jGetBooleanArrayRegion(boolean_array, int, int, boolean_buf)
 
-% jGetBooleanArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jGetBooleanArrayRegion(+Array, +Start, +Len, +Buf)
 
 jGetBooleanArrayRegion(Array, Start, Len, Buf) :-
     jni_void(199, Array, Start, Len, Buf).
@@ -1688,7 +1730,7 @@ jGetBooleanArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jGetBooleanField(object, field_id, boolean)
 
-% jGetBooleanField(+Obj, +FieldID, -Rbool) :-
+%! jGetBooleanField(+Obj, +FieldID, -Rbool)
 
 jGetBooleanField(Obj, FieldID, Rbool) :-
     jni_func(96, Obj, FieldID, Rbool).
@@ -1697,7 +1739,7 @@ jGetBooleanField(Obj, FieldID, Rbool) :-
 
 %type   jGetByteArrayRegion(byte_array, int, int, byte_buf)
 
-% jGetByteArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jGetByteArrayRegion(+Array, +Start, +Len, +Buf)
 
 jGetByteArrayRegion(Array, Start, Len, Buf) :-
     jni_void(200, Array, Start, Len, Buf).
@@ -1706,7 +1748,7 @@ jGetByteArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jGetByteField(object, field_id, byte)
 
-% jGetByteField(+Obj, +FieldID, -Rbyte) :-
+%! jGetByteField(+Obj, +FieldID, -Rbyte)
 
 jGetByteField(Obj, FieldID, Rbyte) :-
     jni_func(97, Obj, FieldID, Rbyte).
@@ -1715,7 +1757,7 @@ jGetByteField(Obj, FieldID, Rbyte) :-
 
 %type   jGetCharArrayRegion(char_array, int, int, char_buf)
 
-% jGetCharArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jGetCharArrayRegion(+Array, +Start, +Len, +Buf)
 
 jGetCharArrayRegion(Array, Start, Len, Buf) :-
     jni_void(201, Array, Start, Len, Buf).
@@ -1724,7 +1766,7 @@ jGetCharArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jGetCharField(object, field_id, char)
 
-% jGetCharField(+Obj, +FieldID, -Rchar) :-
+%! jGetCharField(+Obj, +FieldID, -Rchar)
 
 jGetCharField(Obj, FieldID, Rchar) :-
     jni_func(98, Obj, FieldID, Rchar).
@@ -1733,7 +1775,7 @@ jGetCharField(Obj, FieldID, Rchar) :-
 
 %type   jGetDoubleArrayRegion(double_array, int, int, double_buf)
 
-% jGetDoubleArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jGetDoubleArrayRegion(+Array, +Start, +Len, +Buf)
 
 jGetDoubleArrayRegion(Array, Start, Len, Buf) :-
     jni_void(206, Array, Start, Len, Buf).
@@ -1742,7 +1784,7 @@ jGetDoubleArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jGetDoubleField(object, field_id, double)
 
-% jGetDoubleField(+Obj, +FieldID, -Rdouble) :-
+%! jGetDoubleField(+Obj, +FieldID, -Rdouble)
 
 jGetDoubleField(Obj, FieldID, Rdouble) :-
     jni_func(103, Obj, FieldID, Rdouble).
@@ -1751,7 +1793,7 @@ jGetDoubleField(Obj, FieldID, Rdouble) :-
 
 %type   jGetFieldID(class, descriptor, field_id)
 
-% jGetFieldID(+Class, +Name, +Typedescriptor, -FieldID) :-
+%! jGetFieldID(+Class, +Name, +Typedescriptor, -FieldID)
 
 jGetFieldID(Class, Name, Type, FieldID) :-
     jpl_type_to_descriptor(Type, TD),
@@ -1761,7 +1803,7 @@ jGetFieldID(Class, Name, Type, FieldID) :-
 
 %type   jGetFloatArrayRegion(float_array, int, int, float_buf)
 
-% jGetFloatArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jGetFloatArrayRegion(+Array, +Start, +Len, +Buf)
 
 jGetFloatArrayRegion(Array, Start, Len, Buf) :-
     jni_void(205, Array, Start, Len, Buf).
@@ -1770,7 +1812,7 @@ jGetFloatArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jGetFloatField(object, field_id, float)
 
-% jGetFloatField(+Obj, +FieldID, -Rfloat) :-
+%! jGetFloatField(+Obj, +FieldID, -Rfloat)
 
 jGetFloatField(Obj, FieldID, Rfloat) :-
     jni_func(102, Obj, FieldID, Rfloat).
@@ -1779,7 +1821,7 @@ jGetFloatField(Obj, FieldID, Rfloat) :-
 
 %type   jGetIntArrayRegion(int_array, int, int, int_buf)
 
-% jGetIntArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jGetIntArrayRegion(+Array, +Start, +Len, +Buf)
 
 jGetIntArrayRegion(Array, Start, Len, Buf) :-
     jni_void(203, Array, Start, Len, Buf).
@@ -1788,7 +1830,7 @@ jGetIntArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jGetIntField(object, field_id, int)
 
-% jGetIntField(+Obj, +FieldID, -Rint) :-
+%! jGetIntField(+Obj, +FieldID, -Rint)
 
 jGetIntField(Obj, FieldID, Rint) :-
     jni_func(100, Obj, FieldID, Rint).
@@ -1797,7 +1839,7 @@ jGetIntField(Obj, FieldID, Rint) :-
 
 %type   jGetLongArrayRegion(long_array, int, int, long_buf)
 
-% jGetLongArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jGetLongArrayRegion(+Array, +Start, +Len, +Buf)
 
 jGetLongArrayRegion(Array, Start, Len, Buf) :-
     jni_void(204, Array, Start, Len, Buf).
@@ -1806,7 +1848,7 @@ jGetLongArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jGetLongField(object, field_id, long)
 
-% jGetLongField(+Obj, +FieldID, -Rlong) :-
+%! jGetLongField(+Obj, +FieldID, -Rlong)
 
 jGetLongField(Obj, FieldID, Rlong) :-
     jni_func(101, Obj, FieldID, Rlong).
@@ -1815,7 +1857,7 @@ jGetLongField(Obj, FieldID, Rlong) :-
 
 %type   jGetMethodID(class, name, descriptor, method_id)
 
-% jGetMethodID(+Class, +Name, +TypeDescriptor, -MethodID) :-
+%! jGetMethodID(+Class, +Name, +TypeDescriptor, -MethodID)
 
 jGetMethodID(Class, Name, Type, MethodID) :-
     jpl_type_to_descriptor(Type, TD),
@@ -1825,7 +1867,7 @@ jGetMethodID(Class, Name, Type, MethodID) :-
 
 %type   jGetObjectArrayElement(object_array, int, object)
 
-% jGetObjectArrayElement(+Array, +Index, -Obj) :-
+%! jGetObjectArrayElement(+Array, +Index, -Obj)
 
 jGetObjectArrayElement(Array, Index, Obj) :-
     jni_func(173, Array, Index, Obj).
@@ -1834,7 +1876,7 @@ jGetObjectArrayElement(Array, Index, Obj) :-
 
 %type   jGetObjectClass(object, class)
 
-% jGetObjectClass(+Object, -Class) :-
+%! jGetObjectClass(+Object, -Class)
 
 jGetObjectClass(Object, Class) :-
     jni_func(31, Object, Class).
@@ -1843,7 +1885,7 @@ jGetObjectClass(Object, Class) :-
 
 %type   jGetObjectField(object, field_id, object)
 
-% jGetObjectField(+Obj, +FieldID, -RObj) :-
+%! jGetObjectField(+Obj, +FieldID, -RObj)
 
 jGetObjectField(Obj, FieldID, Robj) :-
     jni_func(95, Obj, FieldID, Robj).
@@ -1852,7 +1894,7 @@ jGetObjectField(Obj, FieldID, Robj) :-
 
 %type   jGetShortArrayRegion(short_array, int, int, short_buf)
 
-% jGetShortArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jGetShortArrayRegion(+Array, +Start, +Len, +Buf)
 
 jGetShortArrayRegion(Array, Start, Len, Buf) :-
     jni_void(202, Array, Start, Len, Buf).
@@ -1861,7 +1903,7 @@ jGetShortArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jGetShortField(object, field_id, short)
 
-% jGetShortField(+Obj, +FieldID, -Rshort) :-
+%! jGetShortField(+Obj, +FieldID, -Rshort)
 
 jGetShortField(Obj, FieldID, Rshort) :-
     jni_func(99, Obj, FieldID, Rshort).
@@ -1870,7 +1912,7 @@ jGetShortField(Obj, FieldID, Rshort) :-
 
 %type   jGetStaticBooleanField(class, field_id, boolean)
 
-% jGetStaticBooleanField(+Class, +FieldID, -Rbool) :-
+%! jGetStaticBooleanField(+Class, +FieldID, -Rbool)
 
 jGetStaticBooleanField(Class, FieldID, Rbool) :-
     jni_func(146, Class, FieldID, Rbool).
@@ -1879,7 +1921,7 @@ jGetStaticBooleanField(Class, FieldID, Rbool) :-
 
 %type   jGetStaticByteField(class, field_id, byte)
 
-% jGetStaticByteField(+Class, +FieldID, -Rbyte) :-
+%! jGetStaticByteField(+Class, +FieldID, -Rbyte)
 
 jGetStaticByteField(Class, FieldID, Rbyte) :-
     jni_func(147, Class, FieldID, Rbyte).
@@ -1888,7 +1930,7 @@ jGetStaticByteField(Class, FieldID, Rbyte) :-
 
 %type   jGetStaticCharField(class, field_id, char)
 
-% jGetStaticCharField(+Class, +FieldID, -Rchar) :-
+%! jGetStaticCharField(+Class, +FieldID, -Rchar)
 
 jGetStaticCharField(Class, FieldID, Rchar) :-
     jni_func(148, Class, FieldID, Rchar).
@@ -1897,7 +1939,7 @@ jGetStaticCharField(Class, FieldID, Rchar) :-
 
 %type   jGetStaticDoubleField(class, field_id, double)
 
-% jGetStaticDoubleField(+Class, +FieldID, -Rdouble) :-
+%! jGetStaticDoubleField(+Class, +FieldID, -Rdouble)
 
 jGetStaticDoubleField(Class, FieldID, Rdouble) :-
     jni_func(153, Class, FieldID, Rdouble).
@@ -1906,7 +1948,7 @@ jGetStaticDoubleField(Class, FieldID, Rdouble) :-
 
 %type   jGetStaticFieldID(class, name, field_id)
 
-% jGetStaticFieldID(+Class, +Name, +TypeDescriptor, -FieldID) :-
+%! jGetStaticFieldID(+Class, +Name, +TypeDescriptor, -FieldID)
 
 jGetStaticFieldID(Class, Name, Type, FieldID) :-
     jpl_type_to_descriptor(Type, TD),               % cache this?
@@ -1916,7 +1958,7 @@ jGetStaticFieldID(Class, Name, Type, FieldID) :-
 
 %type   jGetStaticFloatField(class, field_id, float)
 
-% jGetStaticFloatField(+Class, +FieldID, -Rfloat) :-
+%! jGetStaticFloatField(+Class, +FieldID, -Rfloat)
 
 jGetStaticFloatField(Class, FieldID, Rfloat) :-
     jni_func(152, Class, FieldID, Rfloat).
@@ -1925,7 +1967,7 @@ jGetStaticFloatField(Class, FieldID, Rfloat) :-
 
 %type   jGetStaticIntField(class, field_id, int)
 
-% jGetStaticIntField(+Class, +FieldID, -Rint) :-
+%! jGetStaticIntField(+Class, +FieldID, -Rint)
 
 jGetStaticIntField(Class, FieldID, Rint) :-
     jni_func(150, Class, FieldID, Rint).
@@ -1934,7 +1976,7 @@ jGetStaticIntField(Class, FieldID, Rint) :-
 
 %type   jGetStaticLongField(class, field_id, long)
 
-% jGetStaticLongField(+Class, +FieldID, -Rlong) :-
+%! jGetStaticLongField(+Class, +FieldID, -Rlong)
 
 jGetStaticLongField(Class, FieldID, Rlong) :-
     jni_func(151, Class, FieldID, Rlong).
@@ -1943,7 +1985,7 @@ jGetStaticLongField(Class, FieldID, Rlong) :-
 
 %type   jGetStaticMethodID(class, name, method_id)
 
-% jGetStaticMethodID(+Class, +Name, +TypeDescriptor, -MethodID) :-
+%! jGetStaticMethodID(+Class, +Name, +TypeDescriptor, -MethodID)
 
 jGetStaticMethodID(Class, Name, Type, MethodID) :-
     jpl_type_to_descriptor(Type, TD),
@@ -1953,7 +1995,7 @@ jGetStaticMethodID(Class, Name, Type, MethodID) :-
 
 %type   jGetStaticObjectField(class, field_id, object)
 
-% jGetStaticObjectField(+Class, +FieldID, -RObj) :-
+%! jGetStaticObjectField(+Class, +FieldID, -RObj)
 
 jGetStaticObjectField(Class, FieldID, Robj) :-
     jni_func(145, Class, FieldID, Robj).
@@ -1962,7 +2004,7 @@ jGetStaticObjectField(Class, FieldID, Robj) :-
 
 %type   jGetStaticShortField(class, field_id, short)
 
-% jGetStaticShortField(+Class, +FieldID, -Rshort) :-
+%! jGetStaticShortField(+Class, +FieldID, -Rshort)
 
 jGetStaticShortField(Class, FieldID, Rshort) :-
     jni_func(149, Class, FieldID, Rshort).
@@ -1971,7 +2013,7 @@ jGetStaticShortField(Class, FieldID, Rshort) :-
 
 %type   jGetSuperclass(object, object)
 
-% jGetSuperclass(+Class1, -Class2) :-
+%! jGetSuperclass(+Class1, -Class2)
 
 jGetSuperclass(Class1, Class2) :-
     jni_func(10, Class1, Class2).
@@ -1980,7 +2022,7 @@ jGetSuperclass(Class1, Class2) :-
 
 %type   jIsAssignableFrom(object, object)
 
-% jIsAssignableFrom(+Class1, +Class2) :-
+%! jIsAssignableFrom(+Class1, +Class2)
 
 jIsAssignableFrom(Class1, Class2) :-
     jni_func(11, Class1, Class2, @(true)).
@@ -1989,7 +2031,7 @@ jIsAssignableFrom(Class1, Class2) :-
 
 %type   jNewBooleanArray(int, boolean_array)
 
-% jNewBooleanArray(+Length, -Array) :-
+%! jNewBooleanArray(+Length, -Array)
 
 jNewBooleanArray(Length, Array) :-
     jni_func(175, Length, Array).
@@ -1998,7 +2040,7 @@ jNewBooleanArray(Length, Array) :-
 
 %type   jNewByteArray(int, byte_array)
 
-% jNewByteArray(+Length, -Array) :-
+%! jNewByteArray(+Length, -Array)
 
 jNewByteArray(Length, Array) :-
     jni_func(176, Length, Array).
@@ -2007,7 +2049,7 @@ jNewByteArray(Length, Array) :-
 
 %type   jNewCharArray(int, char_array)
 
-% jNewCharArray(+Length, -Array) :-
+%! jNewCharArray(+Length, -Array)
 
 jNewCharArray(Length, Array) :-
     jni_func(177, Length, Array).
@@ -2016,7 +2058,7 @@ jNewCharArray(Length, Array) :-
 
 %type   jNewDoubleArray(int, double_array)
 
-% jNewDoubleArray(+Length, -Array) :-
+%! jNewDoubleArray(+Length, -Array)
 
 jNewDoubleArray(Length, Array) :-
     jni_func(182, Length, Array).
@@ -2025,7 +2067,7 @@ jNewDoubleArray(Length, Array) :-
 
 %type   jNewFloatArray(int, float_array)
 
-% jNewFloatArray(+Length, -Array) :-
+%! jNewFloatArray(+Length, -Array)
 
 jNewFloatArray(Length, Array) :-
     jni_func(181, Length, Array).
@@ -2034,7 +2076,7 @@ jNewFloatArray(Length, Array) :-
 
 %type   jNewIntArray(int, int_array)
 
-% jNewIntArray(+Length, -Array) :-
+%! jNewIntArray(+Length, -Array)
 
 jNewIntArray(Length, Array) :-
     jni_func(179, Length, Array).
@@ -2043,7 +2085,7 @@ jNewIntArray(Length, Array) :-
 
 %type   jNewLongArray(int, long_array)
 
-% jNewLongArray(+Length, -Array) :-
+%! jNewLongArray(+Length, -Array)
 
 jNewLongArray(Length, Array) :-
     jni_func(180, Length, Array).
@@ -2052,7 +2094,7 @@ jNewLongArray(Length, Array) :-
 
 %type   jNewObject(class, method_id, types, datums, object)
 
-% jNewObject(+Class, +MethodID, +Types, +Params, -Obj) :-
+%! jNewObject(+Class, +MethodID, +Types, +Params, -Obj)
 
 jNewObject(Class, MethodID, Types, Params, Obj) :-
     jni_params_put(Params, Types, ParamBuf),
@@ -2062,7 +2104,7 @@ jNewObject(Class, MethodID, Types, Params, Obj) :-
 
 %type   jNewObjectArray(int, class, object, object_array)
 
-% jNewObjectArray(+Len, +Class, +InitVal, -Array) :-
+%! jNewObjectArray(+Len, +Class, +InitVal, -Array)
 
 jNewObjectArray(Len, Class, InitVal, Array) :-
     jni_func(172, Len, Class, InitVal, Array).
@@ -2071,7 +2113,7 @@ jNewObjectArray(Len, Class, InitVal, Array) :-
 
 %type   jNewShortArray(int, short_array)
 
-% jNewShortArray(+Length, -Array) :-
+%! jNewShortArray(+Length, -Array)
 
 jNewShortArray(Length, Array) :-
     jni_func(178, Length, Array).
@@ -2080,7 +2122,7 @@ jNewShortArray(Length, Array) :-
 
 %type   jSetBooleanArrayRegion(boolean_array, int, int, boolean_buf)
 
-% jSetBooleanArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jSetBooleanArrayRegion(+Array, +Start, +Len, +Buf)
 
 jSetBooleanArrayRegion(Array, Start, Len, Buf) :-
     jni_void(207, Array, Start, Len, Buf).
@@ -2089,7 +2131,7 @@ jSetBooleanArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jSetBooleanField(object, field_id, boolean)
 
-% jSetBooleanField(+Obj, +FieldID, +Rbool) :-
+%! jSetBooleanField(+Obj, +FieldID, +Rbool)
 
 jSetBooleanField(Obj, FieldID, Rbool) :-
     jni_void(105, Obj, FieldID, Rbool).
@@ -2098,7 +2140,7 @@ jSetBooleanField(Obj, FieldID, Rbool) :-
 
 %type   jSetByteArrayRegion(byte_array, int, int, byte_buf)
 
-% jSetByteArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jSetByteArrayRegion(+Array, +Start, +Len, +Buf)
 
 jSetByteArrayRegion(Array, Start, Len, Buf) :-
     jni_void(208, Array, Start, Len, Buf).
@@ -2107,7 +2149,7 @@ jSetByteArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jSetByteField(object, field_id, byte)
 
-% jSetByteField(+Obj, +FieldID, +Rbyte) :-
+%! jSetByteField(+Obj, +FieldID, +Rbyte)
 
 jSetByteField(Obj, FieldID, Rbyte) :-
     jni_void(106, Obj, FieldID, Rbyte).
@@ -2116,7 +2158,7 @@ jSetByteField(Obj, FieldID, Rbyte) :-
 
 %type   jSetCharArrayRegion(char_array, int, int, char_buf)
 
-% jSetCharArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jSetCharArrayRegion(+Array, +Start, +Len, +Buf)
 
 jSetCharArrayRegion(Array, Start, Len, Buf) :-
     jni_void(209, Array, Start, Len, Buf).
@@ -2125,7 +2167,7 @@ jSetCharArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jSetCharField(object, field_id, char)
 
-% jSetCharField(+Obj, +FieldID, +Rchar) :-
+%! jSetCharField(+Obj, +FieldID, +Rchar)
 
 jSetCharField(Obj, FieldID, Rchar) :-
     jni_void(107, Obj, FieldID, Rchar).
@@ -2134,7 +2176,7 @@ jSetCharField(Obj, FieldID, Rchar) :-
 
 %type   jSetDoubleArrayRegion(double_array, int, int, double_buf)
 
-% jSetDoubleArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jSetDoubleArrayRegion(+Array, +Start, +Len, +Buf)
 
 jSetDoubleArrayRegion(Array, Start, Len, Buf) :-
     jni_void(214, Array, Start, Len, Buf).
@@ -2143,7 +2185,7 @@ jSetDoubleArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jSetDoubleField(object, field_id, double)
 
-% jSetDoubleField(+Obj, +FieldID, +Rdouble) :-
+%! jSetDoubleField(+Obj, +FieldID, +Rdouble)
 
 jSetDoubleField(Obj, FieldID, Rdouble) :-
     jni_void(112, Obj, FieldID, Rdouble).
@@ -2152,7 +2194,7 @@ jSetDoubleField(Obj, FieldID, Rdouble) :-
 
 %type   jSetFloatArrayRegion(float_array, int, int, float_buf)
 
-% jSetFloatArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jSetFloatArrayRegion(+Array, +Start, +Len, +Buf)
 
 jSetFloatArrayRegion(Array, Start, Len, Buf) :-
     jni_void(213, Array, Start, Len, Buf).
@@ -2161,7 +2203,7 @@ jSetFloatArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jSetFloatField(object, field_id, float)
 
-% jSetFloatField(+Obj, +FieldID, +Rfloat) :-
+%! jSetFloatField(+Obj, +FieldID, +Rfloat)
 
 jSetFloatField(Obj, FieldID, Rfloat) :-
     jni_void(111, Obj, FieldID, Rfloat).
@@ -2170,7 +2212,7 @@ jSetFloatField(Obj, FieldID, Rfloat) :-
 
 %type   jSetIntArrayRegion(int_array, int, int, int_buf)
 
-% jSetIntArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jSetIntArrayRegion(+Array, +Start, +Len, +Buf)
 
 jSetIntArrayRegion(Array, Start, Len, Buf) :-
     jni_void(211, Array, Start, Len, Buf).
@@ -2179,7 +2221,7 @@ jSetIntArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jSetIntField(object, field_id, int)
 
-% jSetIntField(+Obj, +FieldID, +Rint) :-
+%! jSetIntField(+Obj, +FieldID, +Rint)
 
 jSetIntField(Obj, FieldID, Rint) :-
     jni_void(109, Obj, FieldID, Rint).
@@ -2188,7 +2230,7 @@ jSetIntField(Obj, FieldID, Rint) :-
 
 %type   jSetLongArrayRegion(long_array, int, int, long_buf)
 
-% jSetLongArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jSetLongArrayRegion(+Array, +Start, +Len, +Buf)
 
 jSetLongArrayRegion(Array, Start, Len, Buf) :-
     jni_void(212, Array, Start, Len, Buf).
@@ -2197,7 +2239,7 @@ jSetLongArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jSetLongField(object, field_id, long)
 
-% jSetLongField(+Obj, +FieldID, +Rlong) :-
+%! jSetLongField(+Obj, +FieldID, +Rlong)
 
 jSetLongField(Obj, FieldID, Rlong) :-
     jni_void(110, Obj, FieldID, Rlong).
@@ -2206,7 +2248,7 @@ jSetLongField(Obj, FieldID, Rlong) :-
 
 %type   jSetObjectArrayElement(object_array, int, object)
 
-% jSetObjectArrayElement(+Array, +Index, +Obj) :-
+%! jSetObjectArrayElement(+Array, +Index, +Obj)
 
 jSetObjectArrayElement(Array, Index, Obj) :-
     jni_void(174, Array, Index, Obj).
@@ -2215,7 +2257,7 @@ jSetObjectArrayElement(Array, Index, Obj) :-
 
 %type   jSetObjectField(object, field_id, object)
 
-% jSetObjectField(+Obj, +FieldID, +RObj) :-
+%! jSetObjectField(+Obj, +FieldID, +RObj)
 
 jSetObjectField(Obj, FieldID, Robj) :-
     jni_void(104, Obj, FieldID, Robj).
@@ -2224,7 +2266,7 @@ jSetObjectField(Obj, FieldID, Robj) :-
 
 %type   jSetShortArrayRegion(short_array, int, int, short_buf)
 
-% jSetShortArrayRegion(+Array, +Start, +Len, +Buf) :-
+%! jSetShortArrayRegion(+Array, +Start, +Len, +Buf)
 
 jSetShortArrayRegion(Array, Start, Len, Buf) :-
     jni_void(210, Array, Start, Len, Buf).
@@ -2233,7 +2275,7 @@ jSetShortArrayRegion(Array, Start, Len, Buf) :-
 
 %type   jSetShortField(object, field_id, short)
 
-% jSetShortField(+Obj, +FieldID, +Rshort) :-
+%! jSetShortField(+Obj, +FieldID, +Rshort)
 
 jSetShortField(Obj, FieldID, Rshort) :-
     jni_void(108, Obj, FieldID, Rshort).
@@ -2242,7 +2284,7 @@ jSetShortField(Obj, FieldID, Rshort) :-
 
 %type   jSetStaticBooleanField(class, field_id, boolean)
 
-% jSetStaticBooleanField(+Class, +FieldID, +Rbool) :-
+%! jSetStaticBooleanField(+Class, +FieldID, +Rbool)
 
 jSetStaticBooleanField(Class, FieldID, Rbool) :-
     jni_void(155, Class, FieldID, Rbool).
@@ -2251,7 +2293,7 @@ jSetStaticBooleanField(Class, FieldID, Rbool) :-
 
 %type   jSetStaticByteField(class, field_id, byte)
 
-% jSetStaticByteField(+Class, +FieldID, +Rbyte) :-
+%! jSetStaticByteField(+Class, +FieldID, +Rbyte)
 
 jSetStaticByteField(Class, FieldID, Rbyte) :-
     jni_void(156, Class, FieldID, Rbyte).
@@ -2260,7 +2302,7 @@ jSetStaticByteField(Class, FieldID, Rbyte) :-
 
 %type   jSetStaticCharField(class, field_id, char)
 
-% jSetStaticCharField(+Class, +FieldID, +Rchar) :-
+%! jSetStaticCharField(+Class, +FieldID, +Rchar)
 
 jSetStaticCharField(Class, FieldID, Rchar) :-
     jni_void(157, Class, FieldID, Rchar).
@@ -2269,7 +2311,7 @@ jSetStaticCharField(Class, FieldID, Rchar) :-
 
 %type   jSetStaticDoubleField(class, field_id, double)
 
-% jSetStaticDoubleField(+Class, +FieldID, +Rdouble) :-
+%! jSetStaticDoubleField(+Class, +FieldID, +Rdouble)
 
 jSetStaticDoubleField(Class, FieldID, Rdouble) :-
     jni_void(162, Class, FieldID, Rdouble).
@@ -2278,7 +2320,7 @@ jSetStaticDoubleField(Class, FieldID, Rdouble) :-
 
 %type   jSetStaticFloatField(class, field_id, float)
 
-% jSetStaticFloatField(+Class, +FieldID, +Rfloat) :-
+%! jSetStaticFloatField(+Class, +FieldID, +Rfloat)
 
 jSetStaticFloatField(Class, FieldID, Rfloat) :-
     jni_void(161, Class, FieldID, Rfloat).
@@ -2287,7 +2329,7 @@ jSetStaticFloatField(Class, FieldID, Rfloat) :-
 
 %type   jSetStaticIntField(class, field_id, int)
 
-% jSetStaticIntField(+Class, +FieldID, +Rint) :-
+%! jSetStaticIntField(+Class, +FieldID, +Rint)
 
 jSetStaticIntField(Class, FieldID, Rint) :-
     jni_void(159, Class, FieldID, Rint).
@@ -2296,7 +2338,7 @@ jSetStaticIntField(Class, FieldID, Rint) :-
 
 %type   jSetStaticLongField(class, field_id, long)
 
-% jSetStaticLongField(+Class, +FieldID, +Rlong) :-
+%! jSetStaticLongField(+Class, +FieldID, +Rlong)
 
 jSetStaticLongField(Class, FieldID, Rlong) :-
     jni_void(160, Class, FieldID, Rlong).
@@ -2305,7 +2347,7 @@ jSetStaticLongField(Class, FieldID, Rlong) :-
 
 %type   jSetStaticObjectField(class, field_id, object)
 
-% jSetStaticObjectField(+Class, +FieldID, +Robj) :-
+%! jSetStaticObjectField(+Class, +FieldID, +Robj)
 
 jSetStaticObjectField(Class, FieldID, Robj) :-
     jni_void(154, Class, FieldID, Robj).
@@ -2314,14 +2356,15 @@ jSetStaticObjectField(Class, FieldID, Robj) :-
 
 %type   jSetStaticShortField(class, field_id, short)
 
-% jSetStaticShortField(+Class, +FieldID, +Rshort) :-
+%! jSetStaticShortField(+Class, +FieldID, +Rshort)
 
 jSetStaticShortField(Class, FieldID, Rshort) :-
     jni_void(158, Class, FieldID, Rshort).
 
 %------------------------------------------------------------------------------
 
-% jni_params_put(+Params, +Types, -ParamBuf)  :-
+%! jni_params_put(+Params, +Types, -ParamBuf)
+%
 %   the old form used a static buffer, hence was not re-entrant;
 %   the new form allocates a buffer of one jvalue per arg,
 %   puts the (converted) args into respective elements, then returns it
@@ -2336,17 +2379,18 @@ jni_params_put(As, Ts, ParamBuf)     :-
 
 %------------------------------------------------------------------------------
 
-% jni_params_put_1(+Params, +N, +JPLTypes, +ParamBuf) :-
+%! jni_params_put_1(+Params, +N, +JPLTypes, +ParamBuf)
+%
 %   Params is a (full or partial) list of args-not-yet-stashed,
 %   and Types are their (JPL) types (e.g. 'boolean');
 %   N is the arg and buffer index (0+) at which the head of Params is to be stashed;
 %   the old form used a static buffer and hence was non-reentrant;
 %   the new form uses a dynamically allocated buffer (which oughta be freed after use)
 %
-%NB if the (user-provided) actual params were to be unsuitable for conversion
-%NB to the method-required types, this would fail silently (without freeing the buffer);
-%NB it's not clear whether the overloaded-method-resolution ensures that all args
-%NB are convertible
+% NB if the (user-provided) actual params were to be unsuitable for conversion
+% to the method-required types, this would fail silently (without freeing the buffer);
+% it's not clear whether the overloaded-method-resolution ensures that all args
+% are convertible
 
 jni_params_put_1([], _, [], _).
 jni_params_put_1([A|As], N, [Tjni|Ts], ParamBuf) :-     % type checking?
@@ -2363,8 +2407,10 @@ jni_params_put_1([A|As], N, [Tjni|Ts], ParamBuf) :-     % type checking?
 
 %------------------------------------------------------------------------------
 
-% jni_type_to_xput_code(+JspType, -JniXputCode) :-
+%! jni_type_to_xput_code(+JspType, -JniXputCode)
+%
 %   NB JniXputCode determines widening and casting in foreign code
+%
 %   NB the codes could be compiled into jni_method_spec_cache etc.
 %   instead of, or as well as, types (for - small - efficiency gain)
 
@@ -2382,7 +2428,8 @@ jni_type_to_xput_code(jvalue,       15).    % JNI_XPUT_JVALUE
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_constructor_array(+Class, -MethodArray) :-
+%! jpl_class_to_constructor_array(+Class, -MethodArray)
+%
 %   might this be done more efficiently in foreign code? or in Java?
 
 jpl_class_to_constructor_array(Cx, Ma) :-
@@ -2392,7 +2439,7 @@ jpl_class_to_constructor_array(Cx, Ma) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_constructors(+Class, -Methods) :-
+%! jpl_class_to_constructors(+Class, -Methods)
 
 jpl_class_to_constructors(Cx, Ms) :-
     jpl_class_to_constructor_array(Cx, Ma),
@@ -2400,7 +2447,7 @@ jpl_class_to_constructors(Cx, Ms) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_field_array(+Class, -FieldArray) :-
+%! jpl_class_to_field_array(+Class, -FieldArray)
 
 jpl_class_to_field_array(Cx, Fa) :-
     jpl_classname_to_class('java.lang.Class', CC),      % cacheable?
@@ -2409,7 +2456,8 @@ jpl_class_to_field_array(Cx, Fa) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_fields(+Class, -Fields) :-
+%! jpl_class_to_fields(+Class, -Fields)
+%
 %   do this in Java (ditto for methods)?
 
 jpl_class_to_fields(C, Fs) :-
@@ -2418,7 +2466,8 @@ jpl_class_to_fields(C, Fs) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_method_array(+Class, -MethodArray) :-
+%! jpl_class_to_method_array(+Class, -MethodArray)
+%
 %   migrate into foreign code for efficiency?
 
 jpl_class_to_method_array(Cx, Ma) :-
@@ -2428,8 +2477,10 @@ jpl_class_to_method_array(Cx, Ma) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_methods(+Class, -Methods) :-
+%! jpl_class_to_methods(+Class, -Methods)
+%
 %   also used for constructors
+%
 %   do this in Java (ditto for fields)?
 
 jpl_class_to_methods(Cx, Ms) :-
@@ -2438,7 +2489,8 @@ jpl_class_to_methods(Cx, Ms) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_constructor_to_modifiers(+Method, -Modifiers) :-
+%! jpl_constructor_to_modifiers(+Method, -Modifiers)
+%
 %   migrate into foreign code for efficiency?
 
 jpl_constructor_to_modifiers(X, Ms) :-
@@ -2447,7 +2499,8 @@ jpl_constructor_to_modifiers(X, Ms) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_constructor_to_name(+Method, -Name) :-
+%! jpl_constructor_to_name(+Method, -Name)
+%
 %   it is a JNI convention that each constructor behaves (at least,
 %   for reflection), as a method whose name is '<init>'
 
@@ -2455,7 +2508,8 @@ jpl_constructor_to_name(_X, '<init>').
 
 %------------------------------------------------------------------------------
 
-% jpl_constructor_to_parameter_types(+Method, -ParameterTypes) :-
+%! jpl_constructor_to_parameter_types(+Method, -ParameterTypes)
+%
 %   migrate to foreign code for efficiency?
 
 jpl_constructor_to_parameter_types(X, Tfps) :-
@@ -2464,7 +2518,8 @@ jpl_constructor_to_parameter_types(X, Tfps) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_constructor_to_return_type(+Method, -Type) :-
+%! jpl_constructor_to_return_type(+Method, -Type)
+%
 %   it is a JNI convention that, for the purposes of retrieving a MethodID,
 %   a constructor has a return type of 'void'
 
@@ -2472,7 +2527,8 @@ jpl_constructor_to_return_type(_X, void).
 
 %------------------------------------------------------------------------------
 
-% jpl_field_spec(+Type, -Index, -Name, -Modifiers, -MID, -FieldType) :-
+%! jpl_field_spec(+Type, -Index, -Name, -Modifiers, -MID, -FieldType)
+%
 %   I'm unsure whether arrays have fields, but if they do, this will handle them correctly
 
 jpl_field_spec(T, I, N, Mods, MID, Tf) :-
@@ -2517,7 +2573,7 @@ jpl_field_spec_1(C, Tci, Fs) :-
 
 %type   jpl_field_to_modifiers(object, ordset(modifier))
 
-% jpl_field_to_modifiers(+Field, -Modifiers) :-
+%! jpl_field_to_modifiers(+Field, -Modifiers)
 
 jpl_field_to_modifiers(F, Ms) :-
     jpl_classname_to_class('java.lang.reflect.Field', Cf),
@@ -2525,7 +2581,7 @@ jpl_field_to_modifiers(F, Ms) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_field_to_name(+Field, -Name) :-
+%! jpl_field_to_name(+Field, -Name)
 
 jpl_field_to_name(F, N) :-
     jpl_classname_to_class('java.lang.reflect.Field', Cf),
@@ -2535,7 +2591,7 @@ jpl_field_to_name(F, N) :-
 
 %type   jpl_field_to_type(object, type)
 
-% jpl_field_to_type(+Field, -Type) :-
+%! jpl_field_to_type(+Field, -Type)
 
 jpl_field_to_type(F, Tf) :-
     jpl_classname_to_class('java.lang.reflect.Field', Cf),
@@ -2547,7 +2603,8 @@ jpl_field_to_type(F, Tf) :-
 
 %type   jpl_method_spec(type, integer, name, arity, ordset(modifier), method_id, type, list(type))
 
-% jpl_method_spec(+Type, -Index, -Name, -Arity, -Modifiers, -MID, -ReturnType, -ParameterTypes) :-
+%! jpl_method_spec(+Type, -Index, -Name, -Arity, -Modifiers, -MID, -ReturnType, -ParameterTypes)
+%
 %   generates pertinent details of all accessible methods of Type (class/2 or array/1),
 %   populating or using the cache as appropriate
 
@@ -2570,7 +2627,8 @@ jpl_method_spec(T, I, N, A, Mods, MID, Tr, Tfps) :-
 
 %type   jpl_method_spec_1(class, partial_type, list(method), list(method))
 
-% jpl_method_spec_1(+ClassObject, +CacheIndexType, +Constructors, +Methods) :-
+%! jpl_method_spec_1(+ClassObject, +CacheIndexType, +Constructors, +Methods)
+%
 %   if the original type is e.g. array(byte) then CacheIndexType is array(_) else it is that type;
 
 jpl_method_spec_1(C, Tci, Xs, Ms) :-
@@ -2607,7 +2665,7 @@ jpl_method_spec_1(C, Tci, Xs, Ms) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_method_to_modifiers(+Method, -ModifierSet) :-
+%! jpl_method_to_modifiers(+Method, -ModifierSet)
 
 jpl_method_to_modifiers(M, Ms) :-
     jpl_classname_to_class('java.lang.reflect.Method', Cm),
@@ -2617,7 +2675,7 @@ jpl_method_to_modifiers(M, Ms) :-
 
 %type   jpl_method_to_modifiers_1(object, object, ordset(modifier))
 
-% jpl_method_to_modifiers_1(+Method, +ConstructorClass, -ModifierSet) :-
+%! jpl_method_to_modifiers_1(+Method, +ConstructorClass, -ModifierSet)
 
 jpl_method_to_modifiers_1(XM, Cxm, Ms) :-
     jGetMethodID(Cxm, getModifiers, method([],int), MID),
@@ -2626,7 +2684,7 @@ jpl_method_to_modifiers_1(XM, Cxm, Ms) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_method_to_name(+Method, -Name) :-
+%! jpl_method_to_name(+Method, -Name)
 
 jpl_method_to_name(M, N) :-
     jpl_classname_to_class('java.lang.reflect.Method', CM),
@@ -2640,7 +2698,7 @@ jpl_member_to_name_1(M, CM, N) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_method_to_parameter_types(+Method, -Types) :-
+%! jpl_method_to_parameter_types(+Method, -Types)
 
 jpl_method_to_parameter_types(M, Tfps) :-
     jpl_classname_to_class('java.lang.reflect.Method', Cm),
@@ -2648,7 +2706,8 @@ jpl_method_to_parameter_types(M, Tfps) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_method_to_parameter_types_1(+XM, +Cxm, -Tfps) :-
+%! jpl_method_to_parameter_types_1(+XM, +Cxm, -Tfps)
+%
 %   XM is (a JPL ref to) an instance of java.lang.reflect.[Constructor|Method]
 
 jpl_method_to_parameter_types_1(XM, Cxm, Tfps) :-
@@ -2659,7 +2718,7 @@ jpl_method_to_parameter_types_1(XM, Cxm, Tfps) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_method_to_return_type(+Method, -Type) :-
+%! jpl_method_to_return_type(+Method, -Type)
 
 jpl_method_to_return_type(M, Tr) :-
     jpl_classname_to_class('java.lang.reflect.Method', Cm),
@@ -2685,7 +2744,8 @@ jpl_modifier_bit(abstract,      0x400).
 
 %type   jpl_modifier_int_to_modifiers(integer, ordset(modifier))
 
-% jpl_modifier_int_to_modifiers(+Int, -ModifierSet) :-
+%! jpl_modifier_int_to_modifiers(+Int, -ModifierSet)
+%
 %   ModifierSet is an ordered (hence canonical) list,
 %   possibly empty (although I suspect never in practice?),
 %   of modifier atoms, e.g. [public,static]
@@ -2701,12 +2761,14 @@ jpl_modifier_int_to_modifiers(I, Ms) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_servlet_byref(+Config, +Request, +Response) :-
-%   this serves the "byref" servlet demo,
+%! jpl_servlet_byref(+Config, +Request, +Response)
+%
+% This serves the "byref" servlet demo,
 %   exemplifying one tactic for implementing a servlet in Prolog
 %   by accepting the Request and Response objects as JPL references
 %   and accessing their members via JPL as required;
-%   see also jpl_servlet_byval/3
+%
+% @see jpl_servlet_byval/3
 
 jpl_servlet_byref(Config, Request, Response) :-
     jpl_call(Config, getServletContext, [], Context),
@@ -2890,7 +2952,8 @@ jpl_servlet_byref(Config, Request, Response) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_servlet_byval(+MultiMap, -ContentType, -BodyAtom) :-
+%! jpl_servlet_byval(+MultiMap, -ContentType, -BodyAtom)
+%
 %   this exemplifies an alternative (to jpl_servlet_byref) tactic
 %   for implementing a servlet in Prolog;
 %   most Request fields are extracted in Java before this is called,
@@ -2905,11 +2968,15 @@ jpl_servlet_byval(MM, CT, Ba) :-
 
 %type   jpl_cache_type_of_ref(jpl_type, ref)
 
-% jpl_cache_type_of_ref(+Type, +Ref) :-
-%   Type must be a proper (concrete) JPL type;
-%   Ref must be a proper JPL reference (not void);
+%! jpl_cache_type_of_ref(+Type, +Ref)
+%
+% Type must be a proper (concrete) JPL type
+%
+% Ref must be a proper JPL reference (not void)
+%
 %   Type is memoed (if policy so dictates) as the type of the referenced object (unless it's null)
 %   by iref (so as not to disable atom-based GC)
+%
 %   NB obsolete lemmas must be watched-out-for and removed
 
 jpl_cache_type_of_ref(T, @(Tag)) :-
@@ -2939,10 +3006,12 @@ jpl_cache_type_of_ref(T, @(Tag)) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_tag_type_cache(-Tag, -ClassType) :-
+%! jpl_class_tag_type_cache(-Tag, -ClassType)
+%
 %   Tag is the tag part of an @(Tag) reference
 %   to a JVM instance of java.lang.Class
-%   which denotes ClassType;
+% which denotes ClassType
+%
 %   we index on Tag rather than on Iref so as to keep these objects around
 %   even after an atom garbage collection
 %   (if needed once, they are likely to be needed again)
@@ -2951,7 +3020,8 @@ jpl_cache_type_of_ref(T, @(Tag)) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_ancestor_classes(+Class, -AncestorClasses) :-
+%! jpl_class_to_ancestor_classes(+Class, -AncestorClasses)
+%
 %   AncestorClasses will be a list of (JPL references to) instances of java.lang.Class
 %   denoting the "implements" lineage (?), nearest first
 %   (the first member denotes the class which Class directly implements,
@@ -2967,19 +3037,24 @@ jpl_class_to_ancestor_classes(C, Cas) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_classname(+Class, -ClassName) :-
-%   Class is a reference to a class object;
+%! jpl_class_to_classname(+Class, -ClassName)
+%
+% Class is a reference to a class object
+%
 %   ClassName is its canonical (?) source-syntax (dotted) name,
 %   e.g. 'java.util.Date'
-%   not used outside jni_junk and jpl_test (is this (still) true?);
-%   oughta use the available caches (but their indexing doesn't suit)
+%
+% NB not used outside jni_junk and jpl_test (is this (still) true?)
+%
+% NB oughta use the available caches (but their indexing doesn't suit)
 
 jpl_class_to_classname(C, CN) :-
     jpl_call(C, getName, [], CN).
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_raw_classname(+Class, -ClassName) :-
+%! jpl_class_to_raw_classname(+Class, -ClassName)
+%
 %   hmm, I forget exactly what a "raw" classname is...
 
 jpl_class_to_raw_classname(Cobj, CN) :-
@@ -2990,10 +3065,11 @@ jpl_class_to_raw_classname(Cobj, CN) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_raw_classname_chars(+Class, -ClassnameChars) :-
-%   Class is a reference to a class object;
-%   ClassnameChars is a chars representation of its dotted name, e.g.
-%   "java.util.Date"
+%! jpl_class_to_raw_classname_chars(+Class, -ClassnameChars)
+%
+% Class is a reference to a class object
+%
+% ClassnameChars is a chars representation of its dotted name, e.g. "java.util.Date"
 
 jpl_class_to_raw_classname_chars(Cobj, CsCN) :-
     jpl_class_to_raw_classname(Cobj, CN),
@@ -3008,9 +3084,12 @@ jpl_class_to_super_class(C, Cx) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_class_to_type(+ClassObject, -Type) :-
+%! jpl_class_to_type(+ClassObject, -Type)
+%
 %   ClassObject is a reference to a class object of Type
+%
 %   NB should ensure that, if not found in cache, then cache is updated;
+%
 %   intriguingly (?), getParameterTypes returns class objects with names
 %   'boolean', 'byte' etc. and even 'void' (?!)
 
@@ -3041,11 +3120,13 @@ jpl_classname_chars_to_type(Cs, Type) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_classname_to_class(+ClassName, -Class) :-
-%   ClassName unambiguously represents a class,
-%   e.g. 'java.lang.String'
-%   Class is a (canonical) reference to the corresponding class object;
-%   uses caches where the class is already encountered
+%! jpl_classname_to_class(+ClassName, -Class)
+%
+% ClassName unambiguously represents a class, e.g. 'java.lang.String'
+%
+% Class is a (canonical) reference to the corresponding class object
+%
+% NB uses caches where the class is already encountered
 
 jpl_classname_to_class(N, C) :-
     jpl_classname_to_type(N, T),    % cached
@@ -3053,15 +3134,15 @@ jpl_classname_to_class(N, C) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_classname_to_type(+Classname, -Type) :-
-%   Classname is a source-syntax (dotted) class name,
-%   e.g. 'java.util.Date', '[java.util.Date' or '[L'
-%   Type is its corresponding JPL type structure,
-%   e.g. class([java,util],['Date']), array(class([java,util],['Date'])), array(long)
+%! jpl_classname_to_type(+Classname, -Type)
 %
-%thinks
-%   by "classname" do I mean "typename"?
-%   should this throw an exception for unbound CN? is this public API?
+% Classname is a source-syntax (dotted) class name, e.g. 'java.util.Date', '[java.util.Date' or '[L'
+%
+% Type is its corresponding JPL type structure, e.g. class([java,util],['Date']), array(class([java,util],['Date'])), array(long)
+%
+% NB by "classname" do I mean "typename"?
+%
+% NB should this throw an exception for unbound CN? is this public API?
 
 jpl_classname_to_type(CN, T) :-
     (   jpl_classname_type_cache(CN, Tx)
@@ -3074,23 +3155,27 @@ jpl_classname_to_type(CN, T) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_classname_type_cache(-Classname, -Type) :-
+%! jpl_classname_type_cache( -Classname, -Type)
+%
 %   Classname is the atomic name of Type;
+%
 %   NB may denote a class which cannot be found
 
 :- dynamic jpl_classname_type_cache/2.
 
 %------------------------------------------------------------------------------
 
-% jpl_datum_to_type(+Datum, -Type) :-
-%   Datum must be a proper JPL representation
-%   of an instance of one (or more) Java types;
+%! jpl_datum_to_type(+Datum, -Type)
+%
+%   Datum must be a proper JPL representation of an instance of one (or more) Java types;
+%
 %   Type is the unique most specialised type of which Datum denotes an instance;
-%   N.B. 3 is an instance of byte, char, short, int and long,
+%
+% NB 3 is an instance of byte, char, short, int and long,
 %   of which byte and char are the joint, overlapping most specialised types,
 %   so this relates 3 to the pseudo subtype 'char_byte';
-%   see jpl_type_to_preferred_concrete_type/2 for converting inferred types
-%   to instantiable types
+%
+% @see jpl_type_to_preferred_concrete_type/2 for converting inferred types to instantiable types
 
 jpl_datum_to_type(D, T) :-
     (   jpl_value_to_type(D, T)
@@ -3132,7 +3217,8 @@ jpl_datums_to_most_specific_common_ancestor_type_1([D|Ds], Ts1, Ts0) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_datums_to_types(+Datums, -Types) :-
+%! jpl_datums_to_types(+Datums, -Types)
+%
 %   each member of Datums is a JPL value or ref,
 %   denoting an instance of some Java type,
 %   and the corresponding member of Types denotes the most specialised type
@@ -3146,15 +3232,18 @@ jpl_datums_to_types([D|Ds], [T|Ts]) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_false(-X) :-
+%! jpl_false(-X)
+%
 %   X is (by unification) the proper JPL datum which represents the Java boolean value 'false'
-%   c.f. jpl_is_false/1
+%
+%   see jpl_is_false/1
 
 jpl_false(@(false)).
 
 %------------------------------------------------------------------------------
 
-% jpl_ground_is_type(+X) :-
+%! jpl_ground_is_type(+X)
+%
 %   X, known to be ground, is (or at least superficially resembles :-) a JPL type
 
 jpl_ground_is_type(X) :-
@@ -3171,8 +3260,9 @@ jpl_ground_is_type(method(_,_)).
 
 %------------------------------------------------------------------------------
 
-% jpl_is_class(?X) :-
-%   X is a JPL ref to a java.lang.Class object
+%! jpl_is_class(@X)
+%
+% True if X is a JPL reference to an instance of java.lang.Class
 
 jpl_is_class(X) :-
     jpl_is_object(X),
@@ -3180,48 +3270,59 @@ jpl_is_class(X) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_is_false(?X) :-
-%   X is the proper JPL datum which represents the Java boolean value 'false';
-%   whatever, no further instantiation of X occurs
+%! jpl_is_false(@X)
+%
+% True if X is =|@(false)|=, the JPL representation of the Java boolean value 'false'.
 
 jpl_is_false(X) :-
     X == @(false).
 
 %------------------------------------------------------------------------------
 
-% jpl_is_fieldID(?X) :-
-%   X is a proper JPL field ID structure (jfieldID/1);
-%   applications should not be messing with these (?);
-%   whatever, no further instantiation of X occurs
+%! jpl_is_fieldID(-X)
+%
+% X is a JPL field ID structure (jfieldID/1).
+%
+% NB JPL internal use only.
+%
+% NB applications should not be messing with these.
+%
+% NB a var arg may get bound.
 
-jpl_is_fieldID(jfieldID(X)) :-      % NB a var arg may get bound...
+jpl_is_fieldID(jfieldID(X)) :-
     integer(X).
 
 %------------------------------------------------------------------------------
 
-% jpl_is_methodID(?X) :-
-%   X is a proper JPL method ID structure (jmethodID/1);
-%   applications should not be messing with these (?);
-%   whatever, no further instantiation of X occurs
+%! jpl_is_methodID(-X)
+%
+% X is a JPL method ID structure (jmethodID/1)
+%
+% NB JPL internal use only.
+%
+% NB applications should not be messing with these.
+%
+% NB a var arg may get bound.
 
 jpl_is_methodID(jmethodID(X)) :-   % NB a var arg may get bound...
     integer(X).
 
 %------------------------------------------------------------------------------
 
-% jpl_is_null(?X) :-
-%   X is the proper JPL datum which represents Java's 'null' reference;
-%   whatever, no further instantiation of X occurs
+%! jpl_is_null(@X)
+%
+% True if X is =|@(null)|=, the JPL representation of Java's 'null' reference
 
 jpl_is_null(X) :-
     X == @(null).
 
 %------------------------------------------------------------------------------
 
-% jpl_is_object(?X) :-
-%   X is a proper, plausible JPL object reference;
-%   NB this checks only syntax, not whether the object exists;
-%   whatever, no further instantiation of X occurs
+%! jpl_is_object(@X)
+%
+% True if X is a well-formed JPL object reference.
+%
+% NB this checks only syntax, not whether the object exists.
 
 jpl_is_object(X) :-
     jpl_is_ref(X),      % (syntactically, at least...)
@@ -3229,9 +3330,9 @@ jpl_is_object(X) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_is_object_type(+T) :-
-%   T is an object (class or array) type,
-%   not e.g. a primitive, null or void
+%! jpl_is_object_type(@T)
+%
+% True if T is an object (class or array) type, not e.g. a primitive, null or void
 
 jpl_is_object_type(T) :-
     \+ var(T),
@@ -3239,14 +3340,14 @@ jpl_is_object_type(T) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_is_ref(?T) :-
-%   the arbitrary term T is a proper, syntactically plausible JPL reference,
+%! jpl_is_ref(@T)
+%
+% The arbitrary term T is a well-formed JPL reference,
 %   either to a Java object
 %   (which may not exist, although a jpl_is_current_ref/1 might be useful)
-%   or to Java's notional but important 'null' non-object;
-%   whatever, no further instantiation of X occurs;
-%   NB to distinguish tags from void/false/true,
-%   could check initial character(s) or length? or adopt strong/weak scheme...
+% or to Java's notional but important 'null' non-object
+%
+% NB to distinguish tags from void/false/true, could check initial character(s) or length? or adopt strong/weak scheme.
 
 jpl_is_ref(@(Y)) :-
     atom(Y),        % presumably a (garbage-collectable) tag
@@ -3256,16 +3357,18 @@ jpl_is_ref(@(Y)) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_is_true(?X) :-
-%   X is a proper JPL datum, representing the Java boolean value 'true';
-%   whatever, no further instantiation of X occurs
+%! jpl_is_true(@X)
+%
+% X is =|@(true)|=, the JPL representation of the Java boolean value 'true'
 
 jpl_is_true(X) :-
     X == @(true).
 
 %------------------------------------------------------------------------------
 
-% jpl_is_type(+X) :-
+%! jpl_is_type(@X)
+%
+% True if X is a well-formed JPL type structure
 
 jpl_is_type(X) :-
     ground(X),
@@ -3273,11 +3376,12 @@ jpl_is_type(X) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_is_void(?X) :-
-%   X is the proper JPL datum which represents the pseudo Java value 'void'
-%   (which is returned by jpl_call/4 when invoked on void methods);
-%   NB you can try passing 'void' back to Java, but it won't ever be interested;
-%   whatever, no further instantiation of X occurs
+%! jpl_is_void(@X)
+%
+% True if X is =|@(void)|=, the JPL representation of the pseudo Java value 'void'
+% (which is returned by jpl_call/4 when invoked on void methods).
+%
+% NB you can try passing 'void' back to Java, but it won't ever be interested.
 
 jpl_is_void(X) :-
     X == @(void).
@@ -3299,17 +3403,20 @@ jpl_non_var_is_object_type(array(_)).
 
 %------------------------------------------------------------------------------
 
-% jpl_null(-X) :-
-%   X is (by unification) the proper JPL datum which represents the Java reference 'null';
-%   c.f. jpl_is_null/1
+%! jpl_null(-X)
+%
+% X is =|@(null)|=, the JPL representation of Java's 'null' reference
+%
+% @see jpl_is_null/1
 
 jpl_null(@(null)).
 
 %------------------------------------------------------------------------------
 
-% jpl_object_array_to_list(+ArrayObject, -Values) :-
+%! jpl_object_array_to_list(+Array:jref, -Values:list(datum))
+%
 %   Values is a list of JPL values (primitive values or object references)
-%   representing the respective elements of ArrayObject
+% representing the respective elements of Array.
 
 jpl_object_array_to_list(A, Vs) :-
     jpl_array_to_length(A, N),
@@ -3317,7 +3424,7 @@ jpl_object_array_to_list(A, Vs) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_object_array_to_list_1(+A, +I, +N, -Xs) :-
+%! jpl_object_array_to_list_1(+A, +I, +N, -Xs)
 
 jpl_object_array_to_list_1(A, I, N, Xs) :-
     (   I == N
@@ -3330,11 +3437,14 @@ jpl_object_array_to_list_1(A, I, N, Xs) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_object_to_class(+Object, -Class) :-
-%   Object must be a valid object (should this throw an exception otherwise?);
+%! jpl_object_to_class(+Object:jref, -Class:jref)
+%
+% Object must be a valid object (should this throw an exception otherwise?)
+%
 %   Class is a (canonical) reference to the (canonical) class object
-%   which represents the class of Object;
-%   NB wot's the point of caching the type if we don't look there first?
+% which represents the class of Object
+%
+% NB what's the point of caching the type if we don't look there first?
 
 jpl_object_to_class(Obj, C) :-
     jGetObjectClass(Obj, C),
@@ -3342,10 +3452,12 @@ jpl_object_to_class(Obj, C) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_object_to_type(+Object, -Type) :-
+%! jpl_object_to_type(+Object:jref, -Type:type)
+%
 %   Object must be a proper JPL reference to a Java object
-%   (i.e. a class or array instance, but not null, void or String);
-%   Type is the JPL type of that object
+% (i.e. a class or array instance, but not null, void or String).
+% 
+% Type is the JPL type of that object.
 
 jpl_object_to_type(@(Tag), Type) :-
     jpl_tag_to_type(Tag, Type).
@@ -3364,8 +3476,10 @@ jpl_object_type_to_super_type(T, Tx) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_primitive_buffer_to_array(+Type, +Xc, +Bp, +I, +Size, -Vcs) :-
-%   Bp points to a buffer of (sufficient) Type values;
+%! jpl_primitive_buffer_to_array(+Type, +Xc, +Bp, +I, +Size, -Vcs)
+%
+% Bp points to a buffer of (sufficient) Type values.
+%
 %   Vcs will be unbound on entry,
 %   and on exit will be a list of Size of them, starting at index I
 %   (the buffer is indexed from zero)
@@ -3380,6 +3494,15 @@ jpl_primitive_buffer_to_array(T, Xc, Bp, I, Size, [Vc|Vcs]) :-
 
 %------------------------------------------------------------------------------
 
+%! jpl_primitive_type(-Type:atom) is nondet
+%
+% Type is an atomic JPL representation of one of Java's primitive types.
+%
+%  ==
+%  ?- setof(Type, jpl_primitive_type(Type), Types).
+%  Types = [boolean, byte, char, double, float, int, long, short].
+%  ==
+
 jpl_primitive_type(boolean).
 jpl_primitive_type(char).
 jpl_primitive_type(byte).
@@ -3391,10 +3514,11 @@ jpl_primitive_type(double).
 
 %------------------------------------------------------------------------------
 
-% jpl_primitive_type_default_value(-Type, -Value) :-
-%   each element of any array of (primitive) Type created by jpl_new/3,
+%! jpl_primitive_type_default_value(-Type:type, -Value:datum)
+%
+% Each element of any array of (primitive) Type created by jpl_new/3,
 %   or any instance of (primitive) Type created by jpl_new/3,
-%   should be initialised to Value (to mimic Java semantics)
+% will be initialised to Value (to mimic Java semantics).
 
 jpl_primitive_type_default_value(boolean, @(false)).
 jpl_primitive_type_default_value(char,    0).
@@ -3414,10 +3538,13 @@ jpl_primitive_type_super_type(T, Tx) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_primitive_type_term_to_value(+Type, +Term, -Val) :-
-%   Term, after widening iff appropriate, represents an instance of Type;
-%   Val is the instance of Type which it represents (often the same thing);
-%   currently used only by jpl_new_1 when creating an "instance"
+%! jpl_primitive_type_term_to_value(+Type, +Term, -Val)
+%
+% Term, after widening iff appropriate, represents an instance of Type
+%
+% Val is the instance of Type which it represents (often the same thing)
+%
+% NB currently used only by jpl_new_1 when creating an "instance"
 %   of a primitive type (which may be misguided completism - you can't
 %   do that in Java)
 
@@ -3428,8 +3555,10 @@ jpl_primitive_type_term_to_value(Type, Term, Val) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_primitive_type_term_to_value_1(+Type, +RawValue, -WidenedValue) :-
+%! jpl_primitive_type_term_to_value_1(+Type, +RawValue, -WidenedValue)
+%
 %   I'm not worried about structure duplication here
+%
 %   NB this oughta be done in foreign code...
 
 jpl_primitive_type_term_to_value_1(boolean, @(false), @(false)).
@@ -3481,8 +3610,10 @@ jpl_primitive_type_to_super_type(T, Tx) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_ref_to_type(+Ref, -Type) :-
-%   Ref must be a proper JPL reference (to an object, null or void);
+%! jpl_ref_to_type(+Ref, -Type)
+%
+% Ref must be a proper JPL reference (to an object, null or void)
+%
 %   Type is its type
 
 jpl_ref_to_type(@(X), T) :-
@@ -3495,9 +3626,11 @@ jpl_ref_to_type(@(X), T) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_tag_to_type(+Tag, -Type) :-
-%   Tag must be an (atomic) object tag;
-%   Type is its type (either from the cache or by reflection);
+%! jpl_tag_to_type(+Tag, -Type)
+%
+% Tag must be an (atomic) object tag
+%
+% Type is its type (either from the cache or by reflection)
 
 jpl_tag_to_type(Tag, Type) :-
     jni_tag_to_iref(Tag, Iref),
@@ -3511,16 +3644,20 @@ jpl_tag_to_type(Tag, Type) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_true(-X) :-
-%   X is (by unification) the proper JPL datum which represents the Java boolean value 'true';
-%cf jpl_is_true/1
+%! jpl_true(-X)
+%
+% X is (by unification) the proper JPL datum which represents the Java boolean value 'true'
+%
+% see jpl_is_true/1
 
 jpl_true(@(true)).
 
 %------------------------------------------------------------------------------
 
-% jpl_type_fits_type(+TypeX, +TypeY) :-
-%   TypeX and TypeY must each be proper JPL types;
+%! jpl_type_fits_type(+TypeX, +TypeY)
+%
+% TypeX and TypeY must each be proper JPL types
+%
 %   this succeeds iff TypeX is assignable to TypeY
 
 jpl_type_fits_type(Tx, Ty) :-
@@ -3530,7 +3667,8 @@ jpl_type_fits_type(Tx, Ty) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_fits_type_1(+T1, +T2) :-
+%! jpl_type_fits_type_1(+T1, +T2)
+%
 %   it doesn't matter that this leaves choicepoints; it serves only jpl_type_fits_type/2
 
 jpl_type_fits_type_1(T, T).
@@ -3569,7 +3707,8 @@ jpl_type_fits_type_direct_xprim(Tp, Tq) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_fits_type_direct_xtra(-PseudoType, -ConcreteType) :-
+%! jpl_type_fits_type_direct_xtra(-PseudoType, -ConcreteType)
+%
 %   this predicate defines the direct subtype-supertype relationships
 %   which involve the intersection pseudo types char_int, char_short and char_byte
 
@@ -3583,8 +3722,10 @@ jpl_type_fits_type_direct_xtra(overlong,   float).  % 6/Oct/2006 experiment
 
 %------------------------------------------------------------------------------
 
-% jpl_type_fits_type_xprim(-Tp, -T) :-
-%   indeterminate;
+%! jpl_type_fits_type_xprim(-Tp, -T)
+%
+% indeterminate
+%
 %   serves only jpl_type_fits_type_1/2
 
 jpl_type_fits_type_xprim(Tp, T) :-
@@ -3595,7 +3736,8 @@ jpl_type_fits_type_xprim(Tp, T) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_ancestor_types(+T, -Tas) :-
+%! jpl_type_to_ancestor_types(+T, -Tas)
+%
 %   this does not accommodate the assignability of null,
 %   but that's OK (?) since "type assignability" and "type ancestry" are not equivalent
 
@@ -3612,11 +3754,13 @@ jpl_type_to_ancestor_types(T, Tas) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_canonical_type(+Type, -CanonicalType) :-
-%   Type must be a type, not necessarily canonical;
+%! jpl_type_to_canonical_type(+Type, -CanonicalType)
+%
+% Type must be a type, not necessarily canonical
+%
 %   CanonicalType will be equivalent and canonical
-
-%eg jpl_type_to_canonical_type(class([],[byte]), byte)
+%
+% e.g. jpl_type_to_canonical_type(class([],[byte]), byte)
 
 jpl_type_to_canonical_type(array(T), array(Tc)) :-
     !,
@@ -3635,11 +3779,13 @@ jpl_type_to_canonical_type(P, P) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_class(+Type, -ClassObject) :-
-%   incomplete types are now never cached (or otherwise passed around);
+%! jpl_type_to_class(+Type, -ClassObject)
+%
+% incomplete types are now never cached (or otherwise passed around)
+%
 %   jFindClass throws an exception if FCN can't be found
-
-%nb if this is public API maybe oughta restore the ground(T) check and throw exception
+%
+% NB if this is public API maybe oughta restore the ground(T) check and throw exception
 
 jpl_type_to_class(T, @(Tag)) :-
   % ground(T),  % 9/Nov/2004 removed this spurious (?) check
@@ -3656,17 +3802,20 @@ jpl_type_to_class(T, @(Tag)) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_nicename(+Type, -NiceName) :-
+%! jpl_type_to_nicename(+Type, -NiceName)
+%
 %   Type, which is a class or array type (not sure about the others...),
 %   is denoted by ClassName in dotted syntax
-
-%nb is this used? is "nicename" well defined and necessary?
-%nb this could use caching if indexing were amenable
-
-%eg jpl_type_to_nicename(class([java,util],['Date']), 'java.util.Date')
-%eg jpl_type_to_nicename(boolean, boolean)
-
-%cf jpl_type_to_classname/2
+%
+% NB is this used? is "nicename" well defined and necessary?
+%
+% NB this could use caching if indexing were amenable
+%
+% e.g. jpl_type_to_nicename(class([java,util],['Date']), 'java.util.Date')
+%
+% e.g. jpl_type_to_nicename(boolean, boolean)
+%
+% see jpl_type_to_classname/2
 
 jpl_type_to_nicename(T, NN) :-
     (   jpl_primitive_type(T)
@@ -3679,13 +3828,14 @@ jpl_type_to_nicename(T, NN) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_classname(+Type, -ClassName) :-
+%! jpl_type_to_classname(+Type, -ClassName)
+%
 %   Type, which is a class or array type (not sure about the others...),
 %   is denoted by ClassName in dotted syntax
-
-%eg jpl_type_to_classname(class([java,util],['Date']), 'java.util.Date')
-
-%cf jpl_type_to_nicename/2
+%
+% e.g. jpl_type_to_classname(class([java,util],['Date']), 'java.util.Date')
+%
+% see jpl_type_to_nicename/2
 
 jpl_type_to_classname(T, CN) :-
     (   phrase(jpl_type_classname_1(T), Cs)
@@ -3695,10 +3845,12 @@ jpl_type_to_classname(T, CN) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_descriptor(+Type, -Descriptor) :-
+%! jpl_type_to_descriptor(+Type, -Descriptor)
+%
 %   Type (denoting any Java type)
 %   (can also be a JPL method/2 structure (?!))
 %   is represented by Descriptor (JVM internal syntax)
+%
 %   I'd cache this, but I'd prefer more efficient indexing on types (hashed?)
 
 jpl_type_to_descriptor(T, D) :-
@@ -3709,7 +3861,8 @@ jpl_type_to_descriptor(T, D) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_findclassname(+Type, -FindClassName) :-
+%! jpl_type_to_findclassname(+Type, -FindClassName)
+%
 %   FindClassName denotes Type (class or array only)
 %   in the syntax required peculiarly by FindClass()
 
@@ -3721,10 +3874,14 @@ jpl_type_to_findclassname(T, FCN) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_super_type(+Type, -SuperType) :-
-%   Type oughta be a proper JPL type;
-%   SuperType is the (at most one) type which it directly implements (if it's a class);
-%   if Type denotes a class, this works only if that class can be found;
+%! jpl_type_to_super_type(+Type, -SuperType)
+%
+% Type oughta be a proper JPL type
+%
+% SuperType is the (at most one) type which it directly implements (if it's a class)
+%
+% if Type denotes a class, this works only if that class can be found
+%
 %   if Type = array(Type) then I dunno what happens...
 
 jpl_type_to_super_type(T, Tx) :-
@@ -3736,11 +3893,19 @@ jpl_type_to_super_type(T, Tx) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_type_to_preferred_concrete_type(+Type, -ConcreteType) :-
+%! jpl_type_to_preferred_concrete_type(+Type, -ConcreteType)
+%
 %   Type must be a canonical JPL type,
-%   possibly a pseudo (inferred) type such as char_int or array(char_byte);
-%   ConcreteType is the preferred concrete (Java-instantiable) type;
-%   introduced 16/Apr/2005 to fix bug whereby jpl_list_to_array([1,2,3],A) failed
+% possibly an inferred pseudo type such as =|char_int|= or =|array(char_byte)|=
+%
+% ConcreteType is the preferred concrete (Java-instantiable) type
+%
+%  ==
+%  ?- jpl_type_to_preferred_concrete_type(array(char_byte), T).
+%  T = array(byte).
+%  ==
+%
+% NB introduced 16/Apr/2005 to fix bug whereby jpl_list_to_array([1,2,3],A) failed
 %   because the lists's inferred type of array(char_byte) is not Java-instantiable
 
 jpl_type_to_preferred_concrete_type(T, Tc) :-
@@ -3759,10 +3924,11 @@ jpl_type_to_preferred_concrete_type_1(T, T).
 
 %------------------------------------------------------------------------------
 
-% jpl_types_fit_type(+Types, +Type) :-
-%   each member of Types is (independently) (if that means anything)
-%   assignable to Type
-%   e.g. for dynamic type check when attempting to assign list of values to array
+%! jpl_types_fit_type(+Types, +Type)
+%
+% Each member of Types is (independently) (if that means anything) assignable to Type.
+%
+% Used in dynamic type check when attempting to e.g. assign list of values to array.
 
 jpl_types_fit_type([], _).
 jpl_types_fit_type([T1|T1s], T2) :-
@@ -3771,8 +3937,9 @@ jpl_types_fit_type([T1|T1s], T2) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_types_fit_types(+Types1, +Types2) :-
-%   each member type of Types1 "fits" the respective member type of Types2
+%! jpl_types_fit_types(+Types1, +Types2)
+%
+% Each member type of Types1 "fits" the respective member type of Types2.
 
 jpl_types_fit_types([], []).
 jpl_types_fit_types([T1|T1s], [T2|T2s]) :-
@@ -3781,11 +3948,13 @@ jpl_types_fit_types([T1|T1s], [T2|T2s]) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_value_to_type(+Value, -Type) :-
+%! jpl_value_to_type(+Value, -Type)
+%
 %   Value must be a proper JPL datum other than a ref
-%   i.e. primitive, String or void;
-%   it is of (unique most specific) Type,
-%   which may be one of the pseudo types char_byte, char_short or char_int
+% i.e. primitive, String or void
+%
+% Type is its unique most specific type,
+% which may be one of the pseudo types =|char_byte|=, =|char_short|= or =|char_int|=.
 
 jpl_value_to_type(V, T) :-
     ground(V),                          % critically assumed by jpl_value_to_type_1/2
@@ -3795,19 +3964,19 @@ jpl_value_to_type(V, T) :-
 
 %------------------------------------------------------------------------------
 
-%%    jpl_value_to_type_1(+Value, -Type) is semidet.
+%! jpl_value_to_type_1(+Value, -Type) is semidet
 %
-%    Type is the  unique  most  specific   JPL  type  of  which Value
-%    represents an instance; called   solely  by jpl_value_to_type/2,
-%    which commits to first solution;
+% Type is the unique most specific JPL type of which Value represents an instance.
+%
+% Called solely by jpl_value_to_type/2, which commits to first solution.
 %
 %    NB  some  integer  values  are  of  JPL-peculiar  uniquely  most
 %    specific subtypes, i.e. char_byte, char_short,  char_int but all
-%    are understood by JPL's internal utilities which call this proc
+% are understood by JPL's internal utilities which call this proc.
 %
-%    NB we regard float as subtype of double
+% NB we regard float as subtype of double.
 %
-%    NB objects and refs always have straightforward types
+% NB objects and refs always have straightforward types.
 
 jpl_value_to_type_1(@(false), boolean) :- !.
 jpl_value_to_type_1(@(true), boolean) :- !.
@@ -3836,18 +4005,30 @@ jpl_value_to_type_1(F, float) :-
 
 %------------------------------------------------------------------------------
 
-% jpl_void(-X) :-
-%   X is (by unification) the proper JPL datum which represents the pseudo Java value 'void';
-%   c.f. jpl_is_void/1
+%! jpl_void(-X) is nondet
+%
+% X is =|@(void)|=, the JPL representation of the pseudo Java value 'void'
+%
+% @see jpl_is_void/1
 
 jpl_void(@(void)).
 
 %------------------------------------------------------------------------------
 
-%type   jpl_array_to_length(array, integer)
-
-% jpl_array_to_length(+ArrayObject, -Length) :-
-%   must validate ArrayObject before making the JNI call...
+%! jpl_array_to_length(+Array:jref, -Length:integer)
+%
+% Array should be a JPL reference to a Java array of any type.
+%
+% Length is the length of that array.
+%
+% This is a utility predicate, defined as follows:
+%
+%  ==
+%  jpl_array_to_length(A, N) :-
+%      (   jpl_ref_to_type(A, array(_))
+%      ->  jGetArrayLength(A, N)
+%      ).
+%  ==
 
 jpl_array_to_length(A, N) :-
     (   jpl_ref_to_type(A, array(_))    % can this be done cheaper e.g. in foreign code?
@@ -3856,9 +4037,25 @@ jpl_array_to_length(A, N) :-
 
 %------------------------------------------------------------------------------
 
-%type   jpl_array_to_list(array, list(datum))
-
-% jpl_array_to_list(+Array, -Elements) :-
+%! jpl_array_to_list(+Array:jref, -Elements:list(datum))
+%
+% Array should be a JPL reference to a Java array of any type.
+%
+% Elements is a Prolog list of JPL representations of the array's elements
+% (values or references, as appropriate).
+%
+% This is a utility predicate, defined as follows:
+%
+%  ==
+%  jpl_array_to_list(A, Es) :-
+%      jpl_array_to_length(A, Len),
+%      (   Len > 0
+%      ->  LoBound is 0,
+%          HiBound is Len-1,
+%          jpl_get(A, LoBound-HiBound, Es)
+%      ;   Es = []
+%      ).
+%  ==
 
 jpl_array_to_list(A, Es) :-
     jpl_array_to_length(A, Len),
@@ -3871,15 +4068,15 @@ jpl_array_to_list(A, Es) :-
 
 %------------------------------------------------------------------------------
 
-%type   jpl_datums_to_array(list(datum), array)
-
-% jpl_datums_to_array(+Ds, -A) :-
-%   A will be a ref to a new JVM array,
+%! jpl_datums_to_array(+Datums:list(datum), -A:jref)
+%
+% A will be a JPL reference to a new Java array,
 %   whose base type is the most specific Java type
-%   of which each member of Datums is (directly or indirectly) an instance;
-%   NB this fails (without warning, currently) if:
-%       Ds is an empty list (no base type can be inferred)
-%       Ds contains a primitive value and an object or array ref (no common supertype)
+% of which each member of Datums is (directly or indirectly) an instance
+%
+% NB this fails (without warning, currently) if
+%  * Datums is an empty list (no base type can be inferred)
+%  * Datums contains both a primitive value and an object (including array) reference (no common supertype)
 
 jpl_datums_to_array(Ds, A) :-
     ground(Ds),
@@ -3889,13 +4086,12 @@ jpl_datums_to_array(Ds, A) :-
 
 %------------------------------------------------------------------------------
 
-%type   jpl_enumeration_element(object, datum)
-
-% jpl_enumeration_element(+Enumeration, -Element) :-
-%   generates each Element from the Enumeration;
-%   if the element is a java.lang.String then Element will be an atom;
-%   if the element is null then Element will (oughta) be null;
-%   otherwise I reckon it has to be an object ref
+%! jpl_enumeration_element(+Enumeration:jref, -Element:datum)
+%
+% generates each Element from the Enumeration
+%  * if the element is a java.lang.String then Element will be an atom
+%  * if the element is null then Element will (oughta) be null
+%  * otherwise I reckon it has to be an object ref
 
 jpl_enumeration_element(En, E) :-
     (   jpl_call(En, hasMoreElements, [], @(true))
@@ -3907,27 +4103,42 @@ jpl_enumeration_element(En, E) :-
 
 %------------------------------------------------------------------------------
 
-%type   jpl_enumeration_to_list(object, list(datum))
+%! jpl_enumeration_to_list(+Enumeration:jref, -Elements:list(datum))
+%
+% Enumeration should be a JPL reference to an object which implements the =|Enumeration|= interface.
+%
+% Elements is a Prolog list of JPL references to the enumerated objects.
+%
+% This is a utility predicate, implemented as follows:
+%
+%  ==
+%  jpl_enumeration_to_list(Enumeration, Es) :-
+%      (   jpl_call(Enumeration, hasMoreElements, [], @(true))
+%      ->  jpl_call(Enumeration, nextElement, [], E),
+%          Es = [E|Es1],
+%          jpl_enumeration_to_list(Enumeration, Es1)
+%      ;   Es = []
+%      ).
+%  ==
 
-% jpl_enumeration_to_list(+Enumeration, -Elements) :-
-
-jpl_enumeration_to_list(EN, Es) :-
-    (   jpl_call(EN, hasMoreElements, [], @(true))
-    ->  jpl_call(EN, nextElement, [], E),
+jpl_enumeration_to_list(Enumeration, Es) :-
+    (   jpl_call(Enumeration, hasMoreElements, [], @(true))
+    ->  jpl_call(Enumeration, nextElement, [], E),
         Es = [E|Es1],
-        jpl_enumeration_to_list(EN, Es1)
+        jpl_enumeration_to_list(Enumeration, Es1)
     ;   Es = []
     ).
 
 %------------------------------------------------------------------------------
 
-%type   jpl_hashtable_pair(object, pair(datum,datum))
-
-% jpl_hashtable_pair(+HashTable, -KeyValuePair) :-
-%   generates Key-Value pairs from the given HashTable
+%! jpl_hashtable_pair(+HashTable:jref, -KeyValuePair:pair(datum,datum)) is nondet
+%
+% Generates Key-Value pairs from the given HashTable.
+%
 %   NB String is converted to atom but Integer is presumably returned as an object ref
 %   (i.e. as elsewhere, no auto unboxing);
-%nb this is anachronistic (oughta use the Map interface?)
+%
+% NB this is anachronistic: the Map interface is preferred.
 
 jpl_hashtable_pair(HT, K-V) :-
     jpl_call(HT, keys, [], Ek),
@@ -3937,38 +4148,50 @@ jpl_hashtable_pair(HT, K-V) :-
 
 %------------------------------------------------------------------------------
 
-%type   jpl_iterator_element(object, datum)
-
-% jpl_iterator_element(+Iterator, -Element) :-
+%! jpl_iterator_element(+Iterator:jref, -Element:datum)
+%
+% Iterator should be a JPL reference to an object which implements the =|java.util.Iterator|= interface.
+%
+% Element is the JPL representation of the next element in the iteration.
+%
+% This is a utility predicate, defined thus:
+%  ==
+%  jpl_iterator_element(I, E) :-
+%      (   jpl_call(I, hasNext, [], @(true))
+%      ->  (   jpl_call(I, next, [], E)
+%          ;   jpl_iterator_element(I, E)
+%          )
+%      ).
+%  ==
 
 jpl_iterator_element(I, E) :-
     (   jpl_call(I, hasNext, [], @(true))
-    ->  (   jpl_call(I, next, [], E)        % surely it's steadfast...
+    ->  (   jpl_call(I, next, [], E)
         ;   jpl_iterator_element(I, E)
         )
     ).
 
 %------------------------------------------------------------------------------
 
-%type   jpl_list_to_array(list(datum), array)
-
-% jpl_list_to_array(+Datums, -Array) :-
-%   Datums is a proper list of JPL datums (values or refs);
-%   if they have a most specific common supertype,
-%   Array is an array, of that base type,
-%   whose respective elements are Datums
+%! jpl_list_to_array(+Datums:list(datum), -Array:jref)
+%
+% Datums should be a proper Prolog list of JPL datums (values or references).
+%
+% If Datums have a most specific common supertype,
+% then Array is a JPL reference to a new Java array, whose base type is that common supertype,
+% and whose respective elements are the Java values or objects represented by Datums.
 
 jpl_list_to_array(Ds, A) :-
     jpl_datums_to_array(Ds, A).
 
 %------------------------------------------------------------------------------
 
-%type   jpl_terms_to_array(list(term), array)
-
-% jpl_terms_to_array(+Terms, -Array) :-
-%   Terms is a proper list of arbitrary terms;
-%   Array is an array of jpl.Term,
-%   whose elements represent the respective members of the list
+%! jpl_terms_to_array(+Terms:list(term), -Array:jref) is semidet
+%
+% Terms should be a proper Prolog list of arbitrary terms.
+%
+% Array is a JPL reference to a new Java array of jpl.Term,
+% whose elements represent the respective members of the list.
 
 jpl_terms_to_array(Ts, A) :-
     jpl_terms_to_array_1(Ts, Ts2),
@@ -3982,23 +4205,52 @@ jpl_terms_to_array_1([T|Ts], [{T}|Ts2]) :-
 
 %------------------------------------------------------------------------------
 
-%type   jpl_map_element(object, pair(datum,datum))
+%! jpl_map_element(+Map:jref, -KeyValue:pair(datum,datum)) is nondet
+%
+% Map must be a JPL Reference to an object which implements the =|java.util.Map|= interface
+%
+% This generates each Key-Value pair from the Map, e.g.
+%
+%  ==
+%  ?- jpl_call('java.lang.System', getProperties, [], Map), jpl_map_element(Map, E).
+%  Map = @'J#00000000000015552132',
+%  E = 'java.runtime.name'-'Java(TM) SE Runtime Environment' ;
+%  Map = @'J#00000000000015552132',
+%  E = 'sun.boot.library.path'-'C:\\Program Files\\Java\\jre7\\bin'
+%  etc.
+%  ==
+%
+% This is a utility predicate, defined thus:
+%
+%  ==
+%  jpl_map_element(Map, K-V) :-
+%      jpl_call(Map, entrySet, [], ES),
+%      jpl_set_element(ES, E),
+%      jpl_call(E, getKey, [], K),
+%      jpl_call(E, getValue, [], V).
+%  ==
 
-% jpl_map_element(+Map, -KeyValue) :-
-%   Map must be an instance of any implementation of the java.util.Map interface;
-%   this generates each Key-Value pair from the Map
-
-jpl_map_element(M, K-V) :-
-    jpl_call(M, entrySet, [], ES),
+jpl_map_element(Map, K-V) :-
+    jpl_call(Map, entrySet, [], ES),
     jpl_set_element(ES, E),
     jpl_call(E, getKey, [], K),
     jpl_call(E, getValue, [], V).
 
 %------------------------------------------------------------------------------
 
-%type   jpl_set_element(object, datum)
-
-% jpl_set_element(+Set, -Element) :-
+%! jpl_set_element(+Set:object, -Element:datum) is nondet
+%
+% Set must be a JPL reference to an object which implements the =|java.util.Set|= interface.
+%
+% On backtracking, Element is bound to a JPL representation of each element of Set.
+%
+% This is a utility predicate, defined thus:
+%
+%  ==
+%  jpl_set_element(S, E) :-
+%      jpl_call(S, iterator, [], I),
+%      jpl_iterator_element(I, E).
+%  ==
 
 jpl_set_element(S, E) :-
     jpl_call(S, iterator, [], I),
@@ -4006,7 +4258,8 @@ jpl_set_element(S, E) :-
 
 %------------------------------------------------------------------------------
 
-% is_pair(?T) :-
+%! is_pair(?T:term)
+%
 %   I define a half-decent "pair" as having a ground key (any val)
 
 is_pair(Key-_Val) :-
@@ -4045,12 +4298,11 @@ multimap_to_atom_1([K-V|KVs], T, Cs1, Cs0) :-
 
 %------------------------------------------------------------------------------
 
-%%    to_atom(+Term, -Atom)
+%! to_atom(+Term, -Atom)
 %
 %    unifies Atom with a printed representation of Term.
 %
-%    @tbd Sort of quoting requirements and use format(codes(Codes),
-%    ...)
+% @tbd Sort of quoting requirements and use format(codes(Codes),...)
 
 to_atom(Term, Atom) :-
     (   atom(Term)
