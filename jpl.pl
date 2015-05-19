@@ -90,33 +90,32 @@ The library(jpl) provides a bidirectional interface to a Java Virtual Machine.
 % suppress debugging this library
 :- set_prolog_flag(generate_debug_info, false).
 
-%------------------------------------------------------------------------------
 
 %! jpl_new(+X, +Params, -V) is det.
 %
-%   X can be:
+% X can be:
 %  * an atomic classname, e.g. =|'java.lang.String'|=
 %  * or an atomic descriptor, e.g. =|'[I'|= or =|'Ljava.lang.String;'|=
 %  * or a suitable type, i.e. any class(_,_) or array(_), e.g. class([java,util],['Date'])
 %
 % If X is an object (non-array)  type   or  descriptor and Params is a
-%   list of values or references, then V  is the result of an invocation
-%   of  that  type's  most  specifically-typed    constructor  to  whose
-%   respective formal parameters the actual   Params are assignable (and
+% list of values or references, then V  is the result of an invocation
+% of  that  type's  most  specifically-typed    constructor  to  whose
+% respective formal parameters the actual   Params are assignable (and
 % assigned).
 %
 % If X is an array type or descriptor   and Params is a list of values
-%   or references, each of which is   (independently)  assignable to the
-%   array element type, then V is a  new   array  of as many elements as
-%   Params has members,  initialised  with   the  respective  members of
+% or references, each of which is   (independently)  assignable to the
+% array element type, then V is a  new   array  of as many elements as
+% Params has members,  initialised  with   the  respective  members of
 % Params.
 %
 % If X is an array type  or   descriptor  and Params is a non-negative
-%   integer N, then V is a new array of that type, with N elements, each
+% integer N, then V is a new array of that type, with N elements, each
 % initialised to Java's appropriate default value for the type.
 %
-%   If V is {Term} then we attempt to convert a new jpl.Term instance to
-%   a corresponding term; this is of  little   obvious  use here, but is
+% If V is {Term} then we attempt to convert a new jpl.Term instance to
+% a corresponding term; this is of  little   obvious  use here, but is
 % consistent with jpl_call/4 and jpl_get/3.
 
 jpl_new(X, Params, V) :-
@@ -141,19 +140,16 @@ jpl_new(X, Params, V) :-
     ;   V = Vx
     ).
 
-%------------------------------------------------------------------------------
 
-%%  jpl_new_1(+Tx, +Params, -Vx)
+%! jpl_new_1(+Tx, +Params, -Vx)
 %
-%   (serves only jpl_new/3)
+% (serves only jpl_new/3)
 %
-%   Tx can be:
-%     a class(_,_) or array(_) type;
+% Tx can be a class(_,_) or array(_) type.
 %
-%   Params must be:
-%     a proper list of constructor parameters
+% Params must be a proper list of constructor parameters.
 %
-%   at exit, Vx is bound to a JPL reference to a new, initialised instance of Tx
+% At exit, Vx is bound to a JPL reference to a new, initialised instance of Tx
 
 jpl_new_1(class(Ps,Cs), Params, Vx) :-
     !,                                      % green (see below)
@@ -252,11 +248,10 @@ jpl_new_1(T, _Params, _Vx) :-       % doomed attempt to create new primitive typ
 jpl_new_1(T, _, _) :-
     throw(error(domain_error(jpl_type,T),context(jpl_new/3,'1st arg must denote a known or plausible type'))).
 
-%------------------------------------------------------------------------------
 
-%%  jpl_new_array(+ElementType, +Length, -NewArray) is det.
+%! jpl_new_array(+ElementType, +Length, -NewArray) is det
 %
-%   binds NewArray to a jref to a newly created Java array of ElementType and Length
+% binds NewArray to a jref to a newly created Java array of ElementType and Length
 
 jpl_new_array(boolean, Len, A) :-
     jNewBooleanArray(Len, A).
@@ -281,7 +276,6 @@ jpl_new_array(class(Ps,Cs), Len, A) :-
     jpl_type_to_class(class(Ps,Cs), C),
     jNewObjectArray(Len, C, @(null), A).
 
-%------------------------------------------------------------------------------
 
 %! jpl_call(+X, +MethodName:atom, +Params:list(datum), -Result:datum) is det
 %
@@ -357,14 +351,13 @@ jpl_call(X, Mspec, Params, R) :-
     ;   R = Rx
     ).
 
-%------------------------------------------------------------------------------
 
-%%  jpl_call_instance(+ObjectType, +Object, +MethodName, +Params, +ActualParamTypes, +Arity, -Result)
+%! jpl_call_instance(+ObjectType, +Object, +MethodName, +Params, +ActualParamTypes, +Arity, -Result)
 %
-%   call the MethodName-d method  (instance   or  static)  of Object
-%   (which is of ObjectType),  which   most  specifically applies to
-%   Params,  which  we  have   found    to   be   (respectively)  of
-%   ActualParamTypes, and of which there are Arity, yielding Result
+% calls the MethodName-d method (instance or static) of Object (which is of ObjectType),
+% which most specifically applies to Params,
+% which we have found to be (respectively) of ActualParamTypes,
+% and of which there are Arity, yielding Result.
 
 jpl_call_instance(Type, Obj, Mname, Params, Taps, A, Rx) :-
     findall(                    % get remaining details of all accessible methods of Obj's class (as denoted by Type)
@@ -396,15 +389,14 @@ jpl_call_instance(Type, Obj, Mname, Params, Taps, A, Rx) :-
     ;   jpl_call_instance_method(Tr, Obj, MID, Tfps, Params, Rx)    % else call (non-static) method w.r.t. object itself
     ).
 
-%------------------------------------------------------------------------------
 
-%%  jpl_call_static(+ClassType, +ClassObject, +MethodName, +Params, +ActualParamTypes, +Arity, -Result)
+%! jpl_call_static(+ClassType, +ClassObject, +MethodName, +Params, +ActualParamTypes, +Arity, -Result)
 %
-%   call the MethodName-d static method of   the  class (which is of
-%   ClassType, and which  is  represented   by  the  java.lang.Class
-%   instance ClassObject) which most specifically applies to Params,
-%   which we have found to   be  (respectively) of ActualParamTypes,
-%   and of which there are Arity, yielding Result
+% calls the MethodName-d static method of the class (which is of ClassType,
+% and which is represented by the java.lang.Class instance ClassObject)
+% which most specifically applies to Params,
+% which we have found to be (respectively) of ActualParamTypes,
+% and of which there are Arity, yielding Result.
 
 jpl_call_static(Type, ClassObj, Mname, Params, Taps, A, Rx) :-
     findall(                    % get all accessible static methods of the class denoted by Type and ClassObj
@@ -434,9 +426,8 @@ jpl_call_static(Type, ClassObj, Mname, Params, Taps, A, Rx) :-
     ),
     jpl_call_static_method(Tr, ClassObj, MID, Tfps, Params, Rx).
 
-%------------------------------------------------------------------------------
 
-%%  jpl_call_instance_method(+Type, +ClassObject, +MethodID, +FormalParamTypes, +Params, -Result)
+%! jpl_call_instance_method(+Type, +ClassObject, +MethodID, +FormalParamTypes, +Params, -Result)
 
 jpl_call_instance_method(void, Class, MID, Tfps, Ps, R) :-
     jCallVoidMethod(Class, MID, Tfps, Ps),
@@ -462,9 +453,8 @@ jpl_call_instance_method(array(_), Class, MID, Tfps, Ps, R) :-
 jpl_call_instance_method(class(_,_), Class, MID, Tfps, Ps, R) :-
     jCallObjectMethod(Class, MID, Tfps, Ps, R).
 
-%------------------------------------------------------------------------------
 
-%% jpl_call_static_method(+Type, +ClassObject, +MethodID, +FormalParamTypes, +Params, -Result)
+%! jpl_call_static_method(+Type, +ClassObject, +MethodID, +FormalParamTypes, +Params, -Result)
 
 jpl_call_static_method(void, Class, MID, Tfps, Ps, R) :-
     jCallStaticVoidMethod(Class, MID, Tfps, Ps),
@@ -490,7 +480,6 @@ jpl_call_static_method(array(_), Class, MID, Tfps, Ps, R) :-
 jpl_call_static_method(class(_,_), Class, MID, Tfps, Ps, R) :-
     jCallStaticObjectMethod(Class, MID, Tfps, Ps, R).
 
-%------------------------------------------------------------------------------
 
 %! jpl_get(+X, +Fspec, -V:datum) is det
 %
@@ -553,7 +542,6 @@ jpl_get(X, Fspec, V) :-
     ;   V = Vx
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_get_static(+Type:type, +ClassObject:jref, +FieldName:atom, -Value:datum) is det
 %
@@ -584,7 +572,6 @@ jpl_get_static(Type, ClassObj, Fname, Vx) :-
     ;   throw(error(existence_error(unique_field,Fname),context(jpl_get/3,'more than one field is found with the given name')))
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_get_instance(+Type, +Type, +Object, +FieldSpecifier, -Value) is det
 
@@ -645,7 +632,6 @@ jpl_get_instance(array(ElementType), _, Array, Fspec, Vx) :-
     ;   throw(error(type_error(array_lookup_spec,Fspec),context(jpl_get/3,'when 1st arg is an array, 2nd arg must be an index, an index range, or ''length''')))
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_get_array_element(+ElementType:type, +Array:jref, +Index, -Vc) is det
 %
@@ -670,7 +656,6 @@ jpl_get_array_element(Type, Array, Index, Vc) :-
     ),
     Vr = Vc.    % redundant since Vc is always (?) unbound at call
 
-%------------------------------------------------------------------------------
 
 %! jpl_get_array_elements(+ElementType, +Array, +N, +M, -Vs)
 %
@@ -686,7 +671,6 @@ jpl_get_array_elements(ElementType, Array, N, M, Vs) :-
     ;   jpl_get_primitive_array_elements(ElementType, Array, N, M, Vs)
     ).
 
-%------------------------------------------------------------------------------
 
 jpl_get_instance_field(boolean, Obj, FieldID, V) :-
     jGetBooleanField(Obj, FieldID, V).
@@ -709,7 +693,6 @@ jpl_get_instance_field(class(_,_), Obj, FieldID, V) :-
 jpl_get_instance_field(array(_), Obj, FieldID, V) :-
     jGetObjectField(Obj, FieldID, V).
 
-%------------------------------------------------------------------------------
 
 %! jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs) is det
 %
@@ -728,7 +711,6 @@ jpl_get_object_array_elements(Array, Lo, Hi, Vcs) :-
     ;   Vcs = []
     ).
 
-%------------------------------------------------------------------------------
 
 %%  jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs) is det.
 %
@@ -748,7 +730,6 @@ jpl_get_primitive_array_elements(ElementType, Array, Lo, Hi, Vcs) :-
         jni_free_buffer(Bp)
     ).
 
-%------------------------------------------------------------------------------
 
 jpl_get_primitive_array_region(boolean, Array, Lo, S, I) :-
     jGetBooleanArrayRegion(Array, Lo, S, jbuf(I,boolean)).
@@ -767,7 +748,6 @@ jpl_get_primitive_array_region(float, Array, Lo, S, I) :-
 jpl_get_primitive_array_region(double, Array, Lo, S, I) :-
     jGetDoubleArrayRegion(Array, Lo, S, jbuf(I,double)).
 
-%------------------------------------------------------------------------------
 
 jpl_get_static_field(boolean, Array, FieldID, V) :-
     jGetStaticBooleanField(Array, FieldID, V).
@@ -790,7 +770,6 @@ jpl_get_static_field(class(_,_), Array, FieldID, V) :-
 jpl_get_static_field(array(_), Array, FieldID, V) :-
     jGetStaticObjectField(Array, FieldID, V).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set(+X, +Fspec, +V) is det.
 %
@@ -842,7 +821,6 @@ jpl_set(X, Fspec, V) :-
     ;   throw(error(domain_error(object_or_class,X),context(jpl_set/3,'1st arg must be an object, classname, descriptor or type')))
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set_instance(+Type, +Type, +ObjectReference, +FieldName, +Value) is det.
 %
@@ -929,7 +907,6 @@ jpl_set_instance(array(Type), _, Obj, Fspec, V) :-
     ),
     jpl_set_array(Type, Obj, N, Iv, Vs).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set_static(+Type, +ClassObj, +FieldName, +Value) is det.
 %
@@ -973,7 +950,6 @@ jpl_set_static(Type, ClassObj, Fname, V) :-
     ;   throw(error(existence_error(field,Fname),context(jpl_set/3,'more than one public static field of the class has this name (this should not happen)(?)')))
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set_array(+ElementType, +Array, +Offset, +DatumQty, +Datums) is det.
 %
@@ -1012,7 +988,6 @@ jpl_set_array(T, A, N, I, Ds) :-
     ;   throw(error(system_error(array_element_type,T),context(jpl_set/3,'array element type is unknown (this should not happen)')))
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set_array_1(+Values, +Type, +BufferIndex, +BufferPointer) is det.
 %
@@ -1029,7 +1004,6 @@ jpl_set_array_1([V|Vs], Tprim, Ib, Bp) :-
     Ibnext is Ib+1,
     jpl_set_array_1(Vs, Tprim, Ibnext, Bp).
 
-%------------------------------------------------------------------------------
 
 jpl_set_elements(boolean, Obj, N, I, Bp) :-
     jSetBooleanArrayRegion(Obj, N, I, jbuf(Bp,boolean)).
@@ -1048,7 +1022,6 @@ jpl_set_elements(float, Obj, N, I, Bp) :-
 jpl_set_elements(double, Obj, N, I, Bp) :-
     jSetDoubleArrayRegion(Obj, N, I, jbuf(Bp,double)).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set_instance_field(+Type, +Obj, +FieldID, +V) is det.
 %
@@ -1080,7 +1053,6 @@ jpl_set_instance_field(class(_,_), Obj, FieldID, V) :-  % also handles byval ter
 jpl_set_instance_field(array(_), Obj, FieldID, V) :-
     jSetObjectField(Obj, FieldID, V).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set_static_field(+Type, +ClassObj, +FieldID, +V)
 %
@@ -1112,7 +1084,6 @@ jpl_set_static_field(class(_,_), Obj, FieldID, V) :-    % also handles byval ter
 jpl_set_static_field(array(_), Obj, FieldID, V) :-
     jSetStaticObjectField(Obj, FieldID, V).
 
-%------------------------------------------------------------------------------
 
 %! jpl_get_default_jvm_opts(-Opts:list(atom)) is det
 %
@@ -1122,7 +1093,6 @@ jpl_set_static_field(array(_), Obj, FieldID, V) :-
 jpl_get_default_jvm_opts(Opts) :-
     jni_get_default_jvm_opts(Opts).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set_default_jvm_opts(+Opts:list(atom)) is det
 %
@@ -1133,7 +1103,6 @@ jpl_set_default_jvm_opts(Opts) :-
     length(Opts, N),
     jni_set_default_jvm_opts(N, Opts).
 
-%------------------------------------------------------------------------------
 
 %! jpl_get_actual_jvm_opts(-Opts:list(atom)) is semidet
 %
@@ -1144,7 +1113,6 @@ jpl_set_default_jvm_opts(Opts) :-
 jpl_get_actual_jvm_opts(Opts) :-
     jni_get_actual_jvm_opts(Opts).
 
-%------------------------------------------------------------------------------
 
 jpl_assert(Fact) :-
     (   jpl_assert_policy(Fact, yes)
@@ -1152,7 +1120,6 @@ jpl_assert(Fact) :-
     ;   true
     ).
 
-%------------------------------------------------------------------------------
 
 jpl_assert_policy(jpl_field_spec_cache(_,_,_,_,_,_), yes).
 jpl_assert_policy(jpl_method_spec_cache(_,_,_,_,_,_,_,_), yes).
@@ -1164,7 +1131,6 @@ jpl_assert_policy(jpl_field_spec_is_cached(_), YN) :-
 jpl_assert_policy(jpl_method_spec_is_cached(_), YN) :-
     jpl_assert_policy(jpl_method_spec_cache(_,_,_,_,_,_,_,_), YN).
 
-%------------------------------------------------------------------------------
 
 %! jpl_tidy_iref_type_cache(+Iref) is det.
 %
@@ -1177,7 +1143,6 @@ jpl_tidy_iref_type_cache(Iref) :-
     retractall(jpl_iref_type_cache(Iref,_)),
     true.
 
-%------------------------------------------------------------------------------
 
 jpl_fergus_find_candidate([], Candidate, Candidate, []).
 jpl_fergus_find_candidate([X|Xs], Candidate0, Candidate, Rest) :-
@@ -1189,14 +1154,12 @@ jpl_fergus_find_candidate([X|Xs], Candidate0, Candidate, Rest) :-
     ),
     jpl_fergus_find_candidate(Xs, Candidate1, Candidate, Rest1).
 
-%------------------------------------------------------------------------------
 
 jpl_fergus_greater(z5(_,_,_,_,Tps1), z5(_,_,_,_,Tps2)) :-
     jpl_types_fit_types(Tps1, Tps2).
 jpl_fergus_greater(z3(_,_,Tps1), z3(_,_,Tps2)) :-
     jpl_types_fit_types(Tps1, Tps2).
 
-%------------------------------------------------------------------------------
 
 %! jpl_fergus_is_the_greatest(+Xs:list(T), -GreatestX:T)
 %
@@ -1213,7 +1176,6 @@ jpl_fergus_is_the_greatest([X|Xs], Greatest) :-
         jpl_fergus_greater(Greatest, R)
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_z3s_to_most_specific_z3(+Zs, -Z)
 %
@@ -1225,7 +1187,6 @@ jpl_fergus_is_the_greatest([X|Xs], Greatest) :-
 jpl_z3s_to_most_specific_z3(Zs, Z) :-
     jpl_fergus_is_the_greatest(Zs, Z).
 
-%------------------------------------------------------------------------------
 
 %! jpl_z5s_to_most_specific_z5(+Zs, -Z)
 %
@@ -1237,7 +1198,6 @@ jpl_z3s_to_most_specific_z3(Zs, Z) :-
 jpl_z5s_to_most_specific_z5(Zs, Z) :-
     jpl_fergus_is_the_greatest(Zs, Z).
 
-%------------------------------------------------------------------------------
 
 %! jpl_pl_lib_version(-Version)
 %
@@ -1256,7 +1216,6 @@ jpl_pl_lib_version(VersionString) :-
     jpl_pl_lib_version(Major, Minor, Patch, Status),
     atomic_list_concat([Major,'.',Minor,'.',Patch,'-',Status], VersionString).
 
-%------------------------------------------------------------------------------
 
 %! jpl_pl_lib_version(-Major, -Minor, -Patch, -Status)
 %
@@ -1286,7 +1245,6 @@ jpl_pl_lib_version(7, 0, 0, alpha).
 %  V = '7.0.0-alpha'.
 %  ==
 
-%------------------------------------------------------------------------------
 
 % jpl_type_alfa(0'$) -->        % presumably not allowed
 %   "$".                        % given the "inner class" syntax?
@@ -1300,7 +1258,6 @@ jpl_type_alfa(C) -->
 jpl_type_alfa(C) -->
     [C], { C>=0'A, C=<0'Z }.
 
-%------------------------------------------------------------------------------
 
 jpl_type_alfa_num(C) -->
     jpl_type_alfa(C),
@@ -1308,42 +1265,34 @@ jpl_type_alfa_num(C) -->
 jpl_type_alfa_num(C) -->
     [C], { C>=0'0, C=<0'9 }.
 
-%------------------------------------------------------------------------------
 
 jpl_type_array_classname(array(T)) -->
     "[", jpl_type_classname_2(T).
 
-%------------------------------------------------------------------------------
 
 jpl_type_array_descriptor(array(T)) -->
     "[", jpl_type_descriptor_1(T).
 
-%------------------------------------------------------------------------------
 
 jpl_type_bare_class_descriptor(class(Ps,Cs)) -->
     jpl_type_slashed_package_parts(Ps), jpl_type_class_parts(Cs).
 
-%------------------------------------------------------------------------------
 
 jpl_type_bare_classname(class(Ps,Cs)) -->
     jpl_type_dotted_package_parts(Ps), jpl_type_class_parts(Cs).
 
-%------------------------------------------------------------------------------
 
 jpl_type_class_descriptor(class(Ps,Cs)) -->
     "L", jpl_type_bare_class_descriptor(class(Ps,Cs)), ";".
 
-%------------------------------------------------------------------------------
 
 jpl_type_class_part(N) -->
     jpl_type_id(N).
 
-%------------------------------------------------------------------------------
 
 jpl_type_class_parts([C|Cs]) -->
     jpl_type_class_part(C), jpl_type_inner_class_parts(Cs).
 
-%------------------------------------------------------------------------------
 
 jpl_type_classname_1(T) -->
     jpl_type_bare_classname(T),
@@ -1354,7 +1303,6 @@ jpl_type_classname_1(T) -->
 jpl_type_classname_1(T) -->
     jpl_type_primitive(T).
 
-%------------------------------------------------------------------------------
 
 jpl_type_classname_2(T) -->
     jpl_type_delimited_classname(T).
@@ -1363,12 +1311,12 @@ jpl_type_classname_2(T) -->
 jpl_type_classname_2(T) -->
     jpl_type_primitive(T).
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_delimited_classname(Class) -->
     "L", jpl_type_bare_classname(Class), ";".
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_descriptor_1(T) -->
     jpl_type_primitive(T),
@@ -1382,78 +1330,78 @@ jpl_type_descriptor_1(T) -->
 jpl_type_descriptor_1(T) -->
     jpl_type_method_descriptor(T).
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_dotted_package_parts([P|Ps]) -->
     jpl_type_package_part(P), ".", !, jpl_type_dotted_package_parts(Ps).
 jpl_type_dotted_package_parts([]) -->
     [].
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_findclassname(T) -->
     jpl_type_bare_class_descriptor(T).
 jpl_type_findclassname(T) -->
     jpl_type_array_descriptor(T).
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_id(A) -->
     { nonvar(A) -> atom_codes(A,[C|Cs]) ; true },
     jpl_type_alfa(C), jpl_type_id_rest(Cs),
     { atom_codes(A, [C|Cs]) }.
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_id_rest([C|Cs]) -->
     jpl_type_alfa_num(C), !, jpl_type_id_rest(Cs).
 jpl_type_id_rest([]) -->
     [].
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_id_v2(A) -->                   % inner class name parts (empirically)
     { nonvar(A) -> atom_codes(A,Cs) ; true },
     jpl_type_id_rest(Cs),
     { atom_codes(A, Cs) }.
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_inner_class_part(N) -->
     jpl_type_id_v2(N).
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_inner_class_parts([C|Cs]) -->
     "$", jpl_type_inner_class_part(C), !, jpl_type_inner_class_parts(Cs).
 jpl_type_inner_class_parts([]) -->
     [].
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_method_descriptor(method(Ts,T)) -->
     "(", jpl_type_method_descriptor_args(Ts), ")", jpl_type_method_descriptor_return(T).
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_method_descriptor_args([T|Ts]) -->
     jpl_type_descriptor_1(T), !, jpl_type_method_descriptor_args(Ts).
 jpl_type_method_descriptor_args([]) -->
     [].
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_method_descriptor_return(T) -->
     jpl_type_void(T).
 jpl_type_method_descriptor_return(T) -->
     jpl_type_descriptor_1(T).
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_package_part(N) -->
     jpl_type_id(N).
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_primitive(boolean) -->
     "Z",
@@ -1479,19 +1427,19 @@ jpl_type_primitive(float) -->
 jpl_type_primitive(double) -->
     "D".
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_slashed_package_parts([P|Ps]) -->
     jpl_type_package_part(P), "/", !, jpl_type_slashed_package_parts(Ps).
 jpl_type_slashed_package_parts([]) -->
     [].
 
-%------------------------------------------------------------------------------
+
 
 jpl_type_void(void) -->
     "V".
 
-%------------------------------------------------------------------------------
+
 
 %! jCallBooleanMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rbool:boolean)
 
@@ -1499,7 +1447,7 @@ jCallBooleanMethod(Obj, MethodID, Types, Params, Rbool) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(39, Obj, MethodID, ParamBuf, Rbool).
 
-%------------------------------------------------------------------------------
+
 
 %! jCallByteMethod(+Obj:jref, +MethodID:methodId, +Types, +Params:list(datum), -Rbyte:byte)
 
@@ -1507,7 +1455,7 @@ jCallByteMethod(Obj, MethodID, Types, Params, Rbyte) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(42, Obj, MethodID, ParamBuf, Rbyte).
 
-%------------------------------------------------------------------------------
+
 
 %! jCallCharMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rchar:char)
 
@@ -1515,7 +1463,6 @@ jCallCharMethod(Obj, MethodID, Types, Params, Rchar) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(45, Obj, MethodID, ParamBuf, Rchar).
 
-%------------------------------------------------------------------------------
 
 %! jCallDoubleMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rdouble:double)
 
@@ -1523,7 +1470,6 @@ jCallDoubleMethod(Obj, MethodID, Types, Params, Rdouble) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(60, Obj, MethodID, ParamBuf, Rdouble).
 
-%------------------------------------------------------------------------------
 
 %! jCallFloatMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rfloat:float)
 
@@ -1531,7 +1477,6 @@ jCallFloatMethod(Obj, MethodID, Types, Params, Rfloat) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(57, Obj, MethodID, ParamBuf, Rfloat).
 
-%------------------------------------------------------------------------------
 
 %! jCallIntMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rint:int)
 
@@ -1539,7 +1484,6 @@ jCallIntMethod(Obj, MethodID, Types, Params, Rint) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(51, Obj, MethodID, ParamBuf, Rint).
 
-%------------------------------------------------------------------------------
 
 %! jCallLongMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rlong:long)
 
@@ -1547,7 +1491,6 @@ jCallLongMethod(Obj, MethodID, Types, Params, Rlong) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(54, Obj, MethodID, ParamBuf, Rlong).
 
-%------------------------------------------------------------------------------
 
 %! jCallObjectMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Robj:jref)
 
@@ -1555,7 +1498,6 @@ jCallObjectMethod(Obj, MethodID, Types, Params, Robj) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(36, Obj, MethodID, ParamBuf, Robj).
 
-%------------------------------------------------------------------------------
 
 %! jCallShortMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rshort:short)
 
@@ -1563,7 +1505,6 @@ jCallShortMethod(Obj, MethodID, Types, Params, Rshort) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(48, Obj, MethodID, ParamBuf, Rshort).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticBooleanMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rbool:boolean)
 
@@ -1571,7 +1512,6 @@ jCallStaticBooleanMethod(Class, MethodID, Types, Params, Rbool) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(119, Class, MethodID, ParamBuf, Rbool).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticByteMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rbyte:byte)
 
@@ -1579,7 +1519,6 @@ jCallStaticByteMethod(Class, MethodID, Types, Params, Rbyte) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(122, Class, MethodID, ParamBuf, Rbyte).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticCharMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rchar:char)
 
@@ -1587,7 +1526,6 @@ jCallStaticCharMethod(Class, MethodID, Types, Params, Rchar) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(125, Class, MethodID, ParamBuf, Rchar).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticDoubleMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rdouble:double)
 
@@ -1595,7 +1533,6 @@ jCallStaticDoubleMethod(Class, MethodID, Types, Params, Rdouble) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(140, Class, MethodID, ParamBuf, Rdouble).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticFloatMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rfloat:float)
 
@@ -1603,7 +1540,6 @@ jCallStaticFloatMethod(Class, MethodID, Types, Params, Rfloat) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(137, Class, MethodID, ParamBuf, Rfloat).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticIntMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rint:int)
 
@@ -1611,7 +1547,6 @@ jCallStaticIntMethod(Class, MethodID, Types, Params, Rint) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(131, Class, MethodID, ParamBuf, Rint).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticLongMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rlong:long)
 
@@ -1619,7 +1554,6 @@ jCallStaticLongMethod(Class, MethodID, Types, Params, Rlong) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(134, Class, MethodID, ParamBuf, Rlong).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticObjectMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Robj:jref)
 
@@ -1627,7 +1561,6 @@ jCallStaticObjectMethod(Class, MethodID, Types, Params, Robj) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(116, Class, MethodID, ParamBuf, Robj).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticShortMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rshort:short)
 
@@ -1635,7 +1568,6 @@ jCallStaticShortMethod(Class, MethodID, Types, Params, Rshort) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(128, Class, MethodID, ParamBuf, Rshort).
 
-%------------------------------------------------------------------------------
 
 %! jCallStaticVoidMethod(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum))
 
@@ -1643,7 +1575,6 @@ jCallStaticVoidMethod(Class, MethodID, Types, Params) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_void(143, Class, MethodID, ParamBuf).
 
-%------------------------------------------------------------------------------
 
 %! jCallVoidMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum))
 
@@ -1651,77 +1582,66 @@ jCallVoidMethod(Obj, MethodID, Types, Params) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_void(63, Obj, MethodID, ParamBuf).
 
-%------------------------------------------------------------------------------
 
 %! jFindClass(+ClassName:findclassname, -Class:jref)
 
 jFindClass(ClassName, Class) :-
     jni_func(6, ClassName, Class).
 
-%------------------------------------------------------------------------------
 
 %! jGetArrayLength(+Array:jref, -Size:int)
 
 jGetArrayLength(Array, Size) :-
     jni_func(171, Array, Size).
 
-%------------------------------------------------------------------------------
 
 %! jGetBooleanArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:boolean_buf)
 
 jGetBooleanArrayRegion(Array, Start, Len, Buf) :-
     jni_void(199, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jGetBooleanField(+Obj:jref, +FieldID:fieldId, -Rbool:boolean)
 
 jGetBooleanField(Obj, FieldID, Rbool) :-
     jni_func(96, Obj, FieldID, Rbool).
 
-%------------------------------------------------------------------------------
 
 %! jGetByteArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:byte_buf)
 
 jGetByteArrayRegion(Array, Start, Len, Buf) :-
     jni_void(200, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jGetByteField(+Obj:jref, +FieldID:fieldId, -Rbyte:byte)
 
 jGetByteField(Obj, FieldID, Rbyte) :-
     jni_func(97, Obj, FieldID, Rbyte).
 
-%------------------------------------------------------------------------------
 
 %! jGetCharArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:char_buf)
 
 jGetCharArrayRegion(Array, Start, Len, Buf) :-
     jni_void(201, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jGetCharField(+Obj:jref, +FieldID:fieldId, -Rchar:char)
 
 jGetCharField(Obj, FieldID, Rchar) :-
     jni_func(98, Obj, FieldID, Rchar).
 
-%------------------------------------------------------------------------------
 
 %! jGetDoubleArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:double_buf)
 
 jGetDoubleArrayRegion(Array, Start, Len, Buf) :-
     jni_void(206, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jGetDoubleField(+Obj:jref, +FieldID:fieldId, -Rdouble:double)
 
 jGetDoubleField(Obj, FieldID, Rdouble) :-
     jni_func(103, Obj, FieldID, Rdouble).
 
-%------------------------------------------------------------------------------
 
 %! jGetFieldID(+Class:jref, +Name:fieldName, +Type:type, -FieldID:fieldId)
 
@@ -1729,49 +1649,42 @@ jGetFieldID(Class, Name, Type, FieldID) :-
     jpl_type_to_descriptor(Type, TD),
     jni_func(94, Class, Name, TD, FieldID).
 
-%------------------------------------------------------------------------------
 
 %! jGetFloatArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:float_buf)
 
 jGetFloatArrayRegion(Array, Start, Len, Buf) :-
     jni_void(205, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jGetFloatField(+Obj:jref, +FieldID:fieldId, -Rfloat:float)
 
 jGetFloatField(Obj, FieldID, Rfloat) :-
     jni_func(102, Obj, FieldID, Rfloat).
 
-%------------------------------------------------------------------------------
 
 %! jGetIntArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:int_buf)
 
 jGetIntArrayRegion(Array, Start, Len, Buf) :-
     jni_void(203, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jGetIntField(+Obj:jref, +FieldID:fieldId, -Rint:int)
 
 jGetIntField(Obj, FieldID, Rint) :-
     jni_func(100, Obj, FieldID, Rint).
 
-%------------------------------------------------------------------------------
 
 %! jGetLongArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:long_buf)
 
 jGetLongArrayRegion(Array, Start, Len, Buf) :-
     jni_void(204, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jGetLongField(+Obj:jref, +FieldID:fieldId, -Rlong:long)
 
 jGetLongField(Obj, FieldID, Rlong) :-
     jni_func(101, Obj, FieldID, Rlong).
 
-%------------------------------------------------------------------------------
 
 %! jGetMethodID(+Class:jref, +Name:atom, +Type:type, -MethodID:methodId)
 
@@ -1779,70 +1692,60 @@ jGetMethodID(Class, Name, Type, MethodID) :-
     jpl_type_to_descriptor(Type, TD),
     jni_func(33, Class, Name, TD, MethodID).
 
-%------------------------------------------------------------------------------
 
 %! jGetObjectArrayElement(+Array:jref, +Index:int, -Obj:jref)
 
 jGetObjectArrayElement(Array, Index, Obj) :-
     jni_func(173, Array, Index, Obj).
 
-%------------------------------------------------------------------------------
 
 %! jGetObjectClass(+Object:jref, -Class:jref)
 
 jGetObjectClass(Object, Class) :-
     jni_func(31, Object, Class).
 
-%------------------------------------------------------------------------------
 
 %! jGetObjectField(+Obj:jref, +FieldID:fieldId, -RObj:jref)
 
 jGetObjectField(Obj, FieldID, Robj) :-
     jni_func(95, Obj, FieldID, Robj).
 
-%------------------------------------------------------------------------------
 
 %! jGetShortArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:short_buf)
 
 jGetShortArrayRegion(Array, Start, Len, Buf) :-
     jni_void(202, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jGetShortField(+Obj:jref, +FieldID:fieldId, -Rshort:short)
 
 jGetShortField(Obj, FieldID, Rshort) :-
     jni_func(99, Obj, FieldID, Rshort).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticBooleanField(+Class:jref, +FieldID:fieldId, -Rbool:boolean)
 
 jGetStaticBooleanField(Class, FieldID, Rbool) :-
     jni_func(146, Class, FieldID, Rbool).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticByteField(+Class:jref, +FieldID:fieldId, -Rbyte:byte)
 
 jGetStaticByteField(Class, FieldID, Rbyte) :-
     jni_func(147, Class, FieldID, Rbyte).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticCharField(+Class:jref, +FieldID:fieldId, -Rchar:char)
 
 jGetStaticCharField(Class, FieldID, Rchar) :-
     jni_func(148, Class, FieldID, Rchar).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticDoubleField(+Class:jref, +FieldID:fieldId, -Rdouble:double)
 
 jGetStaticDoubleField(Class, FieldID, Rdouble) :-
     jni_func(153, Class, FieldID, Rdouble).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticFieldID(+Class:jref, +Name:fieldName, +Type:type, -FieldID:fieldId)
 
@@ -1850,28 +1753,24 @@ jGetStaticFieldID(Class, Name, Type, FieldID) :-
     jpl_type_to_descriptor(Type, TD),               % cache this?
     jni_func(144, Class, Name, TD, FieldID).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticFloatField(+Class:jref, +FieldID:fieldId, -Rfloat:float)
 
 jGetStaticFloatField(Class, FieldID, Rfloat) :-
     jni_func(152, Class, FieldID, Rfloat).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticIntField(+Class:jref, +FieldID:fieldId, -Rint:int)
 
 jGetStaticIntField(Class, FieldID, Rint) :-
     jni_func(150, Class, FieldID, Rint).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticLongField(+Class:jref, +FieldID:fieldId, -Rlong:long)
 
 jGetStaticLongField(Class, FieldID, Rlong) :-
     jni_func(151, Class, FieldID, Rlong).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticMethodID(+Class:jref, +Name:methodName, +Type:type, -MethodID:methodId)
 
@@ -1879,84 +1778,72 @@ jGetStaticMethodID(Class, Name, Type, MethodID) :-
     jpl_type_to_descriptor(Type, TD),
     jni_func(113, Class, Name, TD, MethodID).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticObjectField(+Class:jref, +FieldID:fieldId, -RObj:jref)
 
 jGetStaticObjectField(Class, FieldID, Robj) :-
     jni_func(145, Class, FieldID, Robj).
 
-%------------------------------------------------------------------------------
 
 %! jGetStaticShortField(+Class:jref, +FieldID:fieldId, -Rshort:short)
 
 jGetStaticShortField(Class, FieldID, Rshort) :-
     jni_func(149, Class, FieldID, Rshort).
 
-%------------------------------------------------------------------------------
 
 %! jGetSuperclass(+Class1:jref, -Class2:jref)
 
 jGetSuperclass(Class1, Class2) :-
     jni_func(10, Class1, Class2).
 
-%------------------------------------------------------------------------------
 
 %! jIsAssignableFrom(+Class1:jref, +Class2:jref)
 
 jIsAssignableFrom(Class1, Class2) :-
     jni_func(11, Class1, Class2, @(true)).
 
-%------------------------------------------------------------------------------
 
 %! jNewBooleanArray(+Length:int, -Array:jref)
 
 jNewBooleanArray(Length, Array) :-
     jni_func(175, Length, Array).
 
-%------------------------------------------------------------------------------
 
 %! jNewByteArray(+Length:int, -Array:jref)
 
 jNewByteArray(Length, Array) :-
     jni_func(176, Length, Array).
 
-%------------------------------------------------------------------------------
 
 %! jNewCharArray(+Length:int, -Array:jref)
 
 jNewCharArray(Length, Array) :-
     jni_func(177, Length, Array).
 
-%------------------------------------------------------------------------------
 
 %! jNewDoubleArray(+Length:int, -Array:jref)
 
 jNewDoubleArray(Length, Array) :-
     jni_func(182, Length, Array).
 
-%------------------------------------------------------------------------------
 
 %! jNewFloatArray(+Length:int, -Array:jref)
 
 jNewFloatArray(Length, Array) :-
     jni_func(181, Length, Array).
 
-%------------------------------------------------------------------------------
 
 %! jNewIntArray(+Length:int, -Array:jref)
 
 jNewIntArray(Length, Array) :-
     jni_func(179, Length, Array).
 
-%------------------------------------------------------------------------------
 
 %! jNewLongArray(+Length:int, -Array:jref)
 
 jNewLongArray(Length, Array) :-
     jni_func(180, Length, Array).
 
-%------------------------------------------------------------------------------
 
 %! jNewObject(+Class:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Obj:jref)
 
@@ -1964,210 +1851,180 @@ jNewObject(Class, MethodID, Types, Params, Obj) :-
     jni_params_put(Params, Types, ParamBuf),
     jni_func(30, Class, MethodID, ParamBuf, Obj).
 
-%------------------------------------------------------------------------------
 
 %! jNewObjectArray(+Len:int, +Class:jref, +InitVal:jref, -Array:jref)
 
 jNewObjectArray(Len, Class, InitVal, Array) :-
     jni_func(172, Len, Class, InitVal, Array).
 
-%------------------------------------------------------------------------------
 
 %! jNewShortArray(+Length:int, -Array:jref)
 
 jNewShortArray(Length, Array) :-
     jni_func(178, Length, Array).
 
-%------------------------------------------------------------------------------
 
 %! jSetBooleanArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:boolean_buf)
 
 jSetBooleanArrayRegion(Array, Start, Len, Buf) :-
     jni_void(207, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jSetBooleanField(+Obj:jref, +FieldID:fieldId, +Rbool:boolean)
 
 jSetBooleanField(Obj, FieldID, Rbool) :-
     jni_void(105, Obj, FieldID, Rbool).
 
-%------------------------------------------------------------------------------
 
 %! jSetByteArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:byte_buf)
 
 jSetByteArrayRegion(Array, Start, Len, Buf) :-
     jni_void(208, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jSetByteField(+Obj:jref, +FieldID:fieldId, +Rbyte:byte)
 
 jSetByteField(Obj, FieldID, Rbyte) :-
     jni_void(106, Obj, FieldID, Rbyte).
 
-%------------------------------------------------------------------------------
 
 %! jSetCharArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:char_buf)
 
 jSetCharArrayRegion(Array, Start, Len, Buf) :-
     jni_void(209, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jSetCharField(+Obj:jref, +FieldID:fieldId, +Rchar:char)
 
 jSetCharField(Obj, FieldID, Rchar) :-
     jni_void(107, Obj, FieldID, Rchar).
 
-%------------------------------------------------------------------------------
 
 %! jSetDoubleArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:double_buf)
 
 jSetDoubleArrayRegion(Array, Start, Len, Buf) :-
     jni_void(214, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jSetDoubleField(+Obj:jref, +FieldID:fieldId, +Rdouble:double)
 
 jSetDoubleField(Obj, FieldID, Rdouble) :-
     jni_void(112, Obj, FieldID, Rdouble).
 
-%------------------------------------------------------------------------------
 
 %! jSetFloatArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:float_buf)
 
 jSetFloatArrayRegion(Array, Start, Len, Buf) :-
     jni_void(213, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jSetFloatField(+Obj:jref, +FieldID:fieldId, +Rfloat:float)
 
 jSetFloatField(Obj, FieldID, Rfloat) :-
     jni_void(111, Obj, FieldID, Rfloat).
 
-%------------------------------------------------------------------------------
 
 %! jSetIntArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:int_buf)
 
 jSetIntArrayRegion(Array, Start, Len, Buf) :-
     jni_void(211, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jSetIntField(+Obj:jref, +FieldID:fieldId, +Rint:int)
 
 jSetIntField(Obj, FieldID, Rint) :-
     jni_void(109, Obj, FieldID, Rint).
 
-%------------------------------------------------------------------------------
 
 %! jSetLongArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:long_buf)
 
 jSetLongArrayRegion(Array, Start, Len, Buf) :-
     jni_void(212, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jSetLongField(+Obj:jref, +FieldID:fieldId, +Rlong:long)
 
 jSetLongField(Obj, FieldID, Rlong) :-
     jni_void(110, Obj, FieldID, Rlong).
 
-%------------------------------------------------------------------------------
 
 %! jSetObjectArrayElement(+Array:jref, +Index:int, +Obj:jref)
 
 jSetObjectArrayElement(Array, Index, Obj) :-
     jni_void(174, Array, Index, Obj).
 
-%------------------------------------------------------------------------------
 
 %! jSetObjectField(+Obj:jref, +FieldID:fieldId, +RObj:jref)
 
 jSetObjectField(Obj, FieldID, Robj) :-
     jni_void(104, Obj, FieldID, Robj).
 
-%------------------------------------------------------------------------------
 
 %! jSetShortArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:short_buf)
 
 jSetShortArrayRegion(Array, Start, Len, Buf) :-
     jni_void(210, Array, Start, Len, Buf).
 
-%------------------------------------------------------------------------------
 
 %! jSetShortField(+Obj:jref, +FieldID:fieldId, +Rshort:short)
 
 jSetShortField(Obj, FieldID, Rshort) :-
     jni_void(108, Obj, FieldID, Rshort).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticBooleanField(+Class:jref, +FieldID:fieldId, +Rbool:boolean)
 
 jSetStaticBooleanField(Class, FieldID, Rbool) :-
     jni_void(155, Class, FieldID, Rbool).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticByteField(+Class:jref, +FieldID:fieldId, +Rbyte:byte)
 
 jSetStaticByteField(Class, FieldID, Rbyte) :-
     jni_void(156, Class, FieldID, Rbyte).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticCharField(+Class:jref, +FieldID:fieldId, +Rchar:char)
 
 jSetStaticCharField(Class, FieldID, Rchar) :-
     jni_void(157, Class, FieldID, Rchar).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticDoubleField(+Class:jref, +FieldID:fieldId, +Rdouble:double)
 
 jSetStaticDoubleField(Class, FieldID, Rdouble) :-
     jni_void(162, Class, FieldID, Rdouble).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticFloatField(+Class:jref, +FieldID:fieldId, +Rfloat:float)
 
 jSetStaticFloatField(Class, FieldID, Rfloat) :-
     jni_void(161, Class, FieldID, Rfloat).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticIntField(+Class:jref, +FieldID:fieldId, +Rint:int)
 
 jSetStaticIntField(Class, FieldID, Rint) :-
     jni_void(159, Class, FieldID, Rint).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticLongField(+Class:jref, +FieldID:fieldId, +Rlong)
 
 jSetStaticLongField(Class, FieldID, Rlong) :-
     jni_void(160, Class, FieldID, Rlong).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticObjectField(+Class:jref, +FieldID:fieldId, +Robj:jref)
 
 jSetStaticObjectField(Class, FieldID, Robj) :-
     jni_void(154, Class, FieldID, Robj).
 
-%------------------------------------------------------------------------------
 
 %! jSetStaticShortField(+Class:jref, +FieldID:fieldId, +Rshort:short)
 
 jSetStaticShortField(Class, FieldID, Rshort) :-
     jni_void(158, Class, FieldID, Rshort).
 
-%------------------------------------------------------------------------------
 
 %! jni_params_put(+Params:list(datum), +Types:list(type), -ParamBuf:paramBuf)
 %
@@ -2183,7 +2040,6 @@ jni_params_put(As, Ts, ParamBuf)     :-
     jni_alloc_buffer(Xc, N, ParamBuf),
     jni_params_put_1(As, 0, Ts, ParamBuf).
 
-%------------------------------------------------------------------------------
 
 %! jni_params_put_1(+Params:list(datum), +N:integer, +JPLTypes:list(type), +ParamBuf:paramBuf)
 %
@@ -2214,7 +2070,6 @@ jni_params_put_1([A|As], N, [Tjni|Ts], ParamBuf) :-     % type checking?
     N2 is N+1,
     jni_params_put_1(As, N2, Ts, ParamBuf).             % stash remaining params (if any)
 
-%------------------------------------------------------------------------------
 
 %! jni_type_to_xput_code(+JspType, -JniXputCode)
 %
@@ -2235,7 +2090,6 @@ jni_type_to_xput_code(class(_,_),   12).    % JNI_XPUT_REF
 jni_type_to_xput_code(array(_),     12).    % JNI_XPUT_REF
 jni_type_to_xput_code(jvalue,       15).    % JNI_XPUT_JVALUE
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_constructor_array(+Class:jref, -MethodArray:jref)
 %
@@ -2246,7 +2100,6 @@ jpl_class_to_constructor_array(Cx, Ma) :-
     jGetMethodID( CC, getConstructors, method([],array(class([java,lang,reflect],['Constructor']))), MID), % cacheable?
     jCallObjectMethod(Cx, MID, [], [], Ma).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_constructors(+Class:jref, -Methods:list(jref))
 
@@ -2254,7 +2107,6 @@ jpl_class_to_constructors(Cx, Ms) :-
     jpl_class_to_constructor_array(Cx, Ma),
     jpl_object_array_to_list(Ma, Ms).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_field_array(+Class:jref, -FieldArray:jref)
 
@@ -2263,7 +2115,6 @@ jpl_class_to_field_array(Cx, Fa) :-
     jGetMethodID(CC, getFields, method([],array(class([java,lang,reflect],['Field']))), MID),  % cacheable?
     jCallObjectMethod(Cx, MID, [], [], Fa).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_fields(+Class:jref, -Fields:list(jref))
 %
@@ -2273,7 +2124,6 @@ jpl_class_to_fields(C, Fs) :-
     jpl_class_to_field_array(C, Fa),
     jpl_object_array_to_list(Fa, Fs).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_method_array(+Class:jref, -MethodArray:jref)
 %
@@ -2284,7 +2134,6 @@ jpl_class_to_method_array(Cx, Ma) :-
     jGetMethodID(CC, getMethods, method([],array(class([java,lang,reflect],['Method']))), MID),  % cacheable?
     jCallObjectMethod(Cx, MID, [], [], Ma).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_methods(+Class:jref, -Methods:list(jref))
 %
@@ -2296,7 +2145,6 @@ jpl_class_to_methods(Cx, Ms) :-
     jpl_class_to_method_array(Cx, Ma),
     jpl_object_array_to_list(Ma, Ms).
 
-%------------------------------------------------------------------------------
 
 %! jpl_constructor_to_modifiers(+Method, -Modifiers)
 %
@@ -2306,7 +2154,6 @@ jpl_constructor_to_modifiers(X, Ms) :-
     jpl_classname_to_class('java.lang.reflect.Constructor', Cx),   % cached?
     jpl_method_to_modifiers_1(X, Cx, Ms).
 
-%------------------------------------------------------------------------------
 
 %! jpl_constructor_to_name(+Method:jref, -Name:atom)
 %
@@ -2315,7 +2162,6 @@ jpl_constructor_to_modifiers(X, Ms) :-
 
 jpl_constructor_to_name(_X, '<init>').
 
-%------------------------------------------------------------------------------
 
 %! jpl_constructor_to_parameter_types(+Method:jref, -ParameterTypes:list(type))
 %
@@ -2325,7 +2171,6 @@ jpl_constructor_to_parameter_types(X, Tfps) :-
     jpl_classname_to_class('java.lang.reflect.Constructor', Cx),   % cached?
     jpl_method_to_parameter_types_1(X, Cx, Tfps).
 
-%------------------------------------------------------------------------------
 
 %! jpl_constructor_to_return_type(+Method:jref, -Type:type)
 %
@@ -2334,7 +2179,6 @@ jpl_constructor_to_parameter_types(X, Tfps) :-
 
 jpl_constructor_to_return_type(_X, void).
 
-%------------------------------------------------------------------------------
 
 %! jpl_field_spec(+Type:type, -Index:integer, -Name:atom, -Modifiers, -MID:mId, -FieldType:type)
 %
@@ -2354,7 +2198,6 @@ jpl_field_spec(T, I, N, Mods, MID, Tf) :-
         jpl_field_spec_cache(Tci, I, N, Mods, MID, Tf)
     ).
 
-%------------------------------------------------------------------------------
 
 jpl_field_spec_1(C, Tci, Fs) :-
     (   nth1(I, Fs, F),
@@ -2370,15 +2213,12 @@ jpl_field_spec_1(C, Tci, Fs) :-
     ;   true
     ).
 
-%------------------------------------------------------------------------------
 
 :- dynamic jpl_field_spec_cache/6.      % document this...
 
-%------------------------------------------------------------------------------
 
 :- dynamic jpl_field_spec_is_cached/1.  % document this...
 
-%------------------------------------------------------------------------------
 
 %! jpl_field_to_modifiers(+Field:jref, -Modifiers:ordset(modifier))
 
@@ -2386,7 +2226,6 @@ jpl_field_to_modifiers(F, Ms) :-
     jpl_classname_to_class('java.lang.reflect.Field', Cf),
     jpl_method_to_modifiers_1(F, Cf, Ms).
 
-%------------------------------------------------------------------------------
 
 %! jpl_field_to_name(+Field:jref, -Name:atom)
 
@@ -2394,7 +2233,6 @@ jpl_field_to_name(F, N) :-
     jpl_classname_to_class('java.lang.reflect.Field', Cf),
     jpl_member_to_name_1(F, Cf, N).
 
-%------------------------------------------------------------------------------
 
 %! jpl_field_to_type(+Field:jref, -Type:type)
 
@@ -2404,7 +2242,6 @@ jpl_field_to_type(F, Tf) :-
     jCallObjectMethod(F, MID, [], [], Cr),
     jpl_class_to_type(Cr, Tf).
 
-%------------------------------------------------------------------------------
 
 %! jpl_method_spec(+Type:type, -Index:integer, -Name:atom, -Arity:integer, -Modifiers:ordset(modifier), -MID:methodId, -ReturnType:type, -ParameterTypes:list(type))
 %
@@ -2426,7 +2263,6 @@ jpl_method_spec(T, I, N, A, Mods, MID, Tr, Tfps) :-
         jpl_method_spec_cache(Tci, I, N, A, Mods, MID, Tr, Tfps)
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_method_spec_1(+Class:jref, +CacheIndexType:partialType, +Constructors:list(method), +Methods:list(method))
 %
@@ -2456,15 +2292,12 @@ jpl_method_spec_1(C, Tci, Xs, Ms) :-
     ;   true
     ).
 
-%------------------------------------------------------------------------------
 
 :- dynamic jpl_method_spec_cache/8.
 
-%------------------------------------------------------------------------------
 
 :- dynamic jpl_method_spec_is_cached/1.
 
-%------------------------------------------------------------------------------
 
 %! jpl_method_to_modifiers(+Method:jref, -ModifierSet:ordset(modifier))
 
@@ -2472,7 +2305,6 @@ jpl_method_to_modifiers(M, Ms) :-
     jpl_classname_to_class('java.lang.reflect.Method', Cm),
     jpl_method_to_modifiers_1(M, Cm, Ms).
 
-%------------------------------------------------------------------------------
 
 %! jpl_method_to_modifiers_1(+Method:jref, +ConstructorClass:jref, -ModifierSet:ordset(modifier))
 
@@ -2481,7 +2313,6 @@ jpl_method_to_modifiers_1(XM, Cxm, Ms) :-
     jCallIntMethod(XM, MID, [], [], I),
     jpl_modifier_int_to_modifiers(I, Ms).
 
-%------------------------------------------------------------------------------
 
 %! jpl_method_to_name(+Method:jref, -Name:atom)
 
@@ -2489,7 +2320,6 @@ jpl_method_to_name(M, N) :-
     jpl_classname_to_class('java.lang.reflect.Method', CM),
     jpl_member_to_name_1(M, CM, N).
 
-%------------------------------------------------------------------------------
 
 %! jpl_member_to_name_1(+Member:jref, +CM:jref, -Name:atom)
 
@@ -2497,7 +2327,6 @@ jpl_member_to_name_1(M, CM, N) :-
     jGetMethodID(CM, getName, method([],class([java,lang],['String'])), MID),
     jCallObjectMethod(M, MID, [], [], N).
 
-%------------------------------------------------------------------------------
 
 %! jpl_method_to_parameter_types(+Method:jref, -Types:list(type))
 
@@ -2505,7 +2334,6 @@ jpl_method_to_parameter_types(M, Tfps) :-
     jpl_classname_to_class('java.lang.reflect.Method', Cm),
     jpl_method_to_parameter_types_1(M, Cm, Tfps).
 
-%------------------------------------------------------------------------------
 
 %! jpl_method_to_parameter_types_1(+XM:jref, +Cxm:jref, -Tfps:list(type))
 %
@@ -2517,7 +2345,6 @@ jpl_method_to_parameter_types_1(XM, Cxm, Tfps) :-
     jpl_object_array_to_list(Atp, Ctps),
     jpl_classes_to_types(Ctps, Tfps).
 
-%------------------------------------------------------------------------------
 
 %! jpl_method_to_return_type(+Method:jref, -Type:type)
 
@@ -2527,7 +2354,6 @@ jpl_method_to_return_type(M, Tr) :-
     jCallObjectMethod(M, MID, [], [], Cr),
     jpl_class_to_type(Cr, Tr).
 
-%------------------------------------------------------------------------------
 
 jpl_modifier_bit(public,        0x001).
 jpl_modifier_bit(private,       0x002).
@@ -2541,7 +2367,6 @@ jpl_modifier_bit(native,        0x100).
 jpl_modifier_bit(interface,     0x200).
 jpl_modifier_bit(abstract,      0x400).
 
-%------------------------------------------------------------------------------
 
 %! jpl_modifier_int_to_modifiers(+Int:integer, -ModifierSet:ordset(modifier))
 %
@@ -2558,7 +2383,6 @@ jpl_modifier_int_to_modifiers(I, Ms) :-
         Ms
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_cache_type_of_ref(+Type:type, +Ref:jref)
 %
@@ -2596,7 +2420,6 @@ jpl_cache_type_of_ref(T, @(Tag)) :-
         fail
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_tag_type_cache(-Tag:tag, -ClassType:type)
 %
@@ -2608,7 +2431,6 @@ jpl_cache_type_of_ref(T, @(Tag)) :-
 
 :- dynamic jpl_class_tag_type_cache/2.
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_ancestor_classes(+Class:jref, -AncestorClasses:list(jref))
 %
@@ -2625,7 +2447,6 @@ jpl_class_to_ancestor_classes(C, Cas) :-
     ;   Cas = []
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_classname(+Class:jref, -ClassName:dottedName)
 %
@@ -2641,7 +2462,6 @@ jpl_class_to_ancestor_classes(C, Cas) :-
 jpl_class_to_classname(C, CN) :-
     jpl_call(C, getName, [], CN).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_raw_classname(+Class:jref, -ClassName:rawName)
 %
@@ -2653,7 +2473,6 @@ jpl_class_to_raw_classname(Cobj, CN) :-
     jCallObjectMethod(Cobj, MIDgetName, [], [], S),
     S = CN.
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_raw_classname_chars(+Class:jref, -ClassnameChars:codes)
 %
@@ -2665,14 +2484,12 @@ jpl_class_to_raw_classname_chars(Cobj, CsCN) :-
     jpl_class_to_raw_classname(Cobj, CN),
     atom_codes(CN, CsCN).
 
-%------------------------------------------------------------------------------
 
 jpl_class_to_super_class(C, Cx) :-
     jGetSuperclass(C, Cx),
     Cx \== @(null),         % as returned when C is java.lang.Object, i.e. no superclass
     jpl_cache_type_of_ref(class([java,lang],['Class']), Cx).
 
-%------------------------------------------------------------------------------
 
 %! jpl_class_to_type(+ClassObject:jref, -Type:type)
 %
@@ -2694,21 +2511,18 @@ jpl_class_to_type(@(Tag), Type) :-
     ),
     Type = Tx.
 
-%------------------------------------------------------------------------------
 
 jpl_classes_to_types([], []).
 jpl_classes_to_types([C|Cs], [T|Ts]) :-
     jpl_class_to_type(C, T),
     jpl_classes_to_types(Cs, Ts).
 
-%------------------------------------------------------------------------------
 
 jpl_classname_chars_to_type(Cs, Type) :-
     (   phrase(jpl_type_classname_1(Type), Cs)
     ->  true
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_classname_to_class(+ClassName:className, -Class:jref)
 %
@@ -2722,7 +2536,6 @@ jpl_classname_to_class(N, C) :-
     jpl_classname_to_type(N, T),    % cached
     jpl_type_to_class(T, C).        % cached
 
-%------------------------------------------------------------------------------
 
 %! jpl_classname_to_type(+Classname:className, -Type:type)
 %
@@ -2743,7 +2556,6 @@ jpl_classname_to_type(CN, T) :-
         true
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_classname_type_cache( -Classname:className, -Type:type)
 %
@@ -2753,7 +2565,6 @@ jpl_classname_to_type(CN, T) :-
 
 :- dynamic jpl_classname_type_cache/2.
 
-%------------------------------------------------------------------------------
 
 %! jpl_datum_to_type(+Datum:datum, -Type:type)
 %
@@ -2788,7 +2599,6 @@ jpl_datum_to_type(D, T) :-
         )
     ).
 
-%------------------------------------------------------------------------------
 
 jpl_datums_to_most_specific_common_ancestor_type([D], T) :-
     jpl_datum_to_type(D, T).
@@ -2797,7 +2607,6 @@ jpl_datums_to_most_specific_common_ancestor_type([D1,D2|Ds], T0) :-
     jpl_type_to_ancestor_types(T1, Ts1),
     jpl_datums_to_most_specific_common_ancestor_type_1([D2|Ds], [T1|Ts1], [T0|_]).
 
-%------------------------------------------------------------------------------
 
 jpl_datums_to_most_specific_common_ancestor_type_1([], Ts, Ts).
 jpl_datums_to_most_specific_common_ancestor_type_1([D|Ds], Ts1, Ts0) :-
@@ -2805,7 +2614,6 @@ jpl_datums_to_most_specific_common_ancestor_type_1([D|Ds], Ts1, Ts0) :-
     jpl_lineage_types_type_to_common_lineage_types(Ts1, Tx, Ts2),
     jpl_datums_to_most_specific_common_ancestor_type_1(Ds, Ts2, Ts0).
 
-%------------------------------------------------------------------------------
 
 %! jpl_datums_to_types(+Datums:list(datum), -Types:list(type))
 %
@@ -2820,7 +2628,6 @@ jpl_datums_to_types([D|Ds], [T|Ts]) :-
     jpl_datum_to_type(D, T),
     jpl_datums_to_types(Ds, Ts).
 
-%------------------------------------------------------------------------------
 
 %! jpl_ground_is_type(+X:term)
 %
@@ -2834,11 +2641,9 @@ jpl_ground_is_type(array(X)) :-
 jpl_ground_is_type(class(_,_)).
 jpl_ground_is_type(method(_,_)).
 
-%------------------------------------------------------------------------------
 
 :- dynamic jpl_iref_type_cache/2.
 
-%------------------------------------------------------------------------------
 
 jpl_lineage_types_type_to_common_lineage_types(Ts, Tx, Ts0) :-
     (   append(_, [Tx|Ts2], Ts)
@@ -2847,13 +2652,11 @@ jpl_lineage_types_type_to_common_lineage_types(Ts, Tx, Ts0) :-
     ->  jpl_lineage_types_type_to_common_lineage_types(Ts, Tx2, Ts0)
     ).
 
-%------------------------------------------------------------------------------
 
 jpl_non_var_is_object_type(class(_,_)).
 
 jpl_non_var_is_object_type(array(_)).
 
-%------------------------------------------------------------------------------
 
 %! jpl_object_array_to_list(+Array:jref, -Values:list(datum))
 %
@@ -2864,7 +2667,6 @@ jpl_object_array_to_list(A, Vs) :-
     jpl_array_to_length(A, N),
     jpl_object_array_to_list_1(A, 0, N, Vs).
 
-%------------------------------------------------------------------------------
 
 %! jpl_object_array_to_list_1(+A, +I, +N, -Xs)
 
@@ -2877,7 +2679,6 @@ jpl_object_array_to_list_1(A, I, N, Xs) :-
         jpl_object_array_to_list_1(A, J, N, Xs2)
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_object_to_class(+Object:jref, -Class:jref)
 %
@@ -2892,7 +2693,6 @@ jpl_object_to_class(Obj, C) :-
     jGetObjectClass(Obj, C),
     jpl_cache_type_of_ref(class([java,lang],['Class']), C).
 
-%------------------------------------------------------------------------------
 
 %! jpl_object_to_type(+Object:jref, -Type:type)
 %
@@ -2904,7 +2704,6 @@ jpl_object_to_class(Obj, C) :-
 jpl_object_to_type(@(Tag), Type) :-
     jpl_tag_to_type(Tag, Type).
 
-%------------------------------------------------------------------------------
 
 jpl_object_type_to_super_type(T, Tx) :-
     (   (   T = class(_,_)
@@ -2916,7 +2715,6 @@ jpl_object_type_to_super_type(T, Tx) :-
         jpl_class_to_type(Cx, Tx)
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_primitive_buffer_to_array(+Type, +Xc, +Bp, +I, +Size, -Vcs)
 %
@@ -2934,7 +2732,6 @@ jpl_primitive_buffer_to_array(T, Xc, Bp, I, Size, [Vc|Vcs]) :-
     ;   Vcs = []
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_primitive_type(-Type:atom) is nondet
 %
@@ -2954,7 +2751,6 @@ jpl_primitive_type(long).
 jpl_primitive_type(float).
 jpl_primitive_type(double).
 
-%------------------------------------------------------------------------------
 
 %! jpl_primitive_type_default_value(-Type:type, -Value:datum)
 %
@@ -2971,14 +2767,12 @@ jpl_primitive_type_default_value(long,    0).
 jpl_primitive_type_default_value(float,   0.0).
 jpl_primitive_type_default_value(double,  0.0).
 
-%------------------------------------------------------------------------------
 
 jpl_primitive_type_super_type(T, Tx) :-
     (   jpl_type_fits_type_direct_prim(T, Tx)
     ;   jpl_type_fits_type_direct_xtra(T, Tx)
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_primitive_type_term_to_value(+Type, +Term, -Val)
 %
@@ -2995,7 +2789,6 @@ jpl_primitive_type_term_to_value(Type, Term, Val) :-
     ->  true
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_primitive_type_term_to_value_1(+Type, +RawValue, -WidenedValue)
 %
@@ -3036,7 +2829,6 @@ jpl_primitive_type_term_to_value_1(double, I, F) :-
 jpl_primitive_type_term_to_value_1(double, F, F) :-
     float(F).
 
-%------------------------------------------------------------------------------
 
 jpl_primitive_type_to_ancestor_types(T, Ts) :-
     (   jpl_primitive_type_super_type(T, Ta)
@@ -3045,12 +2837,10 @@ jpl_primitive_type_to_ancestor_types(T, Ts) :-
     ;   Ts = []
     ).
 
-%------------------------------------------------------------------------------
 
 jpl_primitive_type_to_super_type(T, Tx) :-
     jpl_primitive_type_super_type(T, Tx).
 
-%------------------------------------------------------------------------------
 
 %! jpl_ref_to_type(+Ref:jref, -Type:type)
 %
@@ -3066,7 +2856,6 @@ jpl_ref_to_type(@(X), T) :-
     ;   jpl_tag_to_type(X, T)
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_tag_to_type(+Tag:tag, -Type:type)
 %
@@ -3084,7 +2873,6 @@ jpl_tag_to_type(Tag, Type) :-
     ),
     Type = T.
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_fits_type(+TypeX:type, +TypeY:type) is semidet
 %
@@ -3097,7 +2885,6 @@ jpl_type_fits_type(Tx, Ty) :-
     ->  true
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_fits_type_1(+T1:type, +T2:type)
 %
@@ -3121,7 +2908,6 @@ jpl_type_fits_type_1(null, array(_)).
 jpl_type_fits_type_1(T1, T2) :-
     jpl_type_fits_type_xprim(T1, T2).
 
-%------------------------------------------------------------------------------
 
 jpl_type_fits_type_direct_prim(float, double).
 jpl_type_fits_type_direct_prim(long,  float).
@@ -3130,14 +2916,12 @@ jpl_type_fits_type_direct_prim(char,  int).
 jpl_type_fits_type_direct_prim(short, int).
 jpl_type_fits_type_direct_prim(byte,  short).
 
-%------------------------------------------------------------------------------
 
 jpl_type_fits_type_direct_xprim(Tp, Tq) :-
     jpl_type_fits_type_direct_prim(Tp, Tq).
 jpl_type_fits_type_direct_xprim(Tp, Tq) :-
     jpl_type_fits_type_direct_xtra(Tp, Tq).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_fits_type_direct_xtra(-PseudoType:type, -ConcreteType:type)
 %
@@ -3152,7 +2936,6 @@ jpl_type_fits_type_direct_xtra(char_byte,  byte).
 jpl_type_fits_type_direct_xtra(char_byte,  char).
 jpl_type_fits_type_direct_xtra(overlong,   float).  % 6/Oct/2006 experiment
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_fits_type_xprim(-Tp, -T) is nondet
 %
@@ -3164,7 +2947,6 @@ jpl_type_fits_type_xprim(Tp, T) :-
     ;   jpl_type_fits_type_xprim(Tq, T)
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_ancestor_types(+T:type, -Tas:list(type))
 %
@@ -3182,7 +2964,6 @@ jpl_type_to_ancestor_types(T, Tas) :-
     ->  true
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_canonical_type(+Type:type, -CanonicalType:type)
 %
@@ -3211,7 +2992,6 @@ jpl_type_to_canonical_type(void, void) :-
 jpl_type_to_canonical_type(P, P) :-
     jpl_primitive_type(P).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_class(+Type:type, -Class:jref)
 %
@@ -3234,7 +3014,6 @@ jpl_type_to_class(T, @(Tag)) :-
     ),
     Tag = ClassTag.
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_nicename(+Type:type, -NiceName:dottedName)
 %
@@ -3265,7 +3044,6 @@ jpl_type_to_nicename(T, NN) :-
         )
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_classname(+Type:type, -ClassName:dottedName)
 %
@@ -3282,7 +3060,6 @@ jpl_type_to_classname(T, CN) :-
         CN = CNx
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_descriptor(+Type:type, -Descriptor:descriptor)
 %
@@ -3304,7 +3081,6 @@ jpl_type_to_descriptor(T, D) :-
         D = Dx
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_findclassname(+Type:type, -FindClassName:findClassName)
 %
@@ -3323,7 +3099,6 @@ jpl_type_to_findclassname(T, FCN) :-
         FCN = FCNx
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_super_type(+Type:type, -SuperType:type)
 %
@@ -3342,7 +3117,6 @@ jpl_type_to_super_type(T, Tx) :-
     ->  true
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_type_to_preferred_concrete_type(+Type:type, -ConcreteType:type)
 %
@@ -3365,7 +3139,6 @@ jpl_type_to_preferred_concrete_type(T, Tc) :-
     ->  Tc = TcX
     ).
 
-%------------------------------------------------------------------------------
 
 jpl_type_to_preferred_concrete_type_1(char_int, int).
 jpl_type_to_preferred_concrete_type_1(char_short, short).
@@ -3374,7 +3147,6 @@ jpl_type_to_preferred_concrete_type_1(array(T), array(Tc)) :-
     jpl_type_to_preferred_concrete_type_1(T, Tc).
 jpl_type_to_preferred_concrete_type_1(T, T).
 
-%------------------------------------------------------------------------------
 
 %! jpl_types_fit_type(+Types:list(type), +Type:type)
 %
@@ -3387,7 +3159,6 @@ jpl_types_fit_type([T1|T1s], T2) :-
     jpl_type_fits_type(T1, T2),
     jpl_types_fit_type(T1s, T2).
 
-%------------------------------------------------------------------------------
 
 %! jpl_types_fit_types(+Types1:list(type), +Types2:list(type))
 %
@@ -3398,7 +3169,6 @@ jpl_types_fit_types([T1|T1s], [T2|T2s]) :-
     jpl_type_fits_type(T1, T2),
     jpl_types_fit_types(T1s, T2s).
 
-%------------------------------------------------------------------------------
 
 %! jpl_value_to_type(+Value:datum, -Type:type)
 %
@@ -3414,7 +3184,6 @@ jpl_value_to_type(V, T) :-
     ->  T = Tv
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_value_to_type_1(+Value:datum, -Type:type) is semidet
 %
@@ -3455,7 +3224,6 @@ jpl_value_to_type_1(I, T) :-
 jpl_value_to_type_1(F, float) :-
     float(F).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_class(@Term)
 %
@@ -3465,7 +3233,6 @@ jpl_is_class(X) :-
     jpl_is_object(X),
     jpl_object_to_type(X, class([java,lang],['Class'])).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_false(@Term)
 %
@@ -3474,7 +3241,6 @@ jpl_is_class(X) :-
 jpl_is_false(X) :-
     X == @(false).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_fieldID(-X)
 %
@@ -3489,7 +3255,6 @@ jpl_is_false(X) :-
 jpl_is_fieldID(jfieldID(X)) :-
     integer(X).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_methodID(-X)
 %
@@ -3504,7 +3269,6 @@ jpl_is_fieldID(jfieldID(X)) :-
 jpl_is_methodID(jmethodID(X)) :-   % NB a var arg may get bound...
     integer(X).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_null(@Term)
 %
@@ -3513,7 +3277,6 @@ jpl_is_methodID(jmethodID(X)) :-   % NB a var arg may get bound...
 jpl_is_null(X) :-
     X == @(null).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_object(@Term)
 %
@@ -3525,7 +3288,6 @@ jpl_is_object(X) :-
     jpl_is_ref(X),      % (syntactically, at least...)
     X \== @(null).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_object_type(@Term)
 %
@@ -3535,7 +3297,6 @@ jpl_is_object_type(T) :-
     \+ var(T),
     jpl_non_var_is_object_type(T).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_ref(@Term)
 %
@@ -3552,7 +3313,6 @@ jpl_is_ref(@(Y)) :-
     Y \== false,    % not a ref
     Y \== true.     % not a ref
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_true(@Term)
 %
@@ -3561,7 +3321,6 @@ jpl_is_ref(@(Y)) :-
 jpl_is_true(X) :-
     X == @(true).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_type(@Term)
 %
@@ -3571,7 +3330,6 @@ jpl_is_type(X) :-
     ground(X),
     jpl_ground_is_type(X).
 
-%------------------------------------------------------------------------------
 
 %! jpl_is_void(@Term)
 %
@@ -3583,7 +3341,6 @@ jpl_is_type(X) :-
 jpl_is_void(X) :-
     X == @(void).
 
-%------------------------------------------------------------------------------
 
 %! jpl_false(-X:datum) is semidet
 %
@@ -3593,7 +3350,6 @@ jpl_is_void(X) :-
 
 jpl_false(@(false)).
 
-%------------------------------------------------------------------------------
 
 %! jpl_null(-X:datum) is semidet
 %
@@ -3603,7 +3359,6 @@ jpl_false(@(false)).
 
 jpl_null(@(null)).
 
-%------------------------------------------------------------------------------
 
 %! jpl_true(-X:datum) is semidet
 %
@@ -3613,7 +3368,6 @@ jpl_null(@(null)).
 
 jpl_true(@(true)).
 
-%------------------------------------------------------------------------------
 
 %! jpl_void(-X:datum) is semidet
 %
@@ -3623,7 +3377,6 @@ jpl_true(@(true)).
 
 jpl_void(@(void)).
 
-%------------------------------------------------------------------------------
 
 %! jpl_array_to_length(+Array:jref, -Length:integer)
 %
@@ -3645,7 +3398,6 @@ jpl_array_to_length(A, N) :-
     ->  jGetArrayLength(A, N)           % *must* be array, else undefined (crash?)
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_array_to_list(+Array:jref, -Elements:list(datum))
 %
@@ -3676,7 +3428,6 @@ jpl_array_to_list(A, Es) :-
     ;   Es = []
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_datums_to_array(+Datums:list(datum), -A:jref)
 %
@@ -3694,7 +3445,6 @@ jpl_datums_to_array(Ds, A) :-
     jpl_type_to_preferred_concrete_type(T, Tc),    % bugfix added 16/Apr/2005
     jpl_new(array(Tc), Ds, A).
 
-%------------------------------------------------------------------------------
 
 %! jpl_enumeration_element(+Enumeration:jref, -Element:datum)
 %
@@ -3711,7 +3461,6 @@ jpl_enumeration_element(En, E) :-
         )
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_enumeration_to_list(+Enumeration:jref, -Elements:list(datum))
 %
@@ -3738,7 +3487,6 @@ jpl_enumeration_to_list(Enumeration, Es) :-
     ;   Es = []
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_hashtable_pair(+HashTable:jref, -KeyValuePair:pair(datum,datum)) is nondet
 %
@@ -3755,7 +3503,6 @@ jpl_hashtable_pair(HT, K-V) :-
     member(K, Ks),
     jpl_call(HT, get, [K], V).
 
-%------------------------------------------------------------------------------
 
 %! jpl_iterator_element(+Iterator:jref, -Element:datum)
 %
@@ -3780,7 +3527,6 @@ jpl_iterator_element(I, E) :-
         )
     ).
 
-%------------------------------------------------------------------------------
 
 %! jpl_list_to_array(+Datums:list(datum), -Array:jref)
 %
@@ -3793,7 +3539,6 @@ jpl_iterator_element(I, E) :-
 jpl_list_to_array(Ds, A) :-
     jpl_datums_to_array(Ds, A).
 
-%------------------------------------------------------------------------------
 
 %! jpl_terms_to_array(+Terms:list(term), -Array:jref) is semidet
 %
@@ -3806,13 +3551,11 @@ jpl_terms_to_array(Ts, A) :-
     jpl_terms_to_array_1(Ts, Ts2),
     jpl_new(array(class([jpl],['Term'])), Ts2, A).
 
-%------------------------------------------------------------------------------
 
 jpl_terms_to_array_1([], []).
 jpl_terms_to_array_1([T|Ts], [{T}|Ts2]) :-
     jpl_terms_to_array_1(Ts, Ts2).
 
-%------------------------------------------------------------------------------
 
 %! jpl_map_element(+Map:jref, -KeyValue:pair(datum,datum)) is nondet
 %
@@ -3845,7 +3588,6 @@ jpl_map_element(Map, K-V) :-
     jpl_call(E, getKey, [], K),
     jpl_call(E, getValue, [], V).
 
-%------------------------------------------------------------------------------
 
 %! jpl_set_element(+Set:jref, -Element:datum) is nondet
 %
@@ -3865,7 +3607,6 @@ jpl_set_element(S, E) :-
     jpl_call(S, iterator, [], I),
     jpl_iterator_element(I, E).
 
-%------------------------------------------------------------------------------
 
 %! jpl_servlet_byref(+Config, +Request, +Response)
 %
@@ -4056,7 +3797,6 @@ jpl_servlet_byref(Config, Request, Response) :-
     jpl_call(W, println, ['</pre></body></html>'], _),
     true.
 
-%------------------------------------------------------------------------------
 
 %! jpl_servlet_byval(+MultiMap, -ContentType:atom, -Body:atom)
 %
@@ -4070,7 +3810,6 @@ jpl_servlet_byval(MM, CT, Ba) :-
     multimap_to_atom(MM, MMa),
     atomic_list_concat(['<html><head></head><body>','<h2>jpl_servlet_byval/3 says:</h2><pre>', MMa,'</pre></body></html>'], Ba).
 
-%------------------------------------------------------------------------------
 
 %! is_pair(?T:term)
 %
@@ -4079,20 +3818,17 @@ jpl_servlet_byval(MM, CT, Ba) :-
 is_pair(Key-_Val) :-
     ground(Key).
 
-%------------------------------------------------------------------------------
 
 is_pairs(List) :-
     is_list(List),
     maplist(is_pair, List).
 
-%------------------------------------------------------------------------------
 
 multimap_to_atom(KVs, A) :-
     multimap_to_atom_1(KVs, '', Cz, []),
     flatten(Cz, Cs),
     atomic_list_concat(Cs, A).
 
-%------------------------------------------------------------------------------
 
 multimap_to_atom_1([], _, Cs, Cs).
 multimap_to_atom_1([K-V|KVs], T, Cs1, Cs0) :-
@@ -4110,7 +3846,6 @@ multimap_to_atom_1([K-V|KVs], T, Cs1, Cs0) :-
     ),
     multimap_to_atom_1(KVs, T, Cs3, Cs0).
 
-%------------------------------------------------------------------------------
 
 %! to_atom(+Term, -Atom)
 %
@@ -4124,7 +3859,6 @@ to_atom(Term, Atom) :-
     ;   term_to_atom(Term, Atom)
     ).
 
-%------------------------------------------------------------------------------
 
          /*******************************
          *            MESSAGES          *
