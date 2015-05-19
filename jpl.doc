@@ -34,13 +34,15 @@ constructs, limitations that have been removed, etc.
    \item \url[Using Prolog from Java]{jpl/java_api/index.html}
    \item Using Java from Prolog
    \begin{itemize}
+        \item The API is described in \secref{jpl}.
 	\item \url[User guide]{jpl/prolog_api/overview.html}
-	\item \url[API reference]{jpl/prolog_api/api.html}
 	\item \url[Gotchas]{jpl/prolog_api/gotchas.html}
    \end{itemize}
    \item \url[Installation]{jpl/installation.html}
    \item \url[Release notes]{jpl/release_notes.html}
 \end{itemize}
+
+\input{jpldoc.tex}
 
 \bibliographystyle{plain}
 \bibliography{jpl}

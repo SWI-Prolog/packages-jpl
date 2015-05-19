@@ -33,6 +33,6 @@ jpl.html
 jpl.pdf
 src/java/Makefile
 jpltest.jar
-.pl-history
+jpldoc.tex
 *.$$$
 *.bak
