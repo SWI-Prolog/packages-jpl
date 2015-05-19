@@ -34,3 +34,5 @@ jpl.pdf
 src/java/Makefile
 jpltest.jar
 .pl-history
+*.$$$
+*.bak
