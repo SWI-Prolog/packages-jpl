@@ -31,6 +31,8 @@ jpl.ind
 jpl.toc
 jpl.html
 jpl.pdf
+jpl.bbl
+jpl.blg
 src/java/Makefile
 jpltest.jar
 jpldoc.tex
