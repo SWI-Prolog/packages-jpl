@@ -42,10 +42,10 @@ refactoring (trivial):
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* update this to distinguish releases of this C library: */
-#define	JPL_C_LIB_VERSION	 "3.1.5-alpha"
-#define	JPL_C_LIB_VERSION_MAJOR	 3
-#define	JPL_C_LIB_VERSION_MINOR	 1
-#define	JPL_C_LIB_VERSION_PATCH	 5
+#define	JPL_C_LIB_VERSION	 "7.0.0-alpha"
+#define	JPL_C_LIB_VERSION_MAJOR	 7
+#define	JPL_C_LIB_VERSION_MINOR	 0
+#define	JPL_C_LIB_VERSION_PATCH	 0
 #define	JPL_C_LIB_VERSION_STATUS "alpha"
 
 /*#define DEBUG(n, g) ((void)0) */
