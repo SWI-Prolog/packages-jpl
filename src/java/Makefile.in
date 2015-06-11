@@ -70,8 +70,11 @@ jpl_jar:	$(JPLJAR)
 test_jar:	$(TSTJAR)
 jpl_doc:	$(JPLDOC)
 
-$(JPLJAR):	$(JPLJAVA)
+.class-senitel:	$(JPLJAVA)
 		"$(JAVAC)" $(JAVACFLAGS) $(JPLJAVA)
+		touch $@
+
+$(JPLJAR):	.class-senitel
 		"$(JAR)" cf $(JPLJAR) $(foreach basename,$(JPLJAVA:.java=),$(basename).class $(subst $$,\$$,$(wildcard $(basename)$$*.class)))
 
 ifneq ($(JUNIT),)
@@ -86,7 +89,7 @@ $(JPLDOC):	$(JPLJAVA)
 		"$(JAVADOC)" $(JAVADOCFLAGS) -public -d $(JPLDOC) $(JPLJAVA)
 
 clean::
-	rm -f *~ jpl/*.class jpl/test/*.class jpl/fli/*.class
+	rm -f .class-senitel *~ jpl/*.class jpl/test/*.class jpl/fli/*.class
 
 distclean: clean
 	rm -f $(JPLJAR) $(TSTJAR) Makefile
