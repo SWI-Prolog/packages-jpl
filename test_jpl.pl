@@ -20,108 +20,108 @@
 test(
 	ancestor_types_1,
 	[	true(
-			Ts == [class([jpl],['Compound']),class([jpl],['Term']),class([java,lang],['Object'])]
+			Ts == [class([org,jpl7],['Term']),class([java,lang],['Object'])]
 		)
 	]
 ) :-
-	jpl:jpl_type_to_ancestor_types( class([jpl],['Atom']), Ts).
+	jpl:jpl_type_to_ancestor_types(class([org,jpl7],['Atom']), Ts).
 
 test(
 	call_array_equals_1,
 	[	setup((
-			jpl_new( array(byte), [4,5,6], A1),
-			jpl_new( array(byte), [4,5,6], A2)
+			jpl_new(array(byte), [4,5,6], A1),
+			jpl_new(array(byte), [4,5,6], A2)
 		))
 	]
 ) :-
-	jpl_call( A1, equals, [A2], @(false)).
+	jpl_call(A1, equals, [A2], @(false)).
 
 test(
 	call_array_equals_2,
 	[	setup((
-			jpl_new( array(byte), [4,5,6], A1)
+			jpl_new(array(byte), [4,5,6], A1)
 		))
 	]
 ) :-
-	jpl_call( A1, equals, [A1], @(true)).
+	jpl_call(A1, equals, [A1], @(true)).
 
 test(
 	call_array_hashcode_1,
 	[	setup((
-			jpl_new( array(byte), [4,5,6], A)
+			jpl_new(array(byte), [4,5,6], A)
 		)),
 		true((
-			integer( H)
+			integer(H)
 		))
 	]
 ) :-
-	jpl_call( A, hashCode, [], H).
+	jpl_call(A, hashCode, [], H).
 
 test(
 	call_array_hashcode_2,
 	[	setup((
-			jpl_new( array(byte), [4,5,6], A1),
-			jpl_new( array(byte), [4,5,6], A2)
+			jpl_new(array(byte), [4,5,6], A1),
+			jpl_new(array(byte), [4,5,6], A2)
 		)),
 		true((
 			H1 \== H2
 		))
 	]
 ) :-
-	jpl_call( A1, hashCode, [], H1),
-	jpl_call( A2, hashCode, [], H2).
+	jpl_call(A1, hashCode, [], H1),
+	jpl_call(A2, hashCode, [], H2).
 
 test(
 	call_array_to_string_1,
 	[	setup((
-			jpl_new( array(byte), [4,5,6], A)
+			jpl_new(array(byte), [4,5,6], A)
 		)),
 		true((
-			atom_codes( S, [0'[, 0'B | _])
+			atom_codes(S, [0'[, 0'B | _])
 		))
 	]
 ) :-
-	jpl_call( A, toString, [], S).
+	jpl_call(A, toString, [], S).
 
 test(
 	call_instance_param_cyclic_term_1,
 	[	setup((
 			T = f(T),
-			jpl_new( 'jpl.test.Test', [], Test)
+			jpl_new('org.jpl7.test.Test', [], Test)
 		)),
 		throws(
 			error(type_error(acyclic,T),context(jpl_call/4,_))
 		)
 	]
 ) :-
-	jpl_call( Test, methodInstanceTerm, [{T}], @(true)).
+	jpl_call(Test, methodInstanceTerm, [{T}], @(true)).
 
 testX(
 	call_instance_param_cyclic_term_2,
 	[	setup((
 			T = f(T),
-			jpl_new( 'jpl.test.Test', [], Test)
+			jpl_new('org.jpl7.test.Test', [], Test)
 		)),
 		throws(
 			error(type_error(acyclic,_),context(jpl_call/4,_))
 		)
 	]
 ) :-
-	jpl_call( Test, methodInstanceTerm, [{T}], @(true)).
+	jpl_call(Test, methodInstanceTerm, [{T}], @(true)).
 
 test(
 	call_method_static_array_1,
 	[	setup((
-			jpl_new( array(int), [3,4,5], IntArray)
+			jpl_new(array(int), [3,4,5], IntArray)
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticArray, [IntArray], 'int[]').
+	jpl_call('org.jpl7.test.Test', methodStaticArray, [IntArray], 'int[]').
 
 test(
 	call_method_static_array_2,
 	[	setup((
-			jpl_new( array(byte), [3,4,5], ByteArray)
+			jpl_new(array(byte), [3,4,5], ByteArray)
 		)),
 		throws(
 			error(
@@ -131,7 +131,7 @@ test(
 		)
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticArray, [ByteArray], _).
+	jpl_call('org.jpl7.test.Test', methodStaticArray, [ByteArray], _).
 
 test(
 	call_static_param_cyclic_term_1,
@@ -143,25 +143,25 @@ test(
 		)
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticTerm, [{T}], @(true)).
+	jpl_call('org.jpl7.test.Test', methodStaticTerm, [{T}], @(true)).
 
 test(
 	call_class_get_name_1,
 	[	setup((
 			ClassName = 'java.lang.Integer',
-			jpl_classname_to_class( ClassName, ClassObject)
+			jpl_classname_to_class(ClassName, ClassObject)
 		)),
 		true((
 			ClassName == ClassName2
 		))
 	]
 ) :-
-	jpl_call( ClassObject, getName, [], ClassName2).
+	jpl_call(ClassObject, getName, [], ClassName2).
 
 test(
 	call_get_array_bad_field_name_1,
 	[	setup((
-			jpl_new( array(byte), 5, A),
+			jpl_new(array(byte), 5, A),
 			FieldName = colour
 		)),
 		throws(
@@ -169,12 +169,12 @@ test(
 		)
 	]
 ) :-
-	jpl_get( A, FieldName, _).
+	jpl_get(A, FieldName, _).
 
 test(
 	call_get_array_bad_fspec_1,
 	[	setup((
-			jpl_new( array(byte), 5, A),
+			jpl_new(array(byte), 5, A),
 			Fspec = poo(77)
 		)),
 		throws(
@@ -182,117 +182,117 @@ test(
 		)
 	]
 ) :-
-	jpl_get( A, Fspec, _).
+	jpl_get(A, Fspec, _).
 
 test(
 	call_get_array_bad_index_range_1,
 	[	setup((
-			jpl_new( array(byte), 5, A)
+			jpl_new(array(byte), 5, A)
 		)),
 		throws(
 			error(domain_error(array_index_range,(-1)-2),context(jpl_get/3,_))
 		)
 	]
 ) :-
-	jpl_get( A, (-1)-2, _).
+	jpl_get(A, (-1)-2, _).
 
 test(
 	call_get_array_bad_index_range_2,
 	[	setup((
-			jpl_new( array(byte), 5, A)
+			jpl_new(array(byte), 5, A)
 		)),
 		throws(
 			error(domain_error(array_index_range,10-12),context(jpl_get/3,_))
 		)
 	]
 ) :-
-	jpl_get( A, 10-12, _).
+	jpl_get(A, 10-12, _).
 
 test(
 	call_get_array_bad_index_range_3,
 	[	setup((
-			jpl_new( array(byte), 5, A)
+			jpl_new(array(byte), 5, A)
 		)),
 		throws(
 			error(domain_error(array_index_range,3-33),context(jpl_get/3,_))
 		)
 	]
 ) :-
-	jpl_get( A, 3-33, _).
+	jpl_get(A, 3-33, _).
 
 test(
 	call_get_array_bad_index_range_4,
 	[	setup((
-			jpl_new( array(byte), 5, A)
+			jpl_new(array(byte), 5, A)
 		)),
 		throws(
 			error(type_error(array_index_range,this-that),context(jpl_get/3,_))
 		)
 	]
 ) :-
-	jpl_get( A, this-that, _).
+	jpl_get(A, this-that, _).
 
 test(
 	get_array_element_1,
 	[	setup((
-			jpl_new( array(byte), [4,5,6,7,8], A)
+			jpl_new(array(byte), [4,5,6,7,8], A)
 		)),
 		true((
 			7 == V
 		))
 	]
 ) :-
-	jpl_get( A, 3, V). % should bind V = 7 i.e. a[3] i.e. the fourth array element counting from zero
+	jpl_get(A, 3, V). % should bind V = 7 i.e. a[3] i.e. the fourth array element counting from zero
 
 test(
 	get_array_elements_1,
 	[	setup((
-			jpl_new( array(byte), [4,5,6,7,8], A)
+			jpl_new(array(byte), [4,5,6,7,8], A)
 		)),
 		true((
 			[5,6] == V
 		))
 	]
 ) :-
-	jpl_get( A, 1-2, V). % should bind V = [5,6] i.e. a[1-2] i.e. the 2nd to 3rd array elements counting from zero
+	jpl_get(A, 1-2, V). % should bind V = [5,6] i.e. a[1-2] i.e. the 2nd to 3rd array elements counting from zero
 
 test(
 	get_array_length_1,
 	[	setup((
 			Len1 is 5,
-			jpl_new( array(byte), Len1, A)
+			jpl_new(array(byte), Len1, A)
 		)),
 		true((
 			Len1 == Len2
 		))
 	]
 ) :-
-	jpl_get( A, length, Len2). % should bind Len2 to the (integer) value of Len1
+	jpl_get(A, length, Len2). % should bind Len2 to the (integer) value of Len1
 
 test(
 	get_array_negative_index_1,
 	[	setup((
 			BadIndex is -1,
-			jpl_new( array(byte), 5, A)
+			jpl_new(array(byte), 5, A)
 		)),
 		throws(
 			error(domain_error(array_index,BadIndex), context(jpl_get/3,_))
 		)
 	]
 ) :-
-	jpl_get( A, BadIndex, _).
+	jpl_get(A, BadIndex, _).
 
 test(
 	get_array_unbound_fspec_1,
 	[	setup((
-			jpl_new( array(byte), 5, A)
+			jpl_new(array(byte), 5, A)
 		)),
 		throws(
 			error(instantiation_error,context(jpl_get/3,_))
 		)
 	]
 ) :-
-	jpl_get( A, _, _).
+	jpl_get(A, _, _).
 
 test(
 	get_field_static_boolean_1,
@@ -301,7 +301,7 @@ test(
 		))
 	]
 ) :-
-	jpl_get( 'jpl.test.Test', fieldStaticBoolean1, V).
+	jpl_get('org.jpl7.test.Test', fieldStaticBoolean1, V).
 
 test(
 	get_field_static_boolean_2,
@@ -310,7 +310,7 @@ test(
 		))
 	]
 ) :-
-	jpl_get( 'jpl.test.Test', fieldStaticBoolean2, V).
+	jpl_get('org.jpl7.test.Test', fieldStaticBoolean2, V).
 
 test(
 	get_field_static_char_1,
@@ -319,7 +319,7 @@ test(
 		))
 	]
 ) :-
-	jpl_get( 'jpl.test.Test', fieldStaticChar1, V).
+	jpl_get('org.jpl7.test.Test', fieldStaticChar1, V).
 
 test(
 	get_field_static_char_2,
@@ -328,19 +328,19 @@ test(
 		))
 	]
 ) :-
-	jpl_get( 'jpl.test.Test', fieldStaticChar2, V).
+	jpl_get('org.jpl7.test.Test', fieldStaticChar2, V).
 
 test(
 	get_field_instance_byte_2,
 	[	setup((
-			jpl_new( 'jpl.test.Test', [], Test)
+			jpl_new('org.jpl7.test.Test', [], Test)
 		)),
 		true((
 			V == -1
 		))
 	]
 ) :-
-	jpl_get( Test, fieldInstanceByte2, V).
+	jpl_get(Test, fieldInstanceByte2, V).
 
 test(
 	list_to_array_1,
@@ -349,8 +349,8 @@ test(
 		))
 	]
 ) :-
-	jpl_list_to_array( [1,2,3], A),
-	jpl_object_to_type( A, Type).
+	jpl_list_to_array([1,2,3], A),
+	jpl_object_to_type(A, Type).
 
 test(
 	method_static_byte_1,
@@ -362,31 +362,31 @@ test(
 		)
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoByte, [-129], _).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoByte, [-129], _).
 
 test(
 	method_static_echo_boolean_1,
 	[	setup((
-			jpl_false( V1)
+			jpl_false(V1)
 		)),
 		true((
 			V1 == V2
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoBoolean, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoBoolean, [V1], V2).
 
 test(
 	method_static_echo_boolean_2,
 	[	setup((
-			jpl_true( V1)
+			jpl_true(V1)
 		)),
 		true((
 			V1 == V2
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoBoolean, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoBoolean, [V1], V2).
 
 test(
 	method_static_echo_char_1,
@@ -398,7 +398,7 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoChar, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoChar, [V1], V2).
 
 test(
 	method_static_echo_char_2,
@@ -410,7 +410,7 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoChar, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoChar, [V1], V2).
 
 test(
 	method_static_char_3,
@@ -425,7 +425,7 @@ test(
 		)
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoChar, [V1], _).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoChar, [V1], _).
 
 test(
 	method_static_char_4,
@@ -440,7 +440,7 @@ test(
 		)
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoChar, [V1], _).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoChar, [V1], _).
 
 test(
 	method_static_char_5,
@@ -455,7 +455,7 @@ test(
 		)
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoChar, [V1], _).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoChar, [V1], _).
 
 test(
 	method_static_echo_double_1,
@@ -467,7 +467,7 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoDouble, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoDouble, [V1], V2).
 
 test(
 	method_static_echo_double_2,
@@ -479,13 +479,13 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoDouble, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoDouble, [V1], V2).
 
 test(
 	method_static_echo_double_3,
 	[	setup((
-			(   current_prolog_flag( bounded, true)
-		    ->  current_prolog_flag( max_integer, V1)
+			(   current_prolog_flag(bounded, true)
+		    ->  current_prolog_flag(max_integer, V1)
 		    ;   V1 is 2**63-1
 		    ),
 			V2b is float(V1)
@@ -495,7 +495,7 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoDouble, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoDouble, [V1], V2).
 
 test(
 	method_static_echo_float_1,
@@ -507,7 +507,7 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoFloat, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoFloat, [V1], V2).
 
 test(
 	method_static_echo_float_2,
@@ -520,14 +520,14 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoFloat, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoFloat, [V1], V2).
 
 test(
 	method_static_echo_float_3,
 	[	setup((
-			(   current_prolog_flag( bounded, true)
-		    ->  current_prolog_flag( max_integer, V1)
-		    ;   V1 is 2**63-1 % was 2**99
+			(	current_prolog_flag(bounded, true)
+		    ->	current_prolog_flag(max_integer, V1)
+		    ;	V1 is 2**63-1 % was 2**99
 		    ),
 			V2b is float(V1)
 		)),
@@ -536,14 +536,14 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoFloat, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoFloat, [V1], V2).
 
 test(
 	method_static_echo_float_4,
 	[	blocked('we do not yet widen unbounded integers to floats or doubles'),
 		setup((
-			(   current_prolog_flag( bounded, true)
-		    ->  current_prolog_flag( max_integer, V1)
+			(   current_prolog_flag(bounded, true)
+		    ->  current_prolog_flag(max_integer, V1)
 		    ;   V1 is 2**99		% an unbounded integer
 		    ),
 			V2b is float(V1)
@@ -553,7 +553,7 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', methodStaticEchoFloat, [V1], V2).
+	jpl_call('org.jpl7.test.Test', methodStaticEchoFloat, [V1], V2).
 
 test(
 	new_abstract_class_1,
@@ -568,20 +568,20 @@ test(
 		)
 	]
 ) :-
-	jpl_new( Classname, [], _).
+	jpl_new(Classname, [], _).
 
 test(
 	new_array_boolean_from_val_1,
 	[	setup((
-			jpl_false( V)
+			jpl_false(V)
 		)),
 		true((
 			V == V2
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', newArrayBooleanFromValue, [V], A),
-	jpl_get( A, 0, V2).
+	jpl_call('org.jpl7.test.Test', newArrayBooleanFromValue, [V], A),
+	jpl_get(A, 0, V2).
 
 test(
 	new_array_double_from_val_1,
@@ -593,8 +593,8 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', newArrayDoubleFromValue, [V], A),
-	jpl_get( A, 0, V2).
+	jpl_call('org.jpl7.test.Test', newArrayDoubleFromValue, [V], A),
+	jpl_get(A, 0, V2).
 
 test(
 	new_array_float_from_val_1,
@@ -606,8 +606,8 @@ test(
 		))
 	]
 ) :-
-	jpl_call( 'jpl.test.Test', newArrayFloatFromValue, [V], A),
-	jpl_get( A, 0, V2).
+	jpl_call('org.jpl7.test.Test', newArrayFloatFromValue, [V], A),
+	jpl_get(A, 0, V2).
 
 test(
 	new_interface_1,
@@ -622,7 +622,7 @@ test(
 		)
 	]
 ) :-
-	jpl_new( Classname, [], _).
+	jpl_new(Classname, [], _).
 
 test(
 	new_param_cyclic_term_1,
@@ -637,7 +637,7 @@ test(
 		)
 	]
 ) :-
-	jpl_new( 'jpl.test.Test', [{T}], _).
+	jpl_new('org.jpl7.test.Test', [{T}], _).
 
 test(
 	prolog_calls_java_calls_prolog_1,
@@ -646,14 +646,14 @@ test(
 		))
 	]
 ) :-
-	jpl_new( 'jpl.Query', ['4 is 2+2'], Q),
-	jpl_call( Q, hasSolution, [], V).
+	jpl_new('org.jpl7.Query', ['4 is 2+2'], Q),
+	jpl_call(Q, hasSolution, [], V).
 
 test(
 	set_array_element_cyclic_term_1,
 	[	setup((
 			T = f(T),
-			jpl_new( array(class([jpl,test],['Test'])), 5, A)
+			jpl_new(array(class([org,jpl7,test],['Test'])), 5, A)
 		)),
 		throws(
 			error(
@@ -663,12 +663,12 @@ test(
 		)
 	]
 ) :-
-	jpl_set( A, 0, {T}).
+	jpl_set(A, 0, {T}).
 
 test(
 	set_array_elements_bad_type_1,
 	[	setup((
-			jpl_new( array(byte), 3, A)
+			jpl_new(array(byte), 3, A)
 		)),
 		throws(
 			error(
@@ -678,12 +678,12 @@ test(
 		)
 	]
 ) :-
-	jpl_set( A, 0, 128).
+	jpl_set(A, 0, 128).
 
 test(
 	set_array_length_1,
 	[	setup((
-			jpl_new( array(byte), 6, A)
+			jpl_new(array(byte), 6, A)
 		)),
 		throws(
 			error(
@@ -693,7 +693,7 @@ test(
 		)
 	]
 ) :-
-	jpl_set( A, length, 13).
+	jpl_set(A, length, 13).
 
 test(
 	set_field_bad_field_spec_1,
@@ -708,13 +708,13 @@ test(
 		)
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', BadFieldName, a).
+	jpl_set('org.jpl7.test.Test', BadFieldName, a).
 
 test(
 	set_field_instance_cyclic_term_1,
 	[	setup((
 			T = f(T),
-			jpl_new( 'jpl.test.Test', [], Test)
+			jpl_new('org.jpl7.test.Test', [], Test)
 		)),
 		throws(
 			error(
@@ -724,21 +724,21 @@ test(
 		)
 	]
 ) :-
-	jpl_set( Test, instanceTerm, {T}).
+	jpl_set(Test, instanceTerm, {T}).
 
 test(
 	set_field_long_array_1,
 	[	setup((
-			jpl_new( array(long), [1,2,3], LongArray)
+			jpl_new(array(long), [1,2,3], LongArray)
 		))
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticLongArray, LongArray).
+	jpl_set('org.jpl7.test.Test', fieldStaticLongArray, LongArray).
 
 test(
 	set_field_long_array_2,
 	[	setup((
-			jpl_new( array(int), [1,2,3], IntArray)
+			jpl_new(array(int), [1,2,3], IntArray)
 		)),
 		throws(
 			error(
@@ -751,17 +751,17 @@ test(
 		)
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticLongArray, IntArray).
+	jpl_set('org.jpl7.test.Test', fieldStaticLongArray, IntArray).
 
 test(
 	set_field_object_array_1,
 	[	setup((
-			jpl_new( 'java.util.Date', [], Date),
-			jpl_new( array(class([java,lang],['Object'])), [Date,Date], ObjArray)
+			jpl_new('java.util.Date', [], Date),
+			jpl_new(array(class([java,lang],['Object'])), [Date,Date], ObjArray)
 		))
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticObjectArray, ObjArray).
+	jpl_set('org.jpl7.test.Test', fieldStaticObjectArray, ObjArray).
 
 test(
 	set_field_static_bad_type_1,
@@ -776,25 +776,25 @@ test(
 		)
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticBoolean, BadVal).
+	jpl_set('org.jpl7.test.Test', fieldStaticBoolean, BadVal).
 
 test(
 	set_field_static_boolean_1,
 	[	setup((
-			jpl_true( V)
+			jpl_true(V)
 		))
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticBoolean, V).
+	jpl_set('org.jpl7.test.Test', fieldStaticBoolean, V).
 
 test(
 	set_field_static_boolean_2,
 	[	setup((
-			jpl_false( V)
+			jpl_false(V)
 		))
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticBoolean, V).
+	jpl_set('org.jpl7.test.Test', fieldStaticBoolean, V).
 
 test(
 	set_field_static_boolean_bad_1,
@@ -809,7 +809,7 @@ test(
 		)
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticBoolean, BadVal).
+	jpl_set('org.jpl7.test.Test', fieldStaticBoolean, BadVal).
 
 test(
 	set_field_static_cyclic_term_1,
@@ -824,7 +824,7 @@ test(
 		)
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', staticTerm, {T}).
+	jpl_set('org.jpl7.test.Test', staticTerm, {T}).
 
 test(
 	set_field_static_final_int_1,
@@ -840,14 +840,14 @@ test(
 		)
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', FieldName, Value).
+	jpl_set('org.jpl7.test.Test', FieldName, Value).
 
 test(
 	set_field_static_shadow_1,
 	[	blocked('we do not yet resolve same-named shadowed fields')
 	]
 ) :-
-	jpl_set( 'jpl.test.ShadowB', fieldStaticInt, 3).
+	jpl_set('org.jpl7.test.ShadowB', fieldStaticInt, 3).
 
 test(
 	set_field_static_term_1,
@@ -861,10 +861,10 @@ test(
 		))
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticTerm, {T1}),
-	jpl_get( 'jpl.test.Test', fieldStaticTerm, {T1a}),
-	jpl_set( 'jpl.test.Test', fieldStaticTerm, {T2}),
-	jpl_get( 'jpl.test.Test', fieldStaticTerm, {T2a}).
+	jpl_set('org.jpl7.test.Test', fieldStaticTerm, {T1}),
+	jpl_get('org.jpl7.test.Test', fieldStaticTerm, {T1a}),
+	jpl_set('org.jpl7.test.Test', fieldStaticTerm, {T2}),
+	jpl_get('org.jpl7.test.Test', fieldStaticTerm, {T2a}).
 
 test(
 	set_field_static_term_2,
@@ -874,15 +874,15 @@ test(
 		))
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticTerm, {T1}),
-	jpl_get( 'jpl.test.Test', fieldStaticTerm, {T1}),
-	jpl_set( 'jpl.test.Test', fieldStaticTerm, {T2}),
-	jpl_get( 'jpl.test.Test', fieldStaticTerm, {T2}).
+	jpl_set('org.jpl7.test.Test', fieldStaticTerm, {T1}),
+	jpl_get('org.jpl7.test.Test', fieldStaticTerm, {T1}),
+	jpl_set('org.jpl7.test.Test', fieldStaticTerm, {T2}),
+	jpl_get('org.jpl7.test.Test', fieldStaticTerm, {T2}).
 
 test(
 	set_get_array_element_boolean_1,
 	[	setup((
-			jpl_new( array(boolean), 3, A),
+			jpl_new(array(boolean), 3, A),
 			V = @(false)
 		)),
 		true((
@@ -890,13 +890,13 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, V),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, V),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_boolean_2,
 	[	setup((
-			jpl_new( array(boolean), 3, A),
+			jpl_new(array(boolean), 3, A),
 			V = @(true)
 		)),
 		true((
@@ -904,13 +904,13 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, V),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, V),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_boolean_3,
 	[	setup((
-			jpl_new( array(boolean), 3, A),
+			jpl_new(array(boolean), 3, A),
 			V = bogus
 		)),
 		throws(
@@ -921,12 +921,12 @@ test(
 		)
 	]
 ) :-
-	jpl_set( A, 2, V).
+	jpl_set(A, 2, V).
 
 test(
 	set_get_array_element_byte_1,
 	[	setup((
-			jpl_new( array(byte), 3, A),
+			jpl_new(array(byte), 3, A),
 			V = 33
 		)),
 		true((
@@ -934,13 +934,13 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, V),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, V),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_byte_2,
 	[	setup((
-			jpl_new( array(byte), 3, A),
+			jpl_new(array(byte), 3, A),
 			V = 128
 		)),
 		throws(
@@ -951,12 +951,12 @@ test(
 		)
 	]
 ) :-
-	jpl_set( A, 2, V).
+	jpl_set(A, 2, V).
 
 test(
 	set_get_array_element_char_1,
 	[	setup((
-			jpl_new( array(char), 3, A),
+			jpl_new(array(char), 3, A),
 			V = 65535
 		)),
 		true((
@@ -964,13 +964,13 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, V),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, V),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_double_1,
 	[	setup((
-			jpl_new( array(double), 3, A),
+			jpl_new(array(double), 3, A),
 			V = 2.5
 		)),
 		true((
@@ -978,13 +978,13 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, V),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, V),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_float_1,
 	[	setup((
-			jpl_new( array(float), 3, A),
+			jpl_new(array(float), 3, A),
 			V = 7.5
 		)),
 		true((
@@ -992,13 +992,13 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, V),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, V),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_float_2,
 	[	setup((
-			jpl_new( array(float), 3, A),
+			jpl_new(array(float), 3, A),
 			V is 2,
 			VrX is float(V)
 		)),
@@ -1007,15 +1007,15 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, V),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, V),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_float_3,
 	[	setup((
-			jpl_new( array(float), 3, A),
-			(	current_prolog_flag( bounded, true)
-			->	current_prolog_flag( max_integer, Imax)
+			jpl_new(array(float), 3, A),
+			(	current_prolog_flag(bounded, true)
+			->	current_prolog_flag(max_integer, Imax)
 			;	Imax is 2**63-1
 			),
 			VrX is float(Imax)
@@ -1025,15 +1025,15 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, Imax),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, Imax),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_long_1,
 	[	setup((
-			jpl_new( array(long), 3, A),
-			(	current_prolog_flag( bounded, true)
-			->	current_prolog_flag( max_integer, V)
+			jpl_new(array(long), 3, A),
+			(	current_prolog_flag(bounded, true)
+			->	current_prolog_flag(max_integer, V)
 			;	V is 2**63-1
 			)
 		)),
@@ -1042,15 +1042,15 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 2, V),
-	jpl_get( A, 2, Vr).
+	jpl_set(A, 2, V),
+	jpl_get(A, 2, Vr).
 
 test(
 	set_get_array_element_long_2,
 	[	setup((
-			jpl_new( array(long), 3, A),
-			(	current_prolog_flag( bounded, true)
-			->	current_prolog_flag( max_integer, V)
+			jpl_new(array(long), 3, A),
+			(	current_prolog_flag(bounded, true)
+			->	current_prolog_flag(max_integer, V)
 			;	V is 2**63
 			)
 		)),
@@ -1062,12 +1062,12 @@ test(
 		)
 	]
 ) :-
-	jpl_set( A, 2, V).
+	jpl_set(A, 2, V).
 
 test(
 	set_get_array_elements_boolean_1,
 	[	setup((
-			jpl_new( array(boolean), 3, A),
+			jpl_new(array(boolean), 3, A),
 			Vf = @(false),
 			Vt = @(true)
 		)),
@@ -1076,18 +1076,18 @@ test(
 		))
 	]
 ) :-
-	jpl_set( A, 0, Vf),
-	jpl_set( A, 1, Vt),
-	jpl_set( A, 2, Vf),
-	jpl_get( A, 0, Vr0),
-	jpl_get( A, 1, Vr1),
-	jpl_get( A, 2, Vr2).
+	jpl_set(A, 0, Vf),
+	jpl_set(A, 1, Vt),
+	jpl_set(A, 2, Vf),
+	jpl_get(A, 0, Vr0),
+	jpl_get(A, 1, Vr1),
+	jpl_get(A, 2, Vr2).
 
 test(
 	set_get_field_static_long_1,
 	[	setup((
-			(   current_prolog_flag( bounded, true)
-		    ->  current_prolog_flag( max_integer, V)
+			(   current_prolog_flag(bounded, true)
+		    ->  current_prolog_flag(max_integer, V)
 		    ;   V is 2**63-1
 		    )
 		)),
@@ -1096,8 +1096,8 @@ test(
 		))
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', fieldStaticLong, V),
-	jpl_get( 'jpl.test.Test', fieldStaticLong, V2).
+	jpl_set('org.jpl7.test.Test', fieldStaticLong, V),
+	jpl_get('org.jpl7.test.Test', fieldStaticLong, V2).
 
 test(
 	set_non_accessible_field_1,
@@ -1109,17 +1109,17 @@ test(
 		)
 	]
 ) :-
-	jpl_set( 'jpl.test.Test', gagaga, 4).
+	jpl_set('org.jpl7.test.Test', gagaga, 4).
 
 test(
 	terms_to_array_1,
 	[]
 ) :-
-	jpl_terms_to_array( [foo(bar)], A),
-	jpl_object_to_type( A, array(class([jpl],['Term']))),
-	jpl_get( A, length, 1),
-	jpl_get( A, 0, T),
-	jpl_call( T, toString, [], 'foo(bar)').
+	jpl_terms_to_array([foo(bar)], A),
+	jpl_object_to_type(A, array(class([org,jpl7],['Term']))),
+	jpl_get(A, length, 1),
+	jpl_get(A, 0, T),
+	jpl_call(T, toString, [], 'foo(bar)').
 
 test(
 	throw_java_exception_1,
@@ -1132,7 +1132,7 @@ test(
 		)
 	]
 ) :-
-	jpl_call( 'java.lang.Integer', decode, [q], _).
+	jpl_call('java.lang.Integer', decode, [q], _).
 
 test(
 	versions_1,
@@ -1144,25 +1144,26 @@ test(
 ) :-
 	jpl_pl_lib_version(Vpl),
 	jpl_c_lib_version(Vc),
-	jpl_call( 'jpl.JPL', version_string, [], Vjava).
+	jpl_call('org.jpl7.JPL', version_string, [], Vjava).
 
 %	JW: Mutual recursion check.  Moved from jpl.pl to here.  As the
 %	callback is in module user, we define it there.
 
-user:jpl_test_fac( N, F) :-
+user:jpl_test_fac(N, F) :-
 	(	N == 1
 	->	F = 1
 	;	N > 1
 	->	N2 is N-1,
-		jpl_call( 'jpl.test.Test', fac, [N2], F2),	% call its Java counterpart, which does vice versa
+		jpl_call('org.jpl7.test.Test', fac, [N2], F2),	% call its Java counterpart, which does vice versa
 		F is N*F2
 	;	F = 0
 	).
 
 test(fac10,
-     [ true(N==3628800)
-     ]) :-
-     user:jpl_test_fac(10, N).
+	[	true(N==3628800)
+	]
+) :-
+	user:jpl_test_fac(10, N).
 
 test(threads1,
 	[	true((
@@ -1173,22 +1174,26 @@ test(threads1,
 ) :-
 	jpl_call('java.lang.System', currentTimeMillis, [], _).
 
-test(threads2, true(X==true)) :-
+test(threads2,
+	[	true(X==true)
+	]
+) :-
 	jpl_call('java.lang.System', currentTimeMillis, [], _),
 	thread_create(jpl_call('java.lang.System', currentTimeMillis, [], _), ThreadId, []),
 	thread_join(ThreadId, X).
 
 test(threads3,
 	[	true((
-			length(Ss, 1000),
+			length(Ss, N),
 			sort(Ss, [true])
 		))
 	]
 ) :-
+	N is 100,  % was 1000 (ok in V6); in V7 traditional, fails with 200
 	jpl_call('java.lang.System', currentTimeMillis, [], _),
 	findall(
 		Status,
-		(	between(1, 1000, _),
+		(	between(1, N, _),
 			thread_create(jpl_call('java.lang.System', currentTimeMillis, [], _), ThreadId, []),
 			thread_join(ThreadId, Status)
 		),
@@ -1197,7 +1202,16 @@ test(threads3,
 
 test(jref1,
 	[	true((
-			Term1 \== Term2,
+			Term1 \== Term2
+		))
+	]
+) :-
+	length(Term1, 5),
+	jpl:jni_term_to_jref(Term1, JRef),
+	jpl:jni_jref_to_term(JRef, Term2).
+
+test(jref2,
+	[	true((
 			Term1 =@= Term2
 		))
 	]
