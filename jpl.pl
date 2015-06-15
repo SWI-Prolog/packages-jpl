@@ -35,6 +35,7 @@
         jpl_get_actual_jvm_opts/1,
         jpl_pl_lib_version/1,
         jpl_c_lib_version/1,
+        jpl_pl_syntax/1,
         jpl_new/3,
         jpl_call/4,
         jpl_get/3,
@@ -3859,6 +3860,15 @@ to_atom(Term, Atom) :-
     ;   term_to_atom(Term, Atom)
     ).
 
+%! jpl_pl_syntax(-Syntax:atom)
+%
+% unifies Syntax with 'traditional' or 'modern' according to the mode in which SWI Prolog 7.x was started
+
+jpl_pl_syntax(Syntax) :-
+	(	[] == '[]'
+	->	Syntax = traditional
+	;	Syntax = modern
+	).
 
          /*******************************
          *            MESSAGES          *
