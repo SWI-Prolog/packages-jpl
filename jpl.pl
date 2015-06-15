@@ -2589,14 +2589,14 @@ jpl_datum_to_type(D, T) :-
     ->  (   cyclic_term(Term)
         ->  throw(error(type_error(acyclic,Term),context(jpl_datum_to_type/2,'must be acyclic')))
         ;   atom(Term)
-        ->  T = class([jpl],['Atom'])
+        ->  T = class([org,jpl7],['Atom'])
         ;   integer(Term)
-        ->  T = class([jpl],['Integer'])
+        ->  T = class([org,jpl7],['Integer'])
         ;   float(Term)
-        ->  T = class([jpl],['Float'])
+        ->  T = class([org,jpl7],['Float'])
         ;   var(Term)
-        ->  T = class([jpl],['Variable'])
-        ;   T = class([jpl],['Compound'])
+        ->  T = class([org,jpl7],['Variable'])
+        ;   T = class([org,jpl7],['Compound'])
         )
     ).
 
@@ -3550,7 +3550,7 @@ jpl_list_to_array(Ds, A) :-
 
 jpl_terms_to_array(Ts, A) :-
     jpl_terms_to_array_1(Ts, Ts2),
-    jpl_new(array(class([jpl],['Term'])), Ts2, A).
+    jpl_new(array(class([org,jpl7],['Term'])), Ts2, A).
 
 
 jpl_terms_to_array_1([], []).
