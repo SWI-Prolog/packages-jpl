@@ -3850,7 +3850,7 @@ multimap_to_atom_1([K-V|KVs], T, Cs1, Cs0) :-
 
 %! to_atom(+Term, -Atom)
 %
-%    unifies Atom with a printed representation of Term.
+% unifies Atom with a printed representation of Term.
 %
 % @tbd Sort of quoting requirements and use format(codes(Codes),...)
 
