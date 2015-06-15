@@ -1,0 +1,165 @@
+package org.jpl7;
+
+import java.util.Map;
+
+import org.jpl7.fli.Prolog;
+import org.jpl7.fli.term_t;
+
+/**
+ * Atom is a specialised Compound with zero arguments, representing a Prolog atom with the same name. An Atom is constructed with a String parameter (its name, unquoted), which cannot thereafter be
+ * changed.
+ * 
+ * <pre>
+ * Atom a = new Atom(&quot;hello&quot;);
+ * </pre>
+ * 
+ * An Atom can be used (and re-used) as an argument of Compound Terms. Two Atom instances are equal (by equals()) iff they have equal names.
+ * 
+ * <hr>
+ * <i> Copyright (C) 2004 Paul Singleton
+ * <p>
+ * Copyright (C) 1998 Fred Dushin
+ * <p>
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the GNU Library Public License as published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ * <p>
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Library Public License for more details.
+ * <p>
+ * </i>
+ * <hr>
+ * 
+ * @see org.jpl7.Term
+ * @see org.jpl7.Compound
+ */
+public class Atom extends Term { // was extends Compound
+
+	/**
+	 * the name of this Compound
+	 */
+	protected final String name;
+
+	protected final String type; // should this be private?
+
+	/**
+	 * @param name
+	 *            the Atom's name (unquoted)
+	 */
+	public Atom(String name) {
+		if (name == null) {
+			throw new JPLException("cannot construct with null name");
+		} else {
+			this.name = name;
+			this.type = "text";
+		}
+	}
+
+	public Atom(String name, String type) {
+		if (name == null) {
+			throw new JPLException("cannot construct with null name");
+		} else if (type == null) {
+			throw new JPLException("cannot construct with null type");
+		} else {
+			this.name = name;
+			this.type = type;
+		}
+	}
+
+	/**
+	 * the (zero) arguments of an Atom, as a (zero-length) Term[]
+	 * 
+	 * @return the (zero) arguments of an Atom, as a (zero-length) Term[]
+	 */
+	public Term[] args() {
+		return new Term[] {};
+	}
+
+	public final String atomType() {
+		return this.type;
+	}
+
+	/**
+	 * Two Atoms are equal if they are identical (same object) or their respective names and blobTypes are equal
+	 * 
+	 * @param obj
+	 *            the Object to compare (not necessarily another Atom)
+	 * @return true if the Object satisfies the above condition
+	 */
+	public final boolean equals(Object obj) {
+		return (this == obj || obj instanceof Atom && name.equals(((Atom) obj).name)
+				&& type.equals(((Atom) obj).type));
+	}
+
+	/**
+	 * Tests whether this Compound's functor has (String) 'name' and 'arity'.
+	 * 
+	 * @return whether this Compound's functor has (String) 'name' and 'arity'
+	 */
+	public final boolean hasFunctor(String name, int arity) {
+		return name.equals(this.name) && arity == 0;
+	}
+
+	/**
+	 * whether this Term denotes (syntax-specifically) an empty list
+	 */
+	public boolean isListNil() {
+		return this.equals(JPL.LIST_NIL);
+	}
+
+	/**
+	 * the name (unquoted) of this Compound
+	 * 
+	 * @return the name (unquoted) of this Compound
+	 */
+	public final String name() {
+		return name;
+	}
+
+	/**
+	 * To put an Atom in a term, we create a sequence of term_t references from the Term.terms_to_term_ts() method, and then use the Prolog.cons_functor_v() method to create a Prolog compound term.
+	 * 
+	 * @param varnames_to_vars
+	 *            A Map from variable names to Prolog variables
+	 * @param term
+	 *            A (previously created) term_t which is to be set to a Prolog term corresponding to the Term subtype (Atom, Variable, Compound, etc.) on which the method is invoked.
+	 */
+	protected void put(Map<String, term_t> varnames_to_vars, term_t term) {
+		if (this.equals(JPL.LIST_NIL)) {
+			Prolog.put_nil(term);
+		} else {
+			Term[] args = new Term[] {};
+			Prolog.cons_functor_v(term, Prolog.new_functor(Prolog.new_atom(name), args.length),
+					Term.putTerms(varnames_to_vars, args));
+		}
+	}
+
+	/**
+	 * an Atom's name is quoted if it is not a simple identifier.
+	 * 
+	 * @return string representation of an Atom
+	 */
+	public String toString() {
+		return (JPL.isSimpleName(name) ? name : "'" + name + "'");
+	}
+
+	/**
+	 * returns the type of this term, as "Prolog.ATOM"
+	 * 
+	 * @return the type of this term, as "Prolog.ATOM"
+	 */
+	public final int type() {
+		return Prolog.ATOM;
+	}
+
+	/**
+	 * returns the name of the type of this term, as "Atom"
+	 * 
+	 * @return the name of the type of this term, as "Atom"
+	 */
+	public String typeName() { // overrides same in jpl.Term
+		return "Atom";
+	}
+
+}
