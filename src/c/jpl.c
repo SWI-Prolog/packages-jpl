@@ -442,7 +442,7 @@ refactoring (trivial):
 /*=== JPL initialisation macros (typically succeed cheaply) ======================================== */
 
 /* outcomes: */
-/*	fail to find jpl.*, jpl.fli.* classes or to convert init args to String[]: exception, FALSE */
+/*	fail to find org.jpl7.*, org.jpl7.fli.* classes or to convert init args to String[]: exception, FALSE */
 /*	JPL is (newly or already) out of RAW state: TRUE */
 #define		jpl_ensure_jpl_init(e)	(	jpl_status != JPL_INIT_RAW \
 									||	jpl_ensure_jpl_init_1(e) \
@@ -533,14 +533,14 @@ static functor_t   JNI_functor_jpl_error_1;	    /* jpl_error(_) */
 static jclass	   c_class;	    /* java.lang.Class                       (rename to jClass_c ?) */
 static jmethodID   c_getName;	    /* java.lang.Class' getName()            (rename to jClassGetName_m ?) */
 static jclass	   str_class;	    /* java.lang.String                      (this duplicates jString_c below) */
-static jclass	   term_class;		/* jpl.Term */
-static jclass	   termt_class;		/* jpl.fli.term_t */
+static jclass	   term_class;		/* org.jpl7.Term */
+static jclass	   termt_class;		/* org.jpl7.fli.term_t */
 
 static jclass	   sys_class;	    /* java.lang.System                      (rename to jSystem_c ?) */
 static jmethodID   sys_ihc;	    /* java.lang.System's identityHashCode() (rename to jSystemIdentityHashCode_m ?) */
-static jmethodID   term_getTerm;	/* jpl.Term's getTerm() */
-static jmethodID   term_put;		/* jpl.Term's put() */
-static jmethodID   term_putTerm;	/* jpl.Term's static putTerm(Term,term_t) */
+static jmethodID   term_getTerm;	/* org.jpl7.Term's getTerm() */
+static jmethodID   term_put;		/* org.jpl7.Term's put() */
+static jmethodID   term_putTerm;	/* org.jpl7.Term's static putTerm(Term,term_t) */
 
 
 /*=== JPL's reusable global class object refs, initialised by jpl_ensure_jpl_init() ================ */
@@ -857,7 +857,7 @@ jni_free_iref(		    /* called indirectly from agc hook when a possible iref is u
 /* NB this delivers an atom_t, not a term_t */
 /* returns FALSE if the String arg is NULL */
 static bool
- jni_String_to_atom(	/* called from JNI_jobject_to_term(J,T) and jpl.fli.Prolog#new_atom() */
+ jni_String_to_atom(	/* called from JNI_jobject_to_term(J,T) and org.jpl7.fli.Prolog#new_atom() */
 	JNIEnv		*env,
 	jobject		s,
     atom_t	*a
@@ -1410,14 +1410,14 @@ jni_init()
 	    && ( (*env)->DeleteLocalRef(env,lref), TRUE)
 	    && (sys_ihc=(*env)->GetStaticMethodID(env,sys_class,"identityHashCode","(Ljava/lang/Object;)I")) != NULL
 
-			&& (lref=(*env)->FindClass(env,"jpl/Term")) != NULL
+			&& (lref=(*env)->FindClass(env,"org/jpl7/Term")) != NULL
 			&& (term_class=(*env)->NewGlobalRef(env,lref)) != NULL
 			&& ( (*env)->DeleteLocalRef(env,lref), TRUE)
-			&& (term_getTerm=(*env)->GetStaticMethodID(env,term_class,"getTerm","(Ljpl/fli/term_t;)Ljpl/Term;")) != NULL
-			&& (term_put=(*env)->GetMethodID(env,term_class,"put","(Ljpl/fli/term_t;)V")) != NULL
-			&& (term_putTerm=(*env)->GetStaticMethodID(env,term_class,"putTerm","(Ljava/lang/Object;Ljpl/fli/term_t;)V")) != NULL
+			&& (term_getTerm=(*env)->GetStaticMethodID(env,term_class,"getTerm","(Lorg/jpl7/fli/term_t;)Lorg/jpl7/Term;")) != NULL
+			&& (term_put=(*env)->GetMethodID(env,term_class,"put","(Lorg/jpl7/fli/term_t;)V")) != NULL
+			&& (term_putTerm=(*env)->GetStaticMethodID(env,term_class,"putTerm","(Ljava/lang/Object;Lorg/jpl7/fli/term_t;)V")) != NULL
 
-			&& (lref=(*env)->FindClass(env,"jpl/fli/term_t")) != NULL
+			&& (lref=(*env)->FindClass(env,"org/jpl7/fli/term_t")) != NULL
 			&& (termt_class=(*env)->NewGlobalRef(env,lref)) != NULL
 			&& ( (*env)->DeleteLocalRef(env,lref), TRUE)
 
@@ -3266,7 +3266,7 @@ jpl_num_initial_default_args()	/* used only once, by jpl_do_jpl_init() */
 
 
 /* outcomes: */
-/*	fail to find jpl.*, jpl.fli.* classes or to convert init args to String[]: exception, FALSE */
+/*	fail to find org.jpl7.*, org.jpl7.fli.* classes or to convert init args to String[]: exception, FALSE */
 /*	all OK: TRUE */
 static bool
 jpl_do_jpl_init(		/* to be called once only, after PL init, before any JPL calls */
@@ -3310,71 +3310,71 @@ jpl_do_jpl_init(		/* to be called once only, after PL init, before any JPL calls
 		(*env)->SetObjectArrayElement(env,pvm_dia,i,to);  /* any errors/exceptions to be handled here? */
 	}
 
-    if (    (tc=(*env)->FindClass(env,"jpl/JPLException")) == NULL
+    if (    (tc=(*env)->FindClass(env,"org/jpl7/JPLException")) == NULL
 	||  (jJPLException_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/term_t")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/term_t")) == NULL
 	||  (jTermT_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/atom_t")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/atom_t")) == NULL
 	||  (jAtomT_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/functor_t")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/functor_t")) == NULL
 	||  (jFunctorT_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/fid_t")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/fid_t")) == NULL
 	||  (jFidT_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/predicate_t")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/predicate_t")) == NULL
 	||  (jPredicateT_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/qid_t")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/qid_t")) == NULL
 	||  (jQidT_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/module_t")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/module_t")) == NULL
 	||  (jModuleT_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/engine_t")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/engine_t")) == NULL
 	||  (jEngineT_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/LongHolder")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/LongHolder")) == NULL
 	||  (jLongHolder_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/PointerHolder")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/PointerHolder")) == NULL
 	||  (jPointerHolder_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/IntHolder")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/IntHolder")) == NULL
 	||  (jIntHolder_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-		||	(tc=(*env)->FindClass(env,"jpl/fli/Int64Holder")) == NULL
+		||	(tc=(*env)->FindClass(env,"org/jpl7/fli/Int64Holder")) == NULL
 		||	(jInt64Holder_c=(*env)->NewGlobalRef(env,tc)) == NULL
 		||	( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/DoubleHolder")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/DoubleHolder")) == NULL
 	||  (jDoubleHolder_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/StringHolder")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/StringHolder")) == NULL
 	||  (jStringHolder_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/ObjectHolder")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/ObjectHolder")) == NULL
 	||  (jObjectHolder_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
-	||  (tc=(*env)->FindClass(env,"jpl/fli/BooleanHolder")) == NULL
+	||  (tc=(*env)->FindClass(env,"org/jpl7/fli/BooleanHolder")) == NULL
 	||  (jBooleanHolder_c=(*env)->NewGlobalRef(env,tc)) == NULL
 	||  ( (*env)->DeleteLocalRef(env,tc), FALSE)
 
@@ -3395,7 +3395,7 @@ jpl_do_jpl_init(		/* to be called once only, after PL init, before any JPL calls
 	||  (jBooleanHolderValue_f=(*env)->GetFieldID(env,jBooleanHolder_c,"value","Z")) == NULL
        )
 	{
-	msg = "jpl_do_jpl_init(): failed to find jpl.* or jpl.fli.* classes";
+	msg = "jpl_do_jpl_init(): failed to find org.jpl7.* or org.jpl7.fli.* classes";
 	goto err;
 	}
 
@@ -3623,10 +3623,10 @@ static bool
 	}
 
 
-/*=== initialisation-related native Java methods of jpl.fli.Prolog ================================= */
+/*=== initialisation-related native Java methods of org.jpl7.fli.Prolog ================================= */
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    get_default_init_args
  * Signature: ()[Ljava/lang/String;
  */
@@ -3634,7 +3634,7 @@ static bool
 /* if already init then return NULL */
 /* if already failed to init then throw an exception */
 JNIEXPORT jobject JNICALL
-Java_jpl_fli_Prolog_get_1default_1init_1args(
+Java_org_jpl7_fli_Prolog_get_1default_1init_1args(
     JNIEnv     *env,
     jclass	jProlog
     )
@@ -3646,7 +3646,7 @@ Java_jpl_fli_Prolog_get_1default_1init_1args(
 
     if ( jpl_status==JPL_INIT_JPL_FAILED || jpl_status==JPL_INIT_PVM_FAILED )
 	{
-	msg = "jpl.fli.Prolog.set_default_init_args(): initialisation has already failed";
+	msg = "org.jpl7.fli.Prolog.set_default_init_args(): initialisation has already failed";
 	goto err;
 	}
 
@@ -3662,7 +3662,7 @@ err:
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    set_default_init_args
  * Signature: ([Ljava/lang/String;)Z
  */
@@ -3671,7 +3671,7 @@ err:
 /* if not yet init then set default init args from jargs and return TRUE */
 /* if already init then return FALSE */
 JNIEXPORT jboolean JNICALL
-Java_jpl_fli_Prolog_set_1default_1init_1args(
+Java_org_jpl7_fli_Prolog_set_1default_1init_1args(
     JNIEnv     *env,
     jclass	jProlog,
     jobject	jargs	    /* oughta be proper array, perhaps zero-length */
@@ -3684,13 +3684,13 @@ Java_jpl_fli_Prolog_set_1default_1init_1args(
 
     if ( jargs == NULL )  /* improper call */
 	{
-	msg = "jpl.fli.Prolog.set_default_init_args() called with NULL arg";
+	msg = "org.jpl7.fli.Prolog.set_default_init_args() called with NULL arg";
 	goto err;
 	}
 
     if ( jpl_status==JPL_INIT_JPL_FAILED || jpl_status==JPL_INIT_PVM_FAILED )
 	{
-	msg = "jpl.fli.Prolog.set_default_init_args(): initialisation has already failed";
+	msg = "org.jpl7.fli.Prolog.set_default_init_args(): initialisation has already failed";
 	goto err;
 	}
 
@@ -3712,7 +3712,7 @@ err:
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    get_actual_init_args
  * Signature: ()[Ljava/lang/String;
  */
@@ -3720,7 +3720,7 @@ err:
 /* if already init then return actual init args as String[] */
 /* if already failed to init then throw an exception */
 JNIEXPORT jobject JNICALL
-Java_jpl_fli_Prolog_get_1actual_1init_1args(
+Java_org_jpl7_fli_Prolog_get_1actual_1init_1args(
     JNIEnv     *env,
     jclass	jProlog
     )
@@ -3732,7 +3732,7 @@ Java_jpl_fli_Prolog_get_1actual_1init_1args(
 
     if ( jpl_status==JPL_INIT_JPL_FAILED || jpl_status==JPL_INIT_PVM_FAILED )
 	{
-	msg = "jpl.fli.Prolog.get_actual_init_args(): initialisation has already failed";
+	msg = "org.jpl7.fli.Prolog.get_actual_init_args(): initialisation has already failed";
 	goto err;
 	}
 
@@ -3748,7 +3748,7 @@ err:
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    initialise
  * Signature: ()Z
  */
@@ -3756,7 +3756,7 @@ err:
 /* if already failed to init then throw an exception */
 /* else attempt to init and if success then return TRUE else throw an exception */
 JNIEXPORT jboolean JNICALL
-Java_jpl_fli_Prolog_initialise(
+Java_org_jpl7_fli_Prolog_initialise(
     JNIEnv	*env,
     jclass	 jProlog
     )
@@ -3768,7 +3768,7 @@ Java_jpl_fli_Prolog_initialise(
 
     if ( jpl_status==JPL_INIT_JPL_FAILED || jpl_status==JPL_INIT_PVM_FAILED )
 	{
-	msg = "jpl.fli.Prolog.initialise(): initialisation has already failed";
+	msg = "org.jpl7.fli.Prolog.initialise(): initialisation has already failed";
 	goto err;
 	}
 
@@ -3789,12 +3789,12 @@ err:
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    halt
  * Signature: (I)V
  */
 JNIEXPORT void JNICALL
-Java_jpl_fli_Prolog_halt(
+Java_org_jpl7_fli_Prolog_halt(
     JNIEnv     *env,
     jclass	jProlog,
     jint	jstatus
@@ -3811,7 +3811,7 @@ Java_jpl_fli_Prolog_halt(
 /*-----------------------------------------------------------------------
  * getLongValue
  *
- * Retrieves the value in a jpl.fli.LongHolder (or subclass) instance
+ * Retrieves the value in a org.jpl7.fli.LongHolder (or subclass) instance
  *
  * @param   env		  Java environment
  * @param   jlong_holder  the LongHolder class instance, or null
@@ -3831,7 +3831,7 @@ getLongValue(
 	*lv = 0L;
 	return FALSE;
 	}
-    else    /* Java compilation ensures it's a jpl.fli.LongHolder instance */
+    else    /* Java compilation ensures it's a org.jpl7.fli.LongHolder instance */
 	{
 	*lv = (*env)->GetLongField(env,jlong_holder,jLongHolderValue_f);
 	return TRUE;
@@ -3867,7 +3867,7 @@ getUIntPtrValue(
 /*-----------------------------------------------------------------------
  * getPointerValue
  *
- * Retrieves the value in a jpl.fli.PointerHolder instance
+ * Retrieves the value in a org.jpl7.fli.PointerHolder instance
  *
  * @param   env		     Java environment
  * @param   jpointer_holder  the PointerHolder class instance, or null
@@ -3887,7 +3887,7 @@ getPointerValue( /* sets pv to jpointer_holder's .value_ (and succeeds), else se
 	*pv = (pointer)NULL;
 	return FALSE;
 	}
-    else    /* Java compilation ensures it's a jpl.fli.PointerHolder instance */
+    else    /* Java compilation ensures it's a org.jpl7.fli.PointerHolder instance */
 	{
 	*pv = (pointer)(*env)->GetLongField(env,jpointer_holder,jPointerHolderValue_f);
 	return TRUE;
@@ -3898,7 +3898,7 @@ getPointerValue( /* sets pv to jpointer_holder's .value_ (and succeeds), else se
 /*-----------------------------------------------------------------------
  * setPointerValue
  *
- * Sets the value in a jpl.fli.Pointer class instance (unless it's null)
+ * Sets the value in a org.jpl7.fli.Pointer class instance (unless it's null)
  * to the supplied value (maybe 0L)
  *
  * @param   env		     Java environment
@@ -4173,12 +4173,12 @@ static int current_pool_engine();
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  action_abort
  * Signature: ()I
  */
 JNIEXPORT int JNICALL
- Java_jpl_fli_Prolog_action_1abort(
+ Java_org_jpl7_fli_Prolog_action_1abort(
     JNIEnv     *env,
     jclass	jProlog
     )
@@ -4196,12 +4196,12 @@ JNIEXPORT int JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  atom_chars
- * Signature: (Ljpl/fli/atom_t;)Ljava/lang/String;
+ * Signature: (Lorg/jpl7/fli/atom_t;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL									/* the local ref goes out of scope, */
- Java_jpl_fli_Prolog_atom_1chars(							/* but the string itself doesn't */
+ Java_org_jpl7_fli_Prolog_atom_1chars(							/* but the string itself doesn't */
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jatom
@@ -4221,12 +4221,12 @@ JNIEXPORT jstring JNICALL									/* the local ref goes out of scope, */
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  attach_engine
- * Signature: (Ljpl/fli/engine_t;)I
+ * Signature: (Lorg/jpl7/fli/engine_t;)I
  */
 JNIEXPORT int JNICALL
- Java_jpl_fli_Prolog_attach_1engine(
+ Java_org_jpl7_fli_Prolog_attach_1engine(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		 jengine
@@ -4263,12 +4263,12 @@ JNIEXPORT int JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  close_query
- * Signature: (Ljpl/fli/qid_t;)V
+ * Signature: (Lorg/jpl7/fli/qid_t;)V
  */
 JNIEXPORT void JNICALL
- Java_jpl_fli_Prolog_close_1query(
+ Java_org_jpl7_fli_Prolog_close_1query(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jqid
@@ -4289,12 +4289,12 @@ JNIEXPORT void JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  compare
- * Signature: (Ljpl/fli/term_t;Ljpl/fli/term_t;)I
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/term_t;)I
  */
 JNIEXPORT jint JNICALL													/* returns -1, 0 or 1 (or -2 for error) */
- Java_jpl_fli_Prolog_compare(
+ Java_org_jpl7_fli_Prolog_compare(
     JNIEnv	*env,
     jclass	jProlog,
 	jobject		jterm1,
@@ -4321,12 +4321,12 @@ JNIEXPORT jint JNICALL													/* returns -1, 0 or 1 (or -2 for error) */
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  cons_functor_v
- * Signature: (Ljpl/fli/term_t;Ljpl/fli/functor_t;Ljpl/fli/term_t;)V
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/functor_t;Lorg/jpl7/fli/term_t;)V
  */
 JNIEXPORT jboolean JNICALL
-Java_jpl_fli_Prolog_cons_1functor_1v(
+Java_org_jpl7_fli_Prolog_cons_1functor_1v(
     JNIEnv	*env,
     jclass	jProlog,
 	jobject		jterm,
@@ -4351,12 +4351,12 @@ Java_jpl_fli_Prolog_cons_1functor_1v(
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  copy_term_ref
- * Signature: (Ljpl/fli/term_t;)Ljpl/fli/term_t;
+ * Signature: (Lorg/jpl7/fli/term_t;)Lorg/jpl7/fli/term_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_copy_1term_1ref(
+ Java_org_jpl7_fli_Prolog_copy_1term_1ref(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jfrom
@@ -4380,12 +4380,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  current_engine
- * Signature: ()Ljpl/fli/engine_t;
+ * Signature: ()Lorg/jpl7/fli/engine_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_current_1engine(
+ Java_org_jpl7_fli_Prolog_current_1engine(
     JNIEnv     *env,
 	jclass		jProlog
     )
@@ -4406,12 +4406,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  current_engine_is_pool
  * Signature: ()Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_current_1engine_1is_1pool(
+ Java_org_jpl7_fli_Prolog_current_1engine_1is_1pool(
     JNIEnv     *env,
 	jclass		 jProlog
     )
@@ -4429,12 +4429,12 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  exception
- * Signature: (Ljpl/fli/qid_t;)Ljpl/fli/term_t;
+ * Signature: (Lorg/jpl7/fli/qid_t;)Lorg/jpl7/fli/term_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_exception(
+ Java_org_jpl7_fli_Prolog_exception(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jqid
@@ -4468,12 +4468,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  get_arg
- * Signature: (ILjpl/fli/term_t;Ljpl/fli/term_t;)Z
+ * Signature: (ILorg/jpl7/fli/term_t;Lorg/jpl7/fli/term_t;)Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_get_1arg(
+ Java_org_jpl7_fli_Prolog_get_1arg(
     JNIEnv     *env,
     jclass	jProlog,
 	jint		jindex,
@@ -4495,12 +4495,12 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  get_atom_chars
- * Signature: (Ljpl/fli/term_t;Ljpl/fli/StringHolder;)Z
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/StringHolder;)Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_get_1atom_1chars(
+ Java_org_jpl7_fli_Prolog_get_1atom_1chars(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jterm,
@@ -4522,12 +4522,12 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  get_c_lib_version
  * Signature: ()Ljava/lang/String;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_get_1c_1lib_1version(
+ Java_org_jpl7_fli_Prolog_get_1c_1lib_1version(
     JNIEnv     *env,
 	jclass		jProlog
     )
@@ -4538,12 +4538,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  get_float
- * Signature: (Ljpl/fli/term_t;Ljpl/fli/DoubleHolder;)Z
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/DoubleHolder;)Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_get_1float(
+ Java_org_jpl7_fli_Prolog_get_1float(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jterm,
@@ -4563,12 +4563,12 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  get_integer
- * Signature: (Ljpl/fli/term_t;Ljpl/fli/Int64Holder;)Z
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/Int64Holder;)Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_get_1integer(
+ Java_org_jpl7_fli_Prolog_get_1integer(
     JNIEnv     *env,
     jclass	jProlog,
     jobject	jterm,
@@ -4588,12 +4588,39 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
- * Method:	  get_name_arity
- * Signature: (Ljpl/fli/term_t;Ljpl/fli/StringHolder;Ljpl/fli/IntHolder;)Z
+ * Class:	  org_jpl7_fli_Prolog
+ * Method:	  get_integer_big
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/StringHolder;)Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_get_1name_1arity(
+ Java_org_jpl7_fli_Prolog_get_1integer_1big(
+    JNIEnv		*env,
+    jclass		jProlog,
+	jobject		jterm,
+	jobject		jbigint_holder									/* we trust this is a StringHolder */
+    )
+    {
+    term_t		term;
+	char		*bigint;
+	jstring		jbigint;
+
+    return  jpl_ensure_pvm_init(env)
+		&&	jbigint_holder != NULL								/* don't proceed if this holder is null */
+		&&	getUIntPtrValue(env,jterm,&term)					/* confirms that jterm isn't null */
+		&&	PL_get_chars(term,&bigint,CVT_INTEGER)				/* must copy chars pronto */
+		&&	( jbigint=(*env)->NewStringUTF(env,bigint) , TRUE )	/* this copies the chars */
+		&&	setStringValue(env,jbigint_holder,jbigint)			/* stash String ref in holder */
+	;
+    }
+
+
+/*
+ * Class:	  org_jpl7_fli_Prolog
+ * Method:	  get_name_arity
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/StringHolder;Lorg/jpl7/fli/IntHolder;)Z
+ */
+JNIEXPORT jboolean JNICALL
+ Java_org_jpl7_fli_Prolog_get_1name_1arity(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jterm,
@@ -4619,12 +4646,12 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  get_string_chars
- * Signature: (Ljpl/fli/term_t;Ljpl/fli/StringHolder;)Z
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/StringHolder;)Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_get_1string_1chars(
+ Java_org_jpl7_fli_Prolog_get_1string_1chars(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jterm,
@@ -4644,12 +4671,12 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  new_atom
- * Signature: (Ljava/lang/String;)Ljpl/fli/atom_t;
+ * Signature: (Ljava/lang/String;)Lorg/jpl7/fli/atom_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_new_1atom(
+ Java_org_jpl7_fli_Prolog_new_1atom(
     JNIEnv     *env,
     jclass	jProlog,
 	jstring		jname
@@ -4671,12 +4698,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  new_functor
- * Signature: (Ljpl/fli/atom_t;I)Ljpl/fli/functor_t;
+ * Signature: (Lorg/jpl7/fli/atom_t;I)Lorg/jpl7/fli/functor_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_new_1functor(
+ Java_org_jpl7_fli_Prolog_new_1functor(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jatom,		/* read-only */
@@ -4701,12 +4728,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  new_module
- * Signature: (Ljpl/fli/atom_t;)Ljpl/fli/module_t;
+ * Signature: (Lorg/jpl7/fli/atom_t;)Lorg/jpl7/fli/module_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_new_1module(
+ Java_org_jpl7_fli_Prolog_new_1module(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jatom
@@ -4729,12 +4756,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  new_term_ref
- * Signature: ()Ljpl/fli/term_t;
+ * Signature: ()Lorg/jpl7/fli/term_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_new_1term_1ref(
+ Java_org_jpl7_fli_Prolog_new_1term_1ref(
     JNIEnv     *env,
 	jclass		jProlog
     )
@@ -4752,12 +4779,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  new_term_refs
- * Signature: (I)Ljpl/fli/term_t;
+ * Signature: (I)Lorg/jpl7/fli/term_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_new_1term_1refs(
+ Java_org_jpl7_fli_Prolog_new_1term_1refs(
     JNIEnv     *env,
     jclass	jProlog,
 	jint		jn
@@ -4783,12 +4810,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  next_solution
- * Signature: (Ljpl/fli/qid_t;)Z
+ * Signature: (Lorg/jpl7/fli/qid_t;)Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_next_1solution(
+ Java_org_jpl7_fli_Prolog_next_1solution(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jqid		/* read */
@@ -4813,12 +4840,12 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  object_to_tag
  * Signature: (Ljava/lang/Object;)Ljava/lang/String;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_object_1to_1tag(
+ Java_org_jpl7_fli_Prolog_object_1to_1tag(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jobj
@@ -4856,12 +4883,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    open_query
- * Signature: (Ljpl/fli/module_t;ILjpl/fli/predicate_t;Ljpl/fli/term_t;)Ljpl/fli/qid_t;
+ * Signature: (Lorg/jpl7/fli/module_t;ILorg/jpl7/fli/predicate_t;Lorg/jpl7/fli/term_t;)Lorg/jpl7/fli/qid_t;
  */
 JNIEXPORT jobject JNICALL
-Java_jpl_fli_Prolog_open_1query(
+Java_org_jpl7_fli_Prolog_open_1query(
     JNIEnv     *env,
     jclass	jProlog,
     jobject	jmodule,	/* read */
@@ -4902,12 +4929,12 @@ Java_jpl_fli_Prolog_open_1query(
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  predicate
- * Signature: (Ljava/lang/String;ILjava/lang/String;)Ljpl/fli/predicate_t;
+ * Signature: (Ljava/lang/String;ILjava/lang/String;)Lorg/jpl7/fli/predicate_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_predicate(
+ Java_org_jpl7_fli_Prolog_predicate(
     JNIEnv     *env,
     jclass	jProlog,
 	jstring		jname,	/* ought not be null */
@@ -4947,12 +4974,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  put_float
- * Signature: (Ljpl/fli/term_t;D)V
+ * Signature: (Lorg/jpl7/fli/term_t;D)V
  */
 JNIEXPORT jboolean JNICALL
-Java_jpl_fli_Prolog_put_1float(JNIEnv *env,
+Java_org_jpl7_fli_Prolog_put_1float(JNIEnv *env,
 			       jclass jProlog,
 			       jobject jterm,
 			       jdouble jf)
@@ -4968,12 +4995,12 @@ Java_jpl_fli_Prolog_put_1float(JNIEnv *env,
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  put_integer
- * Signature: (Ljpl/fli/term_t;J)V
+ * Signature: (Lorg/jpl7/fli/term_t;J)V
  */
 JNIEXPORT jboolean JNICALL
-Java_jpl_fli_Prolog_put_1integer(JNIEnv *env,
+Java_org_jpl7_fli_Prolog_put_1integer(JNIEnv *env,
 				 jclass	jProlog,
 				 jobject jterm,
 				 jlong ji)
@@ -4989,12 +5016,37 @@ Java_jpl_fli_Prolog_put_1integer(JNIEnv *env,
 
 
 /*
- * Class:	  jpl_fli_Prolog
- * Method:	  put_nil
- * Signature: (Ljpl/fli/term_t;)V
+ * Class:	  org_jpl7_fli_Prolog
+ * Method:	  put_integer_big
+ * Signature: (Lorg/jpl7/fli/term_t;Ljava/lang/String;)V
  */
 JNIEXPORT jboolean JNICALL
-Java_jpl_fli_Prolog_put_1nil(JNIEnv *env, // 1/Feb/2015
+Java_org_jpl7_fli_Prolog_put_1integer_1big(
+	JNIEnv		*env,
+	jclass		jProlog,
+	jobject 	jterm,
+	jstring 	jvalue
+	)
+	{
+	term_t		term;
+
+	if(	jpl_ensure_pvm_init(env)
+	 &&	getUIntPtrValue(env, jterm, &term)
+	  ) {
+		return PL_chars_to_term((char*)(*env)->GetStringUTFChars(env,jvalue,0), term);
+	} else {
+		return FALSE;
+	}
+}
+
+
+/*
+ * Class:	  org_jpl7_fli_Prolog
+ * Method:	  put_nil
+ * Signature: (Lorg/jpl7/fli/term_t;)V
+ */
+JNIEXPORT jboolean JNICALL
+Java_org_jpl7_fli_Prolog_put_1nil(JNIEnv *env, // 1/Feb/2015
 				 jclass	jProlog,
 				 jobject jterm)
 { term_t term;
@@ -5009,12 +5061,12 @@ Java_jpl_fli_Prolog_put_1nil(JNIEnv *env, // 1/Feb/2015
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  put_term
- * Signature: (Ljpl/fli/term_t;Ljpl/fli/term_t;)V
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/term_t;)V
  */
 JNIEXPORT void JNICALL	/* maybe oughta return jboolean (false iff given object is null) */
- Java_jpl_fli_Prolog_put_1term(
+ Java_org_jpl7_fli_Prolog_put_1term(
     JNIEnv     *env,
     jclass	jProlog,
     jobject	jterm1,
@@ -5035,13 +5087,13 @@ JNIEXPORT void JNICALL	/* maybe oughta return jboolean (false iff given object i
 
 
 /*
- * Class:     jpl_fli_Prolog
+ * Class:     org_jpl7_fli_Prolog
  * Method:    put_jref
- * Signature: (Ljpl/fli/term_t;Ljava/lang/Object;)V
+ * Signature: (Lorg/jpl7/fli/term_t;Ljava/lang/Object;)V
  */
-/* added 29/1/2007 PS to support restored but now deprecated jpl.JRef for Rick Moynihan */
+/* added 29/1/2007 PS to support restored but now deprecated org.jpl7.JRef for Rick Moynihan */
 JNIEXPORT void JNICALL
- Java_jpl_fli_Prolog_put_1jref(
+ Java_org_jpl7_fli_Prolog_put_1jref(
 	JNIEnv     *env,
 	jclass      jProlog,
 	jobject     jterm,
@@ -5064,13 +5116,13 @@ JNIEXPORT void JNICALL
 
 
 /*
- * Class:     jpl_fli_Prolog
+ * Class:     org_jpl7_fli_Prolog
  * Method:    tag_to_object
  * Signature: (Ljava/lang/String;)Ljava/lang/Object;
  */
-/* added 29/5/2008 PS to support alternative to deprecated jpl.JRef */
+/* added 29/5/2008 PS to support alternative to deprecated org.jpl7.JRef */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_tag_1to_1object(
+ Java_org_jpl7_fli_Prolog_tag_1to_1object(
 	JNIEnv     *env,
 	jclass      jProlog,
 	jstring     tag
@@ -5090,12 +5142,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  is_tag
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL
- Java_jpl_fli_Prolog_is_1tag(
+ Java_org_jpl7_fli_Prolog_is_1tag(
     JNIEnv     *env,
 	jclass		 jProlog,
 	jstring     tag
@@ -5116,12 +5168,12 @@ JNIEXPORT jboolean JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  put_variable
- * Signature: (Ljpl/fli/term_t;)V
+ * Signature: (Lorg/jpl7/fli/term_t;)V
  */
 JNIEXPORT void JNICALL	/* maybe oughta return jboolean (false iff given object is null) */
- Java_jpl_fli_Prolog_put_1variable(
+ Java_org_jpl7_fli_Prolog_put_1variable(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jterm
@@ -5139,12 +5191,12 @@ JNIEXPORT void JNICALL	/* maybe oughta return jboolean (false iff given object i
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  term_type
- * Signature: (Ljpl/fli/term_t;)I
+ * Signature: (Lorg/jpl7/fli/term_t;)I
  */
 JNIEXPORT jint JNICALL
- Java_jpl_fli_Prolog_term_1type(
+ Java_org_jpl7_fli_Prolog_term_1type(
     JNIEnv     *env,
     jclass	jProlog,
 	jobject		jterm
@@ -5162,12 +5214,12 @@ JNIEXPORT jint JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  unregister_atom
- * Signature: (Ljpl/fli/atom_t;)V
+ * Signature: (Lorg/jpl7/fli/atom_t;)V
  */
 JNIEXPORT void JNICALL
- Java_jpl_fli_Prolog_unregister_1atom(
+ Java_org_jpl7_fli_Prolog_unregister_1atom(
     JNIEnv     *env,
 	jclass		jProlog,
 	jobject		jatom
@@ -5189,12 +5241,12 @@ JNIEXPORT void JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  open_foreign_frame
- * Signature: ()Ljpl/fli/fid_t;
+ * Signature: ()Lorg/jpl7/fli/fid_t;
  */
 JNIEXPORT jobject JNICALL
- Java_jpl_fli_Prolog_open_1foreign_1frame(
+ Java_org_jpl7_fli_Prolog_open_1foreign_1frame(
 	JNIEnv	   *env,
 	jclass		jProlog
 	)
@@ -5216,12 +5268,12 @@ JNIEXPORT jobject JNICALL
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:	  discard_foreign_frame
- * Signature: (Ljpl/fli/fid_t;)V
+ * Signature: (Lorg/jpl7/fli/fid_t;)V
  */
 JNIEXPORT void JNICALL
- Java_jpl_fli_Prolog_discard_1foreign_1frame(
+ Java_org_jpl7_fli_Prolog_discard_1foreign_1frame(
 	JNIEnv	   *env,
 	jclass		jProlog,
 	jobject		jfid
@@ -5241,12 +5293,12 @@ JNIEXPORT void JNICALL
 /*=== JPL's Prolog engine pool and thread management =============================================== */
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    thread_self
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL
-Java_jpl_fli_Prolog_thread_1self(
+Java_org_jpl7_fli_Prolog_thread_1self(
     JNIEnv	*env,
     jclass	 jProlog
     )
@@ -5295,12 +5347,12 @@ create_pool_engines()
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    attach_pool_engine
- * Signature: ()Ljpl/fli/engine_t;
+ * Signature: ()Lorg/jpl7/fli/engine_t;
  */
 JNIEXPORT jobject JNICALL
-Java_jpl_fli_Prolog_attach_1pool_1engine(
+Java_org_jpl7_fli_Prolog_attach_1pool_1engine(
     JNIEnv	*env,
     jclass	 jProlog
     )
@@ -5410,12 +5462,12 @@ current_pool_engine()
 
 /* returns pool_index (0+) of given engine (else -1) */
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    pool_engine_id
- * Signature: (Ljpl/fli/engine_t;)I
+ * Signature: (Lorg/jpl7/fli/engine_t;)I
  */
 JNIEXPORT int JNICALL
-Java_jpl_fli_Prolog_pool_1engine_1id(
+Java_org_jpl7_fli_Prolog_pool_1engine_1id(
     JNIEnv	*env,
     jclass	 jProlog,
     jobject	 jengine
@@ -5436,12 +5488,12 @@ Java_jpl_fli_Prolog_pool_1engine_1id(
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    release_pool_engine
  * Signature: ()I
  */
 JNIEXPORT int JNICALL
-Java_jpl_fli_Prolog_release_1pool_1engine(
+Java_org_jpl7_fli_Prolog_release_1pool_1engine(
     JNIEnv	*env,
     jclass	 jProlog
     )
@@ -5473,7 +5525,7 @@ Java_jpl_fli_Prolog_release_1pool_1engine(
 static foreign_t
  jni_term_to_jref_plc(
 	term_t		tref1,	/* +term: AnyPrologTerm */
-	term_t		tref2	/* -term: JRef to a jpl.Term instance which represents that term */
+	term_t		tref2	/* -term: JRef to a org.jpl7.Term instance which represents that term */
     )
     {
 	jobject		term1;
@@ -5495,11 +5547,11 @@ static foreign_t
 static bool
  jni_jobject_to_term_byval(
 	JNIEnv		*env,
-	jobject		jobj,	/* this must be an instance of one of jpl.Term's subclasses */
+	jobject		jobj,	/* this must be an instance of one of org.jpl7.Term's subclasses */
 	term_t		term	/* a Prolog term, as represented by jobj, is *put* into this term ref */
 	)
 	{
-	jobject		termt;	/* a temporary instance of jpl.fli.term_t (i.e. a "term holder") */
+	jobject		termt;	/* a temporary instance of org.jpl7.fli.term_t (i.e. a "term holder") */
 
 	return	/* jni_ensure_jvm() && jpl_ensure_pvm_init(env) && */
 		(termt=(*env)->AllocObject(env,termt_class)) != NULL
@@ -5510,11 +5562,11 @@ static bool
 	}
 
 
-/* if the first arg is a jref i.e. @(Tag) which refers to a jpl.Term instance, */
+/* if the first arg is a jref i.e. @(Tag) which refers to a org.jpl7.Term instance, */
 /* then the 2nd arg will be matched with a corresponding newly constructed term */
 static foreign_t
  jni_jref_to_term_plc(
-	term_t		jref,	/* +term: JRef to a jpl.Term instance */
+	term_t		jref,	/* +term: JRef to a org.jpl7.Term instance */
 	term_t		termIn	/* -term: term as represented by the JRef */
 	)
 	{
@@ -5681,12 +5733,12 @@ static int
 
 
 /*
- * Class:	  jpl_fli_Prolog
+ * Class:	  org_jpl7_fli_Prolog
  * Method:    get_syntax
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL
-Java_jpl_fli_Prolog_get_1syntax(
+Java_org_jpl7_fli_Prolog_get_1syntax(
     JNIEnv	*env,
     jclass	 jProlog
     )
