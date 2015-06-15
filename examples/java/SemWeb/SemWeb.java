@@ -1,28 +1,21 @@
-import java.util.Hashtable;
-import jpl.*;
-import jpl.Query;
+import java.util.Map;
 
-public class SemWeb
-{ public static void
-    main(String argv[])
-    { String t1 = "use_module(library('semweb/rdf_db'))";
-      Query q1 = new Query(t1);
-      
-      System.out.println( t1 + " " + (q1.hasSolution() ? "succeeded" : "failed") );
+import org.jpl7.Query;
+import org.jpl7.Term;
 
-      Query ql = new Query("rdf_load('test.rdf')");
-      System.out.println(ql.hasSolution() ? "loaded" : "load failed");
-
-      String t2 = "rdf(S,P,O)";
-      Query q2 = new Query(t2);
-      while ( q2.hasMoreSolutions() )
-      { java.util.Hashtable s2 = q2.nextSolution();
-	System.out.println("{" + s2.get("S") +
-			   ", " + s2.get("P") +
-			   ", " + s2.get("O") + "}");
-      }
-    }
-
+public class SemWeb {
+	public static void main(String argv[]) {
+		String t1 = "use_module(library('semweb/rdf_db'))";
+		System.out.println(t1 + " " + (Query.hasSolution(t1) ? "succeeded" : "failed"));
+		//
+		String t2 = "rdf_load('test.rdf')";
+		System.out.println(Query.hasSolution(t2) ? "loaded" : "load failed");
+		//
+		String t3 = "rdf(S,P,O)";
+		Query q3 = new Query(t3);
+		while (q3.hasMoreSolutions()) {
+			Map<String, Term> s3 = q3.nextSolution();
+			System.out.println("{" + s3.get("S") + ", " + s3.get("P") + ", " + s3.get("O") + "}");
+		}
+	}
 }
-
-
