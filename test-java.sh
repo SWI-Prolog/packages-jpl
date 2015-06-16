@@ -23,4 +23,4 @@ fi
 
 export CLASSPATH=$JUNIT:jpl.jar:jpltest.jar
 
-$JAVA junit.textui.TestRunner jpl.test.TestJUnit
+$JAVA junit.textui.TestRunner org.jpl7.test.TestJUnit
