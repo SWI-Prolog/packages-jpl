@@ -73,9 +73,8 @@ jpltest.jar:
 ################################################################
 
 DOCDIRS=	. ./java_api ./java_api/javadoc ./java_api/javadoc/jpl \
-		./java_api/javadoc/jpl/class-use \
-		./java_api/javadoc/jpl/fli \
-		./java_api/javadoc/jpl/fli/class-use \
+		./java_api/javadoc/org/jpl7 \
+		./java_api/javadoc/org/jpl7/fli \
 		./java_api/javadoc/resources \
 		./prolog_api \
 		./prolog_api/overview
