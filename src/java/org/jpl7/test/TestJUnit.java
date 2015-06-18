@@ -21,6 +21,7 @@ import org.jpl7.fli.Prolog;
 // This class defines all the tests which are run from Java.
 // It needs junit.framework.TestCase and junit.framework.TestSuite, which are not supplied with JPL.
 public class TestJUnit extends TestCase {
+	public static final String startup = (System.getenv("SWIPL_BOOT_FILE") == null ? "../../src/swipl.prc" : System.getenv("SWIPL_BOOT_FILE"));
 	public static final String test_jpl = (System.getenv("TEST_JPL") == null ? "test_jpl.pl" : System.getenv("TEST_JPL"));
 	public static final String syntax = (System.getenv("SWIPL_SYNTAX") == null ? "modern" : System.getenv("SWIPL_SYNTAX"));
 
@@ -31,9 +32,9 @@ public class TestJUnit extends TestCase {
 	public static junit.framework.Test suite() {
 		if (syntax.equals("traditional")) {
 			JPL.setTraditional();
-			Prolog.set_default_init_args(new String[] { "swipl.dll", "-f", "none", "-g", "true", "--traditional", "-q" });
+			Prolog.set_default_init_args(new String[] { "swipl.dll", "-x", startup, "-f", "none", "-g", "true", "--traditional", "-q", "--home=../.." });
 		} else {
-			Prolog.set_default_init_args(new String[] { "swipl.dll", "-f", "none", "-g", "true", "-q" });
+			Prolog.set_default_init_args(new String[] { "swipl.dll", "-x", startup, "-f", "none", "-g", "true", "-q", "--home=../.." });
 		}
 		assertTrue((new Query("consult", new Term[] { new Atom(test_jpl) })).hasSolution());
 		assertTrue((new Query("use_module(library(jpl))")).hasSolution());
