@@ -17,6 +17,7 @@ PKGCFLAGS=@JPLCFLAGS@
 PKGLDFLAGS=@JPLLDFLAGS@
 
 include ../Makefile.defs
+CFLAGS+= -I.
 
 LIBS=@LIBS@
 

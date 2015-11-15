@@ -72,6 +72,7 @@ refactoring (trivial):
 #endif
 
 /* SWI-Prolog headers: */
+#include    <config.h>
 #include    <SWI-Prolog.h>
 #include    <SWI-Stream.h>
 
@@ -4631,7 +4632,7 @@ JNIEXPORT jboolean JNICALL
     term_t	term;
 	atom_t		atom;
 	jstring		jname;
-	int		arity;
+	size_t		arity;
 
     return  jpl_ensure_pvm_init(env)
 		&&	jname_holder != NULL							/* don't proceed if this holder is null */
@@ -5024,8 +5025,8 @@ JNIEXPORT jboolean JNICALL
 Java_org_jpl7_fli_Prolog_put_1integer_1big(
 	JNIEnv		*env,
 	jclass		jProlog,
-	jobject 	jterm,
-	jstring 	jvalue
+	jobject		jterm,
+	jstring		jvalue
 	)
 	{
 	term_t		term;
