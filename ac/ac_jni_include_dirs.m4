@@ -77,7 +77,7 @@ mingw32*)       JNI_CLIENT_DIRS="$_JTOPDIR/lib"
 *)  case "$host_cpu" in
 	i?86)
 		_JNI_LIBDIRS="lib/i386"
-		_JNI_LIBSUBDIRS="client"
+		_JNI_LIBSUBDIRS="server"
 		;;
 	x86_64)
 		_JNI_LIBDIRS="lib/amd64"
