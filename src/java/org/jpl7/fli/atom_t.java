@@ -4,7 +4,7 @@ package org.jpl7.fli;
  * An atom_t is a specialised LongHolder which decrements its atom's reference count when garbage-collected (finalized).
  * 
  * <hr>
- * <i> Copyright (C) 1998 Fred Dushin
+ * Copyright (C) 1998 Fred Dushin
  * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,7 +33,6 @@ package org.jpl7.fli;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  * 
  * @author Fred Dushin <fadushin@syr.edu>

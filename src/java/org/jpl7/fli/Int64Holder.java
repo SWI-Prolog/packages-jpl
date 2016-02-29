@@ -4,7 +4,7 @@ package org.jpl7.fli;
  * An Int64Holder is merely a Holder class for an int64 value.
  * 
  * <hr>
- * <i> Copyright (C) 2005 Paul Singleton
+ * Copyright (C) 2005 Paul Singleton
  * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,7 +33,6 @@ package org.jpl7.fli;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  * 
  * @author Paul Singleton <paul@jbgb.com>

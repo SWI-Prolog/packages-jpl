@@ -10,7 +10,7 @@ import org.jpl7.fli.Prolog;
  * routine) if it has not already been done explicitly.
  * 
  * <hr>
- * <i> Copyright (C) 2004 Paul Singleton
+ * Copyright (C) 2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
  * <p>
@@ -41,7 +41,6 @@ import org.jpl7.fli.Prolog;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  * 
  */

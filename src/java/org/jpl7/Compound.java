@@ -23,7 +23,7 @@ import org.jpl7.fli.term_t;
  * The <i>arity</i> of a Compound is the quantity of its arguments. Once constructed, neither the name nor the arity of a Compound can be altered. An argument of a Compound can be replaced with the
  * setArg() method.
  * <hr>
- * <i> Copyright (C) 2004 Paul Singleton
+ * Copyright (C) 2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
  * <p>
@@ -54,7 +54,6 @@ import org.jpl7.fli.term_t;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  * 
  * @see org.jpl7.Term

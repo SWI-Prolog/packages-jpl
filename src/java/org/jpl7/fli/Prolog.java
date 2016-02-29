@@ -20,7 +20,7 @@ import org.jpl7.JPL;
  * <li>Functions which take variable-length argument lists in C take arrays in Java; from Java 1.1 onwards, anonymous arrays can be used e.g. Term[] { new Atom("a"), new Atom ("b") } </menu>
  * 
  * <hr>
- * <i> Copyright (C) 1998 Fred Dushin
+ * Copyright (C) 1998 Fred Dushin
  * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,6 @@ import org.jpl7.JPL;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  * 
  * @author Fred Dushin <fadushin@syr.edu>

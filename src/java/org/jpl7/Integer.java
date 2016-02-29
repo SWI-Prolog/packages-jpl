@@ -16,7 +16,7 @@ import org.jpl7.fli.term_t;
  * Once constructed, the value of an Integer instance cannot be altered. An Integer can be used (and re-used) as an argument of Compounds. Beware confusing jpl.Integer with java.lang.Integer.
  * 
  * <hr>
- * <i> Copyright (C) 2004 Paul Singleton
+ * Copyright (C) 2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
  * <p>
@@ -47,7 +47,6 @@ import org.jpl7.fli.term_t;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  * 
  * @see org.jpl7.Term

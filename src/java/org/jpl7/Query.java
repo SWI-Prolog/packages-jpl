@@ -46,7 +46,7 @@ import org.jpl7.fli.term_t;
  *
  * To determine merely whether the Query is provable, use the hasSolution() method (i.e. has at least one solution).
  * <hr>
- * <i> Copyright (C) 2007 Paul Singleton
+ * Copyright (C) 2007 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
  * <p>
@@ -77,7 +77,6 @@ import org.jpl7.fli.term_t;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  *
  * @author Fred Dushin <fadushin@syr.edu>

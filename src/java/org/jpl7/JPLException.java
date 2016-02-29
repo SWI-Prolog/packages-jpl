@@ -4,7 +4,7 @@ package org.jpl7;
  * This is the base class for exceptions thrown by JPL's Java-calls-Prolog interface. Such exceptions represent errors and exceptional conditions within the interface code itself; see
  * jpl.PrologException for the way Prolog exceptions are returned to calling Java code.
  * <hr>
- * <i> Copyright (C) 2004 Paul Singleton
+ * Copyright (C) 2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
  * <p>
@@ -35,7 +35,6 @@ package org.jpl7;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  * 
  * @author Fred Dushin <fadushin@syr.edu>

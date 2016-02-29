@@ -17,7 +17,7 @@ import org.jpl7.fli.term_t;
  * should create instances of Term's concrete subclasses. Alternatively, use textToTerm() to construct a Term from its conventional Prolog source text representation.
  * 
  * <hr>
- * <i> Copyright (C) 2004 Paul Singleton
+ * Copyright (C) 2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
  * <p>
@@ -48,7 +48,6 @@ import org.jpl7.fli.term_t;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * </i>
  * <hr>
  * 
  * @author Fred Dushin <fadushin@syr.edu>
