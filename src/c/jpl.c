@@ -2867,7 +2867,7 @@ jni_func_2_plc(
     }
     if ( r )
         r = JNI_jobject_to_term((*env)->GetObjectArrayElement(env,(jobjectArray)p1,(jsize)i2),tr);
-	break;
+    break;
  /*	case 183: */
  /*		r =	JNI_term_to_boolean_jarray(ta1,p1) */
  /*			&&	JNI_jbuf_to_term((*env)->GetBooleanArrayElements(env,(jbooleanArray)p1,(jboolean*)&i2),tr,JNI_atom_boolean) */
