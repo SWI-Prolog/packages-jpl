@@ -1442,7 +1442,7 @@ jni_new_java_exception(atom_t tag, atom_t msg)
 
 /* returns a new error(jpl_error(@(tag)),msg) to represent an exceptional condition raised within JPL */
 static term_t
-jni_new_jpl_error(atom_t tag, atom_t msg)
+jni_new_jpl_error(const char *tag, atom_t msg)
 { term_t e;
 
   if ( (e= PL_new_term_ref()) &&
@@ -1450,7 +1450,7 @@ jni_new_jpl_error(atom_t tag, atom_t msg)
 		     PL_FUNCTOR, JNI_functor_error_2,
 		       PL_FUNCTOR, JNI_functor_jpl_error_1,
 		         PL_FUNCTOR, JNI_functor_at_1,
-		       PL_ATOM, tag,
+		       PL_CHARS, tag,
 		     PL_ATOM, msg) )	/* Seems unblanced!? */
     return e;
 
@@ -1493,29 +1493,29 @@ jni_check_exception(
 			    }
 			else
 			    {
-							ep = jni_new_jpl_error(PL_new_atom("FailedToGetUTFCharsOfNameOfClassOfException"),tag);
+							ep = jni_new_jpl_error("FailedToGetUTFCharsOfNameOfClassOfException",tag);
 			    }
 			}
 		    else
 			{
-						ep = jni_new_jpl_error(PL_new_atom("FailedToConvertExceptionIrefToTagatom"),JNI_atom_null);
+						ep = jni_new_jpl_error("FailedToConvertExceptionIrefToTagatom",JNI_atom_null);
 			}
 		    }
 		else
 		    {
-					ep = jni_new_jpl_error(PL_new_atom("FailedToConvertExceptionObjectToIref"),JNI_atom_null);
+					ep = jni_new_jpl_error("FailedToConvertExceptionObjectToIref",JNI_atom_null);
 		    }
 		(*env)->DeleteLocalRef(env,s);
 		}
 	    else
 		{
-				ep = jni_new_jpl_error(PL_new_atom("FailedToGetNameOfClassOfException"),JNI_atom_null);
+				ep = jni_new_jpl_error("FailedToGetNameOfClassOfException",JNI_atom_null);
 		}
 	    (*env)->DeleteLocalRef(env,c);
 	    }
 	else
 	    {
-			ep = jni_new_jpl_error(PL_new_atom("FailedToGetClassOfException"),JNI_atom_null);
+			ep = jni_new_jpl_error("FailedToGetClassOfException",JNI_atom_null);
 	    }
 	return	PL_raise_exception(ep);
 	}
