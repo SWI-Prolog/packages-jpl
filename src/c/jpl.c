@@ -85,8 +85,8 @@ refactoring (trivial):
 
 /* SWI-Prolog headers: */
 #include    <config.h>
-#include    <SWI-Prolog.h>
 #include    <SWI-Stream.h>
+#include    <SWI-Prolog.h>
 
 /* Java Native Interface and Invocation Interface header: */
 #include    <jni.h>
