@@ -1442,17 +1442,21 @@ jni_init()
 
 /* returns a new error(java_exception(@(tag)),msg) to represent a caught Java exception */
 static term_t
-jni_new_java_exception(atom_t tag, atom_t msg)
+jni_new_java_exception(pointer i, atom_t msg)
 { term_t e;
+  atom_t tag;
 
   if ( (e=PL_new_term_ref()) &&
+	   jni_iref_to_tag(i, &tag) &&
        PL_unify_term(e,
 		     PL_FUNCTOR, JNI_functor_error_2,
 		       PL_FUNCTOR, JNI_functor_java_exception_1,
 		         PL_FUNCTOR, JNI_functor_at_1,
 		       PL_ATOM, tag,
 		       PL_ATOM, msg) )	/* Seems unblanaced!? */
+  { PL_unregister_atom(tag);
     return e;
+  }
 
   return 0;
 }
@@ -1460,8 +1464,14 @@ jni_new_java_exception(atom_t tag, atom_t msg)
 
 /* returns a new error(jpl_error(@(tag)),msg) to represent an exceptional condition raised within JPL */
 static term_t
-jni_new_jpl_error(const char *tag, atom_t msg)
+jni_new_jpl_error(const char *tag, pointer i)
 { term_t e;
+  atom_t msg;
+
+  if ( i )
+	jni_iref_to_tag(i, &msg);
+  else
+	msg = JNI_atom_null;
 
   if ( (e= PL_new_term_ref()) &&
        PL_unify_term(e,
@@ -1487,8 +1497,7 @@ jni_check_exception(
     jobject	s;	/* its class name as a JVM String, for the report */
     term_t	ep;	/* a newly created Prolog exception */
     pointer	i;	/* temp for an iref denoting a Java exception */
-	atom_t		tag;	/* temp for a tag denoting a Java exception */
-	atom_t		msg;	/* temp for impl-def comment (classname) within error/2 */
+    atom_t  msg; /* temp for impl-def comment (classname) within error/2 */
 
     if ( (ej=(*env)->ExceptionOccurred(env)) == NULL )
 	{
@@ -1503,37 +1512,30 @@ jni_check_exception(
 				{
 		if ( jni_object_to_iref(env,ej,&i) )
 		    {
-					if ( jni_iref_to_tag(i,&tag) )
-			{
 						if ( jni_String_to_atom(env,s,&msg) )
 			    {
-							ep = jni_new_java_exception(tag,msg);
+							ep = jni_new_java_exception(i,msg);
 			    }
 			else
 			    {
-							ep = jni_new_jpl_error("FailedToGetUTFCharsOfNameOfClassOfException",tag);
+							ep = jni_new_jpl_error("FailedToGetUTFCharsOfNameOfClassOfException",i);
 			    }
-			}
-		    else
-			{
-						ep = jni_new_jpl_error("FailedToConvertExceptionIrefToTagatom",JNI_atom_null);
-			}
 		    }
 		else
 		    {
-					ep = jni_new_jpl_error("FailedToConvertExceptionObjectToIref",JNI_atom_null);
+					ep = jni_new_jpl_error("FailedToConvertExceptionObjectToIref",0);
 		    }
 		(*env)->DeleteLocalRef(env,s);
 		}
 	    else
 		{
-				ep = jni_new_jpl_error("FailedToGetNameOfClassOfException",JNI_atom_null);
+				ep = jni_new_jpl_error("FailedToGetNameOfClassOfException",0);
 		}
 	    (*env)->DeleteLocalRef(env,c);
 	    }
 	else
 	    {
-			ep = jni_new_jpl_error("FailedToGetClassOfException",JNI_atom_null);
+			ep = jni_new_jpl_error("FailedToGetClassOfException",0);
 	    }
 	return	PL_raise_exception(ep);
 	}
