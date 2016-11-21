@@ -4843,13 +4843,15 @@ JNIEXPORT jobject JNICALL
 	jobject		jobj
     )
     {
+#if 0
 	intptr_t	iref;
 	char		abuf[23];
+#endif
 
 	/* empirically, unless the two 'ensure' macros are called in this order, */
 	/* will crash if this is the first native method called */
 
-	/* Sdprintf("entered object_to_tag...\n"); */
+	Sdprintf("entered object_to_tag...\n");
 
 	if ( !jpl_ensure_pvm_init(env) ) {
 		/* Sdprintf("jpl_ensure_pvm_init() failed\n"); */
@@ -4863,6 +4865,7 @@ JNIEXPORT jobject JNICALL
 		}
 	/* Sdprintf("jni_ensure_jvm() ok\n"); */
 
+#if 0
 	if ( jobj!=NULL && jni_object_to_iref(env,jobj,&iref) ) {
 		/* Sdprintf("jni_object_to_iref() done\n"); */
 		sprintf( abuf, IREF_FMT, (IREF_INTTYPE)iref);	/* oughta encapsulate this mapping... */
@@ -4871,6 +4874,9 @@ JNIEXPORT jobject JNICALL
 	} else {
 		return NULL;
 	}
+#else
+	return NULL;
+#endif
     }
 
 
@@ -5126,7 +5132,12 @@ JNIEXPORT jobject JNICALL
 		&&	(*env)->GetStringLength(env,tag) == 22
 	)
 	{
+#if 0
 		jni_tag_to_iref2((char*)(*env)->GetStringUTFChars(env,tag,0), (pointer *)&jobj);
+#else
+		PL_warning("Java_org_jpl7_fli_Prolog_tag_1to_1object() called");
+		jobj = 0;
+#endif
 		return jobj;
 	}
 	return 0;
@@ -5151,7 +5162,12 @@ JNIEXPORT jboolean JNICALL
 		&&	(*env)->GetStringLength(env,tag) == 22
 	)
 	{
+#if 0
 		jni_tag_to_iref2((char*)(*env)->GetStringUTFChars(env,tag,0), (pointer *)&jobj);
+#else
+		PL_warning("Java_org_jpl7_fli_Prolog_tag_1to_1object() called");
+		jobj = 0;
+#endif
 		return jobj != 0;
 	}
 
