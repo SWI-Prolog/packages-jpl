@@ -773,25 +773,14 @@ jni_tag_to_iref(
 
 
 static bool
-jni_iref_to_tag(
-    pointer	iref,
-    atom_t	*a
+jni_unify_iref(
+	term_t t,
+    pointer	iref
     )
     { jref_handle jref;
-      term_t tmp;
 
       jref.iref = iref;
-
-      if ( (tmp = PL_new_term_ref()) &&
-	   PL_unify_blob(tmp, &jref, sizeof(jref), &jref_blob) &&
-	   PL_get_atom(tmp, a)
-//	&& PL_register_atom(*a)
-	 )
-      { PL_reset_term_refs(tmp);
-	return TRUE;
-      }
-
-      return PL_warning("Could not register <jref>(%p)", iref);
+	  return PL_unify_blob(t, &jref, sizeof(jref), &jref_blob);
     }
 
 
@@ -816,15 +805,16 @@ JNI_jobject_to_term_(jobject j, term_t t, JNIEnv *env)
   }
 
   if ( jni_object_to_iref(env,j,&i) )
-  { atom_t a;
-
-	if ( jni_iref_to_tag(i,&a) )
-	{ int rc = PL_unify_term(t,
+  { term_t tmp;
+	int rc = ( (tmp=PL_new_term_ref()) &&
+			   jni_unify_iref(tmp, i) &&
+			   PL_unify_term(t,
 							 PL_FUNCTOR, JNI_functor_at_1,
-							 PL_ATOM, a);
-	  PL_unregister_atom(a);
-	  return rc;
-	}
+							   PL_TERM, tmp) );
+
+	if ( rc )
+	  PL_reset_term_refs(tmp);
+	return rc;
   }
 
   assert(0);
@@ -1443,19 +1433,19 @@ jni_init()
 /* returns a new error(java_exception(@(tag)),msg) to represent a caught Java exception */
 static term_t
 jni_new_java_exception(pointer i, atom_t msg)
-{ term_t e;
-  atom_t tag;
+{ term_t av;
+  int rc = ( (av=PL_new_term_refs(2)) &&
+			 jni_unify_iref(av+1, i) &&
+			 PL_unify_term(av+0,
+						   PL_FUNCTOR, JNI_functor_error_2,
+						     PL_FUNCTOR, JNI_functor_java_exception_1,
+						       PL_FUNCTOR, JNI_functor_at_1,
+						         PL_TERM, av+1,
+						   PL_ATOM, msg) );
 
-  if ( (e=PL_new_term_ref()) &&
-	   jni_iref_to_tag(i, &tag) &&
-       PL_unify_term(e,
-		     PL_FUNCTOR, JNI_functor_error_2,
-		       PL_FUNCTOR, JNI_functor_java_exception_1,
-		         PL_FUNCTOR, JNI_functor_at_1,
-		       PL_ATOM, tag,
-		       PL_ATOM, msg) )	/* Seems unblanaced!? */
-  { PL_unregister_atom(tag);
-    return e;
+  if ( rc )
+  { PL_reset_term_refs(av+1);
+    return av+0;
   }
 
   return 0;
@@ -1465,22 +1455,20 @@ jni_new_java_exception(pointer i, atom_t msg)
 /* returns a new error(jpl_error(@(tag)),msg) to represent an exceptional condition raised within JPL */
 static term_t
 jni_new_jpl_error(const char *tag, pointer i)
-{ term_t e;
-  atom_t msg;
+{ term_t av;
+  int rc = ( (av= PL_new_term_refs(2)) &&
+			 jni_unify_iref(av+1, i) &&
+			 PL_unify_term(av+0,
+						   PL_FUNCTOR, JNI_functor_error_2,
+						     PL_FUNCTOR, JNI_functor_jpl_error_1,
+						       PL_FUNCTOR, JNI_functor_at_1,
+						   PL_CHARS, tag,
+						   PL_TERM, av+1) );
 
-  if ( i )
-	jni_iref_to_tag(i, &msg);
-  else
-	msg = JNI_atom_null;
-
-  if ( (e= PL_new_term_ref()) &&
-       PL_unify_term(e,
-		     PL_FUNCTOR, JNI_functor_error_2,
-		       PL_FUNCTOR, JNI_functor_jpl_error_1,
-		         PL_FUNCTOR, JNI_functor_at_1,
-		       PL_CHARS, tag,
-		     PL_ATOM, msg) )	/* Seems unblanced!? */
-    return e;
+  if ( rc )
+  { PL_reset_term_refs(av+1);
+    return av+0;
+  }
 
   return 0;
 }
