@@ -102,6 +102,7 @@ refactoring (trivial):
 #include    <semaphore.h>
 
 #include    <limits.h>
+#include    <assert.h>
 
 
 /*=== JNI constants ================================================================================ */
@@ -393,29 +394,8 @@ refactoring (trivial):
 #define JNI_jdouble_to_term(J,T) \
     PL_unify_float((T),(double)(J))
 
-/* J can be an *expression* parameter to this macro; */
-/* we must evaluate it exactly once; hence we save its value */
-/* in the variable j, which must be dynamic (e.g. local) */
-/* if this macro is to be re-entrant */
 #define JNI_jobject_to_term(J,T) \
-    ( ( j=(J), j==NULL ) \
-    ? PL_unify_term((T), \
-	PL_FUNCTOR, JNI_functor_at_1, \
-	PL_ATOM, JNI_atom_null \
-      ) \
-    : ( (*env)->IsInstanceOf(env,j,str_class) \
-	  ? jni_String_to_atom(env,j,&a) \
-	&& PL_unify_term((T), \
-	     PL_ATOM, a \
-	   ) \
-      : jni_object_to_iref(env,j,&i) \
-	&& jni_iref_to_tag(i,&a) \
-	&& PL_unify_term((T), \
-	     PL_FUNCTOR, JNI_functor_at_1, \
-	     PL_ATOM, a \
-	   ) \
-      ) \
-    )
+    JNI_jobject_to_term_((J),(T),(env))
 
 #define JNI_jfieldID_to_term(J,T) \
     PL_unify_term((T), \
@@ -697,6 +677,8 @@ jpl_c_lib_version_4_plc(
 static int	    jni_hr_add(JNIEnv*, jobject, pointer*);
 static int	    jni_hr_del(JNIEnv*, pointer);
 static bool	    jni_free_iref(JNIEnv *env, pointer iref);
+static bool	    jni_object_to_iref(JNIEnv *env, jobject	obj, pointer *iref);
+static bool		jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a);
 
 
 /*=== JNI functions (NB first 6 are cited in macros used subsequently) ============================= */
@@ -812,6 +794,42 @@ jni_iref_to_tag(
       return PL_warning("Could not register <jref>(%p)", iref);
     }
 
+
+static bool
+JNI_jobject_to_term_(jobject j, term_t t, JNIEnv *env)
+{ pointer i;
+
+  if ( j == NULL )
+	return PL_unify_term(t,
+						 PL_FUNCTOR, JNI_functor_at_1,
+						 PL_ATOM, JNI_atom_null);
+
+  if ( (*env)->IsInstanceOf(env,j,str_class) )
+  { atom_t a;
+
+	if ( jni_String_to_atom(env,j,&a) )
+	{ int rc = PL_unify_atom(t,a);
+	  PL_unregister_atom(a);
+	  return rc;
+	}
+	return FALSE;
+  }
+
+  if ( jni_object_to_iref(env,j,&i) )
+  { atom_t a;
+
+	if ( jni_iref_to_tag(i,&a) )
+	{ int rc = PL_unify_term(t,
+							 PL_FUNCTOR, JNI_functor_at_1,
+							 PL_ATOM, a);
+	  PL_unregister_atom(a);
+	  return rc;
+	}
+  }
+
+  assert(0);
+  return FALSE;
+}
 
 static bool
 jni_object_to_iref(
@@ -2567,7 +2585,6 @@ jni_func_1_plc(
     pointer	i;	/*  " */
  /* int		xhi;	//  " */
  /* int		xlo;	//  " */
-    jobject	j;	/*  " */
  /* jlong	jl;	//  " */
     void	*p1;	/* temp for converted (JVM) arg */
     char	*c1;	/*  " */
@@ -2685,10 +2702,8 @@ jni_func_2_plc(
  /* term_t	a2;	//  " */
     atom_t	a;	/*  " */
  /*	char		*cp;	//	" */
-    pointer	i;	/*  " */
  /*	int		xhi;	//	" */
  /*	int		xlo;	//	" */
-    jobject	j;	/*  " */
  /*	jlong		jl;	//	" */
     void	*p1;	/* temp for converted (JVM) arg */
     void	*p2;	/*  " */
@@ -2914,7 +2929,6 @@ jni_func_3_plc(
     pointer	i;	/*  " */
  /*	int		xhi;	//	" */
  /*	int		xlo;	//	" */
-    jobject	j;	/*  " */
  /*	jlong		jl;	//	" */
     void	*p1;	/* temp for converted (JVM) arg */
     void	*p2;	/*  " */
@@ -5099,9 +5113,6 @@ JNIEXPORT void JNICALL
 	)
 	{
 	term_t		term;
-	jobject		j;		// temp for JNI_jobject_to_term(+,-)
-	atom_t		a;		//  "
-	intptr_t	i;		//  "
 
 	if	(	jpl_ensure_pvm_init(env)
 		&&	jni_ensure_jvm()
@@ -5537,9 +5548,6 @@ static foreign_t
     )
     {
 	jobject		term1;
-	atom_t		a;		/*	" */
-	intptr_t	i;		/*	" */
-	jobject		j;		/*	" */
 	JNIEnv		*env;
 
 	return jni_ensure_jvm()			/* untypically... */
