@@ -696,64 +696,79 @@ jpl_c_lib_version_4_plc(
 
 static int	    jni_hr_add(JNIEnv*, jobject, pointer*);
 static int	    jni_hr_del(JNIEnv*, pointer);
+static bool	    jni_free_iref(JNIEnv *env, pointer iref);
 
 
 /*=== JNI functions (NB first 6 are cited in macros used subsequently) ============================= */
 
-static bool
-jni_tag_to_iref2(const char  *s, pointer *iref)
-{ if ( s[0] == 'J'
-       && s[1] == '#'
-       && isdigit(s[2])
-       && isdigit(s[3])
-       && isdigit(s[4])
-       && isdigit(s[5])
-       && isdigit(s[6])
-       && isdigit(s[7])
-       && isdigit(s[8])
-       && isdigit(s[9])
-       && isdigit(s[10])
-       && isdigit(s[11])
-       && isdigit(s[12])
-       && isdigit(s[13])
-       && isdigit(s[14])
-       && isdigit(s[15])
-       && isdigit(s[16])
-       && isdigit(s[17])
-       && isdigit(s[18])
-       && isdigit(s[19])
-       && isdigit(s[20])
-       && isdigit(s[21]))			 /* s is like 'J#01234567890123456789' */
-    { pointer r;
-      char *endptr;
+		 /*******************************
+		 *	   JREF SYMBOL		*
+		 *******************************/
 
-      r = strtoul(&s[2], &endptr, 10);
-      if ( endptr == s+22 )
-      { *iref = r;
-        return 1;
-      }
-    }
+typedef struct jref_handle
+{ pointer	iref;
+} jref_handle;
 
-  return 0;
+
+static int
+write_jref_handle(IOSTREAM *s, atom_t jref, int flags)
+{ jref_handle *ref = PL_blob_data(jref, NULL, NULL);
+  (void)flags;
+
+  Sfprintf(s, "<jref>(%p)", ref->iref);
+  return TRUE;
 }
 
 
-static bool
-jni_tag_to_iref1(
-    const char  *s,
-    pointer		*iref
-    )
-    {
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+release_jref_handle() is called from AGC. As  the symbol is destroyed,
+we must clear info->symbol. That is find   as AGC locks L_THREAD and the
+competing interaction in free_jref_info() is also locked with L_THREAD
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-	if (strlen(s) == 22)
-		{
-		return jni_tag_to_iref2(s,iref);
-		}
-	else
-		{
-		return 0;
-		}
-	}
+static int
+release_jref_handle(atom_t jref)
+{ jref_handle *ref = PL_blob_data(jref, NULL, NULL);
+  JNIEnv *env;
+
+  if ( (env=jni_env()) )
+  { if ( !jni_free_iref(env, ref->iref) )
+      DEBUG(0, Sdprintf("[JPL: garbage-collected jref<%p> is bogus (not in HashedRefs)]\n",
+			ref->iref));
+  }
+
+  return TRUE;
+}
+
+
+static int
+save_jref(atom_t jref, IOSTREAM *fd)
+{ jref_handle *ref = PL_blob_data(jref, NULL, NULL);
+  (void)fd;
+
+  return PL_warning("Cannot save reference to <jref>(%p)", ref->iref);
+}
+
+
+static atom_t
+load_jref(IOSTREAM *fd)
+{ (void)fd;
+
+  return PL_new_atom("<saved-jref-handle>");
+}
+
+
+static PL_blob_t jref_blob =
+{ PL_BLOB_MAGIC,
+  PL_BLOB_UNIQUE,
+  "jref",
+  release_jref_handle,
+  NULL,
+  write_jref_handle,
+  NULL,
+  save_jref,
+  load_jref
+};
 
 
 /* this now checks that the atom's name resembles a tag (PS 18/Jun/2004) */
@@ -762,38 +777,39 @@ jni_tag_to_iref(
     atom_t	a,
     pointer	*iref
     )
-    {
+    { PL_blob_t *type;
+      jref_handle *ref;
 
-	return jni_tag_to_iref1(PL_atom_chars(a), iref);
-	}
+      if ( (ref = PL_blob_data(a, NULL, &type)) &&
+	   type == &jref_blob )
+      { *iref = ref->iref;
+	return TRUE;
+      }
 
+      return FALSE;
+    }
 
-#define IREF_INTTYPE uintptr_t
-
-#if SIZEOF_LONG == SIZEOF_VOIDP
-#define IREF_FMT "J#%020lu"
-#elif SIZEOF_LONG_LONG == SIZEOF_VOIDP
-#ifdef __WINDOWS__
-#define IREF_FMT "J#%020I64d"
-#else
-#define IREF_FMT "J#%020llu"
-#endif
-#else
-#error "Cannot determine format for irefs"
-#endif
 
 static bool
 jni_iref_to_tag(
     pointer	iref,
     atom_t	*a
     )
-    {
-	char		abuf[23];
+    { jref_handle jref;
+      term_t tmp;
 
-	sprintf( abuf, IREF_FMT, (IREF_INTTYPE)iref);	/* oughta encapsulate this mapping... */
-    *a = PL_new_atom(abuf);
-    PL_unregister_atom(*a);		/* empirically decrement reference count... */
-    return TRUE;			/* can't fail (?!) */
+      jref.iref = iref;
+
+      if ( (tmp = PL_new_term_ref()) &&
+	   PL_unify_blob(tmp, &jref, sizeof(jref), &jref_blob) &&
+	   PL_get_atom(tmp, a)
+//	&& PL_register_atom(*a)
+	 )
+      { PL_reset_term_refs(tmp);
+	return TRUE;
+      }
+
+      return PL_warning("Could not register <jref>(%p)", iref);
     }
 
 
@@ -1026,41 +1042,6 @@ jni_tag_to_iref_plc(
     return  PL_get_atom(tt,&a)
 	&&  jni_tag_to_iref(a,&iref)
 	&&  PL_unify_integer(ti,iref);
-    }
-
-
-/* this will be hooked to SWI-Prolog's PL_agc_hook, */
-/* and is called just before each redundant atom is expunged from the dict */
-/* NB need to be able to switch this on and off from Prolog... */
-static bool
-jni_atom_freed(
-    atom_t	a
-    )
-    {
-    const char	*cp = PL_atom_chars(a);
-    pointer	iref;
-    char	cs[23]; /* was 11 until 24/Apr/2007 */
-	JNIEnv	*env;
-
-    if ((env = jni_env()) == NULL)
-      return TRUE; /* oughta log an error, at least the first time... */
-    if ( jni_tag_to_iref( a, &iref) )	/* check format and convert digits to int if ok */
-        {
-        sprintf( cs, IREF_FMT, (IREF_INTTYPE)iref);	/* reconstruct digits part of tag in cs */
-        if ( strcmp(cp,cs) != 0 )	/* original digits != reconstructed digits? */
-            {
-	      DEBUG(0, Sdprintf( "[JPL: garbage-collected tag '%s'=%u is bogus (not canonical)]\n", cp, iref));
-	    }
-	else
-	if ( !jni_free_iref(env,iref) )		/* free it (iff it's in the hashedref table) */
-	    {
-	      DEBUG(0, Sdprintf( "[JPL: garbage-collected tag '%s' is bogus (not in HashedRefs)]\n", cp));
-	    }
-	}
-    else
-	{
-	}
-    return TRUE;    /* means "go ahead and expunge the atom" (we do this regardless) */
     }
 
 
@@ -1405,8 +1386,6 @@ jni_init()
     JNI_functor_error_2 = PL_new_functor(PL_new_atom("error"), 2);
     JNI_functor_java_exception_1 = PL_new_functor( PL_new_atom("java_exception"), 1);
     JNI_functor_jpl_error_1 = PL_new_functor( PL_new_atom("jpl_error"), 1);
-
-    (void)PL_agc_hook( jni_atom_freed); /* link atom GC to object GC (cool:-) */
 
     /* these initialisations require an active JVM: */
     return  (  (lref=(*env)->FindClass(env,"java/lang/Class")) != NULL
