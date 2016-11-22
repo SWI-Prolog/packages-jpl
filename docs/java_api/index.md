@@ -1,4 +1,3 @@
-<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
 
@@ -11,7 +10,6 @@
   <meta name="Author" content="Fred Dushin">
 
   <meta name="Keywords" content="java,prolog">
-  <title>JPL A Java Interface to Prolog</title>
 </head>
   <body text="#000000" bgcolor="#ffffff" link="#00009c" vlink="#ce31ce"
  alink="#ff0000">
@@ -29,7 +27,7 @@
    <li> JPL 2.0.2 re-released.</li>
 
   <ul>
-     <li>see <a href="release_notes_202.html">Release Notes</a></li>
+     <li>see <a href="release_notes_202.md">Release Notes</a></li>
 
   </ul>
 
@@ -144,7 +142,7 @@ conditions are met:</font></i> </p>
   <li> <a href="getting_started.md">Getting Started</a></li>
    <li> <a href="low-level_interface.md">The Low-Level Interface</a></li>
    <li> <a href="high-level_interface.md">The High-Level Interface</a></li>
-   <li> <a href="javadoc/index.html">The JPL API</a></li>
+   <li> <a href="javadoc/index.md">The JPL API</a></li>
 
 </ol>
 
