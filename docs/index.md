@@ -1,9 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-
-<html>  
-  <head>  
-    <title>JPL: A bidirectional Prolog/Java interface</title>
-  </head>  
+<html>   
 <body>
 <h1 align=center>JPL: A bidirectional Prolog/Java interface</h1>
 
