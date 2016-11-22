@@ -1,9 +1,7 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
   <meta http-equiv="CONTENT-TYPE"
  content="text/html; charset=windows-1252">
-  <title>High-Level Interface</title>
   <meta name="GENERATOR" content="StarOffice 7  (Win32)">
   <meta name="AUTHOR" content="Fred Dushin">
   <meta name="CREATED" content="20040216;23165440">
