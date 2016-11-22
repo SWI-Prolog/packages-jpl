@@ -9,9 +9,9 @@
 </head>
 <body text="#000000" bgcolor="#FFFFFF" link="#00009C" vlink="#CE31CE" alink="#FF0000">
 
-<div align=right><a href="index.html">up</a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="getting_started.html">prev</a>
+<div align=right><a href="index.html">up</a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="getting_started.md">prev</a>
 
-<a href="high-level_interface.html">next</a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="api/packages.html">API</a>
+<a href="high-level_interface.md">next</a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="api/packages.html">API</a>
 <hr NOSHADE WIDTH="100%"></div>
 
 <center>
@@ -58,7 +58,7 @@ functions</a></li>
 <h3>
 <a NAME="Introduction"></a>Introduction</h3>
 <i>[Note: if you just want to build hybrid Java+Prolog applications, you
-probably don't need to know about this interface: see the <a href="high-level_interface.html">High-Level
+probably don't need to know about this interface: see the <a href="high-level_interface.md">High-Level
 interface</a> documentation]</i>
 <br>&nbsp;
 <br>The <b><i>JPL</i></b> Low-Level interface is implemented by the Java
@@ -76,7 +76,7 @@ As such, it presumes familiarity with the Prolog FLI.&nbsp; <i>This document
 is not a tutorial on how to use the Prolog FLI; </i>consult your local
 Prolog documentation for how to use the FLI.&nbsp; Programmers who wish
 to use <b><i>JPL</i></b> without having to know any of the nitty gritty
-details of the Low-Level interface may skip this section and read the <a href="high-level_interface.html">High-Level</a>
+details of the Low-Level interface may skip this section and read the <a href="high-level_interface.md">High-Level</a>
 interface section.&nbsp; For information about the SWI-Prolog FLI, see
 your local SWI-Prolog documentation.
 <br>&nbsp;
@@ -304,8 +304,8 @@ these are of little value within Java (unless we can install Java methods?!)</dd
 </dl>
 
 <div align=right>
-<hr NOSHADE WIDTH="100%"><a href="index.html">up</a>&nbsp;&nbsp; <a href="getting_started.html">prev</a>&nbsp;&nbsp;&nbsp;
-<a href="high-level_interface.html">next&nbsp;</a> <a href="api/packages.html">API</a></div>
+<hr NOSHADE WIDTH="100%"><a href="index.html">up</a>&nbsp;&nbsp; <a href="getting_started.md">prev</a>&nbsp;&nbsp;&nbsp;
+<a href="high-level_interface.md">next&nbsp;</a> <a href="api/packages.html">API</a></div>
 
 </body>
 </html>

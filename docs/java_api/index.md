@@ -141,9 +141,9 @@ conditions are met:</font></i> </p>
 <h3> <a name="Documentation"></a>Documentation</h3>
   The Documentation for JPL is organized into the following sections:
 <ol>
-  <li> <a href="getting_started.html">Getting Started</a></li>
-   <li> <a href="low-level_interface.html">The Low-Level Interface</a></li>
-   <li> <a href="high-level_interface.html">The High-Level Interface</a></li>
+  <li> <a href="getting_started.md">Getting Started</a></li>
+   <li> <a href="low-level_interface.md">The Low-Level Interface</a></li>
+   <li> <a href="high-level_interface.md">The High-Level Interface</a></li>
    <li> <a href="javadoc/index.html">The JPL API</a></li>
 
 </ol>

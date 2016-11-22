@@ -9,7 +9,7 @@
 </head>
 <body text="#000000" bgcolor="#FFFFFF" link="#00009C" vlink="#CE31CE" alink="#FF0000">
 
-<div align=right><a href="index.html">up</a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="high-level_interface.html">prev</a>&nbsp;&nbsp;&nbsp;
+<div align=right><a href="index.html">up</a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="high-level_interface.md">prev</a>&nbsp;&nbsp;&nbsp;
 next&nbsp;&nbsp;&nbsp;&nbsp; <a href="api/packages.html">API</a>
 <hr NOSHADE WIDTH="100%"></div>
 
@@ -127,7 +127,7 @@ Interface.
 <br>&nbsp;
 <div align=right>
 <hr NOSHADE WIDTH="100%"><a href="index.html">up</a>&nbsp;&nbsp; 
-<a href="high-level_interface.html">prev</a>&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="high-level_interface.md">prev</a>&nbsp;&nbsp;&nbsp;&nbsp;
 next&nbsp; 
 <a href="api/packages.html">API</a></div>
 
