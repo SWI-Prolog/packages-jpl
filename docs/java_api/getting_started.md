@@ -15,7 +15,7 @@ Getting Started</h1>
 <hr style="width: 100%; height: 2px;">
 <div style="text-align: left;">This section provides a tutorial
 introduction to <span style="font-weight: bold; font-style: italic;">JPL</span>
-through its <a href="high-level_interface.html"><b><span
+through its <a href="high-level_interface.md"><b><span
  style="font-style: italic;">JPL 2.x</span> Java API overview</b></a>,
 the
 interface most programmers are likely to use.&nbsp;
@@ -50,7 +50,7 @@ database
 in a text file.&nbsp; We will eventually load this database into the
 Prolog
 engine through the <a
- href="file:///D:/jpl/docs/java_api/high-level_interface.html"><b><span
+ href="file:///D:/jpl/docs/java_api/high-level_interface.md"><b><span
  style="font-style: italic;">JPL 2.x</span> Java API overview</b></a>.
 <p>Type the following in a text editor and save the result in a file
 called
@@ -114,7 +114,7 @@ in
 this introduction we deliberately employ the general, primitive
 facilities
 of the&nbsp;<a
- href="file:///D:/jpl/docs/java_api/high-level_interface.html"><b><span
+ href="file:///D:/jpl/docs/java_api/high-level_interface.md"><b><span
  style="font-style: italic;">JPL 2.x</span> Java API overview</b></a>.
 <h3>Querying the Database</h3>
 Using the same technique, we can query the Prolog database about
@@ -267,11 +267,11 @@ Where to Go From Here</h3>
 This section provides a brief tutorial on getting started with the
 High-Level
 Interface.&nbsp; You should read the&nbsp;<a
- href="file:///D:/jpl/docs/java_api/high-level_interface.html"><b><span
+ href="file:///D:/jpl/docs/java_api/high-level_interface.md"><b><span
  style="font-style: italic;">JPL 2.x</span> Java API overview</b></a>
 section for more information about using these
 interfaces.&nbsp;
-Feel free to consult the <a href="javadoc/index.html"><span
+Feel free to consult the <a href="javadoc/index.md"><span
  style="font-style: italic;">JPL 3.x</span> Java API reference</a>
 section
 for detailed information about particular classes.
