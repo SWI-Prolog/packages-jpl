@@ -17,7 +17,7 @@ page</h1>
 <p><b style="font-style: italic;">JPL 3.x</b> is a dynamic,
 bidirectional interface
 between&nbsp;<i>SWI-Prolog 5.2.0</i> or later and&nbsp;<i>Java 2</i>
-runtimes (see <a href="docs/objectives.html"><span
+runtimes (see <a href="docs/objectives.md"><span
  style="font-weight: bold;"><span style="font-style: italic;">JPL 3.x</span>
 Objectives</span></a>).&nbsp; It offers two APIs: </p>
 <ul>
@@ -95,30 +95,30 @@ and some written for the first release of my Prolog-calls-Java
 interface, now part of&nbsp;<b><i>JPL</i></b>, and also mostly still
 relevant.<br>
 </p>
-<p>In addition to this document (index.html in jpl's root folder) there
+<p>In addition to this document (index.md in jpl's root folder) there
 are:<br>
 </p>
 <ul>
-  <li><a href="docs/release_notes.html"><b>Release Notes</b></a><b>
+  <li><a href="docs/release_notes.md"><b>Release Notes</b></a><b>
 for 3.0.3, 3.0.2, 3.0.0 and 2.0.2</b></li>
-  <li><a href="docs/installation.html"><b>Installation</b></a></li>
+  <li><a href="docs/installation.md"><b>Installation</b></a></li>
   <li><b>Java API:<br>
     </b></li>
   <ul>
-    <li><a href="docs/java_api/javadoc/index.html"><b>Reference
+    <li><a href="docs/java_api/javadoc/index.md"><b>Reference
 (Javadoc)</b></a></li>
-    <li><a href="docs/java_api/high-level_interface.html"><span
+    <li><a href="docs/java_api/high-level_interface.md"><span
  style="font-weight: bold;">Overview</span></a></li>
-    <li><b><a href="docs/java_api/gotchas.html"><b>Gotchas</b></a></b></li>
-    <li><b><a href="docs/java_api/getting_started.html"><b>Getting
+    <li><b><a href="docs/java_api/gotchas.md"><b>Gotchas</b></a></b></li>
+    <li><b><a href="docs/java_api/getting_started.md"><b>Getting
 Started</b></a></b></li>
   </ul>
   <li><b><b>Prolog API:</b></b></li>
   <ul>
-    <li><a href="docs/prolog_api/api.html"><span
+    <li><a href="docs/prolog_api/api.md"><span
  style="font-weight: bold;">Reference</span></a></li>
-    <li><a href="docs/prolog_api/overview/index.html"><b>Overview</b></a></li>
-    <li><a href="docs/prolog_api/gotchas.html"><b>Gotchas</b></a></li>
+    <li><a href="docs/prolog_api/overview/index.md"><b>Overview</b></a></li>
+    <li><a href="docs/prolog_api/gotchas.md"><b>Gotchas</b></a></li>
   </ul>
 </ul>
 <p> </p>
@@ -127,7 +127,7 @@ Started</b></a></b></li>
 <p>Put the three library files (<var>jpl.dll</var>, <var>jpl.jar</var>
 and <var>jpl.pl</var>) where they can be found by your OS, by your
 Java apps and by SWI-Prolog respectively; for details, see <a
- href="docs/installation.html"><b><i>JPL
+ href="docs/installation.md"><b><i>JPL
 3.x</i> Installation</b></a>.</p>
 <hr>
 <h2>Testing</h2>
