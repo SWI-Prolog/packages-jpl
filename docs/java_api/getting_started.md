@@ -1,4 +1,3 @@
-<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
   <meta http-equiv="Content-Type"
@@ -7,7 +6,6 @@
  content="Mozilla/4.74 [en] (WinNT; U) [Netscape]">
   <meta name="Author" content="Fred Dushin">
   <meta name="Keywords" content="JPL,java,prolog">
-  <title>Getting Started</title>
 </head>
 <body text="#000000" bgcolor="#ffffff" link="#00009c" vlink="#ce31ce"
  alink="#ff0000">
