@@ -105,7 +105,7 @@ for 3.0.3, 3.0.2, 3.0.0 and 2.0.2</b></li>
   <li><b>Java API:<br>
     </b></li>
   <ul>
-    <li><a href="docs/java_api/javadoc/index.md"><b>Reference
+    <li><a href="docs/java_api/index.md"><b>Reference
 (Javadoc)</b></a></li>
     <li><a href="docs/java_api/high-level_interface.md"><span
  style="font-weight: bold;">Overview</span></a></li>
