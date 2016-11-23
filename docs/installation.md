@@ -1,4 +1,3 @@
-<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
   <meta http-equiv="Content-Type"
@@ -6,7 +5,6 @@
   <meta name="Author" content="Paul Singleton">
   <meta name="GENERATOR"
  content="Mozilla/4.74 [en] (WinNT; U) [Netscape]">
-  <title>JPL 3.x installation</title>
 </head>
 <body>
 <h1><span style="font-style: italic;">
