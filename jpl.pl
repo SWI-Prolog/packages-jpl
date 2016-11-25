@@ -1234,7 +1234,7 @@ jpl_pl_lib_version(VersionString) :-
 %  Status = alpha.
 %  ==
 
-jpl_pl_lib_version(7, 0, 1, alpha).  % 15/Jun/2015
+jpl_pl_lib_version(7, 0, 2, alpha).  % jref as blob
 
 %! jpl_c_lib_version(-Version)
 %
