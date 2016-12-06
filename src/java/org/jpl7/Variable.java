@@ -9,8 +9,10 @@ import org.jpl7.fli.term_t;
  * This class supports Java representations of Prolog variables.
  * <p>
  * 
- * A jpl.Variable instance is equivalent to a variable in a fragment of Prolog source text: it is *not* a "live" variable within a Prolog stack or heap. A corresponding Prolog variable is created only
- * upon opening a Query whose goal refers to a Variable (and then only temporarily).
+ * A jpl.Variable instance is equivalent to a variable in a fragment of Prolog
+ * source text: it is *not* a "live" variable within a Prolog stack or heap. A
+ * corresponding Prolog variable is created only upon opening a Query whose goal
+ * refers to a Variable (and then only temporarily).
  * 
  * <hr>
  * Copyright (C) 2004 Paul Singleton
@@ -18,31 +20,28 @@ import org.jpl7.fli.term_t;
  * Copyright (C) 1998 Fred Dushin
  * <p>
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * modification, are permitted provided that the following conditions are met:
  *
  * <ol>
- * <li> Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
+ * <li>Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
- * <li> Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in
- *      the documentation and/or other materials provided with the
- *      distribution.
+ * <li>Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * </ol>
  *
  * <p>
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  * 
@@ -76,7 +75,8 @@ public class Variable extends Term {
 	}
 
 	/**
-	 * Create a new Variable with 'name' (which must not be null or ""), and may one day be constrained to comply with traditional Prolog syntax.
+	 * Create a new Variable with 'name' (which must not be null or ""), and may
+	 * one day be constrained to comply with traditional Prolog syntax.
 	 * 
 	 * @param name
 	 *            the source name of this Variable
@@ -112,30 +112,33 @@ public class Variable extends Term {
 	};
 
 	/**
-	 * A Variable is equal to another if their names are the same and they are not anonymous.
+	 * A Variable is equal to another if their names are the same and they are
+	 * not anonymous.
 	 * 
 	 * @param obj
 	 *            The Object to compare.
 	 * @return true if the Object is a Variable and the above condition apply.
 	 */
 	public final boolean equals(Object obj) {
-		return obj instanceof Variable && !this.name.equals("_")
-				&& this.name.equals(((Variable) obj).name);
+		return obj instanceof Variable && !this.name.equals("_") && this.name.equals(((Variable) obj).name);
 	}
 
 	/**
-	 * If this Variable instance is not an anonymous or (in dont-tell-me mode) a dont-tell-me variable, and its binding is not already in the varnames_to_Terms Map, put the result of converting the
-	 * term_t to which this variable has been unified to a Term in the Map, keyed on this Variable's name.
+	 * If this Variable instance is not an anonymous or (in dont-tell-me mode) a
+	 * dont-tell-me variable, and its binding is not already in the
+	 * varnames_to_Terms Map, put the result of converting the term_t to which
+	 * this variable has been unified to a Term in the Map, keyed on this
+	 * Variable's name.
 	 * 
 	 * @param varnames_to_Terms
 	 *            A Map of bindings from variable names to JPL Terms.
 	 * @param vars_to_Vars
 	 *            A Map from Prolog variables to JPL Variables.
 	 */
-	protected final void getSubst(Map<String, Term> varnames_to_Terms,
-			Map<term_t, Variable> vars_to_Vars) {
+	protected final void getSubst(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars) {
 		// NB a Variable.name cannot be "" i.e. of 0 length
-		// if (!(this.name.charAt(0) == '_') && varnames_to_Terms.get(this.name) == null) {
+		// if (!(this.name.charAt(0) == '_') && varnames_to_Terms.get(this.name)
+		// == null) {
 		if (tellThem() && varnames_to_Terms.get(this.name) == null) {
 			varnames_to_Terms.put(this.name, Term.getTerm(vars_to_Vars, this.term_));
 		}
@@ -163,21 +166,28 @@ public class Variable extends Term {
 	}
 
 	/**
-	 * To put a Variable, we must check whether a (non-anonymous) variable with the same name has already been put in the Term. If one has, then the corresponding Prolog variable has been stashed in
-	 * the varnames_to_vars Map, keyed by the Variable name, so we can look it up and reuse it (this way, the sharing of variables in the Prolog term reflects the sharing of Variable names in the
-	 * Term. Otherwise, if this Variable name has not already been seen in the Term, then we put a new Prolog variable and add it into the Map (keyed by this Variable name).
+	 * To put a Variable, we must check whether a (non-anonymous) variable with
+	 * the same name has already been put in the Term. If one has, then the
+	 * corresponding Prolog variable has been stashed in the varnames_to_vars
+	 * Map, keyed by the Variable name, so we can look it up and reuse it (this
+	 * way, the sharing of variables in the Prolog term reflects the sharing of
+	 * Variable names in the Term. Otherwise, if this Variable name has not
+	 * already been seen in the Term, then we put a new Prolog variable and add
+	 * it into the Map (keyed by this Variable name).
 	 * 
 	 * @param varnames_to_vars
 	 *            A Map from variable names to Prolog variables.
 	 * @param term
-	 *            A (previously created) term_t which is to be set to a (new or reused) Prolog variable.
+	 *            A (previously created) term_t which is to be set to a (new or
+	 *            reused) Prolog variable.
 	 */
 	protected final void put(Map<String, term_t> varnames_to_vars, term_t term) {
 		term_t var;
 		// if this var is anonymous or as yet unseen, put a new Prolog variable
 		if (this.name.equals("_") || (var = (term_t) varnames_to_vars.get(this.name)) == null) {
 			this.term_ = term;
-			this.index = varnames_to_vars.size(); // i.e. first var in is #0 etc.
+			this.index = varnames_to_vars.size(); // i.e. first var in is #0
+													// etc.
 			Prolog.put_variable(term);
 			if (!this.name.equals("_")) {
 				varnames_to_vars.put(this.name, term);
@@ -189,10 +199,12 @@ public class Variable extends Term {
 	}
 
 	/**
-	 * whether, according to prevailing policy and this Variable's name, its binding (if any) should be returned in a substitution (i.e. unless it's anonymous or we're in dont-tell-me mode and its a
-	 * dont-tell-me variable)
+	 * whether, according to prevailing policy and this Variable's name, its
+	 * binding (if any) should be returned in a substitution (i.e. unless it's
+	 * anonymous or we're in dont-tell-me mode and its a dont-tell-me variable)
 	 * 
-	 * @return whether, according to prevailing policy and this Variable's name, its binding (if any) should be returned in a substitution
+	 * @return whether, according to prevailing policy and this Variable's name,
+	 *         its binding (if any) should be returned in a substitution
 	 */
 	private final boolean tellThem() {
 		return !(this.name.equals("_") || org.jpl7.JPL.modeDontTellMe && this.name.charAt(0) == '_');
@@ -224,55 +236,5 @@ public class Variable extends Term {
 	public String typeName() {
 		return "Variable";
 	}
-
-	// public Object jrefToObject() {
-	// throw new JPLException("jpl.Variable#jrefToObject(): term is not a jref");
-	// }
-
-	// /**
-	// * throws a JPLException (arg(int) is defined only for Compound and Atom)
-	// *
-	// * @return the ith argument (counting from 1) of this Variable (never)
-	// */
-	// public final Term arg(int i) {
-	// throw new JPLException("jpl.Variable#arg(int) is undefined");
-	// }
-
-	// /**
-	// * Tests the lexical validity of s as a variable's name
-	// *
-	// * @return the lexical validity of s as a variable's name
-	// * @deprecated
-	// */
-	// private boolean isValidName(String s) {
-	// if (s == null) {
-	// throw new java.lang.NullPointerException(); // JPL won't call it this way
-	// }
-	// int len = s.length();
-	// if (len == 0) {
-	// throw new JPLException("invalid variable name");
-	// }
-	// char c = s.charAt(0);
-	// if (!(c == '_' || c >= 'A' && c <= 'Z')) {
-	// return false;
-	// }
-	// for (int i = 1; i < len; i++) {
-	// c = s.charAt(i);
-	// if (!(c == '_' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9')) {
-	// return false;
-	// }
-	// }
-	// return true;
-	// }
-
-	// /**
-	// * Returns a debug-friendly String representation of an Atom.
-	// *
-	// * @return a debug-friendly String representation of an Atom
-	// * @deprecated
-	// */
-	// public String debugString() {
-	// return "(Variable " + toString() + ")";
-	// }
 
 }

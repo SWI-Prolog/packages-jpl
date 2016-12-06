@@ -28,10 +28,12 @@ public class PopupMenuDemo extends JFrame implements ActionListener {
 	}
 
 	/*
-	 * JPopupMenu +- JMenuItem +- JMenuItem +- JMenu ----- JPopupMenu | +- JMenuItem | +- JMenuItem +- JMenuItem +- JMenuItem
+	 * JPopupMenu +- JMenuItem +- JMenuItem +- JMenu ----- JPopupMenu | +-
+	 * JMenuItem | +- JMenuItem +- JMenuItem +- JMenuItem
 	 */
 	public boolean search(JPopupMenu p) {
-		Object[] mes = p.getSubElements(); // array of JMenuItem or JMenu (see diagram)
+		Object[] mes = p.getSubElements(); // array of JMenuItem or JMenu (see
+											// diagram)
 		int i;
 
 		for (i = 0; i < mes.length; i++) {
@@ -39,7 +41,8 @@ public class PopupMenuDemo extends JFrame implements ActionListener {
 				return true;
 			} else if (mes[i] instanceof JMenu) { // it's a submenu
 				if (search((JPopupMenu) (((JMenu) mes[i]).getSubElements())[0])) {
-					return true; // clicked JMenuItem was within this submenu tree
+					return true; // clicked JMenuItem was within this submenu
+									// tree
 				}
 			} else { // it's a non-matching leaf element
 				mi++; // next JMenuItemm will be the mi-th
@@ -55,8 +58,8 @@ public class PopupMenuDemo extends JFrame implements ActionListener {
 		mi = 1;
 		if (search(popup)) {
 			// output.append("clicked " + mi + "\n");
-			if ((new org.jpl7.Query("jpl_popup_demo_callback",
-					new org.jpl7.Term[] { new org.jpl7.Integer(mi) })).hasSolution()) {
+			if ((new org.jpl7.Query("jpl_popup_demo_callback", new org.jpl7.Term[] { new org.jpl7.Integer(mi) }))
+					.hasSolution()) {
 				// output.append("succeeded\n");
 			} else {
 				// output.append("failed\n");
@@ -65,7 +68,8 @@ public class PopupMenuDemo extends JFrame implements ActionListener {
 		// output.append("jpl_popup_demo_callback(" + mi + ")\n");
 	}
 
-	// protected String getClassName(Object o) { // Returns just the class name -- no package info.
+	// protected String getClassName(Object o) { // Returns just the class name
+	// -- no package info.
 	// String classString = o.getClass().getName();
 	// int dotIndex = classString.lastIndexOf(".");
 	// return classString.substring(dotIndex+1);
@@ -110,11 +114,14 @@ public class PopupMenuDemo extends JFrame implements ActionListener {
 	}
 
 	public void showPopup(Object[] mis, int x, int y) {
-		Point p = getLocationOnScreen(); // on-screen location of origin of this Frame
+		Point p = getLocationOnScreen(); // on-screen location of origin of this
+											// Frame
 
 		popup = buildPopupMenu(mis); // discarding any previous one...
-		setVisible(true); // ensure this Frame thingy is visible (else we get an error)
-		popup.show(this, x - p.x, y - p.y); // must show over some Component (e.g. this)
+		setVisible(true); // ensure this Frame thingy is visible (else we get an
+							// error)
+		popup.show(this, x - p.x, y - p.y); // must show over some Component
+											// (e.g. this)
 	}
 
 }

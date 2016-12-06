@@ -90,12 +90,16 @@ public class Test {
 	public static long[] fieldStaticLongArray; // cannot assign e.g. int[]
 
 	//
-	public static long fac(long n) { // complements jpl:jpl_test_fac(+integer,-integer)
+	public static long fac(long n) { // complements
+										// jpl:jpl_test_fac(+integer,-integer)
 		if (n == 1) {
 			return 1;
 		} else if (n > 1) {
-			// return n * ((Integer) new Query(new Compound("jpl_test_fac", new Term[] { new Integer(n - 1), new Variable("F") })).oneSolution().get("F")).intValue();
-			return n * ((org.jpl7.Integer) Query.oneSolution("jpl_test_fac(?,F)", new Term[] { new org.jpl7.Integer(n - 1) }).get("F")).longValue();
+			// return n * ((Integer) new Query(new Compound("jpl_test_fac", new
+			// Term[] { new Integer(n - 1), new Variable("F")
+			// })).oneSolution().get("F")).intValue();
+			return n * ((org.jpl7.Integer) Query
+					.oneSolution("jpl_test_fac(?,F)", new Term[] { new org.jpl7.Integer(n - 1) }).get("F")).longValue();
 		} else {
 			return 0;
 		}

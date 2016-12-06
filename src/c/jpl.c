@@ -54,7 +54,7 @@ refactoring (trivial):
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* update this to distinguish releases of this C library: */
-#define	JPL_C_LIB_VERSION	 "7.0.1-alpha"
+#define	JPL_C_LIB_VERSION	 "7.0.2-alpha"
 #define	JPL_C_LIB_VERSION_MAJOR	 7
 #define	JPL_C_LIB_VERSION_MINOR	 0
 #define	JPL_C_LIB_VERSION_PATCH	 2
@@ -162,6 +162,7 @@ refactoring (trivial):
 #define     JPL_SYNTAX_TRADITIONAL		202
 #define     JPL_SYNTAX_MODERN		203
 
+#if 0
 /*=== JNI Prolog<->Java conversion macros ========================================================== */
 
 /* JNI (Prolog-calls-Java) conversion macros; mainly used in jni_{func|void}_{0|1|2|3|4}_plc; */
@@ -421,6 +422,7 @@ refactoring (trivial):
 
 #define JNI_charP_to_term(J,T) \
     PL_unify_atom_chars((T),(J))
+#endif
 
 
 /*=== JNI initialisation macro (typically succeeds cheaply) ======================================== */
@@ -679,6 +681,7 @@ static int	    jni_hr_del(JNIEnv*, pointer);
 static bool	    jni_free_iref(JNIEnv *env, pointer iref);
 static bool	    jni_object_to_iref(JNIEnv *env, jobject	obj, pointer *iref);
 static bool		jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a);
+static bool		jni_atom_to_String(JNIEnv *env, atom_t a, jobject *s);
 
 
 /*=== JNI functions (NB first 6 are cited in macros used subsequently) ============================= */
@@ -753,7 +756,6 @@ static PL_blob_t jref_blob =
 };
 
 
-/* this now checks that the atom's name resembles a tag (PS 18/Jun/2004) */
 static bool
 jni_tag_to_iref(
     atom_t	a,
@@ -772,6 +774,500 @@ jni_tag_to_iref(
     }
 
 
+/*=== JNI Prolog<->Java conversion functions ========================================================== */
+
+/* JNI (Prolog-calls-Java) conversion functions; mainly used in jni_{func|void}_{0|1|2|3|4}_plc; */
+
+static bool
+jni_term_to_jboolean(term_t t, jboolean *jz)
+{ functor_t fn;
+  term_t a1;
+  atom_t a;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_at_1 )
+  { a1 = PL_new_term_ref();
+    if ( PL_get_arg(1,t,a1) && PL_get_atom(a1,&a) )
+    { if ( a==JNI_atom_false )
+      { *jz = 0;
+        return TRUE;
+      }
+      if ( a==JNI_atom_true )
+      { *jz = 1;
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_jchar(term_t t, jchar *jc)
+{ int i;
+
+  if ( PL_get_integer(t,&i) && i>= JNI_MIN_JCHAR && i<=JNI_MAX_JCHAR )
+  { *jc = (jchar)i;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jbyte(term_t t, jbyte *jb)
+{ int i;
+
+  if ( PL_get_integer(t,&i) && i>= JNI_MIN_JBYTE && i<=JNI_MAX_JBYTE )
+  { *jb = (jbyte)i;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jshort(term_t t, jshort *js)
+{ int i;
+
+  if ( PL_get_integer(t,&i) && i>= JNI_MIN_JSHORT && i<=JNI_MAX_JSHORT )
+  { *js = (jshort)i;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/* JW: jint is always 32-bit! */
+
+static bool
+jni_term_to_jint(term_t t, jint *ji)
+{ int i;
+
+  if ( PL_get_integer(t,&i) )
+  { *ji = i;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jsize(term_t t, jsize *js)
+{ int i;
+
+  if ( PL_get_integer(t,&i) )
+  { *js = i;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_non_neg_jsize(term_t t, jsize *js)
+{ intptr_t i;
+
+  if ( PL_get_intptr(t,&i) && i>=0 )
+  { *js = (jsize)i;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jlong(term_t t, jlong *jl)
+{ int64_t i64;
+
+  if ( PL_get_int64(t,&i64) )
+  { *jl = (jlong)i64;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jfloat(term_t t, jfloat *jf)
+{ double d;
+  int64_t i64;
+
+  if ( PL_get_float(t,&d) )
+  { *jf = (jfloat)d;
+    return TRUE;
+  }
+
+  if ( PL_get_int64(t,&i64) )
+  { *jf = (jfloat)i64;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jdouble(term_t t, jdouble *jd)
+{ double d;
+  int64_t i64;
+
+  if ( PL_get_float(t,&d) )
+  { *jd = (jdouble)d;
+    return TRUE;
+  }
+
+  if ( PL_get_int64(t,&i64) )
+  { *jd = (jdouble)i64;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jfieldID(term_t t, jfieldID *jf)
+{ functor_t fn;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jfieldID_1 )
+  { a1 = PL_new_term_ref();
+    if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jf) )
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jmethodID(term_t t, jmethodID *jm)
+{ functor_t fn;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jmethodID_1 )
+  { a1 = PL_new_term_ref();
+    if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jm) )
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_ref(term_t t, jobject *j, JNIEnv *env)
+{ atom_t a;
+  jref_handle *ref;
+  PL_blob_t *type;
+  functor_t fn;
+  term_t a1;
+
+  if ( PL_get_atom(t,&a) )
+  { if ( (ref=PL_blob_data(a,NULL,&type)) && type == &jref_blob)
+    { *j = (jobject)(ref->iref);
+      return TRUE; // <jref>(0x1234560) -> referenced object
+    }
+
+    if ( jni_atom_to_String(env,a,j) )
+      return TRUE;
+
+    return FALSE;
+  }
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_at_1 && (a1=PL_new_term_ref(), PL_get_arg(1,t,a1)) && PL_get_atom(a1,&a) && a==JNI_atom_null)
+  { *j = 0;
+    return TRUE; // @(null) -> 0
+  }
+
+  return FALSE;
+}
+
+static bool
+jni_term_to_jobject(term_t t, jobject *j, JNIEnv *env)
+{ jobject j2;
+
+  return jni_term_to_ref(t,&j2,env) && j2!=NULL && ( *j=j2, TRUE );
+}
+
+static bool
+jni_term_to_jclass(term_t t, jclass *j, JNIEnv *env)
+{ jobject j2;
+
+  return jni_term_to_ref(t,&j2,env) && j2!=NULL && ( *j=(jclass)j2, TRUE );
+}
+
+static bool
+jni_term_to_non_array_jclass(term_t t, jclass *j, JNIEnv *env)
+{ jobject j2;
+
+  return jni_term_to_ref(t,&j2,env) && j2!=NULL && ( *j=(jclass)j2, TRUE );
+}
+
+static bool
+jni_term_to_jarray(term_t t, jarray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jarray)j2, TRUE );
+}
+
+static bool
+jni_term_to_object_jarray(term_t t, jobjectArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jobjectArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_boolean_jarray(term_t t, jbooleanArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jbooleanArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_byte_jarray(term_t t, jbyteArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jbyteArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_char_jarray(term_t t, jcharArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jcharArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_short_jarray(term_t t, jshortArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jshortArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_int_jarray(term_t t, jintArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jintArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_long_jarray(term_t t, jlongArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jlongArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_float_jarray(term_t t, jfloatArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jfloatArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_double_jarray(term_t t, jdoubleArray *j, JNIEnv *env)
+{ jobject j2;
+  return jni_term_to_ref(t,&j2,env) && ( *j=(jdoubleArray)j2, TRUE );
+}
+
+static bool
+jni_term_to_jboolean_buf(term_t t, jboolean **jzp)
+{ functor_t fn;
+  term_t a2;
+  atom_t a;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jbuf_2 )
+  { a2 = PL_new_term_ref();
+    if ( PL_get_arg(2,t,a2) && PL_get_atom(a2,&a) && a==JNI_atom_boolean )
+    { a1 = PL_new_term_ref();
+      if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jzp) )
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_jbyte_buf(term_t t, jbyte **jbp)
+{ functor_t fn;
+  term_t a2;
+  atom_t a;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jbuf_2 )
+  { a2 = PL_new_term_ref();
+    if ( PL_get_arg(2,t,a2) && PL_get_atom(a2,&a) && a==JNI_atom_byte )
+    { a1 = PL_new_term_ref();
+      if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jbp) )
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_jchar_buf(term_t t, jchar **jcp)
+{ functor_t fn;
+  term_t a2;
+  atom_t a;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jbuf_2 )
+  { a2 = PL_new_term_ref();
+    if ( PL_get_arg(2,t,a2) && PL_get_atom(a2,&a) && a==JNI_atom_char )
+    { a1 = PL_new_term_ref();
+      if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jcp) )
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_jshort_buf(term_t t, jshort **jsp)
+{ functor_t fn;
+  term_t a2;
+  atom_t a;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jbuf_2 )
+  { a2 = PL_new_term_ref();
+    if ( PL_get_arg(2,t,a2) && PL_get_atom(a2,&a) && a==JNI_atom_short )
+    { a1 = PL_new_term_ref();
+      if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jsp) )
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_jint_buf(term_t t, jint **jip)
+{ functor_t fn;
+  term_t a2;
+  atom_t a;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jbuf_2 )
+  { a2 = PL_new_term_ref();
+    if ( PL_get_arg(2,t,a2) && PL_get_atom(a2,&a) && a==JNI_atom_int )
+    { a1 = PL_new_term_ref();
+      if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jip) )
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_jlong_buf(term_t t, jlong **jlp)
+{ functor_t fn;
+  term_t a2;
+  atom_t a;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jbuf_2 )
+  { a2 = PL_new_term_ref();
+    if ( PL_get_arg(2,t,a2) && PL_get_atom(a2,&a) && a==JNI_atom_long )
+    { a1 = PL_new_term_ref();
+      if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jlp) )
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_jfloat_buf(term_t t, jfloat **jfp)
+{ functor_t fn;
+  term_t a2;
+  atom_t a;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jbuf_2 )
+  { a2 = PL_new_term_ref();
+    if ( PL_get_arg(2,t,a2) && PL_get_atom(a2,&a) && a==JNI_atom_float )
+    { a1 = PL_new_term_ref();
+      if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jfp) )
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_jdouble_buf(term_t t, jdouble **jdp)
+{ functor_t fn;
+  term_t a2;
+  atom_t a;
+  term_t a1;
+
+  if ( PL_get_functor(t,&fn) && fn==JNI_functor_jbuf_2 )
+  { a2 = PL_new_term_ref();
+    if ( PL_get_arg(2,t,a2) && PL_get_atom(a2,&a) && a==JNI_atom_double )
+    { a1 = PL_new_term_ref();
+      if ( PL_get_arg(1,t,a1) && PL_get_pointer(a1,(void**)jdp) )
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static bool
+jni_term_to_charP(term_t t, char **ch)
+{ return PL_get_atom_chars(t,ch);
+}
+
+static bool
+jni_term_to_pointer(term_t t, jvalue **jvp)
+{ return PL_get_pointer(t,(void**)jvp);
+}
+
+/* JNI Java-to-Prolog conversion functions: */
+
+static bool
+jni_jboolean_to_term(jboolean jb, term_t t)
+{ if ( jb == 0 )
+    return PL_unify_term(t, PL_FUNCTOR, JNI_functor_at_1, PL_ATOM, JNI_atom_false);
+
+  return PL_unify_term(t, PL_FUNCTOR, JNI_functor_at_1, PL_ATOM, JNI_atom_true);
+}
+
+static bool
+jni_jchar_to_term(jchar jch, term_t t)
+{ return PL_unify_integer(t,(int)jch);
+}
+
+static bool
+jni_jbyte_to_term(jbyte jb, term_t t)
+{ return PL_unify_integer(t,(int)jb);
+}
+
+static bool
+jni_jshort_to_term(jshort js, term_t t)
+{ return PL_unify_integer(t,(int)js);
+}
+
+static bool
+jni_jint_to_term(jint ji, term_t t)
+{ return PL_unify_integer(t,(int)ji);
+}
+
+static bool
+jni_jlong_to_term(jlong jl, term_t t)
+{ return PL_unify_int64(t,(int64_t)jl);
+}
+
+static bool
+jni_jfloat_to_term(jfloat jf, term_t t)
+{ return PL_unify_float(t,(double)jf);
+}
+
+static bool
+jni_jdouble_to_term(jdouble jd, term_t t)
+{ return PL_unify_float(t,(double)jd);
+}
+
+static bool
+jni_jfieldID_to_term(jfieldID jf, term_t t)
+{ return PL_unify_term(t, PL_FUNCTOR, JNI_functor_jfieldID_1, PL_POINTER, (void*)jf);
+}
+
+static bool
+jni_jmethodID_to_term(jmethodID jm, term_t t)
+{ return PL_unify_term(t, PL_FUNCTOR, JNI_functor_jmethodID_1, PL_POINTER, (void*)jm);
+}
+
 static bool
 jni_unify_iref(
 	term_t t,
@@ -785,7 +1281,7 @@ jni_unify_iref(
 
 
 static bool
-JNI_jobject_to_term_(jobject j, term_t t, JNIEnv *env)
+jni_jobject_to_term(jobject j, term_t t, JNIEnv *env)
 { pointer i;
 
   if ( j == NULL )
@@ -805,17 +1301,7 @@ JNI_jobject_to_term_(jobject j, term_t t, JNIEnv *env)
   }
 
   if ( jni_object_to_iref(env,j,&i) )
-  { term_t tmp;
-	int rc = ( (tmp=PL_new_term_ref()) &&
-			   jni_unify_iref(tmp, i) &&
-			   PL_unify_term(t,
-							 PL_FUNCTOR, JNI_functor_at_1,
-							   PL_TERM, tmp) );
-
-	if ( rc )
-	  PL_reset_term_refs(tmp);
-	return rc;
-  }
+    return jni_unify_iref(t,i);
 
   assert(0);
   return FALSE;
@@ -894,7 +1380,7 @@ jni_free_iref(		    /* called indirectly from agc hook when a possible iref is u
 /* NB this delivers an atom_t, not a term_t */
 /* returns FALSE if the String arg is NULL */
 static bool
- jni_String_to_atom(	/* called from JNI_jobject_to_term(J,T) and org.jpl7.fli.Prolog#new_atom() */
+ jni_String_to_atom(	/* called from jni_jobject_to_term() and org.jpl7.fli.Prolog#new_atom() */
 	JNIEnv		*env,
 	jobject		s,
     atom_t	*a
@@ -1593,12 +2079,6 @@ jni_param_put_plc(
     int		n;	/* got from tn (see above) */
     int		xc;	/* got from txc (see above) */
     jvalue	*jvp;	/* got from tjvp (see above) */
-    functor_t	fn;	/* temp for conversion macros */
-    term_t	a1;	/*  " */
-    atom_t	a;	/*  " */
-    int		i;	/*  " */
-	int64_t		i64;	/*	" */
-	double		d;		/*	" */
 
     if ( !PL_get_integer(tn,&n) ||
 	 !PL_get_integer(txc,&xc) ||
@@ -1610,33 +2090,33 @@ jni_param_put_plc(
     switch ( xc )
 	{
     case JNI_XPUT_BOOLEAN:
-	return	JNI_term_to_jboolean(tt,jvp[n].z);
+	return	jni_term_to_jboolean(tt,&jvp[n].z);
 
     case JNI_XPUT_BYTE:
-		return	JNI_term_to_jbyte(tt,jvp[n].b);
+		return	jni_term_to_jbyte(tt,&jvp[n].b);
 
     case JNI_XPUT_CHAR:
-		return	JNI_term_to_jchar(tt,jvp[n].c);
+		return	jni_term_to_jchar(tt,&jvp[n].c);
 
     case JNI_XPUT_SHORT:
-		return	JNI_term_to_jshort(tt,jvp[n].s);
+		return	jni_term_to_jshort(tt,&jvp[n].s);
 
     case JNI_XPUT_INT:
-	return	JNI_term_to_jint(tt,jvp[n].i);
+	return	jni_term_to_jint(tt,&jvp[n].i);
 
     case JNI_XPUT_LONG:
-	return	JNI_term_to_jlong(tt,jvp[n].j);
+	return	jni_term_to_jlong(tt,&jvp[n].j);
 
     case JNI_XPUT_FLOAT:
-		return	JNI_term_to_jfloat(tt,jvp[n].f);
+		return	jni_term_to_jfloat(tt,&jvp[n].f);
 
     case JNI_XPUT_DOUBLE:
-	return	JNI_term_to_jdouble(tt,jvp[n].d);
+	return	jni_term_to_jdouble(tt,&jvp[n].d);
 
     case JNI_XPUT_REF:
 	{ JNIEnv	*env = jni_env();
 
-      return	env == NULL ? FALSE : JNI_term_to_ref(tt,jvp[n].l); /* this macro needs a valid env */
+      return	env == NULL ? FALSE : jni_term_to_ref(tt,&jvp[n].l,env);
 	}
     default:
 	return	FALSE;	/* unknown or inappropriate JNI_XPUT_* code */
@@ -1701,7 +2181,7 @@ jni_fetch_buffer_value_plc(
 	switch ( xc ) /* primitive type only */
 	{
     case JNI_XPUT_BOOLEAN:
-		return	JNI_jboolean_to_term(((jboolean*)bp)[i],tv);
+		return	jni_jboolean_to_term(((jboolean*)bp)[i],tv);
 
     case JNI_XPUT_CHAR:
 		return	PL_unify_integer(tv,((jchar*)bp)[i]);
@@ -1739,14 +2219,8 @@ jni_stash_buffer_value_plc(
     )
     {
     void    *bp;
-    int	    i;
     int	    idx;
-	int64_t	i64;
     int	    xc;
-	double	d;
-	functor_t	fn;
-	term_t		a1;
-	atom_t		a;
 
 	if (  !PL_get_pointer(tbp,&bp)
        || !PL_get_integer(ti,&idx)
@@ -1759,28 +2233,28 @@ jni_stash_buffer_value_plc(
     switch ( xc )
 	{
     case JNI_XPUT_BOOLEAN:
-		return	JNI_term_to_jboolean(tv,((jboolean*)bp)[idx]);
+		return	jni_term_to_jboolean(tv,&((jboolean*)bp)[idx]);
 
     case JNI_XPUT_CHAR:
-		return	JNI_term_to_jchar(tv,((jchar*)bp)[idx]);
+		return	jni_term_to_jchar(tv,&((jchar*)bp)[idx]);
 
     case JNI_XPUT_BYTE:
-		return	JNI_term_to_jbyte(tv,((jbyte*)bp)[idx]);
+		return	jni_term_to_jbyte(tv,&((jbyte*)bp)[idx]);
 
     case JNI_XPUT_SHORT:
-		return	JNI_term_to_jshort(tv,((jshort*)bp)[idx]);
+		return	jni_term_to_jshort(tv,&((jshort*)bp)[idx]);
 
     case JNI_XPUT_INT:
-		return	JNI_term_to_jint(tv,((jint*)bp)[idx]);
+		return	jni_term_to_jint(tv,&((jint*)bp)[idx]);
 
     case JNI_XPUT_LONG:
-		return	JNI_term_to_jlong(tv,((jlong*)bp)[idx]);
+		return	jni_term_to_jlong(tv,&((jlong*)bp)[idx]);
 
     case JNI_XPUT_FLOAT:
-		return	JNI_term_to_jfloat(tv,((jfloat*)bp)[idx]);
+		return	jni_term_to_jfloat(tv,&((jfloat*)bp)[idx]);
 
     case JNI_XPUT_DOUBLE:
-		return  JNI_term_to_jdouble(tv,((jdouble*)bp)[idx]);
+		return  jni_term_to_jdouble(tv,&((jdouble*)bp)[idx]);
 
     default:
 	return	FALSE;
@@ -1990,21 +2464,7 @@ jni_void_1_plc(
     )
     {
     int		n;	/* JNI function index */
- /* functor_t	fn;	// temp for conversion macros */
- /* term_t	a1;	//  " */
- /* term_t	a2;	//  " */
- /* atom_t	a;	//  " */
- /* char	*cp;	//  " */
- /* int		i;	//  " */
- /* int		xhi;	//  " */
- /* int		xlo;	//  " */
- /* jobject	j;	//  " */
- /* jlong	jl;	//  " */
- /* void	*p1;	// temp for converted (JVM) arg */
     char	*c1;	/*  " */
- /* int		i1;	//  " */
- /* jlong	l1;	//  " */
- /* double	d1;	//  " */
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -2018,8 +2478,8 @@ jni_void_1_plc(
     switch ( n )
 	{
     case  18:
-	r = JNI_term_to_charP(ta1,c1)
-	    &&	( (*env)->FatalError(env,(char*)c1) , TRUE );
+	r = jni_term_to_charP(ta1,&c1)
+	    &&	( (*env)->FatalError(env,c1) , TRUE );
 	break;
     default:
 	return FALSE;  /* oughta throw exception (design-time error :-) */
@@ -2038,26 +2498,6 @@ jni_void_2_plc(
     )
     {
     int		n;	/* JNI function index */
- /*	functor_t	fn;	// temp for conversion macros */
- /*	term_t		a1;	//	" */
- /*	term_t		a2;	//	" */
- /*	atom_t		a;		//	" */
- /*	char		*cp;	//	" */
- /* int		i;	//  " */
- /* int		xhi;	//  " */
- /* int		xlo;	//  " */
- /* jobject	j;	//  " */
- /* jlong	jl;	//  " */
- /*	void		*p1;	// temp for converted (JVM) arg */
- /*	void		*p2;	//	" */
- /* char	*c1;	//  " */
- /*	char		*c2;	//	" */
- /* int		i1;	//  " */
- /* int		i2;	//  " */
- /* jlong	l1;	//  " */
- /* jlong	l2;	//  " */
- /* double	d1;	//  " */
- /* double	d2;	//  " */
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -2070,16 +2510,6 @@ jni_void_2_plc(
 
     switch ( n )
 	{
- /*	case 166: */
- /*		r = JNI_term_to_jstring(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_char) */
- /*			&&	( (*env)->ReleaseStringChars(env,(jstring)p1,(jchar*)p2) , TRUE ); */
- /*		break; */
- /*	case 170: */
- /*		r = JNI_term_to_jstring(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,c2,JNI_atom_byte) */
- /*			&&	( (*env)->ReleaseStringUTFChars(env,(jstring)p1,(char*)c2) , TRUE ); */
- /*		break; */
     default:
 	return FALSE;  /* oughta throw exception (design-time error :-) */
 	break;
@@ -2098,37 +2528,22 @@ jni_void_3_plc(
     )
     {
     int		n;	/* JNI function index */
-    functor_t	fn;	/* temp for conversion macros */
-    term_t	a1;	/*  " */
- /*	term_t		a2;	//	" */
-    atom_t	a;	/*  " */
- /*	char		*cp;	//	" */
-    int		i;	/*  " */
-	int64_t		i64;	/*	" */
-	double		d;		/*	" */
- /*	int		xhi;	//	" */
- /*	int		xlo;	//	" */
- /* jobject	j;	//  " */
- /*	jlong		jl;	//	" */
-    void	*p1;	/* temp for converted (JVM) arg */
-    void	*p2;	/*  " */
-    void	*p3;	/*  " */
- /* char	*c1;	//  " */
- /* char	*c2;	//  " */
- /* char	*c3;	//  " */
- /* int		i1;	//  " */
-    int		i2;	/*  " */
-    int		i3;	/*  " */
- /* jlong	l1;	//  " */
- /* jlong	l2;	//  " */
-    jlong	l3;	/*  " */
- /*	float		f1;	//	" */
- /*	float		f2;	//	" */
-	float		f3;	/*	" */
- /* double	d1;	//  " */
- /* double	d2;	//  " */
-    double	d3;	/*  " */
-    jvalue	*jvp = NULL; /* if this is given a buffer, it will be freed after the call */
+	jobject jo1;
+    jobject jo3;
+    jclass jc1;
+    jfieldID jfi2;
+	jmethodID jmi2;
+    jobjectArray oa1;
+    jchar jc3;
+    jbyte jb3;
+    jshort js3;
+    jint ji3;
+    jsize js2;
+    jlong jl3;
+    jfloat jf3;
+    jdouble jd3;
+    jboolean jz3;
+    jvalue	*jvp3 = NULL; /* if this is given a buffer, it will be freed after the call */
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -2142,187 +2557,139 @@ jni_void_3_plc(
     switch ( n )
 	{
     case  63:
-	r = JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	( (*env)->CallVoidMethodA(env,(jobject)p1,(jmethodID)p2,jvp) , TRUE );
+	r = jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	( (*env)->CallVoidMethodA(env,jo1,jmi2,jvp3) , TRUE );
 	break;
     case 104:
-	r = JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_ref(ta3,p3)
-	    &&	( (*env)->SetObjectField(env,(jobject)p1,(jfieldID)p2,(jobject)p3) , TRUE );
+	r = jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_ref(ta3,&jo3,env)
+	    &&	( (*env)->SetObjectField(env,jo1,jfi2,jo3) , TRUE );
 	break;
     case 105:
-	r = JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jboolean(ta3,i3)
-	    &&	( (*env)->SetBooleanField(env,(jobject)p1,(jfieldID)p2,(jboolean)i3) , TRUE );
+	r = jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jboolean(ta3,&jz3)
+	    &&	( (*env)->SetBooleanField(env,jo1,jfi2,jz3) , TRUE );
 	break;
     case 106:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jbyte(ta3,i3)
-	    &&	( (*env)->SetByteField(env,(jobject)p1,(jfieldID)p2,(jbyte)i3) , TRUE );
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jbyte(ta3,&jb3)
+	    &&	( (*env)->SetByteField(env,jo1,jfi2,jb3) , TRUE );
 	break;
     case 107:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jchar(ta3,i3)
-	    &&	( (*env)->SetCharField(env,(jobject)p1,(jfieldID)p2,(jchar)i3) , TRUE );
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jchar(ta3,&jc3)
+	    &&	( (*env)->SetCharField(env,jo1,jfi2,jc3) , TRUE );
 	break;
     case 108:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jshort(ta3,i3)
-	    &&	( (*env)->SetShortField(env,(jobject)p1,(jfieldID)p2,(jshort)i3) , TRUE );
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jshort(ta3,&js3)
+	    &&	( (*env)->SetShortField(env,jo1,jfi2,js3) , TRUE );
 	break;
     case 109:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	( (*env)->SetIntField(env,(jobject)p1,(jfieldID)p2,(jint)i3) , TRUE );
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jint(ta3,&ji3)
+	    &&	( (*env)->SetIntField(env,jo1,jfi2,ji3) , TRUE );
 	break;
     case 110:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jlong(ta3,l3)
-	    &&	( (*env)->SetLongField(env,(jobject)p1,(jfieldID)p2,(jlong)l3) , TRUE );
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jlong(ta3,&jl3)
+	    &&	( (*env)->SetLongField(env,jo1,jfi2,jl3) , TRUE );
 	break;
     case 111:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-			&&	JNI_term_to_jfloat(ta3,f3) /* f3 was d3 */
-			&&	( (*env)->SetFloatField(env,(jobject)p1,(jfieldID)p2,(jfloat)f3) , TRUE ); /* f3 was d3 */
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+			&&	jni_term_to_jfloat(ta3,&jf3)
+			&&	( (*env)->SetFloatField(env,jo1,jfi2,jf3) , TRUE );
 	break;
     case 112:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jdouble(ta3,d3)
-	    &&	( (*env)->SetDoubleField(env,(jobject)p1,(jfieldID)p2,(jdouble)d3) , TRUE );
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jdouble(ta3,&jd3)
+	    &&	( (*env)->SetDoubleField(env,jo1,jfi2,jd3) , TRUE );
 	break;
 	case 143:
-		r =	JNI_term_to_jclass(ta1,p1)
-			&&	JNI_term_to_jmethodID(ta2,p2)
-			&&	JNI_term_to_pointer(ta3,jvp)
-			&&	( (*env)->CallStaticVoidMethodA(env,(jclass)p1,(jmethodID)p2,jvp) , TRUE );
+		r =	jni_term_to_jclass(ta1,&jc1,env)
+			&&	jni_term_to_jmethodID(ta2,&jmi2)
+			&&	jni_term_to_pointer(ta3,&jvp3)
+			&&	( (*env)->CallStaticVoidMethodA(env,jc1,jmi2,jvp3) , TRUE );
 		break;
     case 154:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_ref(ta3,p3)
-	    &&	( (*env)->SetStaticObjectField(env,(jclass)p1,(jfieldID)p2,(jobject)p3) , TRUE );
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_ref(ta3,&jo3,env)
+	    &&	( (*env)->SetStaticObjectField(env,jc1,jfi2,jo3) , TRUE );
 	break;
     case 155:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jboolean(ta3,i3)
-	    &&	( (*env)->SetStaticBooleanField(env,(jclass)p1,(jfieldID)p2,(jboolean)i3) , TRUE );
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jboolean(ta3,&jz3)
+	    &&	( (*env)->SetStaticBooleanField(env,jc1,jfi2,jz3) , TRUE );
 	break;
     case 156:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jbyte(ta3,i3)
-	    &&	( (*env)->SetStaticByteField(env,(jclass)p1,(jfieldID)p2,(jbyte)i3) , TRUE );
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jbyte(ta3,&jb3)
+	    &&	( (*env)->SetStaticByteField(env,jc1,jfi2,jb3) , TRUE );
 	break;
     case 157:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jchar(ta3,i3)
-	    &&	( (*env)->SetStaticCharField(env,(jclass)p1,(jfieldID)p2,(jchar)i3) , TRUE );
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jchar(ta3,&jc3)
+	    &&	( (*env)->SetStaticCharField(env,jc1,jfi2,jc3) , TRUE );
 	break;
     case 158:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jshort(ta3,i3)
-	    &&	( (*env)->SetStaticShortField(env,(jclass)p1,(jfieldID)p2,(jshort)i3) , TRUE );
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jshort(ta3,&js3)
+	    &&	( (*env)->SetStaticShortField(env,jc1,jfi2,js3) , TRUE );
 	break;
     case 159:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	( (*env)->SetStaticIntField(env,(jclass)p1,(jfieldID)p2,(jint)i3) , TRUE );
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jint(ta3,&ji3)
+	    &&	( (*env)->SetStaticIntField(env,jc1,jfi2,ji3) , TRUE );
 	break;
     case 160:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jlong(ta3,l3)
-	    &&	( (*env)->SetStaticLongField(env,(jclass)p1,(jfieldID)p2,(jlong)l3) , TRUE );
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jlong(ta3,&jl3)
+	    &&	( (*env)->SetStaticLongField(env,jc1,jfi2,jl3) , TRUE );
 	break;
     case 161:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-			&&	JNI_term_to_jfloat(ta3,f3) /* f3 was d3 */
-			&&	( (*env)->SetStaticFloatField(env,(jclass)p1,(jfieldID)p2,(jfloat)f3) , TRUE ); /* f3 was d3 */
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+			&&	jni_term_to_jfloat(ta3,&jf3)
+			&&	( (*env)->SetStaticFloatField(env,jc1,jfi2,jf3) , TRUE );
 	break;
     case 162:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_term_to_jdouble(ta3,d3)
-	    &&	( (*env)->SetStaticDoubleField(env,(jclass)p1,(jfieldID)p2,(jdouble)d3) , TRUE );
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_term_to_jdouble(ta3,&jd3)
+	    &&	( (*env)->SetStaticDoubleField(env,jc1,jfi2,jd3) , TRUE );
 	break;
     case 174:
-	r =	JNI_term_to_object_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_ref(ta3,p3)
-	    &&	( (*env)->SetObjectArrayElement(env,(jobjectArray)p1,(jsize)i2,(jobject)p3) , TRUE );
+	r =	jni_term_to_object_jarray(ta1,&oa1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_ref(ta3,&jo3,env)
+	    &&	( (*env)->SetObjectArrayElement(env,oa1,js2,jo3) , TRUE );
 	break;
- /*	case 191: */
- /*		r =	JNI_term_to_boolean_jarray(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_boolean) */
- /*			&&	JNI_term_to_jint(ta3,i3) */
- /*			&&	( (*env)->ReleaseBooleanArrayElements(env,(jbooleanArray)p1,(jboolean*)p2,(jint)i3) , TRUE ); */
- /*		break; */
- /*	case 192: */
- /*		r =	JNI_term_to_byte_jarray(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_byte) */
- /*			&&	JNI_term_to_jint(ta3,i3) */
- /*			&&	( (*env)->ReleaseByteArrayElements(env,(jbyteArray)p1,(jbyte*)p2,(jint)i3) , TRUE ); */
- /*		break; */
- /*	case 193: */
- /*		r =	JNI_term_to_char_jarray(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_char) */
- /*			&&	JNI_term_to_jint(ta3,i3) */
- /*			&&	( (*env)->ReleaseCharArrayElements(env,(jcharArray)p1,(jchar*)p2,(jint)i3) , TRUE ); */
- /*		break; */
- /*	case 194: */
- /*		r =	JNI_term_to_short_jarray(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_short) */
- /*			&&	JNI_term_to_jint(ta3,i3) */
- /*			&&	( (*env)->ReleaseShortArrayElements(env,(jshortArray)p1,(jshort*)p2,(jint)i3) , TRUE ); */
- /*		break; */
- /*	case 195: */
- /*		r =	JNI_term_to_int_jarray(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_int) */
- /*			&&	JNI_term_to_jint(ta3,i3) */
- /*			&&	( (*env)->ReleaseIntArrayElements(env,(jintArray)p1,(jint*)p2,(jint)i3) , TRUE ); */
- /*		break; */
- /*	case 196: */
- /*		r =	JNI_term_to_long_jarray(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_long) */
- /*			&&	JNI_term_to_jint(ta3,i3) */
- /*			&&	( (*env)->ReleaseLongArrayElements(env,(jlongArray)p1,(jlong*)p2,(jint)i3) , TRUE ); */
- /*		break; */
- /*	case 197: */
- /*		r =	JNI_term_to_float_jarray(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_float) */
- /*			&&	JNI_term_to_jint(ta3,i3) */
- /*			&&	( (*env)->ReleaseFloatArrayElements(env,(jfloatArray)p1,(jfloat*)p2,(jint)i3) , TRUE ); */
- /*		break; */
- /*	case 198: */
- /*		r =	JNI_term_to_double_jarray(ta1,p1) */
- /*			&&	JNI_term_to_jbuf(ta2,p2,JNI_atom_double) */
- /*			&&	JNI_term_to_jint(ta3,i3) */
- /*			&&	( (*env)->ReleaseDoubleArrayElements(env,(jdoubleArray)p1,(jdouble*)p2,(jint)i3) , TRUE ); */
- /*		break; */
     default:
 	return FALSE;  /* oughta throw exception (design-time error :-) */
 	break;
 	}
 
-    if ( jvp != NULL )
+    if ( jvp3 != NULL )
 	{
-	free( jvp);
+	free( jvp3);
 	}
 
     return jni_check_exception(env) && r;
@@ -2339,37 +2706,25 @@ jni_void_4_plc(
     )
     {
     int		n;	/* JNI function index */
-    functor_t	fn;	/* temp for conversion macros */
-    term_t	a1;	/*  " */
-    term_t	a2;	/*  " */
-    atom_t	a;	/*  " */
- /*	char		*cp;	//	" */
-    int		i;	/*  " */
- /* int		xhi;	//  " */
- /* int		xlo;	//  " */
- /* jobject	j;	//  " */
- /* jlong	jl;	//  " */
-    void	*p1;	/* temp for converted (JVM) arg */
- /*	void		*p2;	//	" */
- /*	void		*p3;	//	" */
-    void	*p4;	/*  " */
- /* char	*c1;	//  " */
- /* char	*c2;	//  " */
- /* char	*c3;	//  " */
- /* char	*c4;	//  " */
- /* int		i1;	//  " */
-    int		i2;	/*  " */
-    int		i3;	/*  " */
- /* int		i4;	//  " */
- /* jlong	l1;	//  " */
- /* jlong	l2;	//  " */
- /* jlong	l3;	//  " */
- /* jlong	l4;	//  " */
- /* double	d1;	//  " */
- /* double	d2;	//  " */
- /* double	d3;	//  " */
- /* double	d4;	//  " */
-    jvalue	*jvp = NULL; /* if this is given a buffer, it will be freed after the call */
+    jbooleanArray za1;
+    jbyteArray ba1;
+    jcharArray ca1;
+    jshortArray sa1;
+    jintArray ia1;
+    jlongArray la1;
+    jfloatArray fa1;
+    jdoubleArray da1;
+    jsize js2;
+    jsize js3;
+    jboolean *jzp4;
+    jbyte *jbp4;
+    jchar *jcp4;
+    jshort *jsp4;
+    jint *jip4;
+    jlong *jlp4;
+    jfloat *jfp4;
+    jdouble *jdp4;
+    jvalue	*jvp3 = NULL; /* if this is given a buffer, it will be freed after the call */
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -2382,133 +2737,126 @@ jni_void_4_plc(
 
     switch ( n )
 	{
- /*	case  93: */
- /*		r =	JNI_term_to_jobject(ta1,p1) */
- /*			&&	JNI_term_to_jclass(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	( (*env)->CallNonvirtualVoidMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp) , TRUE ); */
- /*		break; */
     case 199:
-	r =	JNI_term_to_boolean_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_boolean)
-	    &&	( (*env)->GetBooleanArrayRegion(env,(jbooleanArray)p1,(jsize)i2,(jsize)i3,(jboolean*)p4) , TRUE );
+	r =	jni_term_to_boolean_jarray(ta1,&za1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jint(ta3,&js3)
+	    &&	jni_term_to_jboolean_buf(ta4,&jzp4)
+	    &&	( (*env)->GetBooleanArrayRegion(env,za1,js2,js3,jzp4) , TRUE );
 	break;
     case 200:
-	r =	JNI_term_to_byte_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_byte)
-	    &&	( (*env)->GetByteArrayRegion(env,(jbyteArray)p1,(jsize)i2,(jsize)i3,(jbyte*)p4) , TRUE );
+	r =	jni_term_to_byte_jarray(ta1,&ba1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jbyte_buf(ta4,&jbp4)
+	    &&	( (*env)->GetByteArrayRegion(env,ba1,js2,js3,jbp4) , TRUE );
 	break;
     case 201:
-	r =	JNI_term_to_char_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_char)
-	    &&	( (*env)->GetCharArrayRegion(env,(jcharArray)p1,(jsize)i2,(jsize)i3,(jchar*)p4) , TRUE );
+	r =	jni_term_to_char_jarray(ta1,&ca1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jchar_buf(ta4,&jcp4)
+	    &&	( (*env)->GetCharArrayRegion(env,ca1,js2,js3,jcp4) , TRUE );
 	break;
     case 202:
-	r =	JNI_term_to_short_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_short)
-	    &&	( (*env)->GetShortArrayRegion(env,(jshortArray)p1,(jsize)i2,(jsize)i3,(jshort*)p4) , TRUE );
+	r =	jni_term_to_short_jarray(ta1,&sa1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jshort_buf(ta4,&jsp4)
+	    &&	( (*env)->GetShortArrayRegion(env,sa1,js2,js3,jsp4) , TRUE );
 	break;
     case 203:
-	r =	JNI_term_to_int_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_int)
-	    &&	( (*env)->GetIntArrayRegion(env,(jintArray)p1,(jsize)i2,(jsize)i3,(jint*)p4) , TRUE );
+	r =	jni_term_to_int_jarray(ta1,&ia1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jint_buf(ta4,&jip4)
+	    &&	( (*env)->GetIntArrayRegion(env,ia1,js2,js3,jip4) , TRUE );
 	break;
     case 204:
-	r =	JNI_term_to_long_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_long)
-	    &&	( (*env)->GetLongArrayRegion(env,(jlongArray)p1,(jsize)i2,(jsize)i3,(jlong*)p4) , TRUE );
+	r =	jni_term_to_long_jarray(ta1,&la1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jlong_buf(ta4,&jlp4)
+	    &&	( (*env)->GetLongArrayRegion(env,la1,js2,js3,jlp4) , TRUE );
 	break;
     case 205:
-	r =	JNI_term_to_float_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_float)
-	    &&	( (*env)->GetFloatArrayRegion(env,(jfloatArray)p1,(jsize)i2,(jsize)i3,(jfloat*)p4) , TRUE );
+	r =	jni_term_to_float_jarray(ta1,&fa1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jfloat_buf(ta4,&jfp4)
+	    &&	( (*env)->GetFloatArrayRegion(env,fa1,js2,js3,jfp4) , TRUE );
 	break;
     case 206:
-	r =	JNI_term_to_double_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_double)
-	    &&	( (*env)->GetDoubleArrayRegion(env,(jdoubleArray)p1,(jsize)i2,(jsize)i3,(jdouble*)p4) , TRUE );
+	r =	jni_term_to_double_jarray(ta1,&da1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jdouble_buf(ta4,&jdp4)
+	    &&	( (*env)->GetDoubleArrayRegion(env,da1,js2,js3,jdp4) , TRUE );
 	break;
     case 207:
-	r =	JNI_term_to_boolean_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_boolean)
-	    &&	( (*env)->SetBooleanArrayRegion(env,(jbooleanArray)p1,(jsize)i2,(jsize)i3,(jboolean*)p4) , TRUE );
+	r =	jni_term_to_boolean_jarray(ta1,&za1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jboolean_buf(ta4,&jzp4)
+	    &&	( (*env)->SetBooleanArrayRegion(env,za1,js2,js3,jzp4) , TRUE );
 	break;
     case 208:
-	r =	JNI_term_to_byte_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_byte)
-	    &&	( (*env)->SetByteArrayRegion(env,(jbyteArray)p1,(jsize)i2,(jsize)i3,(jbyte*)p4) , TRUE );
+	r =	jni_term_to_byte_jarray(ta1,&ba1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jbyte_buf(ta4,&jbp4)
+	    &&	( (*env)->SetByteArrayRegion(env,ba1,js2,js3,jbp4) , TRUE );
 	break;
     case 209:
-	r =	JNI_term_to_char_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_char)
-	    &&	( (*env)->SetCharArrayRegion(env,(jcharArray)p1,(jsize)i2,(jsize)i3,(jchar*)p4) , TRUE );
+	r =	jni_term_to_char_jarray(ta1,&ca1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jchar_buf(ta4,&jcp4)
+	    &&	( (*env)->SetCharArrayRegion(env,ca1,js2,js3,jcp4) , TRUE );
 	break;
     case 210:
-	r =	JNI_term_to_short_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_short)
-	    &&	( (*env)->SetShortArrayRegion(env,(jshortArray)p1,(jsize)i2,(jsize)i3,(jshort*)p4) , TRUE );
+	r =	jni_term_to_short_jarray(ta1,&sa1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jshort_buf(ta4,&jsp4)
+	    &&	( (*env)->SetShortArrayRegion(env,sa1,js2,js3,jsp4) , TRUE );
 	break;
     case 211:
-	r =	JNI_term_to_int_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_int)
-	    &&	( (*env)->SetIntArrayRegion(env,(jintArray)p1,(jsize)i2,(jsize)i3,(jint*)p4) , TRUE );
+	r =	jni_term_to_int_jarray(ta1,&ia1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jint_buf(ta4,&jip4)
+	    &&	( (*env)->SetIntArrayRegion(env,ia1,js2,js3,jip4) , TRUE );
 	break;
     case 212:
-	r =	JNI_term_to_long_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_long)
-	    &&	( (*env)->SetLongArrayRegion(env,(jlongArray)p1,(jsize)i2,(jsize)i3,(jlong*)p4) , TRUE );
+	r =	jni_term_to_long_jarray(ta1,&la1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jlong_buf(ta4,&jlp4)
+	    &&	( (*env)->SetLongArrayRegion(env,la1,js2,js3,jlp4) , TRUE );
 	break;
     case 213:
-	r =	JNI_term_to_float_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_float)
-	    &&	( (*env)->SetFloatArrayRegion(env,(jfloatArray)p1,(jsize)i2,(jsize)i3,(jfloat*)p4) , TRUE );
+	r =	jni_term_to_float_jarray(ta1,&fa1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jfloat_buf(ta4,&jfp4)
+	    &&	( (*env)->SetFloatArrayRegion(env,fa1,js2,js3,jfp4) , TRUE );
 	break;
     case 214:
-	r =	JNI_term_to_double_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2)
-	    &&	JNI_term_to_jint(ta3,i3)
-	    &&	JNI_term_to_jbuf(ta4,p4,JNI_atom_double)
-	    &&	( (*env)->SetDoubleArrayRegion(env,(jdoubleArray)p1,(jsize)i2,(jsize)i3,(jdouble*)p4) , TRUE );
+	r =	jni_term_to_double_jarray(ta1,&da1,env)
+	    &&	jni_term_to_jsize(ta2,&js2)
+	    &&	jni_term_to_jsize(ta3,&js3)
+	    &&	jni_term_to_jdouble_buf(ta4,&jdp4)
+	    &&	( (*env)->SetDoubleArrayRegion(env,da1,js2,js3,jdp4) , TRUE );
 	break;
     default:
 	return FALSE;  /* oughta throw exception (design-time error :-) */
 	break;
 	}
 
-    if ( jvp != NULL )
+    if ( jvp3 != NULL )
 	{
-	free( jvp);
+	free( jvp3);
 	}
 
     return jni_check_exception(env) && r;
@@ -2522,16 +2870,6 @@ jni_func_0_plc(
     )
     {
     int		n;	/* JNI function index */
- /* functor_t	fn;	// temp for conversion macros */
- /* term_t	a1;	//  " */
- /* term_t	a2;	//  " */
- /*	atom_t		a;		//	" */
- /* char	*cp;	//  " */
- /*	pointer			i;		//	" */
- /* int		xhi;	//  " */
- /* int		xlo;	//  " */
- /*	jobject		j;		//	" */
- /* jlong	jl;	//  " */
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -2544,12 +2882,6 @@ jni_func_0_plc(
 
     switch ( n )
 	{
- /*	case   4: */
- /*		r =    JNI_jint_to_term((*env)->GetVersion(env),tr); */
- /*		break; */
- /*	case  15: */
- /*		r =    JNI_jobject_to_term((*env)->ExceptionOccurred(env),tr); */
- /*		break; */
     default:
 	return FALSE;  /* oughta throw exception (design-time error :-) */
 	break;
@@ -2567,20 +2899,11 @@ jni_func_1_plc(
     )
     {
     int		n;	/* JNI function index */
-    functor_t	fn;	/* temp for conversion macros */
-    term_t	a1;	/*  " */
- /* term_t	a2;	//  " */
-    atom_t	a;	/*  " */
- /*	char		*cp;	//	" */
-    pointer	i;	/*  " */
- /* int		xhi;	//  " */
- /* int		xlo;	//  " */
- /* jlong	jl;	//  " */
-    void	*p1;	/* temp for converted (JVM) arg */
-    char	*c1;	/*  " */
-    int		i1;	/*  " */
- /* jlong	l1;	//  " */
- /* double	d1;	//  " */
+    char	*ch1;	/*  " */
+    jobject jo1;
+    jclass jc1;
+    jarray ja1;
+    jsize js1;
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -2594,81 +2917,53 @@ jni_func_1_plc(
     switch ( n )
 	{
     case   6:
-	r =	JNI_term_to_charP(ta1,c1)
-			&&	JNI_jobject_to_term((*env)->FindClass(env,(char*)c1),tr); /* *NOT* Unicode */
+	r =	jni_term_to_charP(ta1,&ch1)
+		&&	jni_jobject_to_term((*env)->FindClass(env,ch1),tr,env); /* *NOT* Unicode */
 	break;
     case  10:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_jobject_to_term((*env)->GetSuperclass(env,(jclass)p1),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_jobject_to_term((*env)->GetSuperclass(env,jc1),tr,env);
 	break;
- /*	case  13: */
- /*		r =	JNI_term_to_throwable_jobject(ta1,p1) */
- /*			&&	JNI_jint_to_term((*env)->Throw(env,(jthrowable)p1),tr); */
- /*		break; */
- /*	case  27: */
- /*		r =	JNI_term_to_non_array_jclass(ta1,p1) */
- /*			&&	JNI_jobject_to_term((*env)->AllocObject(env,(jclass)p1),tr); */
- /*		break; */
     case  31:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_jobject_to_term((*env)->GetObjectClass(env,(jobject)p1),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_jobject_to_term((*env)->GetObjectClass(env,jo1),tr,env);
 	break;
- /*	case 164: // not used */
- /*		r =	JNI_term_to_jstring(ta1,p1) */
- /*			&&	JNI_jint_to_term((*env)->GetStringLength(env,(jstring)p1),tr); */
- /*		break; */
- /*	case 167: // not used */
- /*		r =	JNI_term_to_charP(ta1,c1) */
- /*			&&	JNI_jobject_to_term((*env)->NewStringUTF(env,(char*)c1),tr); */
- /*		break; */
- /*	case 168: */
- /*		r =	JNI_term_to_jstring(ta1,p1) */
- /*			&&	JNI_jint_to_term((*env)->GetStringUTFLength(env,(jstring)p1),tr); */
- /*		break; */
     case 171:
-	r =	JNI_term_to_jarray(ta1,p1)
-	    &&	JNI_jint_to_term((*env)->GetArrayLength(env,(jarray)p1),tr);
+	r =	jni_term_to_jarray(ta1,&ja1,env)
+	    &&	jni_jint_to_term((*env)->GetArrayLength(env,ja1),tr);
 	break;
     case 175:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_jobject_to_term((*env)->NewBooleanArray(env,(jsize)i1),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_jobject_to_term((*env)->NewBooleanArray(env,js1),tr,env);
 	break;
     case 176:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_jobject_to_term((*env)->NewByteArray(env,(jsize)i1),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_jobject_to_term((*env)->NewByteArray(env,js1),tr,env);
 	break;
     case 177:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_jobject_to_term((*env)->NewCharArray(env,(jsize)i1),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_jobject_to_term((*env)->NewCharArray(env,js1),tr,env);
 	break;
     case 178:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_jobject_to_term((*env)->NewShortArray(env,(jsize)i1),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_jobject_to_term((*env)->NewShortArray(env,js1),tr,env);
 	break;
     case 179:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_jobject_to_term((*env)->NewIntArray(env,(jsize)i1),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_jobject_to_term((*env)->NewIntArray(env,js1),tr,env);
 	break;
     case 180:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_jobject_to_term((*env)->NewLongArray(env,(jsize)i1),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_jobject_to_term((*env)->NewLongArray(env,js1),tr,env);
 	break;
     case 181:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_jobject_to_term((*env)->NewFloatArray(env,(jsize)i1),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_jobject_to_term((*env)->NewFloatArray(env,js1),tr,env);
 	break;
     case 182:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_jobject_to_term((*env)->NewDoubleArray(env,(jsize)i1),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_jobject_to_term((*env)->NewDoubleArray(env,js1),tr,env);
 	break;
- /*	case 217: */
- /*		r =	JNI_term_to_jobject(ta1,p1) */
- /*			&&	JNI_jint_to_term((*env)->MonitorEnter(env,(jobject)p1),tr); */
- /*		break; */
- /*	case 218: */
- /*		r =	JNI_term_to_jobject(ta1,p1) */
- /*			&&	JNI_jint_to_term((*env)->MonitorExit(env,(jobject)p1),tr); */
- /*		break; */
     default:
 	return	FALSE;	/* oughta throw exception (design-time error :-) */
 	break;
@@ -2687,24 +2982,12 @@ jni_func_2_plc(
     )
     {
     int		n;	/* JNI function index */
-    functor_t	fn;	/* temp for conversion macros */
-    term_t	a1;	/*  " */
- /* term_t	a2;	//  " */
-    atom_t	a;	/*  " */
- /*	char		*cp;	//	" */
- /*	int		xhi;	//	" */
- /*	int		xlo;	//	" */
- /*	jlong		jl;	//	" */
-    void	*p1;	/* temp for converted (JVM) arg */
-    void	*p2;	/*  " */
- /*	char		*c1;	//	" */
- /*	char		*c2;	//	" */
- /* int		i1;	//  " */
-    int		i2;	/*  " */
- /* jlong	l1;	//  " */
- /* jlong	l2;	//  " */
- /* double	d1;	//  " */
- /* double	d2;	//  " */
+	jobject jo1;
+    jclass jc1;
+    jclass c2;
+    jobjectArray oa1;
+    jsize js2;
+    jfieldID jfi2;
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -2718,180 +3001,110 @@ jni_func_2_plc(
     switch ( n )
 	{
     case  11:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jclass(ta2,p2)
-	    &&	JNI_jboolean_to_term((*env)->IsAssignableFrom(env,(jclass)p1,(jclass)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jclass(ta2,&c2,env)
+	    &&	jni_jboolean_to_term((*env)->IsAssignableFrom(env,jc1,c2),tr);
 	break;
- /*	case  14: */
- /*		r =	JNI_term_to_throwable_jclass(ta1,p1) */
- /*			&&	JNI_term_to_charP(ta2,c2) */
- /*			&&	JNI_jint_to_term((*env)->ThrowNew(env,(jclass)p1,(char*)c2),tr); */
- /*		break; */
- /*	case  24: */
- /*		r =	JNI_term_to_ref(ta1,p1) */
- /*			&&	JNI_term_to_ref(ta2,p2) */
- /*			&&	JNI_jboolean_to_term((*env)->IsSameObject(env,(jobject)p1,(jobject)p2),tr); */
- /*		break; */
- /*	case  32: */
- /*		r =	JNI_term_to_ref(ta1,p1) */
- /*			&&	JNI_term_to_jclass(ta2,p2) */
- /*			&&	JNI_jboolean_to_term((*env)->IsInstanceOf(env,(jobject)p1,(jclass)p2),tr); */
- /*		break; */
     case  95:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jobject_to_term((*env)->GetObjectField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jobject_to_term((*env)->GetObjectField(env,jo1,jfi2),tr,env);
 	break;
     case  96:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jboolean_to_term((*env)->GetBooleanField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jboolean_to_term((*env)->GetBooleanField(env,jo1,jfi2),tr);
 	break;
     case  97:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jbyte_to_term((*env)->GetByteField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jbyte_to_term((*env)->GetByteField(env,jo1,jfi2),tr);
 	break;
     case  98:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jchar_to_term((*env)->GetCharField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jchar_to_term((*env)->GetCharField(env,jo1,jfi2),tr);
 	break;
     case  99:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jshort_to_term((*env)->GetShortField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jshort_to_term((*env)->GetShortField(env,jo1,jfi2),tr);
 	break;
     case 100:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-		&&	JNI_jint_to_term((*env)->GetIntField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+		&&	jni_jint_to_term((*env)->GetIntField(env,jo1,jfi2),tr);
 	break;
     case 101:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jlong_to_term((*env)->GetLongField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jlong_to_term((*env)->GetLongField(env,jo1,jfi2),tr);
 	break;
     case 102:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jfloat_to_term((*env)->GetFloatField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jfloat_to_term((*env)->GetFloatField(env,jo1,jfi2),tr);
 	break;
     case 103:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jdouble_to_term((*env)->GetDoubleField(env,(jobject)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jdouble_to_term((*env)->GetDoubleField(env,jo1,jfi2),tr);
 	break;
     case 145:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jobject_to_term((*env)->GetStaticObjectField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jobject_to_term((*env)->GetStaticObjectField(env,jc1,jfi2),tr,env);
 	break;
     case 146:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jboolean_to_term((*env)->GetStaticBooleanField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jboolean_to_term((*env)->GetStaticBooleanField(env,jc1,jfi2),tr);
 	break;
     case 147:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jbyte_to_term((*env)->GetStaticByteField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jbyte_to_term((*env)->GetStaticByteField(env,jc1,jfi2),tr);
 	break;
     case 148:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jchar_to_term((*env)->GetStaticCharField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jchar_to_term((*env)->GetStaticCharField(env,jc1,jfi2),tr);
 	break;
     case 149:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jshort_to_term((*env)->GetStaticShortField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jshort_to_term((*env)->GetStaticShortField(env,jc1,jfi2),tr);
 	break;
     case 150:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jint_to_term((*env)->GetStaticIntField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jint_to_term((*env)->GetStaticIntField(env,jc1,jfi2),tr);
 	break;
     case 151:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jlong_to_term((*env)->GetStaticLongField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jlong_to_term((*env)->GetStaticLongField(env,jc1,jfi2),tr);
 	break;
     case 152:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jfloat_to_term((*env)->GetStaticFloatField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jfloat_to_term((*env)->GetStaticFloatField(env,jc1,jfi2),tr);
 	break;
     case 153:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jfieldID(ta2,p2)
-	    &&	JNI_jdouble_to_term((*env)->GetStaticDoubleField(env,(jclass)p1,(jfieldID)p2),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jfieldID(ta2,&jfi2)
+	    &&	jni_jdouble_to_term((*env)->GetStaticDoubleField(env,jc1,jfi2),tr);
 	break;
- /*	case 163: */
- /*		r =	JNI_term_to_charP(ta1,c1)	// oughta be _jcharP, i.e. Unicode */
- /*			&&	JNI_term_to_non_neg_jint(ta2,i2) */
- /*			&&	JNI_jobject_to_term((*env)->NewString(env,(jchar*)c1,(jsize)i2),tr); */
- /*		break; */
- /*	case 165: */
- /*		r =	JNI_term_to_jstring(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetStringChars(env,(jstring)p1,(jboolean*)&i2),tr,JNI_atom_boolean) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
- /*	case 169: */
- /*		r =	JNI_term_to_jstring(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetStringUTFChars(env,(jstring)p1,(jboolean*)&i2),tr,JNI_atom_byte) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
     case 173:
-    {   int i;				/* JW: i is long in this function */
+    { /* int i; */			/* JW: i is long in this function */
 
-        i2 = 0;			/* JW: make compiler happy */
-	r =	JNI_term_to_object_jarray(ta1,p1)
-	    &&	JNI_term_to_jint(ta2,i2);
+        js2 = 0;			/* JW: make compiler happy (was i2) */
+	r =	jni_term_to_object_jarray(ta1,&oa1,env)
+	    &&	jni_term_to_jsize(ta2,&js2);
     }
     if ( r )
-        r = JNI_jobject_to_term((*env)->GetObjectArrayElement(env,(jobjectArray)p1,(jsize)i2),tr);
+        r = jni_jobject_to_term((*env)->GetObjectArrayElement(env,oa1,js2),tr,env);
     break;
- /*	case 183: */
- /*		r =	JNI_term_to_boolean_jarray(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetBooleanArrayElements(env,(jbooleanArray)p1,(jboolean*)&i2),tr,JNI_atom_boolean) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
- /*	case 184: */
- /*		r =	JNI_term_to_byte_jarray(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetByteArrayElements(env,(jbyteArray)p1,(jboolean*)&i2),tr,JNI_atom_byte) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
- /*	case 185: */
- /*		r =	JNI_term_to_char_jarray(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetCharArrayElements(env,(jcharArray)p1,(jboolean*)&i2),tr,JNI_atom_char) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
- /*	case 186: */
- /*		r =	JNI_term_to_short_jarray(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetShortArrayElements(env,(jshortArray)p1,(jboolean*)&i2),tr,JNI_atom_short) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
- /*	case 187: */
- /*		r =	JNI_term_to_int_jarray(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetIntArrayElements(env,(jintArray)p1,(jboolean*)&i2),tr,JNI_atom_int) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
- /*	case 188: */
- /*		r =	JNI_term_to_long_jarray(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetLongArrayElements(env,(jlongArray)p1,(jboolean*)&i2),tr,JNI_atom_long) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
- /*	case 189: */
- /*		r =	JNI_term_to_float_jarray(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetFloatArrayElements(env,(jfloatArray)p1,(jboolean*)&i2),tr,JNI_atom_float) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
- /*	case 190: */
- /*		r =	JNI_term_to_double_jarray(ta1,p1) */
- /*			&&	JNI_jbuf_to_term((*env)->GetDoubleArrayElements(env,(jdoubleArray)p1,(jboolean*)&i2),tr,JNI_atom_double) */
- /*			&&	JNI_jboolean_to_term(i2,ta2); */
- /*		break; */
     default:
 	return	FALSE;	/* oughta throw exception (design-time error :-) */
 	break;
@@ -2911,31 +3124,15 @@ jni_func_3_plc(
     )
     {
     int		n;	/* JNI function index */
-    functor_t	fn;	/* temp for conversion macros */
-    term_t	a1;	/*  " */
- /* term_t	a2;	//  " */
-    atom_t	a;	/*  " */
- /*	char		*cp;	//	" */
-    pointer	i;	/*  " */
- /*	int		xhi;	//	" */
- /*	int		xlo;	//	" */
- /*	jlong		jl;	//	" */
-    void	*p1;	/* temp for converted (JVM) arg */
-    void	*p2;	/*  " */
-    void	*p3;	/*  " */
- /* char	*c1;	//  " */
-    char	*c2;	/*  " */
-    char	*c3;	/*  " */
-    int		i1;	/*  " */
- /* int		i2;	//  " */
- /* int		i3;	//  " */
- /* jlong	l1;	//  " */
- /* jlong	l2;	//  " */
- /* jlong	l3;	//  " */
- /* double	d1;	//  " */
- /* double	d2;	//  " */
- /* double	d3;	//  " */
-    jvalue	*jvp = NULL; /* if this is given a buffer, it will be freed after the call */
+    char	*ch2;	/*  " */
+    char	*ch3;	/*  " */
+    jclass jc1;
+    jclass c2;
+    jobject jo1;
+    jobject jo3;
+    jmethodID jmi2;
+    jsize js1;
+    jvalue	*jvp3 = NULL; /* if this is given a buffer, it will be freed after the call */
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -2949,157 +3146,157 @@ jni_func_3_plc(
     switch ( n )
 	{
     case  30:
-	r =	JNI_term_to_non_array_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jobject_to_term((*env)->NewObjectA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_non_array_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jobject_to_term((*env)->NewObjectA(env,jc1,jmi2,jvp3),tr,env);
 	break;
 	case  33:
-		r =	JNI_term_to_jclass(ta1,p1)
-			&&	JNI_term_to_charP(ta2,c2)
-			&&	JNI_term_to_charP(ta3,c3)
-			&&	JNI_jmethodID_to_term((*env)->GetMethodID(env,(jclass)p1,(char*)c2,(char*)c3),tr);
+		r =	jni_term_to_jclass(ta1,&jc1,env)
+			&&	jni_term_to_charP(ta2,&ch2)
+			&&	jni_term_to_charP(ta3,&ch3)
+			&&	jni_jmethodID_to_term((*env)->GetMethodID(env,jc1,ch2,ch3),tr);
 		break;
     case  36:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jobject_to_term((*env)->CallObjectMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jobject_to_term((*env)->CallObjectMethodA(env,jo1,jmi2,jvp3),tr,env);
 	break;
     case  39:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jboolean_to_term((*env)->CallBooleanMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jboolean_to_term((*env)->CallBooleanMethodA(env,jo1,jmi2,jvp3),tr);
 	break;
     case  42:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jbyte_to_term((*env)->CallByteMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jbyte_to_term((*env)->CallByteMethodA(env,jo1,jmi2,jvp3),tr);
 	break;
     case  45:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jchar_to_term((*env)->CallCharMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jchar_to_term((*env)->CallCharMethodA(env,jo1,jmi2,jvp3),tr);
 	break;
     case  48:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jshort_to_term((*env)->CallShortMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jshort_to_term((*env)->CallShortMethodA(env,jo1,jmi2,jvp3),tr);
 	break;
     case  51:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jint_to_term((*env)->CallIntMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jint_to_term((*env)->CallIntMethodA(env,jo1,jmi2,jvp3),tr);
 	break;
     case  54:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jlong_to_term((*env)->CallLongMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jlong_to_term((*env)->CallLongMethodA(env,jo1,jmi2,jvp3),tr);
 	break;
     case  57:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jfloat_to_term((*env)->CallFloatMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jfloat_to_term((*env)->CallFloatMethodA(env,jo1,jmi2,jvp3),tr);
 	break;
     case  60:
-	r =	JNI_term_to_jobject(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jdouble_to_term((*env)->CallDoubleMethodA(env,(jobject)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jobject(ta1,&jo1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jdouble_to_term((*env)->CallDoubleMethodA(env,jo1,jmi2,jvp3),tr);
 	break;
 	case  94:
-		r =	JNI_term_to_jclass(ta1,p1)
-			&&	JNI_term_to_charP(ta2,c2)
-			&&	JNI_term_to_charP(ta3,c3)
-			&&	JNI_jfieldID_to_term((*env)->GetFieldID(env,(jclass)p1,(char*)c2,(char*)c3),tr);
+		r =	jni_term_to_jclass(ta1,&jc1,env)
+			&&	jni_term_to_charP(ta2,&ch2)
+			&&	jni_term_to_charP(ta3,&ch3)
+			&&	jni_jfieldID_to_term((*env)->GetFieldID(env,jc1,ch2,ch3),tr);
 		break;
 	case 113:
-		r =	JNI_term_to_jclass(ta1,p1)
-			&&	JNI_term_to_charP(ta2,c2)
-			&&	JNI_term_to_charP(ta3,c3)
-			&&	JNI_jmethodID_to_term((*env)->GetStaticMethodID(env,(jclass)p1,(char*)c2,(char*)c3),tr);
+		r =	jni_term_to_jclass(ta1,&jc1,env)
+			&&	jni_term_to_charP(ta2,&ch2)
+			&&	jni_term_to_charP(ta3,&ch3)
+			&&	jni_jmethodID_to_term((*env)->GetStaticMethodID(env,jc1,ch2,ch3),tr);
 		break;
     case 116:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jobject_to_term((*env)->CallStaticObjectMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jobject_to_term((*env)->CallStaticObjectMethodA(env,jc1,jmi2,jvp3),tr,env);
 	break;
     case 119:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jboolean_to_term((*env)->CallStaticBooleanMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jboolean_to_term((*env)->CallStaticBooleanMethodA(env,jc1,jmi2,jvp3),tr);
 	break;
     case 122:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jbyte_to_term((*env)->CallStaticByteMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jbyte_to_term((*env)->CallStaticByteMethodA(env,jc1,jmi2,jvp3),tr);
 	break;
     case 125:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jchar_to_term((*env)->CallStaticCharMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jchar_to_term((*env)->CallStaticCharMethodA(env,jc1,jmi2,jvp3),tr);
 	break;
     case 128:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jshort_to_term((*env)->CallStaticShortMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jshort_to_term((*env)->CallStaticShortMethodA(env,jc1,jmi2,jvp3),tr);
 	break;
     case 131:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jint_to_term((*env)->CallStaticIntMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jint_to_term((*env)->CallStaticIntMethodA(env,jc1,jmi2,jvp3),tr);
 	break;
     case 134:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jlong_to_term((*env)->CallStaticLongMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jlong_to_term((*env)->CallStaticLongMethodA(env,jc1,jmi2,jvp3),tr);
 	break;
     case 137:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jfloat_to_term((*env)->CallStaticFloatMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jfloat_to_term((*env)->CallStaticFloatMethodA(env,jc1,jmi2,jvp3),tr);
 	break;
     case 140:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_jmethodID(ta2,p2)
-	    &&	JNI_term_to_pointer(ta3,jvp)
-	    &&	JNI_jdouble_to_term((*env)->CallStaticDoubleMethodA(env,(jclass)p1,(jmethodID)p2,jvp),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_jmethodID(ta2,&jmi2)
+	    &&	jni_term_to_pointer(ta3,&jvp3)
+	    &&	jni_jdouble_to_term((*env)->CallStaticDoubleMethodA(env,jc1,jmi2,jvp3),tr);
 	break;
     case 144:
-	r =	JNI_term_to_jclass(ta1,p1)
-	    &&	JNI_term_to_charP(ta2,c2)
-	    &&	JNI_term_to_charP(ta3,c3)
-	    &&	JNI_jfieldID_to_term((*env)->GetStaticFieldID(env,(jclass)p1,(char*)c2,(char*)c3),tr);
+	r =	jni_term_to_jclass(ta1,&jc1,env)
+	    &&	jni_term_to_charP(ta2,&ch2)
+	    &&	jni_term_to_charP(ta3,&ch3)
+	    &&	jni_jfieldID_to_term((*env)->GetStaticFieldID(env,jc1,ch2,ch3),tr);
 	break;
     case 172:
-	r =	JNI_term_to_non_neg_jint(ta1,i1)
-	    &&	JNI_term_to_jclass(ta2,p2)
-	    &&	JNI_term_to_ref(ta3,p3)
-	    &&	JNI_jobject_to_term((*env)->NewObjectArray(env,(jsize)i1,(jclass)p2,(jobject)p3),tr);
+	r =	jni_term_to_non_neg_jsize(ta1,&js1)
+	    &&	jni_term_to_jclass(ta2,&c2,env)
+	    &&	jni_term_to_ref(ta3,&jo3,env)
+	    &&	jni_jobject_to_term((*env)->NewObjectArray(env,js1,c2,jo3),tr,env);
 	break;
     default:
 	return	FALSE;	/* oughta throw exception (design-time error :-) */
 	break;
 	}
 
-    if ( jvp != NULL )
+    if ( jvp3 != NULL )
 	{
-	free( jvp);
+	free( jvp3);
 	}
 
     return jni_check_exception(env) && r;
@@ -3117,37 +3314,7 @@ jni_func_4_plc(
     )
     {
     int		n;	/* JNI function index */
- /*	functor_t	fn;	// temp for conversion macros */
- /*	term_t		a1;	//	" */
- /*	term_t		a2;	//	" */
- /*	atom_t		a;		//	" */
- /*	char		*cp;	//	" */
- /*	pointer			i;		//	" */
- /*	int		xhi;	//	" */
- /*	int		xlo;	//	" */
- /*	jobject		j;		//	" */
- /*	jlong		jl;	//	" */
- /*	void		*p1;	// temp for converted (JVM) arg */
- /*	void		*p2;	//	" */
- /*	void		*p3;	//	" */
- /* void	*p4;	//  " */
- /*	char		*c1;	//	" */
- /* char	*c2;	//  " */
- /* char	*c3;	//  " */
- /* char	*c4;	//  " */
- /* int		i1;	//  " */
- /* int		i2;	//  " */
- /* int		i3;	//  " */
- /*	int		i4;	//	" */
- /* jlong	l1;	//  " */
- /* jlong	l2;	//  " */
- /* jlong	l3;	//  " */
- /* jlong	l4;	//  " */
- /* double	d1;	//  " */
- /* double	d2;	//  " */
- /* double	d3;	//  " */
- /* double	d4;	//  " */
-    jvalue	*jvp = NULL; /* if this is given a buffer, it will be freed after the call */
+    jvalue	*jvp3 = NULL; /* if this is given a buffer, it will be freed after the call */
     jboolean	r;	/* Prolog exit/fail outcome */
     JNIEnv	*env;
 
@@ -3160,84 +3327,14 @@ jni_func_4_plc(
 
     switch ( n )
 	{
- /*	case   5: */
- /*		r =	JNI_term_to_charP(ta1,c1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jbuf(ta3,p3,JNI_atom_byte) */
- /*			&&	JNI_term_to_jint(ta4,i4) */
- /*			&&	JNI_jobject_to_term((*env)->DefineClass(env,(char*)c1,(jobject)p2,(jbyte*)p3,(jsize)i4),tr); */
- /*		break; */
- /*	case  66: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jobject_to_term((*env)->CallNonvirtualObjectMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
- /*	case  69: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jboolean_to_term((*env)->CallNonvirtualBooleanMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
- /*	case  72: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jbyte_to_term((*env)->CallNonvirtualByteMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
- /*	case  75: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jchar_to_term((*env)->CallNonvirtualCharMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
- /*	case  78: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jshort_to_term((*env)->CallNonvirtualShortMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
- /*	case  81: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jint_to_term((*env)->CallNonvirtualIntMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
- /*	case  84: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jlong_to_term((*env)->CallNonvirtualLongMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
- /*	case  87: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jfloat_to_term((*env)->CallNonvirtualFloatMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
- /*	case  90: */
- /*		r =	JNI_term_to_jclass(ta1,p1) */
- /*			&&	JNI_term_to_jobject(ta2,p2) */
- /*			&&	JNI_term_to_jmethodID(ta3,p3) */
- /*			&&	JNI_term_to_pointer(ta4,jvp) */
- /*			&&	JNI_jdouble_to_term((*env)->CallNonvirtualDoubleMethodA(env,(jobject)p1,(jclass)p2,(jmethodID)p3,jvp),tr); */
- /*		break; */
 	default:
 		return	FALSE;	/* oughta throw exception (design-time error :-) */
 	break;
 	}
 
-    if ( jvp != NULL )
+    if ( jvp3 != NULL )
 	{
-	free( jvp);
+	free( jvp3);
 	}
 
     return jni_check_exception(env) && r;
@@ -4068,7 +4165,6 @@ setStringValue(
     }
 
 
-#if 0
 /*-----------------------------------------------------------------------
  * setObjectValue
  *
@@ -4095,6 +4191,7 @@ setObjectValue(
     }
 
 
+#if 0
 /*-----------------------------------------------------------------------
  * setBooleanValue
  *
@@ -4513,6 +4610,34 @@ JNIEXPORT jboolean JNICALL
 		&&	PL_get_atom(term,&a)							/* confirms that term is an atom */
 		&&	jni_atom_to_String(env,a,&string)				/* Unicode-aware */
 		&&	setStringValue(env,jstring_holder,string)
+	;
+    }
+
+
+/*
+ * Class:	  org_jpl7_fli_Prolog
+ * Method:	  get_jref_object
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/ObjectHolder;)Z
+ */
+JNIEXPORT jboolean JNICALL
+ Java_org_jpl7_fli_Prolog_get_1jref_1object(
+    JNIEnv     *env,
+    jclass	jProlog,
+	jobject		jterm,
+	jobject		jobject_holder
+    )
+    {
+    term_t	term;
+	atom_t		a;
+	jref_handle	*ref;
+	PL_blob_t	*type;
+
+    return  jpl_ensure_pvm_init(env)
+		&&	jobject_holder != NULL							/* don't call PL_get_atom_chars if this is null */
+		&&	getUIntPtrValue(env,jterm,&term)				/* confirms that jterm != NULL */
+		&&	PL_get_atom(term,&a)							/* confirms that term is an atom */
+		&&	( (ref=PL_blob_data(a,NULL,&type)), type==&jref_blob )
+		&&	setObjectValue(env,jobject_holder,(void*)(ref->iref))
 	;
     }
 
@@ -5109,7 +5234,7 @@ JNIEXPORT void JNICALL
 		&&	getUIntPtrValue(env,jterm,&term)				// checks that jterm isn't null
 	)
 	{
-		JNI_jobject_to_term(jref,term);					// assumes term is var; OK if jref == null
+		jni_jobject_to_term(jref,term,env);					// assumes term is var; OK if jref == null
 	}
 	}
 
@@ -5544,7 +5669,7 @@ static foreign_t
 		&& jpl_ensure_pvm_init(env)	/* ...this requires both inits */
 		&& (term1=(*env)->AllocObject(env,termt_class)) != NULL
 		&& setUIntPtrValue(env,term1,tref1) /* requires jLongHolderValue_f to be initialised */
-		&& JNI_jobject_to_term((*env)->CallStaticObjectMethod(env,term_class,term_getTerm,term1),tref2)
+		&& jni_jobject_to_term((*env)->CallStaticObjectMethod(env,term_class,term_getTerm,term1),tref2,env)
 		&& jni_check_exception(env);
 	}
 
@@ -5568,7 +5693,7 @@ static bool
 	}
 
 
-/* if the first arg is a jref i.e. @(Tag) which refers to a org.jpl7.Term instance, */
+/* if the first arg is a <jref> which refers to a org.jpl7.Term instance, */
 /* then the 2nd arg will be matched with a corresponding newly constructed term */
 static foreign_t
  jni_jref_to_term_plc(
@@ -5576,23 +5701,18 @@ static foreign_t
 	term_t		termIn	/* -term: term as represented by the JRef */
 	)
 	{
-	functor_t	fn;
-	term_t		arg = PL_new_term_ref();
-	atom_t		a;
-	intptr_t	iterm;
-	jobject		jterm;
-	term_t		term = PL_new_term_ref();	/* jni_jobject_to_term_byval() will *put* the constructed term in here */
-	JNIEnv		*env;
+	atom_t a;
+	term_t term = PL_new_term_ref();	/* jni_jobject_to_term_byval() will *put* the constructed term in here */
+	JNIEnv *env;
+	PL_blob_t *type;
+	jref_handle *ref;
 
 	return jni_ensure_jvm()			/* untypically... */
 		&& jpl_ensure_pvm_init(env)	/* ...this requires both inits */
-		&& PL_get_functor(jref,&fn)
-		&& fn==JNI_functor_at_1
-		&& PL_get_arg(1,jref,arg)
-		&& PL_get_atom(arg,&a)
-		&& jni_tag_to_iref(a,&iterm)
-		&& (jterm = (jobject)iterm)
-		&& jni_jobject_to_term_byval(env,jterm,term)	/* NB a bogus Tag could crash this... */
+		&& PL_get_atom(jref,&a)
+		&& (ref=PL_blob_data(a,NULL,&type))
+		&& type == &jref_blob
+		&& jni_jobject_to_term_byval(env,(jobject)(ref->iref),term)
 		&& PL_unify( termIn, term)	/* attempt to unify the 2nd arg with the newly constructed term */
 		;
 	}

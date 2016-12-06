@@ -16,11 +16,13 @@ public class CelsiusConverter implements ActionListener {
 	JLabel celsiusLabel, fahrenheitLabel;
 	JButton convertTemp;
 
-	public CelsiusConverter() { // initially locate the window at top-left of desktop
+	public CelsiusConverter() { // initially locate the window at top-left of
+								// desktop
 		this(0, 0);
 	}
 
-	public CelsiusConverter(int left, int top) { // initially locate the window at top-left of desktop
+	public CelsiusConverter(int left, int top) { // initially locate the window
+													// at top-left of desktop
 		// create and set up the window
 		converterFrame = new JFrame("Convert Celsius to Fahrenheit");
 		converterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -43,7 +45,12 @@ public class CelsiusConverter implements ActionListener {
 		converterPanel.add(convertTemp);
 		converterPanel.add(fahrenheitLabel);
 		fahrenheitLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		converterFrame.getRootPane().setDefaultButton(convertTemp); // make "convert" the window's default button
+		converterFrame.getRootPane().setDefaultButton(convertTemp); // make
+																	// "convert"
+																	// the
+																	// window's
+																	// default
+																	// button
 		// add the panel to the window
 		converterFrame.getContentPane().add(converterPanel, BorderLayout.CENTER);
 		// display the window
@@ -59,26 +66,32 @@ public class CelsiusConverter implements ActionListener {
 		// int tempFahr = (int) (tC * 1.8 + 32);
 		//
 		// convert to Fahrenheit (in Prolog, via JPL)
-		int tempFahr = ((org.jpl7.Float) org.jpl7.Query.oneSolution("TF is ? * 1.8 + 32", new org.jpl7.Term[] { new org.jpl7.Float(tC) }).get("TF")).intValue();
+		int tempFahr = ((org.jpl7.Float) org.jpl7.Query
+				.oneSolution("TF is ? * 1.8 + 32", new org.jpl7.Term[] { new org.jpl7.Float(tC) }).get("TF"))
+						.intValue();
 		//
 		// display the result
 		fahrenheitLabel.setText(tempFahr + " Fahrenheit");
 	}
 
 	public static void spawnGUI(final int left, final int top) {
-		// schedule a job for the event-dispatching thread: create and show an instance of this application at (left,top)
+		// schedule a job for the event-dispatching thread: create and show an
+		// instance of this application at (left,top)
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			int x = left;
 			int y = top;
 
 			public void run() {
-				new CelsiusConverter(x, y); // can we be sure this won't be garbage collected?
+				new CelsiusConverter(x, y); // can we be sure this won't be
+											// garbage collected?
 			}
 		});
 	}
 
 	public static void main(String[] args) {
-		// just for fun, we ask Prolog to start five instances of this class (at stepped offsets from top-left of display)
-		org.jpl7.Query.allSolutions("between(1, 5, N), X is 10*N, Y is 20*N, jpl_call('jpl.test.CelsiusConverter', spawnGUI, [X,Y], _)");
+		// just for fun, we ask Prolog to start five instances of this class (at
+		// stepped offsets from top-left of display)
+		org.jpl7.Query.allSolutions(
+				"between(1, 5, N), X is 10*N, Y is 20*N, jpl_call('jpl.test.CelsiusConverter', spawnGUI, [X,Y], _)");
 	}
 }

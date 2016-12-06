@@ -42,3 +42,4 @@ jpldoc.tex
 *.bak
 src/java/.classpath
 src/java/.project
+*.prefs

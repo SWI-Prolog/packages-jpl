@@ -5,7 +5,8 @@ import org.jpl7.Term;
 
 public class FetchBigTree {
 	public static void main(String[] args) {
-		// Prolog.set_default_init_args(new String[] { "libpl.dll", "-f", "D:/pcm/bin/pcm.ini", "-g", "pcm_2000" });
+		// Prolog.set_default_init_args(new String[] { "libpl.dll", "-f",
+		// "D:/pcm/bin/pcm.ini", "-g", "pcm_2000" });
 		(new Query("consult('jpl/test/test.pl')")).oneSolution();
 		Term t = (Term) ((new Query("p(18,T)")).oneSolution().get("T"));
 		int i = 1;

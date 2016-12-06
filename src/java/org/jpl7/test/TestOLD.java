@@ -18,7 +18,9 @@ public class TestOLD {
 		System.err.println("test10:");
 		System.err.println("  java_lib_version = " + JPL.version_string());
 		System.err.println("  c_lib_version = " + org.jpl7.fli.Prolog.get_c_lib_version());
-		System.err.println("  pl_lib_version = " + new Query(new Compound("jpl_pl_lib_version", new Term[] { new Variable("V") })).oneSolution().get("V"));
+		System.err.println(
+				"  pl_lib_version = " + new Query(new Compound("jpl_pl_lib_version", new Term[] { new Variable("V") }))
+						.oneSolution().get("V"));
 		System.err.println("  java.version = " + System.getProperty("java.version"));
 		System.err.println("  os.name = " + System.getProperty("os.name"));
 		System.err.println("  os.arch = " + System.getProperty("os.arch"));
@@ -27,7 +29,8 @@ public class TestOLD {
 	}
 
 	private static void test10j() {
-		Term l2 = Util.termArrayToList(new Term[] { new Atom("a"), new Atom("b"), new Atom("c"), new Atom("d"), new Atom("e") });
+		Term l2 = Util.termArrayToList(
+				new Term[] { new Atom("a"), new Atom("b"), new Atom("c"), new Atom("d"), new Atom("e") });
 		Query q9 = new Query(new Compound("append", new Term[] { new Variable("Xs"), new Variable("Ys"), l2 }));
 		Map<String, Term>[] s9s = q9.allSolutions();
 		System.err.println("test10j:");
@@ -78,7 +81,8 @@ public class TestOLD {
 
 	private static void test10o() {
 		System.err.println("test10o:");
-		Term l2b = Util.termArrayToList(new Term[] { new Variable("A"), new Variable("B"), new Variable("C"), new Variable("D"), new Variable("E") });
+		Term l2b = Util.termArrayToList(new Term[] { new Variable("A"), new Variable("B"), new Variable("C"),
+				new Variable("D"), new Variable("E") });
 		Query q9b = new Query(new Compound("append", new Term[] { new Variable("Xs"), new Variable("Ys"), l2b }));
 		Map<String, Term>[] s9bs = q9b.allSolutions();
 		for (int i = 0; i < s9bs.length; i++) {
@@ -114,14 +118,16 @@ public class TestOLD {
 		} catch (InterruptedException e) {
 			;
 		} // wait a coupla seconds for it to get started
-			// (new Query("set_prolog_flag(abort_with_exception, true)")).hasSolution();
+			// (new Query("set_prolog_flag(abort_with_exception,
+			// true)")).hasSolution();
 		System.err.println("calling q.abort()...");
-//		q.abort();
+		// q.abort();
 		System.err.println();
 	}
 
 	public static void main(String argv[]) {
-		Prolog.set_default_init_args(new String[] { "libpl.dll", "-f", "none", "-g", "set_prolog_flag(debug_on_error,false)", "-q" });
+		Prolog.set_default_init_args(
+				new String[] { "libpl.dll", "-f", "none", "-g", "set_prolog_flag(debug_on_error,false)", "-q" });
 		System.err.println("tag = " + Prolog.object_to_tag(new Query("hello")));
 		test10k();
 		test10();

@@ -8,13 +8,17 @@ import java.util.Map;
 import org.jpl7.fli.DoubleHolder;
 import org.jpl7.fli.Int64Holder;
 import org.jpl7.fli.IntHolder;
+import org.jpl7.fli.ObjectHolder;
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.StringHolder;
 import org.jpl7.fli.term_t;
 
 /**
- * Term is the abstract base class for Compound, Atom, Variable, Integer and Float, which comprise a Java-oriented concrete syntax for Prolog. You cannot create instances of Term directly; rather, you
- * should create instances of Term's concrete subclasses. Alternatively, use textToTerm() to construct a Term from its conventional Prolog source text representation.
+ * Term is the abstract base class for Compound, Atom, Variable, Integer and
+ * Float, which comprise a Java-oriented concrete syntax for Prolog. You cannot
+ * create instances of Term directly; rather, you should create instances of
+ * Term's concrete subclasses. Alternatively, use textToTerm() to construct a
+ * Term from its conventional Prolog source text representation.
  * 
  * <hr>
  * Copyright (C) 2004 Paul Singleton
@@ -22,31 +26,28 @@ import org.jpl7.fli.term_t;
  * Copyright (C) 1998 Fred Dushin
  * <p>
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * modification, are permitted provided that the following conditions are met:
  *
  * <ol>
- * <li> Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
+ * <li>Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
- * <li> Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in
- *      the documentation and/or other materials provided with the
- *      distribution.
+ * <li>Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * </ol>
  *
  * <p>
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  * 
@@ -56,13 +57,15 @@ import org.jpl7.fli.term_t;
 public abstract class Term {
 
 	/**
-	 * This default constructor enables subclasses to define their own default constructors
+	 * This default constructor enables subclasses to define their own default
+	 * constructors
 	 */
 	protected Term() {
 	}
 
 	/**
-	 * returns the i-th (1+) argument of a Term; defined only for Compound (and hence Atom); throws a JPLException for other Term subclasses
+	 * returns the i-th (1+) argument of a Term; defined only for Compound (and
+	 * hence Atom); throws a JPLException for other Term subclasses
 	 * 
 	 * @return the i-th argument of a (Compound) Term
 	 */
@@ -71,7 +74,8 @@ public abstract class Term {
 	}
 
 	/**
-	 * returns, as a Term[], the arguments of a Compound returns an empty Term[] from an Atom, Integer or Float throws a JPLException from a Variable
+	 * returns, as a Term[], the arguments of a Compound returns an empty Term[]
+	 * from an Atom, Integer or Float throws a JPLException from a Variable
 	 * 
 	 * @return the arguments of a Compound as a Term[
 	 */
@@ -84,25 +88,39 @@ public abstract class Term {
 	}
 
 	/**
-	 * Tests whether this Term's functor has (String) 'name' and 'arity' Returns false if called inappropriately
+	 * Tests whether this Term's functor has (String) 'name' and 'arity';
+	 * returns false if called inappropriately; overridden in some subclasses
 	 * 
 	 * @return whether this Term's functor has (String) 'name' and 'arity'
 	 */
-	public boolean hasFunctor(String name, int arity) { // overridden in Compound
+	public boolean hasFunctor(String name, int arity) { // overridden in
+														// Compound
 		return false;
 	}
 
 	/**
-	 * Tests whether this Term's functor has (int) 'name' and 'arity' Returns false if called inappropriately
+	 * Tests whether this Term's functor has (long) 'name' and 'arity'; returns
+	 * false if called inappropriately; overridden in some subclasses
 	 * 
-	 * @return whether this Term's functor has (int) 'name' and 'arity'
+	 * @return whether this Term's functor has (long) 'name' and 'arity'
 	 */
-	public boolean hasFunctor(int value, int arity) {
+	public boolean hasFunctor(long value, int arity) {
 		return false;
 	}
 
 	/**
-	 * Tests whether this Term's functor has (double) 'name' and 'arity' Returns false if called inappropriately
+	 * Tests whether this Term's functor has (BigInteger) 'name' and 'arity';
+	 * returns false if called inappropriately; overridden in some subclasses
+	 * 
+	 * @return whether this Term's functor has (BigInteger) 'name' and 'arity'
+	 */
+	public boolean hasFunctor(BigInteger value, int arity) {
+		return false;
+	}
+
+	/**
+	 * Tests whether this Term's functor has (double) 'name' and 'arity';
+	 * returns false if called inappropriately; overridden in some subclasses
 	 * 
 	 * @return whether this Term's functor has (double) 'name' and 'arity'
 	 */
@@ -111,7 +129,8 @@ public abstract class Term {
 	}
 
 	/**
-	 * returns, as a String, the name of a Compound, Atom or Variable throws a JPLException from an Integer or Float
+	 * returns, as a String, the name of a Compound, Atom or Variable throws a
+	 * JPLException from an Integer or Float
 	 * 
 	 * @return the name of a Compound, Atom or Variable
 	 */
@@ -120,7 +139,8 @@ public abstract class Term {
 	};
 
 	/**
-	 * returns, as an int, the arity of a Compound, Atom, Integer or Float; throws a JPLException from a Variable
+	 * returns, as an int, the arity of a Compound, Atom, Integer or Float;
+	 * throws a JPLException from a Variable
 	 * 
 	 * @return the arity of a Compound, Atom, Integer or Float
 	 */
@@ -129,7 +149,8 @@ public abstract class Term {
 	};
 
 	/**
-	 * returns the value (as an int) of an Integer or Float throws a JPLException from a Compound, Atom or Variable
+	 * returns the value (as an int) of an Integer or Float throws a
+	 * JPLException from a Compound, Atom or Variable
 	 * 
 	 * @return the value (as an int) of an Integer or Float
 	 */
@@ -138,7 +159,8 @@ public abstract class Term {
 	}
 
 	/**
-	 * returns the value (as a long) of an Integer or Float throws a JPLException from a Compound, Atom or Variable
+	 * returns the value (as a long) of an Integer or Float throws a
+	 * JPLException from a Compound, Atom or Variable
 	 * 
 	 * @return the value (as a long) of an Integer or Float
 	 */
@@ -147,7 +169,8 @@ public abstract class Term {
 	}
 
 	/**
-	 * returns the value (as a float) of an Integer or Float throws a JPLException from a Compound, Atom or Variable
+	 * returns the value (as a float) of an Integer or Float throws a
+	 * JPLException from a Compound, Atom or Variable
 	 * 
 	 * @return the value (as a float) of an Integer or Float
 	 */
@@ -156,16 +179,19 @@ public abstract class Term {
 	}
 
 	/**
-	 * returns the value (as a java.math.BigInteger) of an Integer; throws a JPLException from a Compound, Atom, Float or Variable
+	 * returns the value (as a java.math.BigInteger) of an Integer; throws a
+	 * JPLException from a Compound, Atom, Float or Variable
 	 * 
-	 * @return the value (as a java.math.BigInteger) of an Integer; throws a JPLException from a Compound, Atom, Float or Variable
+	 * @return the value (as a java.math.BigInteger) of an Integer; throws a
+	 *         JPLException from a Compound, Atom, Float or Variable
 	 */
 	public BigInteger bigValue() {
 		throw new JPLException("bigValue() is undefined for " + this.typeName());
 	}
 
 	/**
-	 * returns the value (as a double) of an Integer or Float throws a JPLException from any other subclass
+	 * returns the value (as a double) of an Integer or Float throws a
+	 * JPLException from any other subclass
 	 * 
 	 * @return the value (as an double) of an Integer or Float
 	 */
@@ -174,16 +200,20 @@ public abstract class Term {
 	}
 
 	/**
-	 * returns the type of this term, as one of org.jpl7.fli.Prolog.COMPOUND, .ATOM, .VARIABLE, .INTEGER, .FLOAT etc
+	 * returns the type of this term, as one of org.jpl7.fli.Prolog.COMPOUND,
+	 * .ATOM, .VARIABLE, .INTEGER, .FLOAT etc
 	 * 
-	 * @return the type of this term, as one of org.jpl7.fli.Prolog.COMPOUND, .ATOM, .VARIABLE, .INTEGER, .FLOAT etc
+	 * @return the type of this term, as one of org.jpl7.fli.Prolog.COMPOUND,
+	 *         .ATOM, .VARIABLE, .INTEGER, .FLOAT etc
 	 */
 	public abstract int type();
 
 	/**
-	 * returns the name of the type of this term, as one of "Compound", "Atom", "Variable", "Integer", "Float" etc
+	 * returns the name of the type of this term, as one of "Compound", "Atom",
+	 * "Variable", "Integer", "Float" etc
 	 * 
-	 * @return the name of the type of this term, as one of "Compound", "Atom", "Variable", "Integer", "Float" etc
+	 * @return the name of the type of this term, as one of "Compound", "Atom",
+	 *         "Variable", "Integer", "Float" etc
 	 */
 	public abstract String typeName();
 
@@ -197,9 +227,11 @@ public abstract class Term {
 	}
 
 	/**
-	 * whether this Term is an Integer whose value is too big to represent as a long
+	 * whether this Term is an Integer whose value is too big to represent as a
+	 * long
 	 * 
-	 * @return whether this Term is an Integer whose value is too big to represent as a long
+	 * @return whether this Term is an Integer whose value is too big to
+	 *         represent as a long
 	 */
 	public boolean isBigInteger() {
 		return this instanceof Integer && ((Integer) this).isBig();
@@ -265,7 +297,8 @@ public abstract class Term {
 	 * @return whether this Term is a 'jfalse' structure, i.e. @(false)
 	 */
 	public boolean isJFalse() {
-		return false; // overridden in Compound, where it might sometimes be true
+		return false; // overridden in Compound, where it might sometimes be
+						// true
 	}
 
 	/**
@@ -274,25 +307,33 @@ public abstract class Term {
 	 * @return whether this Term is a 'jnull' structure, i.e. @(null)
 	 */
 	public boolean isJNull() {
-		return false; // overridden in Compound, where it might sometimes be true
+		return false; // overridden in Compound, where it might sometimes be
+						// true
 	}
 
 	/**
-	 * whether this Term is a 'jobject' structure, i.e. @(Tag)
+	 * whether this Term is a (non-null) reference to a Java object, e.g.
+	 * &lt;jref&gt;(0x1234560)
 	 * 
-	 * @return whether this Term is a 'jobject' structure, i.e. @(Tag)
+	 * @return whether this Term is a (non-null) reference to a Java object,
+	 *         e.g. &lt;jref&gt;(0x1234560)
+	 * @see org.jpl7.JObject#isJObject()
 	 */
-	public boolean isJObject() {
-		return false; // overridden in Compound, where it might sometimes be true
+	public boolean isJObject() { // overridden in JObject
+		return false;
 	}
 
 	/**
-	 * whether this Term is a 'jref' structure, i.e. @(Tag) or @(null)
+	 * whether this Term is a (non-null or null) reference to a Java object,
+	 * e.g. &lt;jref&gt;(0x1234560) or @(null)
 	 * 
-	 * @return whether this Term is a 'jref' structure, i.e. @(Tag) or @(null)
+	 * @return whether this Term is a (non-null or null) reference to a Java
+	 *         object, e.g. &lt;jref&gt;(0x1234560) or @(null)
+	 * @see org.jpl7.Compound#isJRef()
+	 * @see org.jpl7.JObject#isJRef()
 	 */
 	public boolean isJRef() {
-		return false; // overridden in Compound, where it might sometimes be true
+		return false;
 	}
 
 	/**
@@ -301,7 +342,8 @@ public abstract class Term {
 	 * @return whether this Term is a 'jtrue' structure, i.e. @(true)
 	 */
 	public boolean isJTrue() {
-		return false; // overridden in Compound, where it might sometimes be true
+		return false; // overridden in Compound, where it might sometimes be
+						// true
 	}
 
 	/**
@@ -310,19 +352,30 @@ public abstract class Term {
 	 * @return whether this Term is a 'jvoid' structure, i.e. @(void)
 	 */
 	public boolean isJVoid() {
-		return false; // overridden in Compound, where it might sometimes be true
+		return false; // overridden in Compound, where it might sometimes be
+						// true
 	}
 
-	// public abstract Object jrefToObject();
 	public Object jrefToObject() {
-		throw new JPLException("term is not a JRef");
+		throw new JPLException("term is neither a JObject nor a Compound representing @(null)"); // overridden
+																									// in
+																									// Compound,
+																									// JObject
+																									// and
+																									// JRef
 	}
 
 	/**
 	 * returns a new Term instance which represents the given object
 	 */
 	public static Term objectToJRef(Object obj) {
-		return new Compound("@", new Term[] { new Atom(Prolog.object_to_tag(obj)) });
+		if (obj == null) {
+			return JPL.JNULL;
+		} else if (obj instanceof String) {
+			throw new JPLException("a JRef cannot have a String value (Strings are represented by text atoms)");
+		} else {
+			return new JObject(obj);
+		}
 	}
 
 	public Term putParams(Term[] ps) { // necessarily (?) public
@@ -383,17 +436,35 @@ public abstract class Term {
 	}
 
 	/**
-	 * returns an array of terms which are the successive members of this list, if it is a list, else throws an exception
+	 * The (non-null, non-String) object which this org.jpl7.JObject represents
+	 * 
+	 * @return the (non-null, non-String) object which this org.jpl7.JObject
+	 *         represents
+	 */
+	public Object ref() {
+		throw new JPLException("this Term is not a Java object reference"); // overridden
+																			// in
+																			// Compound,
+																			// JObject
+																			// and
+																			// JRef
+	}
+
+	/**
+	 * returns an array of terms which are the successive members of this list,
+	 * if it is a list, else throws an exception
 	 * 
 	 * @throws JPLException
-	 * @return an array of terms which are the successive members of this list, if it is a list
+	 * @return an array of terms which are the successive members of this list,
+	 *         if it is a list
 	 */
 	public Term[] toTermArray() {
 		try {
 			int len = this.listLength(); // exception if not a well formed list
 			Term[] ts = new Term[len];
 			Term t = this;
-			for (int i = 0; i < len; i++) { // no need to check functor (listLength did)
+			for (int i = 0; i < len; i++) { // no need to check functor
+											// (listLength did)
 				ts[i] = t.arg(1);
 				t = t.arg(2);
 			}
@@ -402,31 +473,6 @@ public abstract class Term {
 			throw new JPLException("term is not a proper list");
 		}
 	}
-
-	// /**
-	// * Returns a debug-friendly representation of a Term
-	// *
-	// * @return a debug-friendly representation of a Term
-	// * @deprecated
-	// */
-	// public abstract String debugString();
-
-	// /**
-	// * Returns a debug-friendly representation of a list of Terms
-	// *
-	// * @return a debug-friendly representation of a list of Terms
-	// * @deprecated
-	// */
-	// public static String debugString(Term arg[]) {
-	// String s = "[";
-	// for (int i = 0; i < arg.length; ++i) {
-	// s += arg[i].debugString();
-	// if (i != arg.length - 1) {
-	// s += ", ";
-	// }
-	// }
-	// return s + "]";
-	// }
 
 	// ==================================================================/
 	// Converting JPL Terms to Prolog terms
@@ -463,13 +509,17 @@ public abstract class Term {
 	 * @param varnames_to_vars
 	 *            A Map from variable names to JPL Variables.
 	 * @param term
-	 *            A (previously created) term_t which is to be put with a Prolog term-type appropriate to the Term type (e.g., Atom, Variable, Compound, etc.) on which the method is invoked.)
+	 *            A (previously created) term_t which is to be put with a Prolog
+	 *            term-type appropriate to the Term type (e.g., Atom, Variable,
+	 *            Compound, etc.) on which the method is invoked.)
 	 */
 	protected abstract void put(Map<String, term_t> varnames_to_vars, term_t term);
 
 	/**
-	 * This static method converts an array of Terms to a *consecutive* sequence of term_t objects. Note that the first term_t object returned is a term_t class (structure); the succeeding term_t
-	 * objects are consecutive references obtained by incrementing the *value* field of the term_t.
+	 * This static method converts an array of Terms to a *consecutive* sequence
+	 * of term_t objects. Note that the first term_t object returned is a term_t
+	 * class (structure); the succeeding term_t objects are consecutive
+	 * references obtained by incrementing the *value* field of the term_t.
 	 * 
 	 * @param varnames_to_vars
 	 *            Map from variable names to JPL Variables.
@@ -478,15 +528,19 @@ public abstract class Term {
 	 * @return consecutive term_t references (first of which is a structure)
 	 */
 	protected static term_t putTerms(Map<String, term_t> varnames_to_vars, Term[] args) {
-		// First create a sequence of term_ts. The 0th term_t will be a org.jpl7.fli.term_t.
-		// Successive Prolog term_t references will reside in the Prolog engine, and can be obtained by term0.value+i.
+		// First create a sequence of term_ts. The 0th term_t will be a
+		// org.jpl7.fli.term_t.
+		// Successive Prolog term_t references will reside in the Prolog engine,
+		// and can be obtained by term0.value+i.
 		term_t term0 = Prolog.new_term_refs(args.length);
-		// for each new term reference, construct a Prolog term by putting an appropriate Prolog type into the reference.
+		// for each new term reference, construct a Prolog term by putting an
+		// appropriate Prolog type into the reference.
 		long ith_term_t = term0.value;
 		for (int i = 0; i < args.length; ++i, ++ith_term_t) {
 			term_t term = new term_t();
 			term.value = ith_term_t;
-			args[i].put(varnames_to_vars, term); // each subclass defines its own put()
+			args[i].put(varnames_to_vars, term); // each subclass defines its
+													// own put()
 		}
 		return term0;
 	}
@@ -501,25 +555,33 @@ public abstract class Term {
 	}
 
 	/**
-	 * This method calls from_term_t on each term in the n consecutive term_ts. A temporary term_t "holder" (byref) structure must be created in order to extract type information from the Prolog
-	 * engine.
+	 * This method calls from_term_t on each term in the n consecutive term_ts.
+	 * A temporary term_t "holder" (byref) structure must be created in order to
+	 * extract type information from the Prolog engine.
 	 * 
 	 * @param vars_to_Vars
 	 *            A Map from Prolog variables to org.jpl7.Variable instances
 	 * @param n
 	 *            The number of consecutive term_ts
 	 * @param term0
-	 *            The 0th term_t (structure); subsequent term_ts are not structures.
+	 *            The 0th term_t (structure); subsequent term_ts are not
+	 *            structures.
 	 * @return An array of converted Terms
 	 */
 	/*
-	 * protected static Term[] from_term_ts(Map vars_to_Vars, int n, term_t term0) {
+	 * protected static Term[] from_term_ts(Map vars_to_Vars, int n, term_t
+	 * term0) {
 	 * 
-	 * // create an (uninitialised) array of n Term references Term[] terms = new Term[n];
+	 * // create an (uninitialised) array of n Term references Term[] terms =
+	 * new Term[n];
 	 * 
-	 * // for each term_t (from 0...n-1), create a term_t // (temporary) structure and dispatch the translation // to a Term to the static from_term_t method of the Term // class. This will perform
-	 * (Prolog) type analysis on the // term_t and call the appropriate static method to create // a Term of the right type (e.g., Atom, Variable, List, etc.) // long ith_term_t = term0.value; for
-	 * (int i = 0; i < n; ++i, ++ith_term_t) { term_t term = new term_t(); term.value = ith_term_t;
+	 * // for each term_t (from 0...n-1), create a term_t // (temporary)
+	 * structure and dispatch the translation // to a Term to the static
+	 * from_term_t method of the Term // class. This will perform (Prolog) type
+	 * analysis on the // term_t and call the appropriate static method to
+	 * create // a Term of the right type (e.g., Atom, Variable, List, etc.) //
+	 * long ith_term_t = term0.value; for (int i = 0; i < n; ++i, ++ith_term_t)
+	 * { term_t term = new term_t(); term.value = ith_term_t;
 	 * 
 	 * terms[i] = Term.from_term_t(vars_to_Vars, term); }
 	 * 
@@ -539,46 +601,57 @@ public abstract class Term {
 		StringHolder hString;
 		IntHolder hInt;
 		Int64Holder hInt64;
+		ObjectHolder hObject;
 		switch (Prolog.term_type(term)) {
-		case Prolog.VARIABLE:
+		case Prolog.VARIABLE: // 1
 			for (Iterator<term_t> i = vars_to_Vars.keySet().iterator(); i.hasNext();) {
-				term_t varX = (term_t) i.next(); // a previously seen Prolog variable
-				if (Prolog.compare(varX, term) == 0) { // identical Prolog variables?
-					return (Term) vars_to_Vars.get(varX); // return the associated JPL Variable
+				term_t varX = (term_t) i.next(); // a previously seen Prolog
+													// variable
+				if (Prolog.compare(varX, term) == 0) { // identical Prolog
+														// variables?
+					return (Term) vars_to_Vars.get(varX); // return the
+															// associated JPL
+															// Variable
 				}
 			}
 			// otherwise, the Prolog variable in term has not been seen before
-			Variable Var = new Variable(); // allocate a new (sequentially named) Variable to represent it
+			Variable Var = new Variable(); // allocate a new (sequentially
+											// named) Variable to represent it
 			Var.term_ = term; // this should become redundant...
-			vars_to_Vars.put(term, Var); // use Hashtable(var,null), but only need set(var)
+			vars_to_Vars.put(term, Var); // use Hashtable(var,null), but only
+											// need set(var)
 			return Var;
-		case Prolog.ATOM:
+		case Prolog.ATOM: // 2
 			hString = new StringHolder();
-			Prolog.get_atom_chars(term, hString); // ignore return val; assume success...
+			Prolog.get_atom_chars(term, hString); // ignore return val; assume
+													// success...
 			return new Atom(hString.value, "text");
-		case Prolog.STRING:
+		case Prolog.STRING: // 5
 			hString = new StringHolder();
-			Prolog.get_string_chars(term, hString); // ignore return val; assume success...
+			Prolog.get_string_chars(term, hString); // ignore return val; assume
+													// success...
 			return new Atom(hString.value, "string");
-		case Prolog.INTEGER:
+		case Prolog.INTEGER: // 3
 			hInt64 = new Int64Holder();
-			if (Prolog.get_integer(term, hInt64)) { // assume it fails if Prolog integer is bigger than a Java long...
+			if (Prolog.get_integer(term, hInt64)) { // assume it fails if Prolog
+													// integer is bigger than a
+													// Java long...
 				return new org.jpl7.Integer(hInt64.value);
 			} else {
 				hString = new StringHolder();
 				if (Prolog.get_integer_big(term, hString)) {
-//					System.out.println("bigint = " + hString.value);
+					// System.out.println("bigint = " + hString.value);
 					return new org.jpl7.Integer(new java.math.BigInteger(hString.value));
 				} else {
 					return new org.jpl7.Integer(-3); // arbitrary
 				}
 			}
-		case Prolog.FLOAT:
+		case Prolog.FLOAT: // 4
 			DoubleHolder hFloatValue = new DoubleHolder();
 			Prolog.get_float(term, hFloatValue); // assume it succeeds...
 			return new org.jpl7.Float(hFloatValue.value);
-		case Prolog.COMPOUND:
-		case Prolog.LIST_PAIR:
+		case Prolog.COMPOUND: // 6
+		case Prolog.LIST_PAIR: // 9
 			hString = new StringHolder();
 			hInt = new IntHolder();
 			Prolog.get_name_arity(term, hString, hInt); // assume it succeeds
@@ -590,10 +663,23 @@ public abstract class Term {
 				args[i - 1] = Term.getTerm(vars_to_Vars, termi);
 			}
 			return new Compound(hString.value, args);
-		case Prolog.LIST_NIL:
+		case Prolog.LIST_NIL: // 7
 			return JPL.LIST_NIL;
+		case Prolog.BLOB: // 8
+			hObject = new ObjectHolder();
+			if (Prolog.get_jref_object(term, hObject)) {
+				if (hObject.value == null) {
+					return JPL.JNULL;
+				} else {
+					return new JObject(hObject.value);
+				}
+			} else {
+				throw new JPLException("...");
+			}
 		default:
-			throw new JPLException("unknown term type=" + Prolog.term_type(term)); // should never happen...
+			throw new JPLException("unknown term type=" + Prolog.term_type(term)); // should
+																					// never
+																					// happen...
 		}
 	}
 
@@ -616,23 +702,33 @@ public abstract class Term {
 	// ==================================================================/
 
 	/**
-	 * This method computes a substitution from a Term. The bindings Map stores Terms, keyed by names of Variables. Thus, a substitution is as it is in mathematical logic, a sequence of the form
-	 * \sigma = {t_0/x_0, ..., t_n/x_n}. Once the substitution is computed, the substitution should satisfy
+	 * This method computes a substitution from a Term. The bindings Map stores
+	 * Terms, keyed by names of Variables. Thus, a substitution is as it is in
+	 * mathematical logic, a sequence of the form \sigma = {t_0/x_0, ...,
+	 * t_n/x_n}. Once the substitution is computed, the substitution should
+	 * satisfy
 	 * 
 	 * \sigma T = t
 	 * 
-	 * where T is the Term from which the substitution is computed, and t is the term_t which results from the Prolog query.
+	 * where T is the Term from which the substitution is computed, and t is the
+	 * term_t which results from the Prolog query.
 	 * <p>
 	 * 
-	 * A second Map, vars, is required; this table holds the Variables that occur (thus far) in the unified term. The Variable instances in this table are guaranteed to be unique and are keyed on
-	 * Strings which are Prolog internal representations of the variables.
+	 * A second Map, vars, is required; this table holds the Variables that
+	 * occur (thus far) in the unified term. The Variable instances in this
+	 * table are guaranteed to be unique and are keyed on Strings which are
+	 * Prolog internal representations of the variables.
 	 * 
 	 * @param bindings
 	 *            table holding Term substitutions, keyed on names of Variables.
 	 * @param vars
-	 *            A Map holding the Variables that occur thus far in the term; keyed by internal (Prolog) string rep.
+	 *            A Map holding the Variables that occur thus far in the term;
+	 *            keyed by internal (Prolog) string rep.
 	 */
-	protected void getSubst(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars) { // overridden in Compound, Variable
+	protected void getSubst(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars) { // overridden
+																										// in
+																										// Compound,
+																										// Variable
 	}
 
 	/**
@@ -645,21 +741,24 @@ public abstract class Term {
 	 * @param args
 	 *            an array of Terms
 	 */
-	protected static void getSubsts(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars, Term[] args) {
+	protected static void getSubsts(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars,
+			Term[] args) {
 		for (int i = 0; i < args.length; ++i) {
 			args[i].getSubst(varnames_to_Terms, vars_to_Vars);
 		}
 	}
 
 	/**
-	 * This method is used (by Compound.equals) to determine the Terms in two Term arrays are pairwise equal, where two Terms are equal if they satisfy the equals predicate (defined differently in
-	 * each Term subclass).
+	 * This method is used (by Compound.equals) to determine the Terms in two
+	 * Term arrays are pairwise equal, where two Terms are equal if they satisfy
+	 * the equals predicate (defined differently in each Term subclass).
 	 * 
 	 * @param t1
 	 *            an array of Terms
 	 * @param t2
 	 *            another array of Terms
-	 * @return true if all of the Terms in the (same-length) arrays are pairwise equal
+	 * @return true if all of the Terms in the (same-length) arrays are pairwise
+	 *         equal
 	 */
 	protected static boolean terms_equals(Term[] t1, Term[] t2) {
 		if (t1.length != t2.length) {

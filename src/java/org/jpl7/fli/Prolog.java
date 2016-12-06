@@ -3,51 +3,62 @@ package org.jpl7.fli;
 import org.jpl7.JPL;
 
 /**
- * This class consists only of constants (static finals) and static native methods. The constants and methods defined herein are in (almost) strict 1-1 correspondence with the functions in the Prolog
- * FLI by the same name (except without the PL_, SQ_, etc. prefixes).
+ * This class consists only of constants (static finals) and static native
+ * methods. The constants and methods defined herein are in (almost) strict 1-1
+ * correspondence with the functions in the Prolog FLI by the same name (except
+ * without the PL_, SQ_, etc. prefixes).
  * <p>
  * 
- * See the file jpl.c for the native (ANSI C) implementations of these methods. Refer to your local Prolog FLI documentations for the meanings of these methods, and observe the following:
+ * See the file jpl.c for the native (ANSI C) implementations of these methods.
+ * Refer to your local Prolog FLI documentations for the meanings of these
+ * methods, and observe the following:
  * <p>
  * 
  * <menu>
- * <li>The types and signatures of the following methods are almost in 1-1 correspondence with the Prolog FLI. The Prolog types term_t, atom_t, functor_t, etc. are mirrored in this package with
- * classes by the same name, making the C and Java uses of these interfaces similar.</li>
- * <li>As term_t, functor_t, etc. types are Java classes, they are passed to these methods <b>by value</b>; however, calling these methods on such class instances does have side effects. In general,
- * the value fields of these instances will be modified, in much the same way the term_t, functor_t, etc. Prolog instances would be modified.</li>
- * <li>The exceptions to this rule occur when maintaining the same signature would be impossible, e.g., when the Prolog FLI functions require <i>pointers</i>; in this case, the signatures have been
- * modified to take *Holder classes (Int, Double, String, etc.), to indicate a call by reference parameter.
- * <li>Functions which take variable-length argument lists in C take arrays in Java; from Java 1.1 onwards, anonymous arrays can be used e.g. Term[] { new Atom("a"), new Atom ("b") } </menu>
+ * <li>The types and signatures of the following methods are almost in 1-1
+ * correspondence with the Prolog FLI. The Prolog types term_t, atom_t,
+ * functor_t, etc. are mirrored in this package with classes by the same name,
+ * making the C and Java uses of these interfaces similar.</li>
+ * <li>As term_t, functor_t, etc. types are Java classes, they are passed to
+ * these methods <b>by value</b>; however, calling these methods on such class
+ * instances does have side effects. In general, the value fields of these
+ * instances will be modified, in much the same way the term_t, functor_t, etc.
+ * Prolog instances would be modified.</li>
+ * <li>The exceptions to this rule occur when maintaining the same signature
+ * would be impossible, e.g., when the Prolog FLI functions require
+ * <i>pointers</i>; in this case, the signatures have been modified to take
+ * *Holder classes (Int, Double, String, etc.), to indicate a call by reference
+ * parameter.
+ * <li>Functions which take variable-length argument lists in C take arrays in
+ * Java; from Java 1.1 onwards, anonymous arrays can be used e.g. Term[] { new
+ * Atom("a"), new Atom ("b") } </menu>
  * 
  * <hr>
  * Copyright (C) 1998 Fred Dushin
  * <p>
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * modification, are permitted provided that the following conditions are met:
  *
  * <ol>
- * <li> Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
+ * <li>Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
- * <li> Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in
- *      the documentation and/or other materials provided with the
- *      distribution.
+ * <li>Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * </ol>
  *
  * <p>
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  * 
@@ -75,6 +86,7 @@ public final class Prolog {
 	public static final int JBOOLEAN = 101;
 	public static final int JREF = 102;
 	public static final int JVOID = 103;
+	public static final int JOBJECT = 104;
 
 	public static final int succeed = 1;
 	public static final int fail = 0;
@@ -104,7 +116,8 @@ public final class Prolog {
 	public static final int SYNTAX_MODERN = 203;
 
 	/* new, for revised term_t-to-Variable stuff */
-	public static native int compare(term_t t1, term_t t2); // returns -1, 0 or 1
+	public static native int compare(term_t t1, term_t t2); // returns -1, 0 or
+															// 1
 
 	/* Creating and destroying term-refs */
 	public static native term_t new_term_ref();
@@ -120,7 +133,8 @@ public final class Prolog {
 
 	public static native functor_t new_functor(atom_t f, int a);
 
-	public static native void unregister_atom(atom_t a); // called from atom_t's finalize()
+	public static native void unregister_atom(atom_t a); // called from atom_t's
+															// finalize()
 
 	/* Get Java-values from Prolog terms */
 	public static native boolean get_atom_chars(term_t t, StringHolder a);
@@ -136,6 +150,8 @@ public final class Prolog {
 	public static native boolean get_name_arity(term_t t, StringHolder name, IntHolder arity);
 
 	public static native boolean get_arg(int index, term_t t, term_t a);
+
+	public static native boolean get_jref_object(term_t t, ObjectHolder o);
 
 	public static native String object_to_tag(Object obj);
 
@@ -159,7 +175,7 @@ public final class Prolog {
 
 	public static native void put_jref(term_t t, Object ref);
 
-//	public static native void put_atom_chars(term_t t, String name);
+	// public static native void put_atom_chars(term_t t, String name);
 
 	public static native void put_nil(term_t t);
 

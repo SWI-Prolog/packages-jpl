@@ -208,7 +208,7 @@ jpl_new_1(class(Ps,Cs), Params, Vx) :-
     ),
     catch(
         jNewObject(Cx, MID, Tfps, Params, Vx),
-        error(java_exception(@(_)), 'java.lang.InstantiationException'),
+        error(java_exception(_), 'java.lang.InstantiationException'),
         (   jpl_type_to_classname(Tx, Cn),
             throw(error(type_error(concrete_class,Cn),context(jpl_new/3,'cannot create instance of an abstract class')))
         )
@@ -284,7 +284,7 @@ jpl_new_array(class(Ps,Cs), Len, A) :-
 %! jpl_call(+X, +MethodName:atom, +Params:list(datum), -Result:datum) is det
 %
 % X should be either
-%  * an object reference, e.g. =|@('J#00000000000015552320')|= (for static or instance methods)
+%  * an object reference, e.g. =|<jref>(1552320)|= (for static or instance methods)
 %  * or a classname, e.g. =|'java.util.Date'|= (for static methods only)
 %  * or a descriptor, e.g. =|'Ljava.util.Date;'|= (for static methods only)
 %  * or type, e.g. =|class([java,util],['Date'])|= (for static methods only)
@@ -1234,7 +1234,7 @@ jpl_pl_lib_version(VersionString) :-
 %  Status = alpha.
 %  ==
 
-jpl_pl_lib_version(7, 0, 2, alpha).  % jref as blob
+jpl_pl_lib_version(7, 0, 3, alpha).  % jref as blob
 
 %! jpl_c_lib_version(-Version)
 %
@@ -2414,37 +2414,31 @@ jpl_modifier_int_to_modifiers(I, Ms) :-
 %
 % NB obsolete lemmas must be watched-out-for and removed
 
-jpl_cache_type_of_ref(T, @(Tag)) :-
+jpl_cache_type_of_ref(T, Ref) :-
     (   jpl_assert_policy(jpl_iref_type_cache(_,_), no)
     ->  true
     ;   \+ ground(T)                            % shouldn't happen (implementation error)
     ->  write('[jpl_cache_type_of_ref/2: arg 1 is not ground]'), nl,    % oughta throw an exception
         fail
-    ;   \+ atom(Tag)                            % shouldn't happen (implementation error)
-    ->  write('[jpl_cache_type_of_ref/2: arg 2 is not an atomic-tag ref]'), nl, % oughta throw an exception
-        fail
-    ;   Tag == null                             % a null ref? (this is valid)
+    ;   Ref == @(null)                          % a null ref? (this is valid)
     ->  true                                    % silently ignore it
-    ;   jni_tag_to_iref(Tag, Iref)
-    ->  (   jpl_iref_type_cache(Iref, TC)       % we expect TC == T
+    ;   (   jpl_iref_type_cache(Ref, TC)        % we expect TC == T
         ->  (   T == TC
             ->  true
             ; % write('[JPL: found obsolete tag-type lemma...]'), nl,   % or keep statistics? (why?)
-                retractall(jpl_iref_type_cache(Iref,_)),
-                jpl_assert(jpl_iref_type_cache(Iref,T))
+                retractall(jpl_iref_type_cache(Ref,_)),
+                jpl_assert(jpl_iref_type_cache(Ref,T))
             )
-        ;   jpl_assert(jpl_iref_type_cache(Iref,T))
+        ;   jpl_assert(jpl_iref_type_cache(Ref,T))
         )
-    ;   write('[jpl_cache_type_of_ref/2: jni_tagatom_to_iref(Tag,_) failed]'), nl,  % oughta throw an exception
-        fail
     ).
 
 
-%! jpl_class_tag_type_cache(-Tag:tag, -ClassType:type)
+%! jpl_class_tag_type_cache(-Ref:jref, -ClassType:type)
 %
-% Tag is the tag part of an @(Tag) reference to a JVM instance of java.lang.Class which denotes ClassType.
+% Ref is a reference to a JVM instance of java.lang.Class which denotes ClassType.
 %
-% We index on Tag rather than on Iref so as to keep these objects around
+% We index on Ref so as to keep these objects around
 % even after an atom garbage collection
 % (if needed once, they are likely to be needed again)
 
@@ -2519,13 +2513,13 @@ jpl_class_to_super_class(C, Cx) :-
 % Intriguingly, getParameterTypes returns class objects (undocumented AFAIK) with names
 % 'boolean', 'byte' etc. and even 'void' (?!)
 
-jpl_class_to_type(@(Tag), Type) :-
-    (   jpl_class_tag_type_cache(Tag, Tx)
+jpl_class_to_type(Ref, Type) :-
+    (   jpl_class_tag_type_cache(Ref, Tx)
     ->  true
-    ;   jpl_class_to_raw_classname_chars(@(Tag), Cs),   % uncached
+    ;   jpl_class_to_raw_classname_chars(Ref, Cs),   % uncached
         jpl_classname_chars_to_type(Cs, Tr),
         jpl_type_to_canonical_type(Tr, Tx),             % map e.g. class([],[byte]) -> byte
-        jpl_assert(jpl_class_tag_type_cache(Tag,Tx))
+        jpl_assert(jpl_class_tag_type_cache(Ref,Tx))
     ->  true    % the elseif goal should be determinate, but just in case...
     ),
     Type = Tx.
@@ -2702,7 +2696,7 @@ jpl_object_array_to_list_1(A, I, N, Xs) :-
 
 %! jpl_object_to_class(+Object:jref, -Class:jref)
 %
-% Object must be a valid object (should this throw an exception otherwise?)
+% fails silently if Object is not a valid reference to a Java object
 %
 % Class is a (canonical) reference to the (canonical) class object
 % which represents the class of Object
@@ -2710,6 +2704,7 @@ jpl_object_array_to_list_1(A, I, N, Xs) :-
 % NB what's the point of caching the type if we don't look there first?
 
 jpl_object_to_class(Obj, C) :-
+	jpl_is_object(Obj),
     jGetObjectClass(Obj, C),
     jpl_cache_type_of_ref(class([java,lang],['Class']), C).
 
@@ -2721,8 +2716,15 @@ jpl_object_to_class(Obj, C) :-
 %
 % Type is the JPL type of that object.
 
-jpl_object_to_type(@(Tag), Type) :-
-    jpl_tag_to_type(Tag, Type).
+jpl_object_to_type(Ref, Type) :-
+	jpl_is_object(Ref),
+    (   jpl_iref_type_cache(Ref, T)
+    ->  true                                % T is Tag's type
+    ;   jpl_object_to_class(Ref, Cobj),     % else get ref to class obj
+        jpl_class_to_type(Cobj, T),         % get type of class it denotes
+        jpl_assert(jpl_iref_type_cache(Ref,T))
+    ),
+    Type = T.
 
 
 jpl_object_type_to_super_type(T, Tx) :-
@@ -2868,12 +2870,12 @@ jpl_primitive_type_to_super_type(T, Tx) :-
 %
 % Type is its type.
 
-jpl_ref_to_type(@(X), T) :-
-    (   X == null
+jpl_ref_to_type(Ref, T) :-
+    (   Ref == @(null)
     ->  T = null
-    ;   X == void
+    ;   Ref == @(void)
     ->  T = void
-    ;   jpl_tag_to_type(X, T)
+    ;   jpl_object_to_type(Ref, T)
     ).
 
 
@@ -2882,6 +2884,7 @@ jpl_ref_to_type(@(X), T) :-
 % Tag must be an (atomic) object tag.
 %
 % Type is its type (either from the cache or by reflection).
+% OBSOLETE
 
 jpl_tag_to_type(Tag, Type) :-
     jni_tag_to_iref(Tag, Iref),
@@ -3022,21 +3025,20 @@ jpl_type_to_canonical_type(P, P) :-
 % Incomplete types are now never cached (or otherwise passed around).
 %
 % jFindClass throws an exception if FCN can't be found.
-%
-% NB if this is public API maybe oughta restore the ground(T) check and throw exception
 
-jpl_type_to_class(T, @(Tag)) :-
-    % ground(T),  % 9/Nov/2004 removed this spurious (?) check
-      (   jpl_class_tag_type_cache(ClassTag,T)
-      ->  Tag = ClassTag
-      ;   (   jpl_type_to_findclassname(T, FCN)   % peculiar syntax for FindClass()
-          ->  jFindClass(FCN, @(ClassTag)),       % which caches type of @ClassTag
-            % jpl_cache_type_of_ref(T, @(ClassTag))
-              jpl_cache_type_of_ref(class([java,lang],['Class']), @(ClassTag))    % 9/Nov/2004 bugfix (?)
-          ),
-          jpl_assert(jpl_class_tag_type_cache(ClassTag,T))
-      ),
-      Tag = ClassTag.
+jpl_type_to_class(T, RefA) :-
+    (   ground(T)
+	->  (   jpl_class_tag_type_cache(RefB, T)
+	    ->  true
+	    ;   (   jpl_type_to_findclassname(T, FCN)   % peculiar syntax for FindClass()
+	        ->  jFindClass(FCN, RefB),       % which caches type of RefB
+	            jpl_cache_type_of_ref(class([java,lang],['Class']), RefB)    % 9/Nov/2004 bugfix (?)
+	        ),
+	        jpl_assert(jpl_class_tag_type_cache(RefB,T))
+	    ),
+	    RefA = RefB
+    ;   throw(error(instantiation_error,context(jpl_type_to_class/2,'1st arg must be bound to a JPL type')))
+    ).
 
 
 %! jpl_type_to_nicename(+Type:type, -NiceName:dottedName)
@@ -3131,8 +3133,6 @@ jpl_type_to_findclassname(T, FCN) :-
 % SuperType is the (at most one) type which it directly implements (if it's a class).
 %
 % If Type denotes a class, this works only if that class can be found.
-%
-% If Type = array(Type) then I dunno what happens.
 
 jpl_type_to_super_type(T, Tx) :-
     (   jpl_object_type_to_super_type(T, Tx)
@@ -3310,8 +3310,7 @@ jpl_is_null(X) :-
 % NB this checks only syntax, not whether the object exists.
 
 jpl_is_object(X) :-
-    jpl_is_ref(X),      % (syntactically, at least...)
-    X \== @(null).
+	blob(X, jref).
 
 
 %! jpl_is_object_type(@Term)
@@ -3327,16 +3326,14 @@ jpl_is_object_type(T) :-
 %
 % True if Term is a well-formed JPL reference,
 % either to a Java object
-% (which may not exist, although a jpl_is_current_ref/1 might be useful)
 % or to Java's notional but important 'null' non-object.
-%
-% NB to distinguish tags from void/false/true, could check initial character(s) or length? or adopt strong/weak scheme.
 
-jpl_is_ref(@(Y)) :-
-    atom(Y),        % presumably a (garbage-collectable) tag
-    Y \== void,     % not a ref
-    Y \== false,    % not a ref
-    Y \== true.     % not a ref
+jpl_is_ref(Term) :-
+	(	jpl_is_object(Term)
+	->	true
+	;	jpl_is_null(Term)
+	->	true
+	).
 
 
 %! jpl_is_true(@Term)
@@ -3590,9 +3587,9 @@ jpl_terms_to_array_1([T|Ts], [{T}|Ts2]) :-
 %
 %  ==
 %  ?- jpl_call('java.lang.System', getProperties, [], Map), jpl_map_element(Map, E).
-%  Map = @'J#00000000000015552132',
+%  Map = @<jref>(0x20b5c38),
 %  E = 'java.runtime.name'-'Java(TM) SE Runtime Environment' ;
-%  Map = @'J#00000000000015552132',
+%  Map = @<jref>(0x20b5c38),
 %  E = 'sun.boot.library.path'-'C:\\Program Files\\Java\\jre7\\bin'
 %  etc.
 %  ==

@@ -18,7 +18,8 @@ import junit.framework.TestCase;
  * @author rick
  */
 public class JPLTest extends TestCase {
-	// private static final Logger logger = Logger.getLogger(JPLTest.class.getName());
+	// private static final Logger logger =
+	// Logger.getLogger(JPLTest.class.getName());
 	private CountDownLatch latch;
 
 	public JPLTest(String testName) {
@@ -27,11 +28,16 @@ public class JPLTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		/*
-		 * Prolog file can be an empty file. The JVM seems to crash with a SIGSEGV if you don't consult a file prior to interacting with JPL.
+		 * Prolog file can be an empty file. The JVM seems to crash with a
+		 * SIGSEGV if you don't consult a file prior to interacting with JPL.
 		 * 
-		 * final String prologFile = "jpl/test/test.pl"; // was "/home/rick/temp/test.pl"; System.out.println("prolog file is: " + prologFile); String qString = "consult('" + prologFile + "')";
-		 * System.out.println("about to: " + qString); Query query = new Query(qString); System.out.println("Generated Query: " + query); if (!query.hasSolution()) { System.out.println(qString +
-		 * " failed"); fail("Failed to consult prolog file."); }
+		 * final String prologFile = "jpl/test/test.pl"; // was
+		 * "/home/rick/temp/test.pl"; System.out.println("prolog file is: " +
+		 * prologFile); String qString = "consult('" + prologFile + "')";
+		 * System.out.println("about to: " + qString); Query query = new
+		 * Query(qString); System.out.println("Generated Query: " + query); if
+		 * (!query.hasSolution()) { System.out.println(qString + " failed");
+		 * fail("Failed to consult prolog file."); }
 		 * 
 		 * (new Query("true")).hasSolution();
 		 */
@@ -39,7 +45,8 @@ public class JPLTest extends TestCase {
 
 	public void testThreadedAdds() {
 		latch = new CountDownLatch(4);
-		final AddWithThreads[] addTasks = { new AddWithThreads("a", latch), new AddWithThreads("b", latch), new AddWithThreads("c", latch), new AddWithThreads("d", latch) };
+		final AddWithThreads[] addTasks = { new AddWithThreads("a", latch), new AddWithThreads("b", latch),
+				new AddWithThreads("c", latch), new AddWithThreads("d", latch) };
 		// System.out.println("Starting threads...");
 		for (int i = 0; i < addTasks.length; i++) {
 			addTasks[i].start();
@@ -65,7 +72,8 @@ public class JPLTest extends TestCase {
 class AddWithThreads extends Thread {
 	private final CountDownLatch latch;
 	private final String namespace;
-	// private static final Logger logger = Logger.getLogger(JPLTest.class.getName());
+	// private static final Logger logger =
+	// Logger.getLogger(JPLTest.class.getName());
 	public static final int REPS = 2000; // was 200
 
 	public AddWithThreads(final String namespace, final CountDownLatch latch) {

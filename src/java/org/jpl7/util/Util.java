@@ -77,8 +77,8 @@ public class Util {
 		}
 	}
 
-	public static int spawn_in_out_err_wait(String command, String infile, String outfile,
-			String errfile, boolean wait) {
+	public static int spawn_in_out_err_wait(String command, String infile, String outfile, String errfile,
+			boolean wait) {
 		Process p;
 
 		try {

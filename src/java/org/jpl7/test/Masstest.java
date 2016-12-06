@@ -11,12 +11,14 @@ public class Masstest extends Thread {
 		// }
 		// System.out.println(s);
 		//
-		// Prolog.set_default_init_args(new String[] { "libpl.dll", "-f", "none", "-g", "true", "-q" });
+		// Prolog.set_default_init_args(new String[] { "libpl.dll", "-f",
+		// "none", "-g", "true", "-q" });
 		// empirically, needs this at least:
 		// Prolog.set_default_init_args(new String[] { "libpl.dll" });
 		// Prolog.set_default_init_args(new String[] { "pl" });
 		//
-		// (new Query("assert(diagnose_declaration(_,_,_,[not,a,real,error]))")).hasSolution();
+		// (new
+		// Query("assert(diagnose_declaration(_,_,_,[not,a,real,error]))")).hasSolution();
 		//
 		int STUDENTSNUMBER = 5;
 		Masstest[] threads = new Masstest[STUDENTSNUMBER];

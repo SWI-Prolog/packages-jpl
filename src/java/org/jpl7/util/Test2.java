@@ -117,8 +117,15 @@ public class Test2 {
 		return "offset=" + offset + ", count=" + count;
 	}
 
-	public static String lotsa_args(byte[] a, int a1, int a2, int a3, int a4, int a5, int a6) { // this illustrated a bug in the MS JVM's JNI
-		return "a1=" + a1 + ", a2=" + a2 + ", a3=" + a3 + ", a4=" + a4 + ", a5=" + a5 + ", a6="
-				+ a6;
+	public static String lotsa_args(byte[] a, int a1, int a2, int a3, int a4, int a5, int a6) { // this
+																								// illustrated
+																								// a
+																								// bug
+																								// in
+																								// the
+																								// MS
+																								// JVM's
+																								// JNI
+		return "a1=" + a1 + ", a2=" + a2 + ", a3=" + a3 + ", a4=" + a4 + ", a5=" + a5 + ", a6=" + a6;
 	}
 }
