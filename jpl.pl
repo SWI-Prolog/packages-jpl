@@ -1143,7 +1143,7 @@ jpl_assert_policy(jpl_method_spec_is_cached(_), YN) :-
 % Called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
 
 jpl_tidy_iref_type_cache(Iref) :-
-  % write('[decaching types for iref='), write(Iref), write(']'), nl,
+    % write('[decaching types for iref='), write(Iref), write(']'), nl,
     retractall(jpl_iref_type_cache(Iref,_)),
     true.
 
@@ -1255,9 +1255,11 @@ jpl_pl_lib_version(7, 0, 1, alpha).  % 15/Jun/2015
 
 jpl_type_alfa(0'_) -->
     "_",
+
     !.
 jpl_type_alfa(C) -->
     [C], { C>=0'a, C=<0'z },
+
     !.
 jpl_type_alfa(C) -->
     [C], { C>=0'A, C=<0'Z }.
@@ -1265,6 +1267,7 @@ jpl_type_alfa(C) -->
 
 jpl_type_alfa_num(C) -->
     jpl_type_alfa(C),
+
     !.
 jpl_type_alfa_num(C) -->
     [C], { C>=0'0, C=<0'9 }.
@@ -1300,9 +1303,11 @@ jpl_type_class_parts([C|Cs]) -->
 
 jpl_type_classname_1(T) -->
     jpl_type_bare_classname(T),
+
     !.
 jpl_type_classname_1(T) -->
     jpl_type_array_classname(T),
+
     !.
 jpl_type_classname_1(T) -->
     jpl_type_primitive(T).
@@ -1324,12 +1329,15 @@ jpl_type_delimited_classname(Class) -->
 
 jpl_type_descriptor_1(T) -->
     jpl_type_primitive(T),
+
     !.
 jpl_type_descriptor_1(T) -->
     jpl_type_class_descriptor(T),
+
     !.
 jpl_type_descriptor_1(T) -->
     jpl_type_array_descriptor(T),
+
     !.
 jpl_type_descriptor_1(T) -->
     jpl_type_method_descriptor(T).
@@ -1409,24 +1417,31 @@ jpl_type_package_part(N) -->
 
 jpl_type_primitive(boolean) -->
     "Z",
+
     !.
 jpl_type_primitive(byte) -->
     "B",
+
     !.
 jpl_type_primitive(char) -->
     "C",
+
     !.
 jpl_type_primitive(short) -->
     "S",
+
     !.
 jpl_type_primitive(int) -->
     "I",
+
     !.
 jpl_type_primitive(long) -->
     "J",
+
     !.
 jpl_type_primitive(float) -->
     "F",
+
     !.
 jpl_type_primitive(double) -->
     "D".
@@ -2639,6 +2654,7 @@ jpl_datums_to_types([D|Ds], [T|Ts]) :-
 
 jpl_ground_is_type(X) :-
     jpl_primitive_type(X),
+
     !.
 jpl_ground_is_type(array(X)) :-
     jpl_ground_is_type(X).
@@ -2985,13 +3001,17 @@ jpl_type_to_canonical_type(array(T), array(Tc)) :-
     !,
     jpl_type_to_canonical_type(T, Tc).
 jpl_type_to_canonical_type(class([],[void]), void) :-
+
     !.
 jpl_type_to_canonical_type(class([],[N]), N) :-
     jpl_primitive_type(N),
+
     !.
 jpl_type_to_canonical_type(class(Ps,Cs), class(Ps,Cs)) :-
+
     !.
 jpl_type_to_canonical_type(void, void) :-
+
     !.
 jpl_type_to_canonical_type(P, P) :-
     jpl_primitive_type(P).
@@ -3006,17 +3026,17 @@ jpl_type_to_canonical_type(P, P) :-
 % NB if this is public API maybe oughta restore the ground(T) check and throw exception
 
 jpl_type_to_class(T, @(Tag)) :-
-  % ground(T),  % 9/Nov/2004 removed this spurious (?) check
-    (   jpl_class_tag_type_cache(ClassTag,T)
-    ->  Tag = ClassTag
-    ;   (   jpl_type_to_findclassname(T, FCN)   % peculiar syntax for FindClass()
-        ->  jFindClass(FCN, @(ClassTag)),       % which caches type of @ClassTag
-          % jpl_cache_type_of_ref(T, @(ClassTag))
-            jpl_cache_type_of_ref(class([java,lang],['Class']), @(ClassTag))    % 9/Nov/2004 bugfix (?)
-        ),
-        jpl_assert(jpl_class_tag_type_cache(ClassTag,T))
-    ),
-    Tag = ClassTag.
+    % ground(T),  % 9/Nov/2004 removed this spurious (?) check
+      (   jpl_class_tag_type_cache(ClassTag,T)
+      ->  Tag = ClassTag
+      ;   (   jpl_type_to_findclassname(T, FCN)   % peculiar syntax for FindClass()
+          ->  jFindClass(FCN, @(ClassTag)),       % which caches type of @ClassTag
+            % jpl_cache_type_of_ref(T, @(ClassTag))
+              jpl_cache_type_of_ref(class([java,lang],['Class']), @(ClassTag))    % 9/Nov/2004 bugfix (?)
+          ),
+          jpl_assert(jpl_class_tag_type_cache(ClassTag,T))
+      ),
+      Tag = ClassTag.
 
 
 %! jpl_type_to_nicename(+Type:type, -NiceName:dottedName)
@@ -3207,6 +3227,7 @@ jpl_value_to_type_1(@(false), boolean) :- !.
 jpl_value_to_type_1(@(true), boolean) :- !.
 jpl_value_to_type_1(A, class([java,lang],['String'])) :-   % yes it's a "value"
     atom(A),
+
     !.
 jpl_value_to_type_1(I, T) :-
     integer(I),
@@ -3868,10 +3889,10 @@ to_atom(Term, Atom) :-
 % unifies Syntax with 'traditional' or 'modern' according to the mode in which SWI Prolog 7.x was started
 
 jpl_pl_syntax(Syntax) :-
-	(	[] == '[]'
-	->	Syntax = traditional
-	;	Syntax = modern
-	).
+    (       [] == '[]'
+    ->      Syntax = traditional
+    ;       Syntax = modern
+    ).
 
          /*******************************
          *            MESSAGES          *
@@ -3926,28 +3947,29 @@ add_search_path(Path, Dir) :-
 %    =CLASSPATH=, etc.
 
 search_path_separator((;)) :-
-    current_prolog_flag(windows, true), !.
+    current_prolog_flag(windows, true),
+    !.
 search_path_separator(:).
 
          /*******************************
          *         LOAD THE JVM         *
          *******************************/
 
-%%      check_java_environment
+%!  check_java_environment
 %
-%       Verify the Java environment.  Preferably   we  would create, but
-%       most Unix systems do not   allow putenv("LD_LIBRARY_PATH=..." in
-%       the current process. A suggesting found on  the net is to modify
-%       LD_LIBRARY_PATH right at startup and  next execv() yourself, but
-%       this doesn't work if we want to load Java on demand or if Prolog
-%       itself is embedded in another application.
+%   Verify the Java environment.  Preferably   we  would create, but
+%   most Unix systems do not   allow putenv("LD_LIBRARY_PATH=..." in
+%   the current process. A suggesting found on  the net is to modify
+%   LD_LIBRARY_PATH right at startup and  next execv() yourself, but
+%   this doesn't work if we want to load Java on demand or if Prolog
+%   itself is embedded in another application.
 %
-%       So, after reading lots of pages on   the web, I decided checking
-%       the environment and producing a sensible   error  message is the
-%       best we can do.
+%   So, after reading lots of pages on   the web, I decided checking
+%   the environment and producing a sensible   error  message is the
+%   best we can do.
 %
-%       Please not that Java2 doesn't require   $CLASSPATH to be set, so
-%       we do not check for that.
+%   Please not that Java2 doesn't require   $CLASSPATH to be set, so
+%   we do not check for that.
 
 check_java_environment :-
     check_lib(java),
@@ -3985,12 +4007,14 @@ check_shared_object(Name, File, EnvVar, Absolute) :-
     ).
 
 libfile(Base, File) :-
-    current_prolog_flag(unix, true), !,
+    current_prolog_flag(unix, true),
+    !,
     atom_concat(lib, Base, F0),
     current_prolog_flag(shared_object_extension, Ext),
     file_name_extension(F0, Ext, File).
 libfile(Base, File) :-
-    current_prolog_flag(windows, true), !,
+    current_prolog_flag(windows, true),
+    !,
     current_prolog_flag(shared_object_extension, Ext),
     file_name_extension(Base, Ext, File).
 
@@ -4011,14 +4035,15 @@ library_search_path(Path, EnvVar) :-
     ).
 
 
-%%      add_jpl_to_classpath
+%!  add_jpl_to_classpath
 %
-%       Add jpl.jar to =CLASSPATH= to facilitate callbacks
+%   Add jpl.jar to =CLASSPATH= to facilitate callbacks
 
 add_jpl_to_classpath :-
     absolute_file_name(jar('jpl.jar'),
                [ access(read)
-               ], JplJAR), !,
+               ], JplJAR),
+    !,
     (   getenv('CLASSPATH', Old)
     ->  true
     ;   Old = '.'
@@ -4031,11 +4056,11 @@ add_jpl_to_classpath :-
     setenv('CLASSPATH', New).
 
 
-%%      libjpl(-Spec) is det.
+%!  libjpl(-Spec) is det.
 %
-%       Return the spec for loading the   JPL shared object. This shared
-%       object must be called libjpl.so as the Java System.loadLibrary()
-%       call used by jpl.jar adds the lib* prefix.
+%   Return the spec for loading the   JPL shared object. This shared
+%   object must be called libjpl.so as the Java System.loadLibrary()
+%   call used by jpl.jar adds the lib* prefix.
 
 libjpl(File) :-
     (   current_prolog_flag(unix, true)
@@ -4054,7 +4079,8 @@ add_jpl_to_ldpath(JPL) :-
     absolute_file_name(JPL, File,
                [ file_type(executable),
                  file_errors(fail)
-               ]), !,
+               ]),
+    !,
     file_directory_name(File, Dir),
     prolog_to_os_filename(Dir, OsDir),
     current_prolog_flag(shared_object_search_path, PathVar),
@@ -4068,7 +4094,8 @@ add_jpl_to_ldpath(_).
 %    appear to inspect the content of LD_LIBRARY_PATH only once.
 
 add_java_to_ldpath :-
-    current_prolog_flag(windows, true), !,
+    current_prolog_flag(windows, true),
+    !,
     phrase(java_dirs, Extra),
     (   Extra \== []
     ->  print_message(informational, extend_ld_path(Extra)),
@@ -4095,12 +4122,14 @@ java_dirs -->
 java_dir(DLL, _SubPath) -->
     { check_shared_object(DLL, _, _Var, Abs),
       Abs \== (-)
-    }, !.
+    },
+    !.
 java_dir(_DLL, SubPath) -->
     { java_home(JavaHome),
       atom_concat(JavaHome, SubPath, SubDir),
       exists_directory(SubDir)
-    }, !,
+    },
+    !,
     [SubDir].
 java_dir(_, _) --> [].
 
@@ -4120,7 +4149,8 @@ java_home_win_key(
 
 java_home(Home) :-
     getenv('JAVA_HOME', Home),
-    exists_directory(Home), !.
+    exists_directory(Home),
+    !.
 :- if(current_prolog_flag(windows, true)).
 java_home(Home) :-
     java_home_win_key(_, Key0),    % TBD: user can't choose jre or jdk
@@ -4128,13 +4158,15 @@ java_home(Home) :-
     atomic_list_concat([Key0, Version], /, Key),
     win_registry_get_value(Key, 'JavaHome', WinHome),
     prolog_to_os_filename(Home, WinHome),
-    exists_directory(Home), !.
+    exists_directory(Home),
+    !.
 :- else.
 java_home(Home) :-
     member(Home, [ '/usr/lib/java',
-               '/usr/local/lib/java'
-             ]),
-    exists_directory(Home), !.
+                   '/usr/local/lib/java'
+                 ]),
+    exists_directory(Home),
+    !.
 :- endif.
 
 :- dynamic
@@ -4143,7 +4175,8 @@ java_home(Home) :-
     jvm_ready/0.
 
 setup_jvm :-
-    jvm_ready, !.
+    jvm_ready,
+    !.
 setup_jvm :-
     add_jpl_to_classpath,
     add_java_to_ldpath,

@@ -5,24 +5,24 @@
 
 :- use_module(library(jpl)).
 
-		 /*******************************
-		 *	       DEMOS		*
-		 *******************************/
+                 /*******************************
+                 *             DEMOS            *
+                 *******************************/
 
 jpl_demo :-
-	absolute_file_name(jpl_examples(.),
-			   [ file_type(directory),
-			     access(read)
-			   ],
-			   ExampleDir),
-	atom_concat(ExampleDir, '/*.pl', Pattern),
-	expand_file_name(Pattern, Examples),
-	tag_basename(Examples, Entries),
-	menu('Select JPL example', Entries, Example),
-	consult(Example).
+    absolute_file_name(jpl_examples(.),
+                       [ file_type(directory),
+                         access(read)
+                       ],
+                       ExampleDir),
+    atom_concat(ExampleDir, '/*.pl', Pattern),
+    expand_file_name(Pattern, Examples),
+    tag_basename(Examples, Entries),
+    menu('Select JPL example', Entries, Example),
+    consult(Example).
 
 tag_basename([], []).
 tag_basename([H|T0], [H:B|T]) :-
-	file_base_name(H, B),
-	tag_basename(T0, T).
+    file_base_name(H, B),
+    tag_basename(T0, T).
 
