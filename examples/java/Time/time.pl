@@ -3,8 +3,8 @@
 traverse( []).
 
 traverse( [H|T]) :-
-	traverse( H),
-	traverse( T).
+    traverse( H),
+    traverse( T).
 
 
 noop( _X).

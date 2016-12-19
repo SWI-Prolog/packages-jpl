@@ -33,9 +33,9 @@ tuple( t(a,b,c,d,e)).
 
 
 t :-
-	throw( 'this is an error message').
+    throw( 'this is an error message').
 
 
 display( X) :-
-	write( X).
+    write( X).
 
