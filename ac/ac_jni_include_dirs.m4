@@ -87,6 +87,14 @@ mingw32*)       JNI_CLIENT_DIRS="$_JTOPDIR/lib"
 		_JNI_LIBDIRS="lib/arm"
 		_JNI_LIBSUBDIRS="server"
 		;;
+	powerpc64)
+		_JNI_LIBDIRS="lib/ppc64"
+		_JNI_LIBSUBDIRS="server"
+		;;
+	powerpc64le)
+		_JNI_LIBDIRS="lib/ppc64le"
+		_JNI_LIBSUBDIRS="server"
+		;;
 	powerpc)
 		case "$host_os" in
 		linux*)
