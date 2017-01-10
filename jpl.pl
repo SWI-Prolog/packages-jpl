@@ -118,7 +118,7 @@ The library(jpl) provides a bidirectional interface to a Java Virtual Machine.
 % integer N, then V is a new array of that type, with N elements, each
 % initialised to Java's appropriate default value for the type.
 %
-% If V is {Term} then we attempt to convert a new jpl.Term instance to
+% If V is {Term} then we attempt to convert a new org.jpl7.Term instance to
 % a corresponding term; this is of  little   obvious  use here, but is
 % consistent with jpl_call/4 and jpl_get/3.
 
@@ -137,9 +137,9 @@ jpl_new(X, Params, V) :-
     jpl_new_1(Type, Params, Vx),
     (   nonvar(V),
         V = {Term}  % yucky way of requesting Term->term conversion
-    ->  (   jni_jref_to_term(Vx, TermX)    % fails if Rx is not a JRef to a jpl.Term
+    ->  (   jni_jref_to_term(Vx, TermX)    % fails if Rx is not a JRef to a org.jpl7.Term
         ->  Term = TermX
-        ;   throw(error(type_error,context(jpl_call/4, 'result is not a jpl.Term instance as required')))
+        ;   throw(error(type_error,context(jpl_call/4, 'result is not a org.jpl7.Term instance as required')))
         )
     ;   V = Vx
     ).
@@ -348,9 +348,9 @@ jpl_call(X, Mspec, Params, R) :-
     ),
     (   nonvar(R),
         R = {Term}  % yucky way of requesting Term->term conversion
-    ->  (   jni_jref_to_term(Rx, TermX)    % fails if Rx isn't a JRef to a jpl.Term
+    ->  (   jni_jref_to_term(Rx, TermX)    % fails if Rx isn't a JRef to a org.jpl7.Term
         ->  Term = TermX
-        ;   throw(error(type_error,context(jpl_call/4,'result is not a jpl.Term instance as required')))
+        ;   throw(error(type_error,context(jpl_call/4,'result is not a org.jpl7.Term instance as required')))
         )
     ;   R = Rx
     ).
@@ -539,9 +539,9 @@ jpl_get(X, Fspec, V) :-
     ),
     (   nonvar(V),
         V = {Term}  % yucky way of requesting Term->term conversion
-    ->  (   jni_jref_to_term(Vx, TermX)    % fails if Rx is not a JRef to a jpl.Term
+    ->  (   jni_jref_to_term(Vx, TermX)    % fails if Rx is not a JRef to a org.jpl7.Term
         ->  Term = TermX
-        ;   throw(error(type_error,context(jpl_call/4,'result is not a jpl.Term instance as required')))
+        ;   throw(error(type_error,context(jpl_call/4,'result is not a org.jpl7.Term instance as required')))
         )
     ;   V = Vx
     ).
@@ -976,7 +976,7 @@ jpl_set_array(T, A, N, I, Ds) :-
     ->  (   nth0(J, Ds, D),                 % for each datum
             Nd is N+J,                      % compute array index
             (   D = {Tq}                    % quoted term?
-            ->  jni_term_to_jref(Tq, D2)    % convert to a JPL reference to a corresponding jpl.Term object
+            ->  jni_term_to_jref(Tq, D2)    % convert to a JPL reference to a corresponding org.jpl7.Term object
             ;   D = D2
             ),
             jSetObjectArrayElement(A, Nd, D2),
@@ -1050,7 +1050,7 @@ jpl_set_instance_field(double, Obj, FieldID, V) :-
     jSetDoubleField(Obj, FieldID, V).
 jpl_set_instance_field(class(_,_), Obj, FieldID, V) :-  % also handles byval term assignments
     (   V = {T}                     % quoted term?
-    ->  jni_term_to_jref(T, V2)     % convert to a JPL reference to a corresponding jpl.Term object
+    ->  jni_term_to_jref(T, V2)     % convert to a JPL reference to a corresponding org.jpl7.Term object
     ;   V = V2
     ),
     jSetObjectField(Obj, FieldID, V2).
@@ -1081,7 +1081,7 @@ jpl_set_static_field(double, Obj, FieldID, V) :-
     jSetStaticDoubleField(Obj, FieldID, V).
 jpl_set_static_field(class(_,_), Obj, FieldID, V) :-    % also handles byval term assignments
     (   V = {T}                         % quoted term?
-    ->  jni_term_to_jref(T, V2)         % convert to a JPL reference to a corresponding jpl.Term object
+    ->  jni_term_to_jref(T, V2)         % convert to a JPL reference to a corresponding org.jpl7.Term object
     ;   V = V2
     ),
     jSetStaticObjectField(Obj, FieldID, V2).
@@ -3566,7 +3566,7 @@ jpl_list_to_array(Ds, A) :-
 %
 % Terms should be a proper Prolog list of arbitrary terms.
 %
-% Array is a JPL reference to a new Java array of jpl.Term,
+% Array is a JPL reference to a new Java array of org.jpl7.Term,
 % whose elements represent the respective members of the list.
 
 jpl_terms_to_array(Ts, A) :-
