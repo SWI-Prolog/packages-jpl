@@ -716,7 +716,7 @@ jpl_get_object_array_elements(Array, Lo, Hi, Vcs) :-
     ).
 
 
-%%  jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs) is det.
+%! jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs) is det.
 %
 %   Array  should  be  a  (zero-based)  Java  array  of  (primitive)
 %   ElementType; Vcs should be unbound on entry, and on exit will be
@@ -3915,7 +3915,7 @@ prolog:error_message(java_exception(Ex)) -->
 
 user:file_search_path(jar, swi(lib)).
 
-%%    add_search_path(+Var, +Value) is det.
+%! add_search_path(+Var, +Value) is det.
 %
 %    Add value to the end of  search-path   Var.  Value is normally a
 %    directory. Does not change the environment  if Dir is already in
@@ -3938,7 +3938,7 @@ add_search_path(Path, Dir) :-
     ;   setenv(Path, Dir)
     ).
 
-%%    search_path_separator(-Sep:atom)
+%! search_path_separator(-Sep:atom)
 %
 %    Separator  used  the  the  OS    in  =PATH=,  =LD_LIBRARY_PATH=,
 %    =CLASSPATH=, etc.
@@ -3986,7 +3986,7 @@ check_lib(Name) :-
     ;   true
     ).
 
-%%    check_shared_object(+Lib, -File, -EnvVar, -AbsFile) is semidet.
+%! check_shared_object(+Lib, -File, -EnvVar, -AbsFile) is semidet.
 %
 %    True if AbsFile is existing .so/.dll file for Lib.
 %
@@ -4016,7 +4016,7 @@ libfile(Base, File) :-
     file_name_extension(Base, Ext, File).
 
 
-%%    library_search_path(-Dirs:list, -EnvVar) is det.
+%! library_search_path(-Dirs:list, -EnvVar) is det.
 %
 %    Dirs  is  the  list   of    directories   searched   for  shared
 %    objects/DLLs. EnvVar is the variable in which the search path os
@@ -4065,7 +4065,7 @@ libjpl(File) :-
     ;   File = foreign(jpl)
     ).
 
-%%    add_jpl_to_ldpath(+JPL) is det.
+%! add_jpl_to_ldpath(+JPL) is det.
 %
 %    Add the directory holding jpl.so  to   search  path  for dynamic
 %    libraries. This is needed for callback   from Java. Java appears
@@ -4084,7 +4084,7 @@ add_jpl_to_ldpath(JPL) :-
     add_search_path(PathVar, OsDir).
 add_jpl_to_ldpath(_).
 
-%%    add_java_to_ldpath is det.
+%! add_java_to_ldpath is det.
 %
 %    Adds the directories holding jvm.dll and java.dll to the %PATH%.
 %    This appears to work on Windows. Unfortunately most Unix systems
@@ -4101,7 +4101,7 @@ add_java_to_ldpath :-
     ).
 add_java_to_ldpath.
 
-%%    java_dirs// is det.
+%! java_dirs// is det.
 %
 %    DCG that produces existing candidate directories holding
 %    Java related DLLs
@@ -4131,7 +4131,7 @@ java_dir(_DLL, SubPath) -->
 java_dir(_, _) --> [].
 
 
-%%    java_home(-Home) is semidet
+%! java_home(-Home) is semidet
 %
 %    Find the home location of Java.
 %
