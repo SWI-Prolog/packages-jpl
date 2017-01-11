@@ -342,16 +342,16 @@ values, references,
 methods etc., and this section describes how these types themselves (as
 opposed to instances thereof) are represented.&nbsp; Predicates which
 pass these type representations include </font><b><a
- href="api.html#jpl_class_to_type/2">jpl_class_to_type/2</a>, </b><b><a
- href="api.html#jpl_classname_to_type/2">jpl_classname_to_type/2</a>,
-</b><b><a href="api.html#jpl_datum_to_type/2">jpl_datum_to_type/2</a>,
-</b><b><a href="api.html#jpl_is_object_type/1">jpl_is_object_type/1</a>,
-</b><b><a href="api.html#jpl_is_type/1">jpl_is_type/1</a>, </b><a
- href="api.html#jpl_object_to_type/2" style="font-weight: bold;">jpl_object_to_type/2</a><b>,
-</b><b><a href="api.html#jpl_primitive_type/1">jpl_primitive_type/1</a>,
-</b><b><a href="api.html#jpl_ref_to_type/2">jpl_ref_to_type/2</a>, </b><b><a
- href="api.html#jpl_type_to_class/2">jpl_type_to_class/2</a>. </b><b><a
- href="api.html#jpl_type_to_classname/2">jpl_type_to_classname/2</a>.</b>
+ href="api.md#jpl_class_to_type/2">jpl_class_to_type/2</a>, </b><b><a
+ href="api.md#jpl_classname_to_type/2">jpl_classname_to_type/2</a>,
+</b><b><a href="api.md#jpl_datum_to_type/2">jpl_datum_to_type/2</a>,
+</b><b><a href="api.md#jpl_is_object_type/1">jpl_is_object_type/1</a>,
+</b><b><a href="api.md#jpl_is_type/1">jpl_is_type/1</a>, </b><a
+        href="api.md#jpl_object_to_type/2" style="font-weight: bold;">jpl_object_to_type/2</a><b>,
+</b><b><a href="api.md#jpl_primitive_type/1">jpl_primitive_type/1</a>,
+</b><b><a href="api.md#jpl_ref_to_type/2">jpl_ref_to_type/2</a>, </b><b><a
+ href="api.md#jpl_type_to_class/2">jpl_type_to_class/2</a>. </b><b><a
+ href="api.md#jpl_type_to_classname/2">jpl_type_to_classname/2</a>.</b>
 <blockquote><font face="Arial,Helvetica"><b><i>void</i></b> is
 represented as </font><b><tt><font size="+1">void</font></tt></b></blockquote>
 <blockquote><font face="Arial,Helvetica"><b><i>null</i></b> is

@@ -1,26 +1,13 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
   <meta http-equiv="CONTENT-TYPE"
  content="text/html; charset=windows-1252">
-  <title>High-Level Interface</title>
   <meta name="GENERATOR" content="StarOffice 7  (Win32)">
   <meta name="AUTHOR" content="Fred Dushin">
   <meta name="CREATED" content="20040216;23165440">
   <meta name="CHANGEDBY" content="Paul Singleton">
   <meta name="CHANGED" content="20040216;23225011">
   <meta name="KEYWORDS" content="JPL,java,prolog">
-  <style>
-	<!--
-		P { color: #000000 }
-		H3 { color: #000000 }
-		BLOCKQUOTE { color: #000000 }
-		PRE { color: #000000 }
-		H4 { color: #000000 }
-		A:link { color: #00009c }
-		A:visited { color: #ce31ce }
-	-->
-	</style>
 </head>
 <body lang="en-US" text="#000000" link="#00009c" vlink="#ce31ce"
  bgcolor="#ffffff" dir="ltr">

@@ -1,9 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-
-<html>  
-  <head>  
-    <title>JPL: A bidirectional Prolog/Java interface</title>
-  </head>  
+<html>   
 <body>
 <h1 align=center>JPL: A bidirectional Prolog/Java interface</h1>
 
@@ -23,16 +18,16 @@ that can be used to embed Prolog in Java as well as for embedding Java
 in Prolog.  In both setups it provides a reentrant bidirectional interface.
 
 <ul>
-  <li><a href="objectives.html">Objectives</a>
-  <li><a href="java_api/index.html">Using Prolog from Java</a>
+  <li><a href="objectives.md">Objectives</a>
+  <li><a href="java_api/index.md">Using Prolog from Java</a>
   <li>Using Java from Prolog
   <ul>
-    <li><a href="prolog_api/overview.html">User guide</a>
-    <li><a href="prolog_api/api.html">API reference</a>
-    <li><a href="prolog_api/gotchas.html">Gotchas</a>
+    <li><a href="prolog_api/overview.md">User guide</a>
+    <li><a href="prolog_api/api.md">API reference</a>
+    <li><a href="prolog_api/gotchas.md">Gotchas</a>
   </ul>
-  <li><a href="installation.html">Installation</a>
-  <li><a href="release_notes.html">Release notes</a>
+  <li><a href="installation.md">Installation</a>
+  <li><a href="release_notes.md">Release notes</a>
 </ul>
 
 <address>

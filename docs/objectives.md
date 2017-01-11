@@ -1,7 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <title>JPL 3.x objectives</title>
   <meta name="author" content="Paul Singleton">
 </head>
 <body>
