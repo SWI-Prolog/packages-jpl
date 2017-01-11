@@ -61,7 +61,9 @@ refactoring (trivial):
 #define	JPL_C_LIB_VERSION_STATUS "alpha"
 
 /*#define DEBUG(n, g) ((void)0) */
+#ifndef DEBUG_LEVEL
 #define DEBUG_LEVEL 3
+#endif
 #define DEBUG(n, g) ( n >= DEBUG_LEVEL ? g : (void)0 )
 
 /* disable type-of-ref caching (at least until GC issues are resolved) */
