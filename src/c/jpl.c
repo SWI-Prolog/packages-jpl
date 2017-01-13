@@ -1918,7 +1918,7 @@ jni_init()
 
 /*=== JNI exception/error processing/support ======================================================= */
 
-/* returns a new error(java_exception(@(tag)),msg) to represent a caught Java exception */
+/* returns a new error(java_exception(<jref>(hex)),msg) to represent a caught Java exception */
 static term_t
 jni_new_java_exception(pointer i, atom_t msg)
 { term_t av;
@@ -1927,7 +1927,7 @@ jni_new_java_exception(pointer i, atom_t msg)
 			 PL_unify_term(av+0,
 						   PL_FUNCTOR, JNI_functor_error_2,
 						     PL_FUNCTOR, JNI_functor_java_exception_1,
-						       PL_FUNCTOR, JNI_functor_at_1,
+						     /* PL_FUNCTOR, JNI_functor_at_1, */
 						         PL_TERM, av+1,
 						   PL_ATOM, msg) );
 
@@ -1940,7 +1940,7 @@ jni_new_java_exception(pointer i, atom_t msg)
 }
 
 
-/* returns a new error(jpl_error(@(tag)),msg) to represent an exceptional condition raised within JPL */
+/* returns a new error(jpl_error(<jref>(hex)),msg) to represent an exceptional condition raised within JPL */
 static term_t
 jni_new_jpl_error(const char *tag, pointer i)
 { term_t av;
@@ -1949,7 +1949,7 @@ jni_new_jpl_error(const char *tag, pointer i)
 			 PL_unify_term(av+0,
 						   PL_FUNCTOR, JNI_functor_error_2,
 						     PL_FUNCTOR, JNI_functor_jpl_error_1,
-						       PL_FUNCTOR, JNI_functor_at_1,
+						   /*    PL_FUNCTOR, JNI_functor_at_1, */
 						   PL_CHARS, tag,
 						   PL_TERM, av+1) );
 
