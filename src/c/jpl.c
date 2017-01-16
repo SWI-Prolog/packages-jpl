@@ -4137,11 +4137,11 @@ Java_org_jpl7_fli_Prolog_next_1solution(JNIEnv *env, jclass jProlog,
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
+ * Class:     org_jpl7_fli_Prolog
  * Method:    open_query
- * Signature:
- * (Lorg/jpl7/fli/module_t;ILorg/jpl7/fli/predicate_t;Lorg/jpl7/fli/term_t;)Lorg/jpl7/fli/qid_t;
+ * Signature: (Lorg/jpl7/fli/module_t;ILorg/jpl7/fli/predicate_t;Lorg/jpl7/fli/term_t;)Lorg/jpl7/fli/qid_t;
  */
+
 JNIEXPORT jobject JNICALL
 Java_org_jpl7_fli_Prolog_open_1query(JNIEnv *env, jclass jProlog,
                                      jobject jmodule,    /* read */
@@ -4306,11 +4306,9 @@ Java_org_jpl7_fli_Prolog_put_1nil(JNIEnv *env, // 1/Feb/2015
                                   jclass jProlog, jobject jterm)
 { term_t term;
 
-  if (jpl_ensure_pvm_init(env) && getUIntPtrValue(env, jterm, &term))
-  { return PL_put_nil(term);
-  }
-
-  return FALSE;
+  return ( jpl_ensure_pvm_init(env) &&
+	   getTermValue(env, jterm, &term) &&
+	   PL_put_nil(term) );
 }
 
 /*
@@ -4318,18 +4316,15 @@ Java_org_jpl7_fli_Prolog_put_1nil(JNIEnv *env, // 1/Feb/2015
  * Method:	  put_term
  * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/term_t;)V
  */
-JNIEXPORT void
-    JNICALL /* maybe oughta return jboolean (false iff given object is null) */
-    Java_org_jpl7_fli_Prolog_put_1term(JNIEnv *env, jclass jProlog,
-                                       jobject jterm1, jobject jterm2)
+JNIEXPORT void JNICALL /* maybe oughta return jboolean (false iff given object is null) */
+Java_org_jpl7_fli_Prolog_put_1term(JNIEnv *env, jclass jProlog,
+				   jobject jterm1, jobject jterm2)
 { term_t term1;
   term_t term2;
 
-  if (jpl_ensure_pvm_init(env) &&
-      getUIntPtrValue(env, jterm1, &term1) /* checks that jterm1 isn't null */
-      &&
-      getUIntPtrValue(env, jterm2, &term2) /* checks that jterm2 isn't null */
-      )
+  if ( jpl_ensure_pvm_init(env) &&
+       getTermValue(env, jterm1, &term1) &&
+       getTermValue(env, jterm2, &term2) )
   { PL_put_term(term1, term2);
   }
 }
@@ -4346,11 +4341,10 @@ Java_org_jpl7_fli_Prolog_put_1jref(JNIEnv *env, jclass jProlog, jobject jterm,
                                    jobject jref)
 { term_t term;
 
-  if (jpl_ensure_pvm_init(env) && jni_ensure_jvm() &&
-      getUIntPtrValue(env, jterm, &term) // checks that jterm isn't null
-      )
-  { jni_jobject_to_term(jref, term,
-                        env); // assumes term is var; OK if jref == null
+  if ( jpl_ensure_pvm_init(env) &&
+       jni_ensure_jvm() &&
+       getTermValue(env, jterm, &term) )
+  { jni_jobject_to_term(jref, term, env);	/* assumes term is var */
   }
 }
 
