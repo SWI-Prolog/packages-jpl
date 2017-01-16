@@ -3448,31 +3448,6 @@ setIntValue(JNIEnv *env, jobject jint_holder, jint iv)
          ((*env)->SetIntField(env, jint_holder, jIntHolderValue_f, iv), TRUE);
 }
 
-#if 0
-/*-----------------------------------------------------------------------
- * setInt64Value
- *
- * Sets the value in a Java Int64Holder class instance (unless it's null)
- * to the supplied value
- *
- * @param	env		   Java environment
- * @param	jint64_holder  the Int64Holder class instance, or null
- * @param	iv			   the new (int64_t) value
- *---------------------------------------------------------------------*/
-static bool
- setInt64Value(
-	JNIEnv	   *env,
-	jobject		jint64_holder,
-	int64_t		i64v
-	)
-	{ return	jint64_holder != NULL
-		&&	(	(*env)->SetLongField(env,jint64_holder,jInt64HolderValue_f,i64v),
-				TRUE
-			)
-		;
-	}
-#endif
-
 /*-----------------------------------------------------------------------
  * setLongValue
  *
@@ -3555,67 +3530,6 @@ setObjectValue(JNIEnv *env, jobject jobject_holder, jobject ref)
                                  ref),
           TRUE);
 }
-
-#if 0
-/*-----------------------------------------------------------------------
- * setBooleanValue
- *
- * Sets the .value field of a Java BooleanHolder class instance (unless it's null)
- * to the supplied jboolean value
- *
- * @param   env		    Java environment
- * @param   jboolean_holder the BooleanHolder class instance, or null
- * @param   jb		     the new (jboolean) value
- *---------------------------------------------------------------------*/
-static bool
-setBooleanValue(
-    JNIEnv	*env,
-    jobject	jboolean_holder,
-    jboolean	jb
-    )
-    { return  jboolean_holder != NULL
-	&&  (	(*env)->SetBooleanField(env,jboolean_holder,jBooleanHolderValue_f,jb),
-		TRUE
-	    )
-	;
-    }
-
-
-/*-----------------------------------------------------------------------
- * updateAtomValue
- *
- * Updates the value in a Java atom_t class instance (unless it's null)
- * to the supplied value (maybe 0L); unregisters and registers old and new
- * atom references as appropriate.  NB atom_t extends LongHolder.
- *
- * @param   env		  Java environment
- * @param   jatom_holder  the atom_t class instance, or null
- * @param   atom2	  the new atom reference
- *---------------------------------------------------------------------*/
-static bool
-updateAtomValue(
-    JNIEnv     *env,
-    jobject	jatom_holder,
-    atom_t	atom2	    /* new value (perhaps 0L (?)) */
-    )
-    { atom_t	atom1;	    /* old value (perhaps 0L (?)) */
-
-    if ( jatom_holder == NULL )
-	{ return FALSE;
-	}
-    else
-	{ atom1 = (atom_t)(*env)->GetLongField(env,jatom_holder,jLongHolderValue_f);
-	if ( atom1 != 0L )
-	    { PL_unregister_atom( atom1);
-	    }
-	(*env)->SetLongField(env,jatom_holder,jLongHolderValue_f,(long)atom2);
-	if ( atom2 != 0L )
-	    { PL_register_atom( atom2);
-	    }
-	return TRUE;
-	}
-    }
-#endif
 
 /*=== Java-wrapped SWI-Prolog FLI functions =============================== */
 
