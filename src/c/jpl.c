@@ -320,12 +320,11 @@ static char **jvm_dia = jvm_ia;		/* default JVM init args (after
 static char **jvm_aia = NULL;		/* actual JVM init args (after jvm init)*/
 
 /*=== JNI global state (hashed global refs) =============================== */
-/* FIXME: bit small integer types? */
 
 static HrTable *hr_table = NULL;	/* handle to allocated-on-demand table */
-static int hr_add_count = 0;		/* total of new refs interned */
-static int hr_old_count = 0;		/* total of old refs reused */
-static int hr_del_count = 0;		/* total of dead refs released */
+static int64_t hr_add_count = 0;	/* total of new refs interned */
+static int64_t hr_old_count = 0;	/* total of old refs reused */
+static int64_t hr_del_count = 0;	/* total of dead refs released */
 
 /*=== JPL global state, initialised by jpl_ensure_jpl_init() or
  * jpl_ensure_jvm_init() ============== */
@@ -1062,8 +1061,7 @@ jni_free_iref(JNIEnv *env, pointer iref)
 { if (jni_hr_del(env, iref)) /* iref matched a hashedref table entry?
 				(in which case, was deleted) */
   { if (!jni_tidy_iref_type_cache(iref))
-    { DEBUG(0, Sdprintf("[JPL: jni_tidy_iref_type_cache(%u) failed]\n", iref));
-    }
+      DEBUG(0, Sdprintf("[JPL: jni_tidy_iref_type_cache(%u) failed]\n", iref));
     hr_del_count++;
     return TRUE;
   } else
@@ -1220,9 +1218,9 @@ jni_tag_to_iref_plc(term_t tt, term_t ti)
 static foreign_t
 jni_hr_info_plc(term_t t1, term_t t2, term_t t3, term_t t4 )
 { return PL_unify_integer(t1, (hr_table == NULL ? 0 : hr_table->count)) &&
-         PL_unify_integer(t2, hr_add_count) &&
-         PL_unify_integer(t3, hr_old_count) &&
-         PL_unify_integer(t4, hr_del_count);
+         PL_unify_int64(t2, hr_add_count) &&
+         PL_unify_int64(t3, hr_old_count) &&
+         PL_unify_int64(t4, hr_del_count);
 }
 
 /* unifies t2 with a Prolog term which represents the contents of the hashtable
