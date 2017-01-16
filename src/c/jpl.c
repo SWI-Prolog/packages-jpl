@@ -43,8 +43,8 @@ recent fixes:
 
 still to do:
  * make it completely thread-safe
-   (both to multiple Prolog (engine-enabled) threads and to multiple Java
-threads)
+   (both to multiple Prolog (engine-enabled) threads and to multiple
+    Java threads)
  * suss JVM 'abort' and 'exit' handling, and 'vfprintf' redirection
  * rationalise initialisation; perhaps support startup from C?
 
@@ -74,12 +74,12 @@ refactoring (trivial):
 
 #ifdef __WINDOWS__
 /* OS-specific header (SWI-Prolog FLI and Java Invocation API both seem to need
- * this): */
-/* but not if we use the .NET 2.0 C compiler */
+ * this): but not if we use the .NET 2.0 C compiler
+ */
 #include <windows.h>
-#define SIZEOF_WCHAR_T 2
-#define SIZEOF_LONG 4
-#define SIZEOF_LONG_LONG 8
+#define	SIZEOF_WCHAR_T	 2
+#define	SIZEOF_LONG	 4
+#define	SIZEOF_LONG_LONG 8
 #ifdef WIN64
 #define SIZEOF_VOIDP 8
 #else
@@ -102,12 +102,11 @@ refactoring (trivial):
 #include <string.h>
 
 /* POSIX 'pthreads' headers (initially for JPL's Prolog engine pool, useful for
- * locking generally?): */
+ * locking generally?):
+ */
 #include <pthread.h>
-#include <semaphore.h>
 
 #include <assert.h>
-#include <limits.h>
 
 /*=== JNI constants ======================================================= */
 
@@ -188,24 +187,24 @@ refactoring (trivial):
 
 typedef struct Hr_Entry HrEntry; /* enables circular definition... */
 
-struct Hr_Entry
-{                /* a single interned reference */
-  jobject  obj;  /* a JNI global ref */
-  int      hash; /* identityHashCode(obj) */
-  HrEntry *next; /* next entry in this chain, or NULL */
+struct Hr_Entry				/* a single interned reference */
+{ jobject  obj;				/* a JNI global ref */
+  int      hash;			/* identityHashCode(obj) */
+  HrEntry *next;			/* next entry in this chain, or NULL */
 };
 
 typedef struct Hr_Table HrTable;
 
 struct Hr_Table
-{ int       count;     /* current # entries */
-  int       threshold; /* rehash on add when count==threshold */
-  int       length;    /* # slots in slot array */
-  HrEntry **slots;     /* pointer to slot array */
+{ int       count;			/* current # entries */
+  int       threshold;			/* rehash on add when count==threshold */
+  int       length;			/* # slots in slot array */
+  HrEntry **slots;			/* pointer to slot array */
 };
 
-typedef intptr_t pointer; /* for JPL */
-typedef int bool; /* for JNI/JPL functions returning only TRUE or FALSE */
+typedef intptr_t pointer;		/* for JPL */
+typedef int bool;			/* for JNI/JPL functions returning */
+					/* only TRUE or FALSE */
 
 /*=== JNI constants: sizes of JNI primitive types ========================= */
 
@@ -230,20 +229,20 @@ int size[16] = { /* NB relies on sequence of JNI_XPUT_* defs */
 
 /*=== JNI "constants", lazily initialised by jni_init() =================== */
 
-static atom_t JNI_atom_false; /* false */
-static atom_t JNI_atom_true;  /* true */
+static atom_t JNI_atom_false;		/* false */
+static atom_t JNI_atom_true;		/* true */
 
-static atom_t JNI_atom_boolean; /* boolean */
-static atom_t JNI_atom_char;    /* char */
-static atom_t JNI_atom_byte;    /* byte */
-static atom_t JNI_atom_short;   /* short */
-static atom_t JNI_atom_int;     /* int */
-static atom_t JNI_atom_long;    /* long */
-static atom_t JNI_atom_float;   /* float */
-static atom_t JNI_atom_double;  /* double */
+static atom_t JNI_atom_boolean;		/* boolean */
+static atom_t JNI_atom_char;		/* char */
+static atom_t JNI_atom_byte;		/* byte */
+static atom_t JNI_atom_short;		/* short */
+static atom_t JNI_atom_int;		/* int */
+static atom_t JNI_atom_long;		/* long */
+static atom_t JNI_atom_float;		/* float */
+static atom_t JNI_atom_double;		/* double */
 
-static atom_t JNI_atom_null; /* null */
-static atom_t JNI_atom_void; /* void */
+static atom_t JNI_atom_null;		/* null */
+static atom_t JNI_atom_void;		/* void */
 
 static functor_t JNI_functor_at_1;             /* @(_) */
 static functor_t JNI_functor_jbuf_2;           /* jbuf(_,_) */
@@ -256,26 +255,22 @@ static functor_t JNI_functor_jpl_error_1;      /* jpl_error(_) */
 
 /*=== JNI's static JVM references, lazily initialised by jni_init() ======= */
 
-static jclass
-    c_class; /* java.lang.Class                       (rename to jClass_c ?) */
-static jmethodID
-    c_getName;             /* java.lang.Class' getName()            (rename to
-                              jClassGetName_m ?) */
-static jclass str_class;   /* java.lang.String                      (this
-                              duplicates jString_c below) */
-static jclass term_class;  /* org.jpl7.Term */
-static jclass termt_class; /* org.jpl7.fli.term_t */
+static jclass c_class;		/* java.lang.Class (jClass_c?) */
+static jmethodID c_getName;	/* java.lang.Class'getName() (jClassGetName_m?) */
+static jclass str_class;	/* java.lang.String (duplicates jString_c below)*/
+static jclass term_class;	/* org.jpl7.Term */
+static jclass termt_class;	/* org.jpl7.fli.term_t */
 
-static jclass sys_class;  /* java.lang.System                      (rename to
-                             jSystem_c ?) */
-static jmethodID sys_ihc; /* java.lang.System's identityHashCode() (rename to
-                             jSystemIdentityHashCode_m ?) */
-static jmethodID term_getTerm; /* org.jpl7.Term's getTerm() */
-static jmethodID term_put;     /* org.jpl7.Term's put() */
-static jmethodID term_putTerm; /* org.jpl7.Term's static putTerm(Term,term_t) */
+static jclass sys_class;	/* java.lang.System (rename to jSystem_c?) */
+static jmethodID sys_ihc;	/* java.lang.System's identityHashCode()
+			           (rename to jSystemIdentityHashCode_m?) */
+static jmethodID term_getTerm;  /* org.jpl7.Term's getTerm() */
+static jmethodID term_put;      /* org.jpl7.Term's put() */
+static jmethodID term_putTerm;  /* org.jpl7.Term's static putTerm(Term,term_t) */
 
-/*=== JPL's reusable global class object refs, initialised by
- * jpl_ensure_jpl_init() ================ */
+/* === JPL's reusable global class object refs, initialised by
+ * jpl_ensure_jpl_init() ================
+ */
 
 static jclass jString_c;
 static jclass jJPLException_c;
@@ -312,45 +307,41 @@ static jfieldID jBooleanHolderValue_f;
 /*=== JPL's default args for PL_initialise() (NB these are not really good
  * enough) ================= */
 
-const char *default_args[] = {"swipl", "-g", "true", "-nosignals",
-                              NULL}; /* *must* have final NULL */
+const char *default_args[] =
+{ "swipl", "-g", "true", "-nosignals", NULL };
 
 /*=== JNI global state (initialised by jni_create_jvm_c) ================== */
 
-static JavaVM *jvm =
-    NULL; /* non-null -> JVM successfully loaded & initialised */
+static JavaVM *jvm = NULL;		/* non-null -> JVM successfully
+                                           loaded & initialised */
 static char * jvm_ia[2] = {"-Xrs", NULL};
-static char **jvm_dia =
-    jvm_ia; /* default JVM init args (after jpl init, until jvm init) */
-static char **jvm_aia = NULL; /* actual JVM init args (after jvm init) */
+static char **jvm_dia = jvm_ia;		/* default JVM init args (after
+					   jpl init, until jvm init) */
+static char **jvm_aia = NULL;		/* actual JVM init args (after jvm init)*/
 
 /*=== JNI global state (hashed global refs) =============================== */
+/* FIXME: bit small integer types? */
 
-static HrTable *hr_table =
-    NULL;                    /* static handle to allocated-on-demand table */
-static int hr_add_count = 0; /* cumulative total of new refs interned */
-static int hr_old_count = 0; /* cumulative total of old refs reused */
-static int hr_del_count = 0; /* cumulative total of dead refs released */
+static HrTable *hr_table = NULL;	/* handle to allocated-on-demand table */
+static int hr_add_count = 0;		/* total of new refs interned */
+static int hr_old_count = 0;		/* total of old refs reused */
+static int hr_del_count = 0;		/* total of dead refs released */
 
 /*=== JPL global state, initialised by jpl_ensure_jpl_init() or
  * jpl_ensure_jvm_init() ============== */
 
-static int jpl_status =
-    JPL_INIT_RAW; /* neither JPL nor PVM initialisation has occurred */
-static jobject pvm_dia =
-    NULL; /* default PVM init args (after jpl init, until pvm init) */
-static jobject      pvm_aia = NULL; /* actual PVM init args (after pvm init) */
-static PL_engine_t *engines = NULL; /* handles of the pooled Prolog engines */
+static int jpl_status = JPL_INIT_RAW;	/* neither JPL nor PVM initialisation
+					   has occurred */
+static jobject pvm_dia = NULL;		/* default PVM init args (after
+					   jpl init, until pvm init) */
+static jobject      pvm_aia = NULL;	/* actual PVM init args (after pvm init)*/
+static PL_engine_t *engines = NULL;	/* handles of the pooled Prolog engines */
 static int          engines_allocated = 0; /* size of engines array */
-static pthread_mutex_t engines_mutex =
-    PTHREAD_MUTEX_INITIALIZER; /* for controlling pool access */
-static pthread_cond_t engines_cond =
-    PTHREAD_COND_INITIALIZER; /* for controlling pool access */
+static pthread_mutex_t engines_mutex = PTHREAD_MUTEX_INITIALIZER; /* pool access*/
+static pthread_cond_t engines_cond   = PTHREAD_COND_INITIALIZER;  /* pool access*/
 
-static pthread_mutex_t jvm_init_mutex =
-    PTHREAD_MUTEX_INITIALIZER; /* for controlling lazy initialisation */
-static pthread_mutex_t pvm_init_mutex =
-    PTHREAD_MUTEX_INITIALIZER; /* for controlling lazy initialisation */
+static pthread_mutex_t jvm_init_mutex = PTHREAD_MUTEX_INITIALIZER; /* lazy init */
+static pthread_mutex_t pvm_init_mutex = PTHREAD_MUTEX_INITIALIZER; /* lazy init */
 
 static int jpl_syntax = JPL_SYNTAX_UNDEFINED; /* init sets
                                                  JPL_SYNTAX_TRADITIONAL or
@@ -359,7 +350,7 @@ static int jpl_syntax = JPL_SYNTAX_UNDEFINED; /* init sets
 /*=== common functions ==================================================== */
 
 JNIEnv *
-jni_env() /* economically gets a JNIEnv pointer, valid for this thread */
+jni_env(void) /* economically gets a JNIEnv pointer, valid for this thread */
 { JNIEnv *env;
 
   switch ((*jvm)->GetEnv(jvm, (void **)&env, JNI_VERSION_1_2))
@@ -375,7 +366,7 @@ jni_env() /* economically gets a JNIEnv pointer, valid for this thread */
 }
 
 static char *
-jpl_c_lib_version()
+jpl_c_lib_version(void)
 { static char  v[100];    /* version string */
   static char *vp = NULL; /* set to v at first call */
 
@@ -388,19 +379,18 @@ jpl_c_lib_version()
   return vp;
 }
 
+/* ta:  -atom: this library's version as an atom, e.g. '3.1.0-alpha'
+*/
 static foreign_t
-jpl_c_lib_version_1_plc(
-    term_t ta /* -atom: this library's version as an atom, e.g. '3.1.0-alpha' */
-    )
+jpl_c_lib_version_1_plc(term_t ta)
 { return PL_unify_atom_chars(ta, jpl_c_lib_version());
 }
 
 static foreign_t
-jpl_c_lib_version_4_plc(term_t tmajor, /* -integer: major version number */
-                        term_t tminor, /* -integer: minor version number */
-                        term_t tpatch, /* -integer: patch version number */
-                        term_t tstatus /* -atom: status of this version */
-                        )
+jpl_c_lib_version_4_plc(term_t tmajor,  /* -integer: major version number */
+                        term_t tminor,  /* -integer: minor version number */
+                        term_t tpatch,  /* -integer: patch version number */
+                        term_t tstatus) /* -atom: status of this version */
 { return PL_unify_integer(tmajor, JPL_C_LIB_VERSION_MAJOR) &&
          PL_unify_integer(tminor, JPL_C_LIB_VERSION_MINOR) &&
          PL_unify_integer(tpatch, JPL_C_LIB_VERSION_PATCH) &&
@@ -416,11 +406,10 @@ static bool jni_object_to_iref(JNIEnv *env, jobject obj, pointer *iref);
 static bool jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a);
 static bool jni_atom_to_String(JNIEnv *env, atom_t a, jobject *s);
 
-/*=== JNI functions (NB first 6 are cited in macros used subsequently) ==== */
 
-/*******************************
-*	   JREF SYMBOL		*
-*******************************/
+		/*******************************
+		*	   JREF SYMBOL	       *
+		*******************************/
 
 typedef struct jref_handle
 { pointer iref;
@@ -496,8 +485,7 @@ jni_tag_to_iref(atom_t a, pointer *iref)
   return FALSE;
 }
 
-/*=== JNI Prolog<->Java conversion functions =================================
- */
+/* === JNI Prolog<->Java conversion functions ============================== */
 
 /* JNI (Prolog-calls-Java) conversion functions; mainly used in
  * jni_{func|void}_{0|1|2|3|4}_plc; */
@@ -1031,21 +1019,23 @@ jni_jobject_to_term(jobject j, term_t t, JNIEnv *env)
   return FALSE;
 }
 
+/*
+ * obj:  a newly returned JNI local ref
+ * iref: gets an integerised, canonical, global equivalent
+ */
+
 static bool
-jni_object_to_iref(
-    JNIEnv *env, jobject obj, /* a newly returned JNI local ref */
-    pointer *iref /* gets an integerised, canonical, global equivalent */
-    )
-{ int r; /* temp for result code */
+jni_object_to_iref(JNIEnv *env, jobject obj, pointer *iref)
+{ int r;				/* temp for result code */
 
   if ((r = jni_hr_add(env, obj, iref)) == JNI_HR_ADD_NEW)
-  { hr_add_count++; /* obj was novel, has been added to dict */
+  { hr_add_count++;			/* obj was novel, added to dict */
     return TRUE;
   } else if (r == JNI_HR_ADD_OLD)
-  { hr_old_count++; /* obj was already in dict */
+  { hr_old_count++;			/* obj was already in dict */
     return TRUE;
   } else
-  { return FALSE; /* r == JNI_HR_ADD_FAIL, presumably */
+  { return FALSE;			/* r == JNI_HR_ADD_FAIL, presumably */
   }
 }
 
@@ -1057,22 +1047,20 @@ jni_tidy_iref_type_cache(pointer iref)
   if (JPL_CACHE_TYPE_OF_REF)
   { return ((goal = PL_new_term_ref()) &&
             PL_unify_term(goal, PL_FUNCTOR_CHARS, "jpl_tidy_iref_type_cache", 1,
-                          PL_INT, iref) &&
+                                  PL_INT, iref) &&
             PL_call(goal, PL_new_module(PL_new_atom("jpl"))));
   } else
   { return TRUE;
   }
 }
 
-/* could merge this into jni_hr_del() ? */
+/* Called indirectly from agc hook when a possible iref is unreachable.
+ * could merge this into jni_hr_del() ?
+ */
 static bool
-jni_free_iref(/* called indirectly from agc hook when a possible iref is
-                 unreachable */
-              JNIEnv *env,
-              pointer iref)
-{ if (jni_hr_del(
-          env, iref)) /* iref matched a hashedref table entry? (in which case,
-                         was deleted) */
+jni_free_iref(JNIEnv *env, pointer iref)
+{ if (jni_hr_del(env, iref)) /* iref matched a hashedref table entry?
+				(in which case, was deleted) */
   { if (!jni_tidy_iref_type_cache(iref))
     { DEBUG(0, Sdprintf("[JPL: jni_tidy_iref_type_cache(%u) failed]\n", iref));
     }
@@ -1083,13 +1071,12 @@ jni_free_iref(/* called indirectly from agc hook when a possible iref is
   }
 }
 
-/* NB this delivers an atom_t, not a term_t */
-/* returns FALSE if the String arg is NULL */
+/* called from jni_jobject_to_term() and org.jpl7.fli.Prolog#new_atom()
+ * NB this delivers an atom_t, not a term_t
+ * returns FALSE if the String arg is NULL
+ */
 static bool
-jni_String_to_atom(/* called from jni_jobject_to_term() and
-                      org.jpl7.fli.Prolog#new_atom() */
-                   JNIEnv *env,
-                   jobject s, atom_t *a)
+jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a)
 { jsize        len = (*env)->GetStringLength(env, s);
   const jchar *jcp = (*env)->GetStringChars(env, s, NULL);
 
@@ -1158,11 +1145,10 @@ jni_atom_to_String(JNIEnv *env, atom_t a, jobject *s)
 }
 
 /* checks that the term_t is a string and delivers a String representation of it
+ * t: a term which may or may not be a SWIPL string
  */
 static bool
-jni_string_to_String(
-    JNIEnv *env, term_t t, /* a term which may or may not be a SWIPL string */
-    jobject *s)
+jni_string_to_String(JNIEnv *env, term_t t, jobject *s)
 { size_t       len;
   pl_wchar_t * wp;
   jchar *      jcp;
@@ -1181,16 +1167,14 @@ jni_string_to_String(
                            CVT_STRING)) /* got (wide) chars from string? */
   {
 #if SIZEOF_WCHAR_T == 2
-    { *s = (*env)->NewString(env, wp, (jsize)len);
-    }
+    *s = (*env)->NewString(env, wp, (jsize)len);
 #else
-    { jcp = (jchar *)malloc(sizeof(jchar) * len);
-      for (i = 0; i < len; i++)
-      { jcp[i] = (jchar)wp[i]; /* narrow */
-      }
-      *s = (*env)->NewString(env, jcp, len);
-      free(jcp);
+    jcp = (jchar *)malloc(sizeof(jchar) * len);
+    for (i = 0; i < len; i++)
+    { jcp[i] = (jchar)wp[i]; /* narrow */
     }
+    *s = (*env)->NewString(env, jcp, len);
+    free(jcp);
 #endif
     return TRUE;
   } else
@@ -1198,36 +1182,34 @@ jni_string_to_String(
   }
 }
 
-/* an FLI wrapper for jni_tag_to_iref() above */
-/* is currently called by jpl_tag_to_type/2, jpl_cache_type_of_object/2 */
-/* jpl_tag_to_type/2 is called by jpl_object_to_type/2, jpl_ref_to_type/2 */
+/* an FLI wrapper for jni_tag_to_iref() above is currently called by
+ * jpl_tag_to_type/2, jpl_cache_type_of_object/2 jpl_tag_to_type/2
+ * is called by jpl_object_to_type/2, jpl_ref_to_type/2
+ * tt: +atom: a tag
+ * ti: -integer: its corresponding iref
+ */
 static foreign_t
-jni_tag_to_iref_plc(term_t tt, /* +atom: a tag */
-                    term_t ti  /* -integer: its corresponding iref */
-                    )
+jni_tag_to_iref_plc(term_t tt, term_t ti)
 { atom_t  a;
   pointer iref;
 
-  return PL_get_atom(tt, &a) && jni_tag_to_iref(a, &iref) &&
+  return PL_get_atom(tt, &a) &&
+	 jni_tag_to_iref(a, &iref) &&
          PL_unify_integer(ti, iref);
 }
 
 /*=== "hashed ref" (canonical JNI global reference) support =============== */
 
+/* implements jni_hr_info/4
+ * t1: -integer: # object references currently in hash table
+ * t2: -integer: total # object references so far added
+ * t3: -integer: total # object references so far found to be already in table
+ * t4: -integer: total # object references deleted from table (by atom GC)
+ */
 static foreign_t
-jni_hr_info_plc(           /* implements jni_hr_info/4 */
-                term_t t1, /* -integer:       # object references currently in
-                              hash table */
-                term_t
-                       t2, /* -integer: total # object references so far added */
-                term_t t3, /* -integer: total # object references so far found
-                              to be already in table */
-                term_t t4  /* -integer: total # object references deleted from
-                              table (by atom GC) */
-                )
-{ return PL_unify_integer(
-             t1, (hr_table == NULL ? 0 : hr_table->count)) /* 0 was -1 (??) */
-         && PL_unify_integer(t2, hr_add_count) &&
+jni_hr_info_plc(term_t t1, term_t t2, term_t t3, term_t t4 )
+{ return PL_unify_integer(t1, (hr_table == NULL ? 0 : hr_table->count)) &&
+         PL_unify_integer(t2, hr_add_count) &&
          PL_unify_integer(t3, hr_old_count) &&
          PL_unify_integer(t4, hr_del_count);
 }
@@ -1264,26 +1246,26 @@ jni_hr_table_plc(term_t t)
   return PL_unify_nil(t1);
 }
 
-/* an empty table of length is successfully created, where none was before */
+/* an empty table of length is successfully created, where none was before
+ * length: # slots in table
+*/
 static bool
-jni_hr_create(int length /* required # slots in table */
-              )
-{ int i; /* temp for iterative slot initialisation */
+jni_hr_create(int length)
+{ int i;
 
   if (hr_table != NULL)
-  { return FALSE; /* table already exists (destroy before recreating) */
+  { return FALSE;			/* table already exists */
   }
   if (length <= 0)
-  { return FALSE; /* unsuitable length */
+  { return FALSE;			/* unsuitable length */
   }
   if ((hr_table = (HrTable *)malloc(sizeof(HrTable))) == NULL)
-  { return FALSE; /* malloc failed (out of memory, presumably) */
+  { return FALSE;
   }
   hr_table->length    = length;
   hr_table->threshold = (int)(hr_table->length * JNI_HR_LOAD_FACTOR);
-  if ((hr_table->slots = (HrEntry **)malloc(length * sizeof(HrEntry *))) ==
-      NULL)
-  { return FALSE; /* malloc failed: out of memory, presumably */
+  if ((hr_table->slots = (HrEntry **)malloc(length * sizeof(HrEntry *))) == NULL)
+  { return FALSE;
   }
   for (i = 0; i < hr_table->length; i++)
   { hr_table->slots[i] = NULL;
@@ -1320,7 +1302,8 @@ jni_hr_free_table_chains(HrTable *t)
   t->count = 0;
 }
 
-/* all dynamic space used by the pointed-to table is freed */
+/* all dynamic space used by the pointed-to table is freed
+ */
 static bool
 jni_hr_free_table(HrTable *t)
 { if (t == NULL)
@@ -1332,9 +1315,10 @@ jni_hr_free_table(HrTable *t)
   }
 }
 
-/* the current table is replaced by an equivalent one with more free space */
+/* the current table is replaced by an equivalent one with more free space
+ */
 static bool
-jni_hr_rehash()
+jni_hr_rehash(void)
 { HrTable *t0;    /* old table while building new one from it */
   int      i;     /* for iterating through slots in old table */
   HrEntry *ep1;   /* for iterating through all entries in old table */
@@ -1342,36 +1326,34 @@ jni_hr_rehash()
   int      index; /* slot index in new table of entry being transferred */
 
   t0       = hr_table; /* temporarily hold onto former table */
-  hr_table = NULL;     /* precondition for jni_hr_create */
-  if (!jni_hr_create(2 * t0->length + 1)) /*	new bigger table in its place */
-  { hr_table = t0; /* replace former table for tidiness */
+  hr_table = NULL;
+  if (!jni_hr_create(2 * t0->length + 1))
+  { hr_table = t0;
     return FALSE;  /* failed to create replacement table during rehash */
   }
   for (i = 0; i < t0->length; i++) /* for each slot in *former* table */
   { for (ep1 = t0->slots[i]; ep1 != NULL;)
-    {                        /* for each entry in that slot's chain */
-      ep2       = ep1;       /* grab this entry */
-      ep1       = ep1->next; /* advance to next entry or NULL */
+    { ep2       = ep1;
+      ep1       = ep1->next;
       index     = (ep2->hash & 0x7fffffff) % hr_table->length; /* new */
-      ep2->next = hr_table->slots[index]; /* relink into new array */
-      hr_table->slots[index] = ep2;       /*  " */
+      ep2->next = hr_table->slots[index];
+      hr_table->slots[index] = ep2;
     }
-    t0->slots[i] = NULL; /* tidy old array for generic freeing later */
+    t0->slots[i] = NULL;
   }
-  hr_table->count = t0->count; /* new table's count is old table's count */
-  jni_hr_free_table(t0); /* free all space used by old table (NB no entries) */
+  hr_table->count = t0->count;
+  jni_hr_free_table(t0);
+
   return TRUE;
 }
 
+/* obj:  MUST BE a valid non-null reference to a Java object
+ * hash: gets obj's System.identityHashCode()
+ */
+
 static bool
-jni_hr_hash(/* renamed in v3.0.4 from jni_object_to_hash (it belongs with this
-               hr stuff) */
-            JNIEnv *env,
-            jobject
-                 obj, /* MUST BE a valid non-null reference to a Java object */
-            int *hash /* gets obj's System.identityHashCode() */
-            )
-{ jobject e; /* for possible (but unlikely?) exception */
+jni_hr_hash(JNIEnv *env, jobject obj, int *hash)
+{ jobject e;				/* possible (but unlikely?) exception */
 
   *hash = (*env)->CallStaticIntMethod(env, sys_class, sys_ihc, obj, obj);
   return (e = (*env)->ExceptionOccurred(env)) == NULL;
