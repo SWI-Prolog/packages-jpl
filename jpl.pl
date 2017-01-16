@@ -3,7 +3,7 @@
     Author:        Paul Singleton, Fred Dushin and Jan Wielemaker
     E-mail:        paul@jbgb.com
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2004-2015, Paul Singleton
+    Copyright (c)  2004-2017, Paul Singleton
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1213,7 +1213,7 @@ jpl_z5s_to_most_specific_z5(Zs, Z) :-
 %
 %  ==
 %  ?- jpl_pl_lib_version(V).
-%  V = '7.0.0-alpha'.
+%  V = '7.4.0-alpha'.
 %  ==
 
 jpl_pl_lib_version(VersionString) :-
@@ -1234,7 +1234,7 @@ jpl_pl_lib_version(VersionString) :-
 %  Status = alpha.
 %  ==
 
-jpl_pl_lib_version(7, 0, 3, alpha).  % jref as blob
+jpl_pl_lib_version(7, 4, 0, alpha).  % jref as blob
 
 %! jpl_c_lib_version(-Version)
 %
@@ -1246,7 +1246,7 @@ jpl_pl_lib_version(7, 0, 3, alpha).  % jref as blob
 %
 %  ==
 %  ?- jpl_c_lib_version(V).
-%  V = '7.0.0-alpha'.
+%  V = '7.4.0-alpha'.
 %  ==
 
 

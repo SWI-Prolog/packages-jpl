@@ -3,7 +3,7 @@
     Author:        Paul Singleton, Fred Dushin and Jan Wielemaker
     E-mail:        paul@jbgb.com
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2004-2015, Paul Singleton
+    Copyright (c)  2004-2017, Paul Singleton
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -55,11 +55,11 @@ refactoring (trivial):
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* update this to distinguish releases of this C library: */
-#define JPL_C_LIB_VERSION "7.0.3-alpha"
-#define JPL_C_LIB_VERSION_MAJOR 7
-#define JPL_C_LIB_VERSION_MINOR 0
-#define JPL_C_LIB_VERSION_PATCH 3
-#define JPL_C_LIB_VERSION_STATUS "alpha"
+#define	JPL_C_LIB_VERSION	 "7.4.0-alpha"
+#define	JPL_C_LIB_VERSION_MAJOR	 7
+#define	JPL_C_LIB_VERSION_MINOR	 4
+#define	JPL_C_LIB_VERSION_PATCH	 0
+#define	JPL_C_LIB_VERSION_STATUS "alpha"
 
 /*#define DEBUG(n, g) ((void)0) */
 #ifndef DEBUG_LEVEL
