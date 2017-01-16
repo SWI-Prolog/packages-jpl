@@ -666,7 +666,6 @@ jni_term_to_ref(term_t t, jobject *j, JNIEnv *env)
 { atom_t       a;
   jref_handle *ref;
   PL_blob_t *  type;
-  functor_t    fn;
   term_t       a1;
 
   if (PL_get_atom(t, &a))
@@ -681,9 +680,11 @@ jni_term_to_ref(term_t t, jobject *j, JNIEnv *env)
     return FALSE;
   }
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_at_1 &&
-      (a1 = PL_new_term_ref(), PL_get_arg(1, t, a1)) && PL_get_atom(a1, &a) &&
-      a == JNI_atom_null)
+  if ( PL_is_functor(t, JNI_functor_at_1) &&
+       (a1 = PL_new_term_ref()) &&
+       PL_get_arg(1, t, a1) &&
+       PL_get_atom(a1, &a) &&
+       a == JNI_atom_null)
   { *j = 0;
     return TRUE; // @(null) -> 0
   }
@@ -774,12 +775,11 @@ jni_term_to_double_jarray(term_t t, jdoubleArray *j, JNIEnv *env)
 
 static bool
 jni_term_to_jboolean_buf(term_t t, jboolean **jzp)
-{ functor_t fn;
-  term_t    a2;
+{ term_t    a2;
   atom_t    a;
   term_t    a1;
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_jbuf_2)
+  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
   { a2 = PL_new_term_ref();
     if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_boolean)
     { a1 = PL_new_term_ref();
@@ -792,35 +792,39 @@ jni_term_to_jboolean_buf(term_t t, jboolean **jzp)
 
 static bool
 jni_term_to_jbyte_buf(term_t t, jbyte **jbp)
-{ functor_t fn;
-  term_t    a2;
-  atom_t    a;
-  term_t    a1;
+{ if ( PL_is_functor(t, JNI_functor_jbuf_2) )
+  { term_t a2;
+    atom_t a;
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_jbuf_2)
-  { a2 = PL_new_term_ref();
-    if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_byte)
-    { a1 = PL_new_term_ref();
-      if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jbp))
-        return TRUE;
+    if ( (a2 = PL_new_term_ref()) &&
+	 PL_get_arg(2, t, a2) &&
+	 PL_get_atom(a2, &a) &&
+	 a == JNI_atom_byte )
+    { term_t a1;
+
+      return ( (a1 = PL_new_term_ref()) &&
+	       PL_get_arg(1, t, a1) &&
+	       PL_get_pointer(a1, (void **)jbp) );
     }
   }
+
   return FALSE;
 }
 
 static bool
 jni_term_to_jchar_buf(term_t t, jchar **jcp)
-{ functor_t fn;
-  term_t    a2;
-  atom_t    a;
-  term_t    a1;
+{ if ( PL_is_functor(t, JNI_functor_jbuf_2) )
+  { term_t a2;
+    atom_t a;
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_jbuf_2)
-  { a2 = PL_new_term_ref();
-    if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_char)
-    { a1 = PL_new_term_ref();
-      if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jcp))
-        return TRUE;
+    if ( (a2 = PL_new_term_ref()) &&
+	 PL_get_arg(2, t, a2) &&
+	 PL_get_atom(a2, &a) && a == JNI_atom_char )
+    { term_t a1;
+
+      return ( (a1 = PL_new_term_ref()) &&
+	       PL_get_arg(1, t, a1) &&
+	       PL_get_pointer(a1, (void **)jcp) );
     }
   }
   return FALSE;
@@ -828,12 +832,11 @@ jni_term_to_jchar_buf(term_t t, jchar **jcp)
 
 static bool
 jni_term_to_jshort_buf(term_t t, jshort **jsp)
-{ functor_t fn;
-  term_t    a2;
+{ term_t    a2;
   atom_t    a;
   term_t    a1;
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_jbuf_2)
+  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
   { a2 = PL_new_term_ref();
     if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_short)
     { a1 = PL_new_term_ref();
@@ -846,12 +849,11 @@ jni_term_to_jshort_buf(term_t t, jshort **jsp)
 
 static bool
 jni_term_to_jint_buf(term_t t, jint **jip)
-{ functor_t fn;
-  term_t    a2;
+{ term_t    a2;
   atom_t    a;
   term_t    a1;
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_jbuf_2)
+  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
   { a2 = PL_new_term_ref();
     if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_int)
     { a1 = PL_new_term_ref();
@@ -864,12 +866,11 @@ jni_term_to_jint_buf(term_t t, jint **jip)
 
 static bool
 jni_term_to_jlong_buf(term_t t, jlong **jlp)
-{ functor_t fn;
-  term_t    a2;
+{ term_t    a2;
   atom_t    a;
   term_t    a1;
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_jbuf_2)
+  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
   { a2 = PL_new_term_ref();
     if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_long)
     { a1 = PL_new_term_ref();
@@ -882,12 +883,11 @@ jni_term_to_jlong_buf(term_t t, jlong **jlp)
 
 static bool
 jni_term_to_jfloat_buf(term_t t, jfloat **jfp)
-{ functor_t fn;
-  term_t    a2;
+{ term_t    a2;
   atom_t    a;
   term_t    a1;
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_jbuf_2)
+  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
   { a2 = PL_new_term_ref();
     if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_float)
     { a1 = PL_new_term_ref();
@@ -900,14 +900,16 @@ jni_term_to_jfloat_buf(term_t t, jfloat **jfp)
 
 static bool
 jni_term_to_jdouble_buf(term_t t, jdouble **jdp)
-{ functor_t fn;
-  term_t    a2;
-  atom_t    a;
+{ atom_t    a;
   term_t    a1;
 
-  if (PL_get_functor(t, &fn) && fn == JNI_functor_jbuf_2)
-  { a2 = PL_new_term_ref();
-    if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_double)
+  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
+  { term_t a2;
+
+    if ( (a2 = PL_new_term_ref()) &&
+	 PL_get_arg(2, t, a2) &&
+	 PL_get_atom(a2, &a) &&
+	 a == JNI_atom_double )
     { a1 = PL_new_term_ref();
       if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jdp))
         return TRUE;
@@ -930,11 +932,8 @@ jni_term_to_pointer(term_t t, jvalue **jvp)
 
 static bool
 jni_jboolean_to_term(jboolean jb, term_t t)
-{ if (jb == 0)
-    return PL_unify_term(t, PL_FUNCTOR, JNI_functor_at_1, PL_ATOM,
-                         JNI_atom_false);
-
-  return PL_unify_term(t, PL_FUNCTOR, JNI_functor_at_1, PL_ATOM, JNI_atom_true);
+{ return PL_unify_term(t, PL_FUNCTOR, JNI_functor_at_1,
+			    PL_ATOM, jb ? JNI_atom_true : JNI_atom_false);
 }
 
 static bool
@@ -3551,14 +3550,13 @@ Java_org_jpl7_fli_Prolog_action_1abort(JNIEnv *env, jclass jProlog)
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  atom_chars
+ * Class:     org_jpl7_fli_Prolog
+ * Method:    atom_chars
  * Signature: (Lorg/jpl7/fli/atom_t;)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL                /* the local ref goes out of scope, */
-    Java_org_jpl7_fli_Prolog_atom_1chars(/* but the string itself doesn't */
-                                         JNIEnv *env, jclass jProlog,
-                                         jobject jatom)
+JNIEXPORT jstring JNICALL
+Java_org_jpl7_fli_Prolog_atom_1chars(JNIEnv *env, jclass jProlog,
+				     jobject jatom)
 { atom_t  atom;
   jstring lref;
 
@@ -3571,8 +3569,8 @@ JNIEXPORT jstring JNICALL                /* the local ref goes out of scope, */
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  attach_engine
+ * Class:     org_jpl7_fli_Prolog
+ * Method:    attach_engine
  * Signature: (Lorg/jpl7/fli/engine_t;)I
  */
 JNIEXPORT int JNICALL
@@ -3581,7 +3579,7 @@ Java_org_jpl7_fli_Prolog_attach_1engine(JNIEnv *env, jclass jProlog,
 { PL_engine_t engine;
   int         rc;
 
-  if (!jpl_ensure_pvm_init(env))
+  if ( !jpl_ensure_pvm_init(env) )
   { return -2; /* libpl could not be initialised (oughta throw exception) */
   }
 
@@ -3591,8 +3589,7 @@ Java_org_jpl7_fli_Prolog_attach_1engine(JNIEnv *env, jclass jProlog,
             "attach_engine(): current_engine=%p, thread_self=%d, pool_id=%d\n",
             engine, PL_thread_self(), rc));
 
-  if (!getPointerValue(env, jengine,
-                       (pointer *)&engine)) /* checks jengine isn't null */
+  if ( !getPointerValue(env, jengine, (pointer *)&engine) )
   { return -3; /* null engine holder */
   }
 
