@@ -1105,38 +1105,50 @@ jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a)
   return TRUE;
 }
 
-/* NB this takes an atom_t, not a term_t */
+#define FASTJCHAR 512
+
+static bool
+jni_new_string(JNIEnv *env, const char *s, size_t len, jobject *obj)
+{ jchar tmp[FASTJCHAR];
+  jchar *js;
+  size_t i;
+
+  js = len <= FASTJCHAR ? tmp : malloc(sizeof(jchar) * len);
+  if ( !js )
+    return FALSE;
+
+  for (i = 0; i < len; i++)
+    js[i] = s[i] & 0xff;
+
+  if ( (*obj = (*env)->NewString(env, js, len)) )
+    return TRUE;
+
+  return FALSE;
+}
+
+
 static bool
 jni_atom_to_String(JNIEnv *env, atom_t a, jobject *s)
 { size_t         len;
   pl_wchar_t *   wp;
   jchar *        jcp;
-  unsigned char *cp;
+  const char	*cp;
   unsigned int   i;
 
-  if ((cp = (unsigned char *)PL_atom_nchars(a, &len)) !=
-      NULL) /* got 8-bit chars from trad atom */
-  { jcp = (jchar *)malloc(sizeof(jchar) * len);
-    for (i = 0; i < len; i++)
-    { jcp[i] = (jchar)cp[i]; /* widen */
-    }
-    *s = (*env)->NewString(env, jcp, (jsize)len);
-    free(jcp);
-    return TRUE;
+  if ( (cp = PL_atom_nchars(a, &len)) )
+  { return jni_new_string(env, cp, len, s);
   } else if ((wp = (pl_wchar_t *)PL_atom_wchars(a, &len)) !=
              NULL) /* got (wide) chars from wide atom */
   {
 #if SIZEOF_WCHAR_T == 2
-    { *s = (*env)->NewString(env, wp, (jsize)len);
-    }
+    *s = (*env)->NewString(env, wp, (jsize)len);
 #else
-    { jcp = (jchar *)malloc(sizeof(jchar) * len);
-      for (i = 0; i < len; i++)
-      { jcp[i] = (jchar)wp[i]; /* narrow */
-      }
-      *s = (*env)->NewString(env, jcp, len);
-      free(jcp);
+    jcp = (jchar *)malloc(sizeof(jchar) * len);
+    for (i = 0; i < len; i++)
+    { jcp[i] = (jchar)wp[i]; /* narrow */
     }
+    *s = (*env)->NewString(env, jcp, len);
+    free(jcp);
 #endif
     return TRUE;
   } else
