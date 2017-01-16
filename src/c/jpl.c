@@ -4348,69 +4348,19 @@ Java_org_jpl7_fli_Prolog_put_1jref(JNIEnv *env, jclass jProlog, jobject jterm,
   }
 }
 
+
 /*
  * Class:     org_jpl7_fli_Prolog
- * Method:    tag_to_object
- * Signature: (Ljava/lang/String;)Ljava/lang/Object;
- */
-/* added 29/5/2008 PS to support alternative to deprecated org.jpl7.JRef */
-JNIEXPORT jobject JNICALL
-Java_org_jpl7_fli_Prolog_tag_1to_1object(JNIEnv *env, jclass jProlog,
-                                         jstring tag)
-{ jobject jobj;
-
-  if (jni_ensure_jvm() && (*env)->GetStringLength(env, tag) == 22)
-  {
-#if 0
-    jni_tag_to_iref2((char*)(*env)->GetStringUTFChars(env,tag,0),
-		     (pointer *)&jobj);
-#else
-    PL_warning("Java_org_jpl7_fli_Prolog_tag_1to_1object() called");
-    jobj = 0;
-#endif
-    return jobj;
-  }
-  return 0;
-}
-
-/*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  is_tag
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL
-Java_org_jpl7_fli_Prolog_is_1tag(JNIEnv *env, jclass jProlog, jstring tag)
-{ jobject jobj;
-
-  if (jni_ensure_jvm() && (*env)->GetStringLength(env, tag) == 22)
-  {
-#if 0
-    jni_tag_to_iref2((char*)(*env)->GetStringUTFChars(env,tag,0),
-		     (pointer *)&jobj);
-#else
-    PL_warning("Java_org_jpl7_fli_Prolog_tag_1to_1object() called");
-    jobj = 0;
-#endif
-    return jobj != 0;
-  }
-
-  return 0;
-}
-
-/*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  put_variable
+ * Method:    put_variable
  * Signature: (Lorg/jpl7/fli/term_t;)V
  */
-JNIEXPORT void
-    JNICALL /* maybe oughta return jboolean (false iff given object is null) */
-    Java_org_jpl7_fli_Prolog_put_1variable(JNIEnv *env, jclass jProlog,
-                                           jobject jterm)
+JNIEXPORT void JNICALL
+Java_org_jpl7_fli_Prolog_put_1variable(JNIEnv *env, jclass jProlog,
+				       jobject jterm)
 { term_t term;
 
-  if (jpl_ensure_pvm_init(env) /* may throw exception but cannot fail */
-      && getUIntPtrValue(env, jterm, &term) /* checks that jterm isn't null */
-      )
+  if ( jpl_ensure_pvm_init(env) &&
+       getTermValue(env, jterm, &term) )
   { PL_put_variable(term);
   }
 }
