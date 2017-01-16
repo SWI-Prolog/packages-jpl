@@ -1075,37 +1075,42 @@ jni_free_iref(JNIEnv *env, pointer iref)
  * NB this delivers an atom_t, not a term_t
  * returns FALSE if the String arg is NULL
  */
+
+#define FASTJCHAR 512
+
 static bool
 jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a)
 { jsize        len = (*env)->GetStringLength(env, s);
   const jchar *jcp = (*env)->GetStringChars(env, s, NULL);
 
-  if (s == NULL)
-  { return FALSE;
-  }
+  if ( s == NULL )
+    return FALSE;
+
 #if SIZEOF_WCHAR_T == 2
   { *a = PL_new_atom_wchars(len, jcp); /* easy, huh? (thanks, Jan) */
   }
 #else
-  { pl_wchar_t *wp;
+  { pl_wchar_t tmp[FASTJCHAR];
+    pl_wchar_t *wp;
     jsize       i;
 
-    if ((wp = (pl_wchar_t *)malloc(sizeof(pl_wchar_t) * len)) == NULL)
+    wp = len <= FASTJCHAR ? tmp : malloc(sizeof(pl_wchar_t) * len);
+    if ( !wp )
     { (*env)->ReleaseStringChars(env, s, jcp);
       return FALSE;
     }
     for (i = 0; i < len; i++)
-    { wp[i] = (pl_wchar_t)jcp[i];
-    }
-    *a = PL_new_atom_wchars(len, wp); /* this works now */
-    free(wp);
+      wp[i] = jcp[i];
+
+    *a = PL_new_atom_wchars(len, wp);
+    if ( wp != tmp )
+      free(wp);
   }
 #endif
-  (*env)->ReleaseStringChars(env, s, jcp);
-  return TRUE;
-}
 
-#define FASTJCHAR 512
+  (*env)->ReleaseStringChars(env, s, jcp);
+  return *a != 0;
+}
 
 static bool
 jni_new_string(JNIEnv *env, const char *s, size_t len, jobject *obj)
@@ -1120,37 +1125,51 @@ jni_new_string(JNIEnv *env, const char *s, size_t len, jobject *obj)
   for (i = 0; i < len; i++)
     js[i] = s[i] & 0xff;
 
-  if ( (*obj = (*env)->NewString(env, js, len)) )
-    return TRUE;
+  *obj = (*env)->NewString(env, js, len);
+  if ( js != tmp )
+    free(js);
 
-  return FALSE;
+  return (*obj != NULL);
 }
 
 
 static bool
+jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
+{
+#if SIZEOF_WCHAR_T == 2
+  return (*obj = (*env)->NewString(env, wp, len)) != NULL;
+#else
+  jchar tmp[FASTJCHAR];
+  jchar *js;
+  size_t i;
+
+  js = len <= FASTJCHAR ? tmp : malloc(sizeof(jchar) * len);
+  if ( !js )
+    return FALSE;
+
+  for (i = 0; i < len; i++)
+    js[i] = s[i];
+
+  *obj = (*env)->NewString(env, js, len);
+  if ( js != tmp )
+    free(js);
+
+  return (*obj != NULL);
+#endif
+}
+
+
+
+static bool
 jni_atom_to_String(JNIEnv *env, atom_t a, jobject *s)
-{ size_t         len;
-  pl_wchar_t *   wp;
-  jchar *        jcp;
-  const char	*cp;
-  unsigned int   i;
+{ size_t            len;
+  const pl_wchar_t *wp;
+  const char	   *cp;
 
   if ( (cp = PL_atom_nchars(a, &len)) )
   { return jni_new_string(env, cp, len, s);
-  } else if ((wp = (pl_wchar_t *)PL_atom_wchars(a, &len)) !=
-             NULL) /* got (wide) chars from wide atom */
-  {
-#if SIZEOF_WCHAR_T == 2
-    *s = (*env)->NewString(env, wp, (jsize)len);
-#else
-    jcp = (jchar *)malloc(sizeof(jchar) * len);
-    for (i = 0; i < len; i++)
-    { jcp[i] = (jchar)wp[i]; /* narrow */
-    }
-    *s = (*env)->NewString(env, jcp, len);
-    free(jcp);
-#endif
-    return TRUE;
+  } else if ( (wp = (pl_wchar_t *)PL_atom_wchars(a, &len)) )
+  { return jni_new_wstring(env, wp, len, s);
   } else
   { return FALSE;
   }
@@ -1163,32 +1182,12 @@ static bool
 jni_string_to_String(JNIEnv *env, term_t t, jobject *s)
 { size_t       len;
   pl_wchar_t * wp;
-  jchar *      jcp;
   char *       cp;
-  unsigned int i;
 
-  if (PL_get_nchars(t, &len, &cp, CVT_ATOM)) /* got 8-bit chars from string? */
-  { jcp = (jchar *)malloc(sizeof(jchar) * len);
-    for (i = 0; i < len; i++)
-    { jcp[i] = (jchar)cp[i]; /* widen */
-    }
-    *s = (*env)->NewString(env, jcp, (jsize)len);
-    free(jcp);
-    return TRUE;
-  } else if (PL_get_wchars(t, &len, &wp,
-                           CVT_STRING)) /* got (wide) chars from string? */
-  {
-#if SIZEOF_WCHAR_T == 2
-    *s = (*env)->NewString(env, wp, (jsize)len);
-#else
-    jcp = (jchar *)malloc(sizeof(jchar) * len);
-    for (i = 0; i < len; i++)
-    { jcp[i] = (jchar)wp[i]; /* narrow */
-    }
-    *s = (*env)->NewString(env, jcp, len);
-    free(jcp);
-#endif
-    return TRUE;
+  if ( PL_get_nchars(t, &len, &cp, CVT_ATOM|CVT_STRING) )
+  { return jni_new_string(env, cp, len, s);
+  } else if ( PL_get_wchars(t, &len, &wp, CVT_ATOM|CVT_STRING) )
+  { return jni_new_wstring(env, wp, len, s);
   } else
   { return FALSE;
   }
