@@ -69,7 +69,7 @@ refactoring (trivial):
 /* disable type-of-ref caching (at least until GC issues are resolved) */
 #define		JPL_CACHE_TYPE_OF_REF		FALSE
 
-/*=== includes ===================================================================================== */
+/*=== includes ============================================================ */
 
 #ifdef __WINDOWS__
 /* OS-specific header (SWI-Prolog FLI and Java Invocation API both seem to need this): */
@@ -107,7 +107,7 @@ refactoring (trivial):
 #include    <assert.h>
 
 
-/*=== JNI constants ================================================================================ */
+/*=== JNI constants ======================================================= */
 
 #define	    JNI_MIN_JCHAR		 0
 #define	    JNI_MAX_JCHAR	     65535
@@ -147,7 +147,7 @@ refactoring (trivial):
 #define	    JNI_HR_ADD_OLD		 1
 
 
-/*=== JPL constants ================================================================================ */
+/*=== JPL constants ======================================================= */
 
 /* legit values for jpl_status_jpl_ini and jpl_status_pvm_ini */
 #define	    JPL_INIT_RAW		101
@@ -164,270 +164,8 @@ refactoring (trivial):
 #define     JPL_SYNTAX_TRADITIONAL		202
 #define     JPL_SYNTAX_MODERN		203
 
-#if 0
-/*=== JNI Prolog<->Java conversion macros ========================================================== */
 
-/* JNI (Prolog-calls-Java) conversion macros; mainly used in jni_{func|void}_{0|1|2|3|4}_plc; */
-/* for re-entrancy, ensure that any variables which they use are declared dynamically */
-/* (e.g. or i.e. are local to the host function); */
-/* beware of evaluating *expressions* passed as actual parameters more than once; */
-
-#define JNI_term_to_jboolean(T,JB) \
-    ( PL_get_functor((T),&fn) \
-      && fn==JNI_functor_at_1 \
-    ? ( ( a1=PL_new_term_ref(), \
-	  PL_get_arg(1,(T),a1) \
-	) \
-	&& PL_get_atom(a1,&a) \
-      ? ( a==JNI_atom_false \
-	? ( (JB)=0, TRUE) \
-	: ( a==JNI_atom_true \
-	  ? ( (JB)=1, TRUE) \
-	  : FALSE \
-	  ) \
-	) \
-      : FALSE \
-      ) \
-    : FALSE \
-    )
-
-#define JNI_term_to_jchar(T,J) \
-	( PL_get_integer((T),&i) \
-	  && i >= JNI_MIN_JCHAR \
-	  && i <= JNI_MAX_JCHAR \
-	  && ( (J)=(jchar)i, TRUE) \
-    )
-
-#define JNI_term_to_jbyte(T,J) \
-	( PL_get_integer((T),&i) \
-	  && i >= JNI_MIN_JBYTE \
-	  && i <= JNI_MAX_JBYTE \
-	  && ( (J)=(jbyte)i, TRUE) \
-    )
-
-#define JNI_term_to_jshort(T,J) \
-	( PL_get_integer((T),&i) \
-	  && i >= JNI_MIN_JSHORT \
-	  && i <= JNI_MAX_JSHORT \
-	  && ( (J)=(jshort)i, TRUE) \
-    )
-
-/* JW: jint is always 32-bit! */
-
-#define JNI_term_to_jint(T,J) \
-    ( PL_get_integer((T),&i) \
-      && ((J)=i, TRUE) \
-    )
-
-#define JNI_term_to_non_neg_jint(T,J) \
-    ( PL_get_intptr((T),&i) \
-	  && i >= 0 \
-	  && ( (J)=(jint)i, TRUE) \
-    )
-
-#define JNI_term_to_jlong(T,J) \
-	( PL_get_int64((T),&i64) \
-	  && ( (J)=(jlong)i64, TRUE) \
-    )
-
-#define JNI_term_to_jfloat(T,J) \
-	( PL_get_float((T),&d) \
-	? ( (J)=(jfloat)d, TRUE) \
-	: ( PL_get_int64((T),&i64) \
-	    && ( (J)=(jfloat)i64, TRUE) \
-      ) \
-    )
-
-#define JNI_term_to_jdouble(T,J) \
-    ( PL_get_float((T),&(J)) \
-    ? TRUE \
-	: ( PL_get_int64((T),&i64) \
-	    && ( (J)=(jdouble)i64, TRUE) \
-      ) \
-    )
-
-#define JNI_term_to_jfieldID(T,J) \
-    ( PL_get_functor((T),&fn) \
-      && fn==JNI_functor_jfieldID_1 \
-      && ( a1=PL_new_term_ref(), \
-	   PL_get_arg(1,(T),a1) \
-	 ) \
-      && PL_get_pointer(a1,(void**)&(J)) \
-    )
-
-#define JNI_term_to_jmethodID(T,J) \
-    ( PL_get_functor((T),&fn) \
-      && fn==JNI_functor_jmethodID_1 \
-      && ( a1=PL_new_term_ref(), \
-	   PL_get_arg(1,(T),a1) \
-	 ) \
-      && PL_get_pointer(a1,(void**)&(J)) \
-    )
-
-/* converts: */
-/*   atom -> String */
-/*	 @(Tag) -> obj */
-/*   @(null) -> NULL */
-/* (else fails) */
-/* */
-#define JNI_term_to_ref(T,J) \
-	( PL_get_atom((T),&a) \
-	? jni_atom_to_String(env,a,(jobject*)&(J)) \
-    : PL_get_functor((T),&fn) \
-      && fn==JNI_functor_at_1 \
-      && ( a1=PL_new_term_ref(), \
-	   PL_get_arg(1,(T),a1) \
-	 ) \
-      && PL_get_atom(a1,&a) \
-      && ( a==JNI_atom_null \
-	 ? ( (J)=0, TRUE) \
-	 : jni_tag_to_iref(a,(pointer*)&(J)) \
-	 ) \
-    )
-
-/* converts: */
-/*   atom -> String */
-/*	 @(Tag) -> obj */
-/* (else fails) */
-/* stricter than JNI_term_to_ref(T,J) */
-/* */
-#define JNI_term_to_jobject(T,J) \
-	(  JNI_term_to_ref(T,J) \
-	&& (J) != 0 \
-    )
-
-/* for now, these specific test-and-convert macros */
-/* are merely mapped to their nearest ancestor... */
-
-#define JNI_term_to_jclass(T,J)		    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_throwable_jclass(T,J)   JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_non_array_jclass(T,J)   JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_throwable_jobject(T,J)  JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_jstring(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_jarray(T,J)		    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_object_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_boolean_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_byte_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_char_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_short_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_int_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_long_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_float_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_double_jarray(T,J)	    JNI_term_to_jobject(T,J)
-
-#define JNI_term_to_jbuf(T,J,TP) \
-    ( PL_get_functor((T),&fn) \
-      && fn==JNI_functor_jbuf_2 \
-      && ( a2=PL_new_term_ref(), \
-	   PL_get_arg(2,(T),a2) \
-	 ) \
-      && PL_get_atom(a2,&a) \
-      && a==(TP) \
-      && ( a1=PL_new_term_ref(), \
-	   PL_get_arg(1,(T),a1) \
-	 ) \
-      && PL_get_pointer(a1,(void**)&(J)) \
-    )
-
-#define JNI_term_to_charP(T,J) \
-    PL_get_atom_chars((T),&(J))
-
-#define JNI_term_to_pointer(T,J) \
-    PL_get_pointer((T),(void**)&(J))
-
-
-/* JNI Java-to-Prolog conversion macros: */
-
-#define JNI_unify_void(T) \
-    PL_unify_term((T), \
-      PL_FUNCTOR, JNI_functor_at_1, \
-      PL_ATOM,	  JNI_atom_void \
-    )
-
-#define JNI_unify_false(T) \
-    PL_unify_term((T), \
-      PL_FUNCTOR, JNI_functor_at_1, \
-      PL_ATOM,	  JNI_atom_false \
-    )
-
-#define JNI_unify_true(T) \
-    PL_unify_term((T), \
-      PL_FUNCTOR, JNI_functor_at_1, \
-      PL_ATOM,	  JNI_atom_true \
-    )
-
-#define JNI_jboolean_to_term(J,T) \
-    ( (J)==0 \
-    ? JNI_unify_false((T)) \
-    : JNI_unify_true((T)) \
-    )
-
-#define JNI_jchar_to_term(J,T) \
-    PL_unify_integer((T),(int)(J))
-
-#define JNI_jbyte_to_term(J,T) \
-    PL_unify_integer((T),(int)(J))
-
-#define JNI_jshort_to_term(J,T) \
-    PL_unify_integer((T),(int)(J))
-
-#define JNI_jint_to_term(J,T) \
-    PL_unify_integer((T),(int)(J))
-
-#define JNI_jlong_to_term(J,T) \
-	PL_unify_int64((T),(int64_t)(J))
-
-#define JNI_jfloat_to_term(J,T) \
-    PL_unify_float((T),(double)(J))
-
-#define JNI_jdouble_to_term(J,T) \
-    PL_unify_float((T),(double)(J))
-
-#define JNI_jobject_to_term(J,T) \
-    JNI_jobject_to_term_((J),(T),(env))
-
-#define JNI_jfieldID_to_term(J,T) \
-    PL_unify_term((T), \
-      PL_FUNCTOR, JNI_functor_jfieldID_1, \
-      PL_POINTER, (void*)(J) \
-    )
-
-#define JNI_jmethodID_to_term(J,T) \
-    PL_unify_term((T), \
-      PL_FUNCTOR, JNI_functor_jmethodID_1, \
-      PL_POINTER, (void*)(J) \
-    )
-
-#define JNI_jbuf_to_term(J,T,TP) \
-    PL_unify_term((T), \
-      PL_FUNCTOR, JNI_functor_jbuf_2, \
-      PL_POINTER, (void*)(J), \
-      PL_ATOM,	  (TP) \
-    )
-
-#define JNI_pointer_to_term(J,T) \
-    PL_unify_pointer((T),(void*)(J))
-
-#define JNI_charP_to_term(J,T) \
-    PL_unify_atom_chars((T),(J))
-#endif
-
-
-/*=== JNI initialisation macro (typically succeeds cheaply) ======================================== */
+/*=== JNI initialisation macro (typically succeeds cheaply) =============== */
 
 #define jni_ensure_jvm()	( ( jvm != NULL \
 				  ||  jni_create_default_jvm() \
@@ -436,7 +174,7 @@ refactoring (trivial):
 				)
 
 
-/*=== JPL initialisation macros (typically succeed cheaply) ======================================== */
+/*=== JPL initialisation macros (typically succeed cheaply) =============== */
 
 /* outcomes: */
 /*	fail to find org.jpl7.*, org.jpl7.fli.* classes or to convert init args to String[]: exception, FALSE */
@@ -453,7 +191,7 @@ refactoring (trivial):
 									)
 
 
-/*=== types (structs and typedefs) ================================================================= */
+/*=== types (structs and typedefs) ======================================== */
 
 typedef	    struct Hr_Entry HrEntry;	/* enables circular definition... */
 
@@ -476,7 +214,7 @@ typedef	    intptr_t    pointer;	/* for JPL */
 typedef	    int	    bool;	/* for JNI/JPL functions returning only TRUE or FALSE */
 
 
-/*=== JNI constants: sizes of JNI primitive types ================================================== */
+/*=== JNI constants: sizes of JNI primitive types ========================= */
 
 int	size[16] = {	/* NB relies on sequence of JNI_XPUT_* defs */
 	    0,
@@ -498,7 +236,7 @@ int	size[16] = {	/* NB relies on sequence of JNI_XPUT_* defs */
 	    };
 
 
-/*=== JNI "constants", lazily initialised by jni_init() ============================================ */
+/*=== JNI "constants", lazily initialised by jni_init() =================== */
 
 static atom_t	    JNI_atom_false;		    /* false */
 static atom_t	    JNI_atom_true;		    /* true */
@@ -525,7 +263,7 @@ static functor_t   JNI_functor_java_exception_1;    /* java_exception(_) */
 static functor_t   JNI_functor_jpl_error_1;	    /* jpl_error(_) */
 
 
-/*=== JNI's static JVM references, lazily initialised by jni_init() ================================ */
+/*=== JNI's static JVM references, lazily initialised by jni_init() ======= */
 
 static jclass	   c_class;	    /* java.lang.Class                       (rename to jClass_c ?) */
 static jmethodID   c_getName;	    /* java.lang.Class' getName()            (rename to jClassGetName_m ?) */
@@ -584,7 +322,7 @@ const char  *default_args[] = { "swipl",
 			    };	/* *must* have final NULL */
 
 
-/*=== JNI global state (initialised by jni_create_jvm_c) =========================================== */
+/*=== JNI global state (initialised by jni_create_jvm_c) ================== */
 
 static JavaVM	*jvm = NULL;	/* non-null -> JVM successfully loaded & initialised */
 static char		*jvm_ia[2] = {"-Xrs", NULL};
@@ -592,7 +330,7 @@ static char		**jvm_dia = jvm_ia;		/* default JVM init args (after jpl init, unti
 static char		**jvm_aia = NULL;		/* actual JVM init args (after jvm init) */
 
 
-/*=== JNI global state (hashed global refs) ======================================================== */
+/*=== JNI global state (hashed global refs) =============================== */
 
 static HrTable	*hr_table =	NULL;	/* static handle to allocated-on-demand table */
 static int	hr_add_count =	0;  /* cumulative total of new refs interned */
@@ -616,7 +354,7 @@ static pthread_mutex_t	pvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;	/* for contro
 static int		jpl_syntax =	JPL_SYNTAX_UNDEFINED;	/* init sets JPL_SYNTAX_TRADITIONAL or JPL_SYNTAX_MODERN */
 
 
-/*=== common functions ============================================================================= */
+/*=== common functions ==================================================== */
 
 JNIEnv*
 jni_env() /* economically gets a JNIEnv pointer, valid for this thread */
@@ -676,7 +414,7 @@ jpl_c_lib_version_4_plc(
     }
 
 
-/*=== JNI function prototypes (to resolve unavoidable forward references) ========================== */
+/*=== JNI function prototypes (to resolve unavoidable forward references) = */
 
 static int	    jni_hr_add(JNIEnv*, jobject, pointer*);
 static int	    jni_hr_del(JNIEnv*, pointer);
@@ -686,7 +424,7 @@ static bool		jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a);
 static bool		jni_atom_to_String(JNIEnv *env, atom_t a, jobject *s);
 
 
-/*=== JNI functions (NB first 6 are cited in macros used subsequently) ============================= */
+/*=== JNI functions (NB first 6 are cited in macros used subsequently) ==== */
 
 		 /*******************************
 		 *	   JREF SYMBOL		*
@@ -776,7 +514,7 @@ jni_tag_to_iref(
     }
 
 
-/*=== JNI Prolog<->Java conversion functions ========================================================== */
+/*=== JNI Prolog<->Java conversion functions ================================= */
 
 /* JNI (Prolog-calls-Java) conversion functions; mainly used in jni_{func|void}_{0|1|2|3|4}_plc; */
 
@@ -1541,7 +1279,7 @@ jni_tag_to_iref_plc(
     }
 
 
-/*=== "hashed ref" (canonical JNI global reference) support ======================================== */
+/*=== "hashed ref" (canonical JNI global reference) support =============== */
 
 static foreign_t
 jni_hr_info_plc(    /* implements jni_hr_info/4 */
@@ -1845,7 +1583,7 @@ jni_hr_del(
     }
 
 
-/*=== JNI initialisation =========================================================================== */
+/*=== JNI initialisation ================================================== */
 
 /* called once: after successful PVM & JVM creation/discovery, before any JNI calls */
 static int
@@ -1916,7 +1654,7 @@ jni_init()
     }
 
 
-/*=== JNI exception/error processing/support ======================================================= */
+/*=== JNI exception/error processing/support ============================== */
 
 /* returns a new error(java_exception(<jref>(hex)),msg) to represent a caught Java exception */
 static term_t
@@ -2018,7 +1756,7 @@ jni_check_exception(
     }
 
 
-/*=== buffer and method param transput ============================================================= */
+/*=== buffer and method param transput ==================================== */
 
 static foreign_t
  jni_byte_buf_length_to_codes_plc(
@@ -2264,7 +2002,7 @@ jni_stash_buffer_value_plc(
     }
 
 
-/*=== JVM initialisation, startup etc. ============================================================= */
+/*=== JVM initialisation, startup etc. ==================================== */
 
 static int
 jni_get_created_jvm_count()
@@ -3343,7 +3081,7 @@ jni_func_4_plc(
     }
 
 
-/*=== JPL functions ================================================================================ */
+/*=== JPL functions ======================================================= */
 
 static int
  create_pool_engines();
@@ -3718,7 +3456,7 @@ static bool
 	}
 
 
-/*=== initialisation-related native Java methods of org.jpl7.fli.Prolog ================================= */
+/*=== initialisation-related native Java methods of org.jpl7.fli.Prolog ======== */
 
 /*
  * Class:	  org_jpl7_fli_Prolog
@@ -3901,7 +3639,7 @@ Java_org_jpl7_fli_Prolog_halt(
     }
 
 
-/*=== JPL utility functions ======================================================================== */
+/*=== JPL utility functions =============================================== */
 
 /*-----------------------------------------------------------------------
  * getLongValue
@@ -4261,7 +3999,7 @@ updateAtomValue(
     }
 #endif
 
-/*=== Java-wrapped SWI-Prolog FLI functions ======================================================== */
+/*=== Java-wrapped SWI-Prolog FLI functions =============================== */
 
 static int current_pool_engine_handle(PL_engine_t *e);
 static int current_pool_engine();
@@ -5426,7 +5164,7 @@ JNIEXPORT void JNICALL
 	}
 
 
-/*=== JPL's Prolog engine pool and thread management =============================================== */
+/*=== JPL's Prolog engine pool and thread management ====================== */
 
 /*
  * Class:	  org_jpl7_fli_Prolog
@@ -5876,7 +5614,7 @@ Java_org_jpl7_fli_Prolog_get_1syntax(
     }
 
 
-/*=== FLI metadata ================================================================================= */
+/*=== FLI metadata ======================================================== */
 
 static
  PL_extension predspecs[] =
@@ -5919,5 +5657,5 @@ install_t
 	PL_register_extensions( predspecs);
 	}
 
-/*=== end of jpl.c ================================================================================= */
+/*=== end of jpl.c ======================================================== */
 
