@@ -4138,49 +4138,6 @@ Java_org_jpl7_fli_Prolog_next_1solution(JNIEnv *env, jclass jProlog,
 
 /*
  * Class:	  org_jpl7_fli_Prolog
- * Method:	  object_to_tag
- * Signature: (Ljava/lang/Object;)Ljava/lang/String;
- */
-JNIEXPORT jobject JNICALL
-Java_org_jpl7_fli_Prolog_object_1to_1tag(JNIEnv *env, jclass jProlog,
-                                         jobject jobj)
-{
-#if 0
-	intptr_t	iref;
-	char		abuf[23];
-#endif
-
-  /* empirically, unless the two 'ensure' macros are called in this order, */
-  /* will crash if this is the first native method called */
-
-  Sdprintf("entered object_to_tag...\n");
-
-  if (!jpl_ensure_pvm_init(env))
-  { /* Sdprintf("jpl_ensure_pvm_init() failed\n"); */
-    return NULL;
-  }
-  /* Sdprintf("jpl_ensure_pvm_init() ok\n"); */
-
-  if (!jni_ensure_jvm())
-  { /* Sdprintf("jni_ensure_jvm() failed\n"); */
-    return NULL;
-  }
-/* Sdprintf("jni_ensure_jvm() ok\n"); */
-
-#if 0
-	if ( jobj!=NULL && jni_object_to_iref(env,jobj,&iref) ) { /* Sdprintf("jni_object_to_iref() done\n"); */
-		sprintf( abuf, IREF_FMT, (IREF_INTTYPE)iref);	/* oughta encapsulate this mapping... */
-		/* Sdprintf("sprintf() done\n"); */
-		return (*env)->NewStringUTF(env,abuf); /* a tag is always Latin-1 */
-	} else { return NULL;
-	}
-#else
-  return NULL;
-#endif
-}
-
-/*
- * Class:	  org_jpl7_fli_Prolog
  * Method:    open_query
  * Signature:
  * (Lorg/jpl7/fli/module_t;ILorg/jpl7/fli/predicate_t;Lorg/jpl7/fli/term_t;)Lorg/jpl7/fli/qid_t;
