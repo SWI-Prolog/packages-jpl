@@ -3970,7 +3970,7 @@ JNIEXPORT jboolean JNICALL
 Java_org_jpl7_fli_Prolog_next_1solution(JNIEnv *env, jclass jProlog,
                                         jobject jqid /* read */
                                         )
-{ qid_t qid;
+{ qid_t qid = 0;				/* make compiler happy */
 
   DEBUG(1, Sdprintf(">next_solution(env=%p,jProlog=%p,jqid=%p)...\n", env,
                     jProlog, jqid));
@@ -4336,10 +4336,10 @@ create_pool_engines(void)
 { int i;
 
   DEBUG(1, Sdprintf("JPL creating engine pool:\n"));
-  if ((engines = malloc(sizeof(PL_engine_t) * JPL_MAX_POOL_ENGINES)) == NULL)
+  engines_allocated = JPL_MAX_POOL_ENGINES;
+  if ((engines = malloc(sizeof(PL_engine_t) * engines_allocated)) == NULL)
     return -1;
   memset(engines, 0, sizeof(PL_engine_t) * engines_allocated);
-  engines_allocated = JPL_MAX_POOL_ENGINES;
 
   DEBUG(1, Sdprintf("JPL stashing default engine as [0]\n"));
   PL_set_engine(PL_ENGINE_CURRENT, &engines[0]);
@@ -4376,6 +4376,7 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
       if ( !engines[i] )
         continue;
 
+      DEBUG(1, Sdprintf("JPL trying engine[%d]=%p\n", i, engines[i]));
       if ((rc = PL_set_engine(engines[i], NULL)) == PL_ENGINE_SET)
       { DEBUG(1, Sdprintf("JPL attaching engine[%d]=%p\n", i, engines[i]));
         pthread_mutex_unlock(&engines_mutex);
@@ -4389,7 +4390,7 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
 	return NULL;
       }
       if ( rc != PL_ENGINE_INUSE )
-      { DEBUG(1, Sdprintf("JPL PL_set_engine fails with %d\n", rc));
+      { DEBUG(1, Sdprintf("JPL PL_set_engine %d fails with %d\n", i, rc));
         pthread_mutex_unlock(&engines_mutex);
         return NULL; /* bad engine status: oughta throw exception */
       }
