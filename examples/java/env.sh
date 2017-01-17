@@ -2,14 +2,14 @@
 # Setup the environment for compiling and running the demos on
 # Unix like platforms.  This script is sourced from the run.sh
 # scripts in the various example directories.
-# 
+#
 # You may need to edit this before running the demos
-# 
+#
 # Required setup
-# 
-# 	* The directory holding java and javac must be in $PATH
-# 	* JPL must be installed
-# 	* Prolog must be available as one of "swi-prolog", "swipl"
+#
+#	* The directory holding java and javac must be in $PATH
+#	* JPL must be installed
+#	* Prolog must be available as one of "swi-prolog", "swipl"
 #	  or "pl" in $PATH
 #
 ################################################################
@@ -98,7 +98,7 @@ compile()
 
 ################################################################
 # run Class
-# 
+#
 # Compiles Class if the .class file does not exsist and runs it
 # Note that some systems (Linux, ...) find the libjpl.xxx from
 # LD_LIBRARY_PATH.  MacOS finds this only when named libjpl.jnilib
@@ -114,13 +114,13 @@ run()
     echo "JPL demo: $1"
     echo ""
 
-    java -Djava.library.path=$PLLIBDIR $1
+    java -Djava.library.path=$PLLIBDIR $*
   fi
 }
 
 ################################################################
 # run_preloaded Class
-# 
+#
 # As run Class, but preloads libjpl.so to be able to use foreign
 # extensions to Prolog.  See the SemWeb example
 #
@@ -141,7 +141,7 @@ run_preloaded()
     echo "Using preloaded $JPLSO"
     echo ""
 
-  
+
     env LD_PRELOAD=$JPLSO java -Djava.library.path=$PLLIBDIR $1
   fi
-} 
+}
