@@ -773,149 +773,67 @@ jni_term_to_double_jarray(term_t t, jdoubleArray *j, JNIEnv *env)
   return jni_term_to_ref(t, &j2, env) && (*j = (jdoubleArray)j2, TRUE);
 }
 
-static bool
-jni_term_to_jboolean_buf(term_t t, jboolean **jzp)
-{ term_t    a2;
-  atom_t    a;
-  term_t    a1;
+/* If `t` is term jbuf(Ptr, `type`), extract Ptr to `vp`
+ */
 
-  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
-  { a2 = PL_new_term_ref();
-    if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_boolean)
-    { a1 = PL_new_term_ref();
-      if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jzp))
-        return TRUE;
+static int
+jni_term_to_jbuf(term_t t, atom_t type, void **vp)
+{ if ( PL_is_functor(t, JNI_functor_jbuf_2) )
+  { term_t a;
+
+    if ( (a=PL_new_term_ref()) )
+    { atom_t tp;
+
+      _PL_get_arg(2, t, a);
+      if ( PL_get_atom(a, &tp) && tp == type )
+      { _PL_get_arg(1, t, a);
+	return PL_get_pointer(a, vp);
+      }
     }
   }
+
   return FALSE;
+}
+
+
+static bool
+jni_term_to_jboolean_buf(term_t t, jboolean **jzp)
+{ return jni_term_to_jbuf(t, JNI_atom_boolean, (void **)jzp);
 }
 
 static bool
 jni_term_to_jbyte_buf(term_t t, jbyte **jbp)
-{ if ( PL_is_functor(t, JNI_functor_jbuf_2) )
-  { term_t a2;
-    atom_t a;
-
-    if ( (a2 = PL_new_term_ref()) &&
-	 PL_get_arg(2, t, a2) &&
-	 PL_get_atom(a2, &a) &&
-	 a == JNI_atom_byte )
-    { term_t a1;
-
-      return ( (a1 = PL_new_term_ref()) &&
-	       PL_get_arg(1, t, a1) &&
-	       PL_get_pointer(a1, (void **)jbp) );
-    }
-  }
-
-  return FALSE;
+{ return jni_term_to_jbuf(t, JNI_atom_byte, (void **)jbp);
 }
 
 static bool
 jni_term_to_jchar_buf(term_t t, jchar **jcp)
-{ if ( PL_is_functor(t, JNI_functor_jbuf_2) )
-  { term_t a2;
-    atom_t a;
-
-    if ( (a2 = PL_new_term_ref()) &&
-	 PL_get_arg(2, t, a2) &&
-	 PL_get_atom(a2, &a) && a == JNI_atom_char )
-    { term_t a1;
-
-      return ( (a1 = PL_new_term_ref()) &&
-	       PL_get_arg(1, t, a1) &&
-	       PL_get_pointer(a1, (void **)jcp) );
-    }
-  }
-  return FALSE;
+{ return jni_term_to_jbuf(t, JNI_atom_char, (void **)jcp);
 }
 
 static bool
 jni_term_to_jshort_buf(term_t t, jshort **jsp)
-{ term_t    a2;
-  atom_t    a;
-  term_t    a1;
-
-  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
-  { a2 = PL_new_term_ref();
-    if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_short)
-    { a1 = PL_new_term_ref();
-      if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jsp))
-        return TRUE;
-    }
-  }
-  return FALSE;
+{ return jni_term_to_jbuf(t, JNI_atom_short, (void **)jsp);
 }
 
 static bool
 jni_term_to_jint_buf(term_t t, jint **jip)
-{ term_t    a2;
-  atom_t    a;
-  term_t    a1;
-
-  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
-  { a2 = PL_new_term_ref();
-    if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_int)
-    { a1 = PL_new_term_ref();
-      if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jip))
-        return TRUE;
-    }
-  }
-  return FALSE;
+{ return jni_term_to_jbuf(t, JNI_atom_int, (void **)jip);
 }
 
 static bool
 jni_term_to_jlong_buf(term_t t, jlong **jlp)
-{ term_t    a2;
-  atom_t    a;
-  term_t    a1;
-
-  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
-  { a2 = PL_new_term_ref();
-    if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_long)
-    { a1 = PL_new_term_ref();
-      if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jlp))
-        return TRUE;
-    }
-  }
-  return FALSE;
+{ return jni_term_to_jbuf(t, JNI_atom_long, (void **)jlp);
 }
 
 static bool
 jni_term_to_jfloat_buf(term_t t, jfloat **jfp)
-{ term_t    a2;
-  atom_t    a;
-  term_t    a1;
-
-  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
-  { a2 = PL_new_term_ref();
-    if (PL_get_arg(2, t, a2) && PL_get_atom(a2, &a) && a == JNI_atom_float)
-    { a1 = PL_new_term_ref();
-      if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jfp))
-        return TRUE;
-    }
-  }
-  return FALSE;
+{ return jni_term_to_jbuf(t, JNI_atom_float, (void **)jfp);
 }
 
 static bool
 jni_term_to_jdouble_buf(term_t t, jdouble **jdp)
-{ atom_t    a;
-  term_t    a1;
-
-  if ( PL_is_functor(t, JNI_functor_jbuf_2) )
-  { term_t a2;
-
-    if ( (a2 = PL_new_term_ref()) &&
-	 PL_get_arg(2, t, a2) &&
-	 PL_get_atom(a2, &a) &&
-	 a == JNI_atom_double )
-    { a1 = PL_new_term_ref();
-      if (PL_get_arg(1, t, a1) && PL_get_pointer(a1, (void **)jdp))
-        return TRUE;
-    }
-  }
-  return FALSE;
+{ return jni_term_to_jbuf(t, JNI_atom_double, (void **)jdp);
 }
 
 static bool
