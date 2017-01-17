@@ -192,6 +192,8 @@ public final class Prolog {
 
 	public static native void close_query(qid_t qid);
 
+	public static native qid_t current_query();
+
 	// modules:
 	public static native module_t new_module(atom_t name);
 

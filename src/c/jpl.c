@@ -3609,6 +3609,26 @@ Java_org_jpl7_fli_Prolog_copy_1term_1ref(JNIEnv *env, jclass jProlog,
 
 /*
  * Class:     org_jpl7_fli_Prolog
+ * Method:    current_query
+ * Signature: ()Lorg/jpl7/fli/qid_t;
+ */
+JNIEXPORT jobject JNICALL
+Java_org_jpl7_fli_Prolog_current_1query(JNIEnv *env, jclass jProlog)
+{ jobject rval;
+  qid_t   qid;
+
+  if ( jpl_ensure_pvm_init(env) &&
+       (qid = PL_current_query()) &&
+       (rval = (*env)->AllocObject(env, jQidT_c)) &&
+       setUIntPtrValue(env, rval, qid) )
+    return rval;
+
+  return NULL;					/* oughta throw exception */
+}
+
+
+/*
+ * Class:     org_jpl7_fli_Prolog
  * Method:    current_engine
  * Signature: ()Lorg/jpl7/fli/engine_t;
  */
