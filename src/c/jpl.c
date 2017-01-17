@@ -252,6 +252,7 @@ static functor_t JNI_functor_jmethodID_1;      /* jmethodID(_) */
 static functor_t JNI_functor_error_2;          /* error(_, _) */
 static functor_t JNI_functor_java_exception_1; /* java_exception(_) */
 static functor_t JNI_functor_jpl_error_1;      /* jpl_error(_) */
+static functor_t JNI_functor_pair_2;	       /* _-_ */
 
 /*=== JNI's static JVM references, lazily initialised by jni_init() ======= */
 
@@ -1150,8 +1151,9 @@ jni_hr_table_slot(term_t t2, HrEntry *slot)
   { return PL_unify_nil(t2);
   } else
   { return PL_unify_list(t2, tp, t2) &&
-           PL_unify_term(tp, PL_FUNCTOR, PL_new_functor(PL_new_atom("-"), 2),
-                         PL_INT, slot->hash, PL_LONG, slot->obj) &&
+           PL_unify_term(tp, PL_FUNCTOR, JNI_functor_pair_2,
+			       PL_INT, slot->hash,
+			       PL_LONG, slot->obj) &&
            jni_hr_table_slot(t2, slot->next);
   }
 }
@@ -1402,16 +1404,15 @@ jni_init(void)
   JNI_atom_null = PL_new_atom("null");
   JNI_atom_void = PL_new_atom("void"); /* not yet used properly (?) */
 
-  JNI_functor_at_1        = PL_new_functor(PL_new_atom("@"), 1);
-  JNI_functor_jbuf_2      = PL_new_functor(PL_new_atom("jbuf"), 2);
-  JNI_functor_jlong_2     = PL_new_functor(PL_new_atom("jlong"), 2);
-  JNI_functor_jfieldID_1  = PL_new_functor(PL_new_atom("jfieldID"), 1);
-  JNI_functor_jmethodID_1 = PL_new_functor(PL_new_atom("jmethodID"), 1);
-
-  JNI_functor_error_2 = PL_new_functor(PL_new_atom("error"), 2);
-  JNI_functor_java_exception_1 =
-      PL_new_functor(PL_new_atom("java_exception"), 1);
-  JNI_functor_jpl_error_1 = PL_new_functor(PL_new_atom("jpl_error"), 1);
+  JNI_functor_at_1             = PL_new_functor(PL_new_atom("@"), 1);
+  JNI_functor_jbuf_2           = PL_new_functor(PL_new_atom("jbuf"), 2);
+  JNI_functor_jlong_2          = PL_new_functor(PL_new_atom("jlong"), 2);
+  JNI_functor_jfieldID_1       = PL_new_functor(PL_new_atom("jfieldID"), 1);
+  JNI_functor_jmethodID_1      = PL_new_functor(PL_new_atom("jmethodID"), 1);
+  JNI_functor_error_2          = PL_new_functor(PL_new_atom("error"), 2);
+  JNI_functor_java_exception_1 = PL_new_functor(PL_new_atom("java_exception"), 1);
+  JNI_functor_jpl_error_1      = PL_new_functor(PL_new_atom("jpl_error"), 1);
+  JNI_functor_pair_2           = PL_new_functor(PL_new_atom("-"), 2);
 
   /* these initialisations require an active JVM: */
   return (
