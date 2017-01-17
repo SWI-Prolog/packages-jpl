@@ -39,8 +39,8 @@ import org.jpl7.fli.term_t;
  * Query q = new Query(&quot;p&quot;, arg);
  *
  * while (q.hasMoreElements()) {
- * 	Term bound_to_x = ((Map) q.nextElement()).get(&quot;X&quot;);
- * 	System.out.println(bound_to_x);
+ *	Term bound_to_x = ((Map) q.nextElement()).get(&quot;X&quot;);
+ *	System.out.println(bound_to_x);
  * }
  * </pre>
  *
@@ -325,12 +325,12 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 											// Prolog engine?
 			engine = Prolog.attach_pool_engine(); // may block for a while, or
 													// fail
-			// System.out.println("JPL attaching engine[" + engine.value + "]
-			// for " + this.hashCode() + ":" + this.toString());
+			//System.out.println("JPL attaching engine[" + engine.value + "] for " +
+			//		   this.hashCode() + ":" + this.toString());
 		} else { // this Java thread has an attached engine
 			engine = Prolog.current_engine();
-			// System.out.println("JPL reusing engine[" + engine.value + "] for
-			// " + this.hashCode() + ":" + this.toString());
+			//System.out.println("JPL reusing engine[" + engine.value + "] for " +
+			//		   this.hashCode() + ":" + this.toString());
 		}
 		if (m.containsKey(new Long(engine.value))) {
 			subQuery = m.get(new Long(engine.value)); // get this engine's
