@@ -8,12 +8,12 @@ import org.jpl7.JPL;
  * correspondence with the functions in the Prolog FLI by the same name (except
  * without the PL_, SQ_, etc. prefixes).
  * <p>
- * 
+ *
  * See the file jpl.c for the native (ANSI C) implementations of these methods.
  * Refer to your local Prolog FLI documentations for the meanings of these
  * methods, and observe the following:
  * <p>
- * 
+ *
  * <menu>
  * <li>The types and signatures of the following methods are almost in 1-1
  * correspondence with the Prolog FLI. The Prolog types term_t, atom_t,
@@ -32,7 +32,7 @@ import org.jpl7.JPL;
  * <li>Functions which take variable-length argument lists in C take arrays in
  * Java; from Java 1.1 onwards, anonymous arrays can be used e.g. Term[] { new
  * Atom("a"), new Atom ("b") } </menu>
- * 
+ *
  * <hr>
  * Copyright (C) 1998 Fred Dushin
  * <p>
@@ -61,7 +61,7 @@ import org.jpl7.JPL;
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
- * 
+ *
  * @author Fred Dushin <fadushin@syr.edu>
  * @version $Revision$
  */
@@ -175,7 +175,7 @@ public final class Prolog {
 
 	public static native void put_jref(term_t t, Object ref);
 
-	// public static native void put_atom_chars(term_t t, String name);
+	public static native void put_atom_chars(term_t t, String name);
 
 	public static native void put_nil(term_t t);
 

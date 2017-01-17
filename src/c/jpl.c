@@ -3864,7 +3864,6 @@ Java_org_jpl7_fli_Prolog_new_1atom(JNIEnv *env, jclass jProlog, jstring jname)
   jobject rval;
 
   if ( jpl_ensure_pvm_init(env) &&
-       jname != NULL &&
        jni_String_to_atom(env, jname, &atom) &&
        (rval = (*env)->AllocObject(env, jAtomT_c)) &&
        setUIntPtrValue(env, rval, atom) )
@@ -4151,8 +4150,8 @@ Java_org_jpl7_fli_Prolog_put_1integer_1big(JNIEnv *env, jclass jProlog,
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  put_nil
+ * Class:     org_jpl7_fli_Prolog
+ * Method:    put_nil
  * Signature: (Lorg/jpl7/fli/term_t;)V
  */
 JNIEXPORT jboolean JNICALL
@@ -4166,8 +4165,30 @@ Java_org_jpl7_fli_Prolog_put_1nil(JNIEnv *env, // 1/Feb/2015
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  put_term
+ * Class:     org_jpl7_fli_Prolog
+ * Method:    put_atom_chars
+ * Signature: (Lorg/jpl7/fli/term_t;Ljava/lang/String)V
+ */
+JNIEXPORT jboolean JNICALL
+Java_org_jpl7_fli_Prolog_put_1atom_1chars(
+    JNIEnv *env,
+    jclass jProlog, jobject jterm, jstring chars)
+{ term_t term;
+  atom_t a;
+
+  return ( jpl_ensure_pvm_init(env) &&
+	   getTermValue(env, jterm, &term) &&
+	   jni_String_to_atom(env, chars, &a) &&
+	   PL_put_atom(term, a) &&
+	   (PL_unregister_atom(a),TRUE) );
+}
+
+
+
+
+/*
+ * Class:     org_jpl7_fli_Prolog
+ * Method:    put_term
  * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/term_t;)V
  */
 JNIEXPORT void JNICALL /* maybe oughta return jboolean (false iff given object is null) */
