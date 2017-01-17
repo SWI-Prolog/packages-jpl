@@ -248,7 +248,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @return true if the query is open, otherwise false.
 	 */
-	public synchronized final boolean isOpen() {
+	public final boolean isOpen() {
 		return open;
 	}
 
@@ -266,24 +266,9 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *     // process solution...
 	 * }
 	 * </pre>
-	 *
-	 * To ensure thread-safety, you should wrap sequential calls to this method
-	 * in a synchronized block, using the static lock method to obtain the
-	 * monitor.
-	 *
-	 * <pre>
-	 * Query q = // obtain Query reference
-	 * synchronized ( jpl.Query.lock() ){
-	 *     while ( q.hasMoreElements() ){
-	 *          Map solution = q.nextSolution();
-	 *          // process solution...
-	 *     }
-	 * }
-	 * </pre>
-	 *
 	 * @return true if the Prolog query succeeds; otherwise false.
 	 */
-	public synchronized final boolean hasMoreSolutions() {
+	public final boolean hasMoreSolutions() {
 		if (!open) {
 			open();
 		}
@@ -308,7 +293,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * If this method is called on an already-open Query, or if the query cannot
 	 * be set up for whatever reason, then a JPLException will be thrown.
 	 */
-	public synchronized final void open() {
+	public final void open() {
 		if (open) {
 			throw new JPLException("Query is already open");
 		}
@@ -403,7 +388,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @return A Map representing a substitution, or null
 	 */
-	public synchronized final Map<String, Term> getSolution() {
+	public final Map<String, Term> getSolution() {
 		// oughta check: thread has query's engine
 		if (!open) {
 			throw new JPLException("Query is not open");
@@ -414,7 +399,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		}
 	}
 
-	public synchronized final Map<String, Term> getSubstWithNameVars() {
+	public final Map<String, Term> getSubstWithNameVars() {
 		// oughta check: thread has query's engine
 		if (!open) {
 			throw new JPLException("Query is not open");
@@ -456,7 +441,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @return A Map representing a substitution.
 	 */
-	public synchronized final Map<String, Term> nextSolution() {
+	public final Map<String, Term> nextSolution() {
 		return get2();
 	}
 
@@ -510,7 +495,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @return true if the Prolog query yields a (or another) solution, else
 	 *         false.
 	 */
-	public synchronized final boolean hasMoreElements() {
+	public final boolean hasMoreElements() {
 		return hasMoreSolutions();
 	}
 
@@ -521,7 +506,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @return A Map representing a substitution.
 	 */
-	public synchronized final Object nextElement() {
+	public final Object nextElement() {
 		return nextSolution();
 	}
 
@@ -542,7 +527,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * </pre>
 	 * <p>
 	 */
-	public synchronized final void close() {
+	public final void close() {
 		if (!open) {
 			return; // it is not an error to attempt to close a closed Query
 		}
@@ -598,7 +583,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *         type being just a concrete syntax for terms (and hence queries).
 	 *         <p>
 	 */
-	public synchronized final Map<String, Term>[] allSolutions() {
+	public final Map<String, Term>[] allSolutions() {
 		if (open) {
 			throw new JPLException("Query is already open");
 		} else { // get a vector of solutions, then turn it into an array
@@ -706,7 +691,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *         type being just a concrete syntax for terms (and hence queries).
 	 *         <p>
 	 */
-	public synchronized final Map<String, Term>[] nSolutions(long n) {
+	public final Map<String, Term>[] nSolutions(long n) {
 		if (open) {
 			throw new JPLException("Query is already open");
 		} else { // get a vector of solutions, then turn it into an array
@@ -797,7 +782,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *         no solutions.
 	 *         <p>
 	 */
-	public synchronized final Map<String, Term> oneSolution() {
+	public final Map<String, Term> oneSolution() {
 		if (open) {
 			throw new JPLException("Query is already open");
 		} else {
@@ -876,7 +861,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *         This method will throw a JPLException if this Query is already
 	 *         open.
 	 */
-	public synchronized final boolean hasSolution() {
+	public final boolean hasSolution() {
 		return oneSolution() != null;
 	}
 
