@@ -93,13 +93,6 @@ import org.jpl7.fli.term_t;
  */
 public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, Term>> { // was
 																							// Enumeration<Object>
-	private static Map<Long, Query> m = new HashMap<Long, Query>(); // maps
-																	// (engine_t)
-																	// engine
-																	// handle to
-																	// (Query)
-																	// topmost
-																	// query
 	/**
 	 * the Compound or Atom (but not Dict, Float, Integer or Variable)
 	 * corresponding to the goal of this Query
@@ -241,8 +234,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	// open:
 	private engine_t engine = null; // handle of attached Prolog engine iff
 									// open, else null
-	private Query subQuery = null; // the open Query (if any) on top of which
-									// this open Query is stacked, else null
 	private predicate_t predicate = null; // handle of this Query's predicate
 											// iff open, else undefined
 	private fid_t fid = null; // id of current Prolog foreign frame iff open,
@@ -332,17 +323,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			//System.out.println("JPL reusing engine[" + engine.value + "] for " +
 			//		   this.hashCode() + ":" + this.toString());
 		}
-		if (m.containsKey(new Long(engine.value))) {
-			subQuery = m.get(new Long(engine.value)); // get this engine's
-														// previous topmost
-														// query
-			// System.out.println("JPL reusing engine[" + engine.value + "]
-			// pushing " + subQuery.hashCode() + ":" + subQuery.toString());
-		} else {
-			subQuery = null;
-		}
-		m.put(new Long(engine.value), this); // update this engine's topmost
-												// query
 		//
 		// here, we must check for a module prefix, e.g.
 		// jpl:jpl_modifier_bit(volatile,T)
@@ -572,8 +552,8 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		if (Prolog.current_engine().value != engine.value) {
 			throw new JPLException("this Query's engine is not that which is attached to this thread");
 		}
-		Query topmost = m.get(new Long(engine.value));
-		if (topmost != this) {
+		qid_t topmost = Prolog.current_query();
+		if (topmost.value != this.qid.value) {
 			throw new JPLException("this Query (" + this.hashCode() + ":" + this.toString() + ") is not topmost ("
 					+ topmost.hashCode() + ":" + topmost.toString() + ") within its engine[" + engine.value + "]");
 		}
@@ -581,8 +561,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		qid = null; // for tidiness
 		org.jpl7.fli.Prolog.discard_foreign_frame(fid);
 		fid = null; // for tidiness
-		m.remove(new Long(engine.value));
-		if (subQuery == null) { // only Query open in this engine?
+		if (Prolog.current_query() == null) { // only Query open in this engine?
 			if (Prolog.current_engine_is_pool()) { // this (Query's) engine is
 													// from the pool?
 				Prolog.release_pool_engine();
@@ -593,16 +572,11 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 				// "]");
 			}
 		} else {
-			m.put(new Long(engine.value), subQuery);
 			// System.out.println("JPL retaining engine[" + engine.value + "]
-			// popping subQuery(" + subQuery.hashCode() + ":" +
-			// subQuery.toString() + ")");
 		}
 		open = false; // this Query is now closed
 		engine = null; // this Query, being closed, is no longer associated with
 						// any Prolog engine
-		subQuery = null; // this Query, being closed, is not stacked upon any
-							// other Query
 	}
 
 	/**
