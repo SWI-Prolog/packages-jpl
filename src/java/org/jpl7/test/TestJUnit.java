@@ -76,16 +76,16 @@ public class TestJUnit extends TestCase {
 
 	// the tests; all public void test*()
 
-	public void testInfo() {
-		Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-		System.out.println("version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
-		System.out.println("syntax = " + Query.oneSolution("jpl:jpl_pl_syntax(Syntax)").get("Syntax"));
-		System.out.println("jpl.jar = " + JPL.version_string() + " " + JPL.jarPath());
-		System.out.println("jpl.dll = " + Prolog.get_c_lib_version());
-		System.out.println("jpl.pl = " + Query.oneSolution("jpl:jpl_pl_lib_version(V)").get("V").name() + " "
-				+ Query.oneSolution("module_property(jpl, file(F))").get("F").name());
-		System.out.println("home = " + Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
-	}
+//	public void testInfo() {
+//		Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
+//		System.out.println("version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
+//		System.out.println("syntax = " + Query.oneSolution("jpl:jpl_pl_syntax(Syntax)").get("Syntax"));
+//		System.out.println("jpl.jar = " + JPL.version_string() + " " + JPL.jarPath());
+//		System.out.println("jpl.dll = " + Prolog.get_c_lib_version());
+//		System.out.println("jpl.pl = " + Query.oneSolution("jpl:jpl_pl_lib_version(V)").get("V").name() + " "
+//				+ Query.oneSolution("module_property(jpl, file(F))").get("F").name());
+//		System.out.println("home = " + Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
+//	}
 
 	public void testEmptyParentheses() {
 		Term t = Query.oneSolution("T = a()").get("T"); // valid in both
