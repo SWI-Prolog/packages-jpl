@@ -55,11 +55,11 @@ refactoring (trivial):
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* update this to distinguish releases of this C library: */
-#define	JPL_C_LIB_VERSION	 "7.4.0-alpha"
-#define	JPL_C_LIB_VERSION_MAJOR	 7
-#define	JPL_C_LIB_VERSION_MINOR	 4
-#define	JPL_C_LIB_VERSION_PATCH	 0
-#define	JPL_C_LIB_VERSION_STATUS "alpha"
+#define JPL_C_LIB_VERSION        "7.4.0-alpha"
+#define JPL_C_LIB_VERSION_MAJOR  7
+#define JPL_C_LIB_VERSION_MINOR  4
+#define JPL_C_LIB_VERSION_PATCH  0
+#define JPL_C_LIB_VERSION_STATUS "alpha"
 
 /*#define DEBUG(n, g) ((void)0) */
 #ifndef DEBUG_LEVEL
@@ -77,9 +77,9 @@ refactoring (trivial):
  * this): but not if we use the .NET 2.0 C compiler
  */
 #include <windows.h>
-#define	SIZEOF_WCHAR_T	 2
-#define	SIZEOF_LONG	 4
-#define	SIZEOF_LONG_LONG 8
+#define SIZEOF_WCHAR_T   2
+#define SIZEOF_LONG      4
+#define SIZEOF_LONG_LONG 8
 #ifdef WIN64
 #define SIZEOF_VOIDP 8
 #else
@@ -170,16 +170,16 @@ refactoring (trivial):
 /*=== JPL initialisation macros (typically succeed cheaply) =============== */
 
 /* outcomes: */
-/*	fail to find org.jpl7.*, org.jpl7.fli.* classes or to convert init args
+/*      fail to find org.jpl7.*, org.jpl7.fli.* classes or to convert init args
  * to String[]: exception, FALSE */
-/*	JPL is (newly or already) out of RAW state: TRUE */
+/*      JPL is (newly or already) out of RAW state: TRUE */
 #define jpl_ensure_jpl_init(e) \
   (jpl_status != JPL_INIT_RAW || jpl_ensure_jpl_init_1(e))
 /* outcomes: */
-/*		JPL or PVM init has already failed: FALSE */
-/*		JPL or PVM init fails while being necessarily attempted: exception
+/*              JPL or PVM init has already failed: FALSE */
+/*              JPL or PVM init fails while being necessarily attempted: exception
  */
-/*		JPL is (newly or already) fully initialised: TRUE */
+/*              JPL is (newly or already) fully initialised: TRUE */
 #define jpl_ensure_pvm_init(e) \
   (jpl_status == JPL_INIT_OK || jpl_ensure_pvm_init_1(e))
 
@@ -187,24 +187,24 @@ refactoring (trivial):
 
 typedef struct Hr_Entry HrEntry; /* enables circular definition... */
 
-struct Hr_Entry				/* a single interned reference */
-{ jobject  obj;				/* a JNI global ref */
-  int      hash;			/* identityHashCode(obj) */
-  HrEntry *next;			/* next entry in this chain, or NULL */
+struct Hr_Entry                         /* a single interned reference */
+{ jobject  obj;                         /* a JNI global ref */
+  int      hash;                        /* identityHashCode(obj) */
+  HrEntry *next;                        /* next entry in this chain, or NULL */
 };
 
 typedef struct Hr_Table HrTable;
 
 struct Hr_Table
-{ int       count;			/* current # entries */
-  int       threshold;			/* rehash on add when count==threshold */
-  int       length;			/* # slots in slot array */
-  HrEntry **slots;			/* pointer to slot array */
+{ int       count;                      /* current # entries */
+  int       threshold;                  /* rehash on add when count==threshold */
+  int       length;                     /* # slots in slot array */
+  HrEntry **slots;                      /* pointer to slot array */
 };
 
-typedef intptr_t pointer;		/* for JPL */
-typedef int bool;			/* for JNI/JPL functions returning */
-					/* only TRUE or FALSE */
+typedef intptr_t pointer;               /* for JPL */
+typedef int bool;                       /* for JNI/JPL functions returning */
+                                        /* only TRUE or FALSE */
 
 /*=== JNI constants: sizes of JNI primitive types ========================= */
 
@@ -229,20 +229,20 @@ int size[16] = { /* NB relies on sequence of JNI_XPUT_* defs */
 
 /*=== JNI "constants", lazily initialised by jni_init() =================== */
 
-static atom_t JNI_atom_false;		/* false */
-static atom_t JNI_atom_true;		/* true */
+static atom_t JNI_atom_false;           /* false */
+static atom_t JNI_atom_true;            /* true */
 
-static atom_t JNI_atom_boolean;		/* boolean */
-static atom_t JNI_atom_char;		/* char */
-static atom_t JNI_atom_byte;		/* byte */
-static atom_t JNI_atom_short;		/* short */
-static atom_t JNI_atom_int;		/* int */
-static atom_t JNI_atom_long;		/* long */
-static atom_t JNI_atom_float;		/* float */
-static atom_t JNI_atom_double;		/* double */
+static atom_t JNI_atom_boolean;         /* boolean */
+static atom_t JNI_atom_char;            /* char */
+static atom_t JNI_atom_byte;            /* byte */
+static atom_t JNI_atom_short;           /* short */
+static atom_t JNI_atom_int;             /* int */
+static atom_t JNI_atom_long;            /* long */
+static atom_t JNI_atom_float;           /* float */
+static atom_t JNI_atom_double;          /* double */
 
-static atom_t JNI_atom_null;		/* null */
-static atom_t JNI_atom_void;		/* void */
+static atom_t JNI_atom_null;            /* null */
+static atom_t JNI_atom_void;            /* void */
 
 static functor_t JNI_functor_at_1;             /* @(_) */
 static functor_t JNI_functor_jbuf_2;           /* jbuf(_,_) */
@@ -252,19 +252,19 @@ static functor_t JNI_functor_jmethodID_1;      /* jmethodID(_) */
 static functor_t JNI_functor_error_2;          /* error(_, _) */
 static functor_t JNI_functor_java_exception_1; /* java_exception(_) */
 static functor_t JNI_functor_jpl_error_1;      /* jpl_error(_) */
-static functor_t JNI_functor_pair_2;	       /* _-_ */
+static functor_t JNI_functor_pair_2;           /* _-_ */
 
 /*=== JNI's static JVM references, lazily initialised by jni_init() ======= */
 
-static jclass c_class;		/* java.lang.Class (jClass_c?) */
-static jmethodID c_getName;	/* java.lang.Class'getName() (jClassGetName_m?) */
-static jclass str_class;	/* java.lang.String (duplicates jString_c below)*/
-static jclass term_class;	/* org.jpl7.Term */
-static jclass termt_class;	/* org.jpl7.fli.term_t */
+static jclass c_class;          /* java.lang.Class (jClass_c?) */
+static jmethodID c_getName;     /* java.lang.Class'getName() (jClassGetName_m?) */
+static jclass str_class;        /* java.lang.String (duplicates jString_c below)*/
+static jclass term_class;       /* org.jpl7.Term */
+static jclass termt_class;      /* org.jpl7.fli.term_t */
 
-static jclass sys_class;	/* java.lang.System (rename to jSystem_c?) */
-static jmethodID sys_ihc;	/* java.lang.System's identityHashCode()
-			           (rename to jSystemIdentityHashCode_m?) */
+static jclass sys_class;        /* java.lang.System (rename to jSystem_c?) */
+static jmethodID sys_ihc;       /* java.lang.System's identityHashCode()
+                                   (rename to jSystemIdentityHashCode_m?) */
 static jmethodID term_getTerm;  /* org.jpl7.Term's getTerm() */
 static jmethodID term_put;      /* org.jpl7.Term's put() */
 static jmethodID term_putTerm;  /* org.jpl7.Term's static putTerm(Term,term_t) */
@@ -313,29 +313,29 @@ const char *default_args[] =
 
 /*=== JNI global state (initialised by jni_create_jvm_c) ================== */
 
-static JavaVM *jvm = NULL;		/* non-null -> JVM successfully
+static JavaVM *jvm = NULL;              /* non-null -> JVM successfully
                                            loaded & initialised */
 static char * jvm_ia[2] = {"-Xrs", NULL};
-static char **jvm_dia = jvm_ia;		/* default JVM init args (after
-					   jpl init, until jvm init) */
-static char **jvm_aia = NULL;		/* actual JVM init args (after jvm init)*/
+static char **jvm_dia = jvm_ia;         /* default JVM init args (after
+                                           jpl init, until jvm init) */
+static char **jvm_aia = NULL;           /* actual JVM init args (after jvm init)*/
 
 /*=== JNI global state (hashed global refs) =============================== */
 
-static HrTable *hr_table = NULL;	/* handle to allocated-on-demand table */
-static int64_t hr_add_count = 0;	/* total of new refs interned */
-static int64_t hr_old_count = 0;	/* total of old refs reused */
-static int64_t hr_del_count = 0;	/* total of dead refs released */
+static HrTable *hr_table = NULL;        /* handle to allocated-on-demand table */
+static int64_t hr_add_count = 0;        /* total of new refs interned */
+static int64_t hr_old_count = 0;        /* total of old refs reused */
+static int64_t hr_del_count = 0;        /* total of dead refs released */
 
 /*=== JPL global state, initialised by jpl_ensure_jpl_init() or
  * jpl_ensure_jvm_init() ============== */
 
-static int jpl_status = JPL_INIT_RAW;	/* neither JPL nor PVM initialisation
-					   has occurred */
-static jobject pvm_dia = NULL;		/* default PVM init args (after
-					   jpl init, until pvm init) */
-static jobject      pvm_aia = NULL;	/* actual PVM init args (after pvm init)*/
-static PL_engine_t *engines = NULL;	/* handles of the pooled Prolog engines */
+static int jpl_status = JPL_INIT_RAW;   /* neither JPL nor PVM initialisation
+                                           has occurred */
+static jobject pvm_dia = NULL;          /* default PVM init args (after
+                                           jpl init, until pvm init) */
+static jobject      pvm_aia = NULL;     /* actual PVM init args (after pvm init)*/
+static PL_engine_t *engines = NULL;     /* handles of the pooled Prolog engines */
 static int          engines_allocated = 0; /* size of engines array */
 static pthread_mutex_t engines_mutex = PTHREAD_MUTEX_INITIALIZER; /* pool access*/
 static pthread_cond_t engines_cond   = PTHREAD_COND_INITIALIZER;  /* pool access*/
@@ -407,9 +407,9 @@ static bool jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a);
 static bool jni_atom_to_String(JNIEnv *env, atom_t a, jobject *s);
 
 
-		/*******************************
-		*	   JREF SYMBOL	       *
-		*******************************/
+                /*******************************
+                *          JREF SYMBOL         *
+                *******************************/
 
 typedef struct jref_handle
 { pointer iref;
@@ -788,7 +788,7 @@ jni_term_to_jbuf(term_t t, atom_t type, void **vp)
       _PL_get_arg(2, t, a);
       if ( PL_get_atom(a, &tp) && tp == type )
       { _PL_get_arg(1, t, a);
-	return PL_get_pointer(a, vp);
+        return PL_get_pointer(a, vp);
       }
     }
   }
@@ -852,7 +852,7 @@ jni_term_to_pointer(term_t t, jvalue **jvp)
 static bool
 jni_jboolean_to_term(jboolean jb, term_t t)
 { return PL_unify_term(t, PL_FUNCTOR, JNI_functor_at_1,
-			    PL_ATOM, jb ? JNI_atom_true : JNI_atom_false);
+                            PL_ATOM, jb ? JNI_atom_true : JNI_atom_false);
 }
 
 static bool
@@ -943,16 +943,16 @@ jni_jobject_to_term(jobject j, term_t t, JNIEnv *env)
 
 static bool
 jni_object_to_iref(JNIEnv *env, jobject obj, pointer *iref)
-{ int r;				/* temp for result code */
+{ int r;                                /* temp for result code */
 
   if ((r = jni_hr_add(env, obj, iref)) == JNI_HR_ADD_NEW)
-  { hr_add_count++;			/* obj was novel, added to dict */
+  { hr_add_count++;                     /* obj was novel, added to dict */
     return TRUE;
   } else if (r == JNI_HR_ADD_OLD)
-  { hr_old_count++;			/* obj was already in dict */
+  { hr_old_count++;                     /* obj was already in dict */
     return TRUE;
   } else
-  { return FALSE;			/* r == JNI_HR_ADD_FAIL, presumably */
+  { return FALSE;                       /* r == JNI_HR_ADD_FAIL, presumably */
   }
 }
 
@@ -977,7 +977,7 @@ jni_tidy_iref_type_cache(pointer iref)
 static bool
 jni_free_iref(JNIEnv *env, pointer iref)
 { if (jni_hr_del(env, iref)) /* iref matched a hashedref table entry?
-				(in which case, was deleted) */
+                                (in which case, was deleted) */
   { if (!jni_tidy_iref_type_cache(iref))
       DEBUG(0, Sdprintf("[JPL: jni_tidy_iref_type_cache(%u) failed]\n", iref));
     hr_del_count++;
@@ -1080,7 +1080,7 @@ static bool
 jni_atom_to_String(JNIEnv *env, atom_t a, jobject *s)
 { size_t            len;
   const pl_wchar_t *wp;
-  const char	   *cp;
+  const char       *cp;
 
   if ( (cp = PL_atom_nchars(a, &len)) )
   { return jni_new_string(env, cp, len, s);
@@ -1121,7 +1121,7 @@ jni_tag_to_iref_plc(term_t tt, term_t ti)
   pointer iref;
 
   return PL_get_atom(tt, &a) &&
-	 jni_tag_to_iref(a, &iref) &&
+         jni_tag_to_iref(a, &iref) &&
          PL_unify_integer(ti, iref);
 }
 
@@ -1152,8 +1152,8 @@ jni_hr_table_slot(term_t t2, HrEntry *slot)
   } else
   { return PL_unify_list(t2, tp, t2) &&
            PL_unify_term(tp, PL_FUNCTOR, JNI_functor_pair_2,
-			       PL_INT, slot->hash,
-			       PL_LONG, slot->obj) &&
+                               PL_INT, slot->hash,
+                               PL_LONG, slot->obj) &&
            jni_hr_table_slot(t2, slot->next);
   }
 }
@@ -1182,10 +1182,10 @@ jni_hr_create(int length)
 { int i;
 
   if (hr_table != NULL)
-  { return FALSE;			/* table already exists */
+  { return FALSE;                       /* table already exists */
   }
   if (length <= 0)
-  { return FALSE;			/* unsuitable length */
+  { return FALSE;                       /* unsuitable length */
   }
   if ((hr_table = (HrTable *)malloc(sizeof(HrTable))) == NULL)
   { return FALSE;
@@ -1281,7 +1281,7 @@ jni_hr_rehash(void)
 
 static bool
 jni_hr_hash(JNIEnv *env, jobject obj, int *hash)
-{ jobject e;				/* possible (but unlikely?) exception */
+{ jobject e;                            /* possible (but unlikely?) exception */
 
   *hash = (*env)->CallStaticIntMethod(env, sys_class, sys_ihc, obj, obj);
   return (e = (*env)->ExceptionOccurred(env)) == NULL;
@@ -1766,7 +1766,7 @@ jni_get_created_jvm_count()
 static int
 jni_create_jvm_c(char *classpath)
 { JavaVMInitArgs vm_args;
-  /*	char				cpopt[10000]; */
+  /*    char                            cpopt[10000]; */
   char *       cpoptp;
   JavaVMOption opt[MAX_JVM_OPTIONS];
   int          r;
@@ -1785,19 +1785,19 @@ jni_create_jvm_c(char *classpath)
     optn++;
   }
   /* opt[optn++].optionString = "-Djava.compiler=NONE"; */
-  /* opt[optn].optionString = "exit";	    // I don't understand this yet... */
-  /* opt[optn++].extraInfo = jvm_exit;		// this function has been moved to
+  /* opt[optn].optionString = "exit";       // I don't understand this yet... */
+  /* opt[optn++].extraInfo = jvm_exit;          // this function has been moved to
    * jpl_extras.c */
-  /* opt[optn].optionString = "abort";	    // I don't understand this yet... */
-  /* opt[optn++].extraInfo = jvm_abort;		// this function has been moved
+  /* opt[optn].optionString = "abort";      // I don't understand this yet... */
+  /* opt[optn++].extraInfo = jvm_abort;         // this function has been moved
    * to jpl_extras.c */
   /* opt[optn++].optionString = "-Xcheck:jni";    // extra checking of JNI calls
    */
   /* opt[optn++].optionString = "-Xnoclassgc";    // so method/field IDs remain
    * valid (?) */
   /* opt[optn].optionString = "vfprintf"; */
-  /* opt[optn++].extraInfo = fprintf;		    // no O/P, then SEGV */
-  /* opt[optn++].extraInfo = xprintf;		    // one message, then SEGV */
+  /* opt[optn++].extraInfo = fprintf;               // no O/P, then SEGV */
+  /* opt[optn++].extraInfo = xprintf;               // one message, then SEGV */
   /* opt[optn++].optionString = "-verbose:jni"; */
 
   if (jvm_dia != NULL)
@@ -2741,9 +2741,9 @@ jpl_num_initial_default_args() /* used only once, by jpl_do_jpl_init() */
 }
 
 /* outcomes: */
-/*	fail to find org.jpl7.*, org.jpl7.fli.* classes or to convert init args
+/*      fail to find org.jpl7.*, org.jpl7.fli.* classes or to convert init args
  * to String[]: exception, FALSE */
-/*	all OK: TRUE */
+/*      all OK: TRUE */
 static bool
 jpl_do_jpl_init(/* to be called once only, after PL init, before any JPL calls
                    */
@@ -2902,11 +2902,11 @@ err:
 }
 
 /* prerequisite: */
-/*	called only from jpl_test_pvm_init() and jpl_do_pvm_init() */
+/*      called only from jpl_test_pvm_init() and jpl_do_pvm_init() */
 /* outcomes: */
-/*	error setting up post-PVM-init JPL state:  throws exception, sets status
+/*      error setting up post-PVM-init JPL state:  throws exception, sets status
  * = PVM_FAILED, returns FALSE */
-/*	OK:  sets status = OK, returns TRUE */
+/*      OK:  sets status = OK, returns TRUE */
 static bool
 jpl_post_pvm_init(JNIEnv *env, int argc, char **argv)
 { char *  msg;
@@ -2950,16 +2950,16 @@ err:
 
 /* prerequisite: jpl_status != JPL_INIT_RAW */
 /* outcomes: */
-/*	PVM is not (already) initialised -> FALSE */
-/*	PVM is (already) initialised -> TRUE */
-/*	error setting up post-PVM-init JPL state -> exception */
+/*      PVM is not (already) initialised -> FALSE */
+/*      PVM is (already) initialised -> TRUE */
+/*      error setting up post-PVM-init JPL state -> exception */
 static bool
 jpl_test_pvm_init(JNIEnv *env)
 { char * msg;
   int    argc;
   char **argv;
-  /* jobject	ta; */
-  /* int		i; */
+  /* jobject    ta; */
+  /* int                i; */
 
   if (jpl_status == JPL_INIT_RAW)
   { msg = "jpl_test_pvm_init(): called while jpl_status == JPL_INIT_RAW";
@@ -3001,10 +3001,10 @@ err:
 }
 
 /* prerequisite: */
-/*	jpl_status == JPL_INIT_PVM_MAYBE */
+/*      jpl_status == JPL_INIT_PVM_MAYBE */
 /* outcomes: */
-/*	successful PVM initialisation and subsequent JPL state setup -> TRUE */
-/*	any error -> exception */
+/*      successful PVM initialisation and subsequent JPL state setup -> TRUE */
+/*      any error -> exception */
 static bool
 jpl_do_pvm_init(JNIEnv *env)
 { char *  msg;
@@ -3042,7 +3042,7 @@ jpl_do_pvm_init(JNIEnv *env)
     DEBUG(1, Sdprintf("  argv[%d] = %s\n", i, argv[i]));
     (*env)->ReleaseStringUTFChars(env, arg, cp);
   }
-  DEBUG(1, Sdprintf("	argv[%d] = NULL\n", argc));
+  DEBUG(1, Sdprintf("   argv[%d] = NULL\n", argc));
   argv[argc] = NULL;
   if (!PL_initialise(argc, (char **)argv)) /* NB not (const char**) */
   { msg = "jpl_do_pvm_init(): PL_initialise() failed";
@@ -3084,7 +3084,7 @@ jpl_ensure_pvm_init_1(JNIEnv *env)
  */
 
 /*
- * Class:	  org_jpl7_fli_Prolog
+ * Class:         org_jpl7_fli_Prolog
  * Method:    get_default_init_args
  * Signature: ()[Ljava/lang/String;
  */
@@ -3115,7 +3115,7 @@ err:
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
+ * Class:         org_jpl7_fli_Prolog
  * Method:    set_default_init_args
  * Signature: ([Ljava/lang/String;)Z
  */
@@ -3161,7 +3161,7 @@ err:
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
+ * Class:         org_jpl7_fli_Prolog
  * Method:    get_actual_init_args
  * Signature: ()[Ljava/lang/String;
  */
@@ -3195,7 +3195,7 @@ err:
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
+ * Class:         org_jpl7_fli_Prolog
  * Method:    initialise
  * Signature: ()Z
  */
@@ -3229,7 +3229,7 @@ err:
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
+ * Class:         org_jpl7_fli_Prolog
  * Method:    halt
  * Signature: (I)V
  */
@@ -3246,10 +3246,10 @@ Java_org_jpl7_fli_Prolog_halt(JNIEnv *env, jclass jProlog, jint jstatus)
  *
  * Retrieves the value in a org.jpl7.fli.LongHolder (or subclass) instance
  *
- * @param   env		  Java environment
+ * @param   env           Java environment
  * @param   jlong_holder  the LongHolder class instance, or null
- * @param   lv		  address to write the retrieved (long) value
- * @return		  success? (the LongHolder was not null)
+ * @param   lv            address to write the retrieved (long) value
+ * @return                success? (the LongHolder was not null)
  *---------------------------------------------------------------------*/
 static bool
 getLongValue(JNIEnv *env, jobject jlong_holder, jlong *lv)
@@ -3311,10 +3311,10 @@ getFIDValue(JNIEnv *env, jobject jlong_holder, fid_t *f)
  *
  * Retrieves the value in a org.jpl7.fli.PointerHolder instance
  *
- * @param   env		     Java environment
+ * @param   env              Java environment
  * @param   jpointer_holder  the PointerHolder class instance, or null
- * @param   pv		     address to write the retrieved (pointer) value
- * @return		     success? (the PointerHolder was not null)
+ * @param   pv               address to write the retrieved (pointer) value
+ * @return                   success? (the PointerHolder was not null)
  *---------------------------------------------------------------------*/
 static bool
 getPointerValue(/* sets pv to jpointer_holder's .value_ (and succeeds), else
@@ -3338,9 +3338,9 @@ getPointerValue(/* sets pv to jpointer_holder's .value_ (and succeeds), else
  * Sets the value in a org.jpl7.fli.Pointer class instance (unless it's null)
  * to the supplied value (maybe 0L)
  *
- * @param   env		     Java environment
+ * @param   env              Java environment
  * @param   jpointer_holder  the PointerHolder class instance, or null
- * @param   pv		     the new (pointer) value
+ * @param   pv               the new (pointer) value
  *---------------------------------------------------------------------*/
 static bool
 setPointerValue(JNIEnv *env, jobject jpointer_holder, pointer pv)
@@ -3356,9 +3356,9 @@ setPointerValue(JNIEnv *env, jobject jpointer_holder, pointer pv)
  * Sets the value in a Java IntHolder class instance (unless it's null)
  * to the supplied value
  *
- * @param   env		 Java environment
- * @param   jint_holder	 the IntHolder class instance, or null
- * @param   iv		 the new (int) value
+ * @param   env          Java environment
+ * @param   jint_holder  the IntHolder class instance, or null
+ * @param   iv           the new (int) value
  *---------------------------------------------------------------------*/
 static bool
 setIntValue(JNIEnv *env, jobject jint_holder, jint iv)
@@ -3372,9 +3372,9 @@ setIntValue(JNIEnv *env, jobject jint_holder, jint iv)
  * Sets the value in a Java LongHolder class instance (unless it's null)
  * to the supplied Java long value
  *
- * @param   env		  Java environment
+ * @param   env           Java environment
  * @param   jlong_holder  the LongHolder class instance, or null
- * @param   lv		  the new (Java long) value
+ * @param   lv            the new (Java long) value
  *---------------------------------------------------------------------*/
 static bool
 setLongValue(JNIEnv *env, jobject jlong_holder, jlong lv)
@@ -3403,9 +3403,9 @@ setUIntPtrValue(JNIEnv *env, jobject jlong_holder, uintptr_t iv)
  * Sets the value in a Java DoubleHolder class instance (unless it's null)
  * to the supplied value
  *
- * @param   env		    Java environment
+ * @param   env             Java environment
  * @param   jdouble_holder  the DoubleHolder class instance, or null
- * @param   dv		    the new (double) value
+ * @param   dv              the new (double) value
  *---------------------------------------------------------------------*/
 static bool
 setDoubleValue(JNIEnv *env, jobject jdouble_holder, jdouble dv)
@@ -3420,9 +3420,9 @@ setDoubleValue(JNIEnv *env, jobject jdouble_holder, jdouble dv)
  * Sets the value in a Java StringHolder class instance (unless it's null)
  * to the supplied value (maybe null)
  *
- * @param   env		    Java environment
+ * @param   env             Java environment
  * @param   jstring_holder  the StringHolder class instance, or null
- * @param   sv		    the new (jstring) value
+ * @param   sv              the new (jstring) value
  *---------------------------------------------------------------------*/
 static bool
 setStringValue(JNIEnv *env, jobject jstring_holder, jstring sv)
@@ -3437,9 +3437,9 @@ setStringValue(JNIEnv *env, jobject jstring_holder, jstring sv)
  * Sets the value in a Java ObjectHolder class instance (unless it's null)
  * to the supplied value (maybe null)
  *
- * @param   env		    Java environment
+ * @param   env             Java environment
  * @param   jobject_holder  the ObjectHolder class instance, or null
- * @param   ref		    the new (jobject) value
+ * @param   ref             the new (jobject) value
  *---------------------------------------------------------------------*/
 static bool
 setObjectValue(JNIEnv *env, jobject jobject_holder, jobject ref)
@@ -3455,8 +3455,8 @@ static int current_pool_engine_handle(PL_engine_t *e);
 static int current_pool_engine();
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  action_abort
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        action_abort
  * Signature: ()I
  */
 JNIEXPORT int JNICALL
@@ -3475,7 +3475,7 @@ Java_org_jpl7_fli_Prolog_action_1abort(JNIEnv *env, jclass jProlog)
  */
 JNIEXPORT jstring JNICALL
 Java_org_jpl7_fli_Prolog_atom_1chars(JNIEnv *env, jclass jProlog,
-				     jobject jatom)
+                                     jobject jatom)
 { atom_t  atom;
   jstring lref;
 
@@ -3522,8 +3522,8 @@ Java_org_jpl7_fli_Prolog_attach_1engine(JNIEnv *env, jclass jProlog,
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  close_query
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        close_query
  * Signature: (Lorg/jpl7/fli/qid_t;)V
  */
 JNIEXPORT void JNICALL
@@ -3547,7 +3547,7 @@ Java_org_jpl7_fli_Prolog_close_1query(JNIEnv *env, jclass jProlog, jobject jqid)
 
 JNIEXPORT jint JNICALL /* returns -1, 0 or 1 (or -2 for error) */
 Java_org_jpl7_fli_Prolog_compare(JNIEnv *env, jclass jProlog,
-				 jobject jterm1, jobject jterm2)
+                                 jobject jterm1, jobject jterm2)
 { term_t term1;
   term_t term2;
 
@@ -3563,8 +3563,8 @@ Java_org_jpl7_fli_Prolog_compare(JNIEnv *env, jclass jProlog,
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  cons_functor_v
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        cons_functor_v
  * Signature:
  * (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/functor_t;Lorg/jpl7/fli/term_t;)V
  */
@@ -3582,7 +3582,7 @@ Java_org_jpl7_fli_Prolog_cons_1functor_1v(JNIEnv *env, jclass jProlog,
        getTermValue(env, jterm0, &term0) )
     return PL_cons_functor_v(term, functor, term0);
 
-  return TRUE;					/* FIXME: Why not FALSE? */
+  return TRUE;                                  /* FIXME: Why not FALSE? */
 }
 
 /*
@@ -3604,7 +3604,7 @@ Java_org_jpl7_fli_Prolog_copy_1term_1ref(JNIEnv *env, jclass jProlog,
        setUIntPtrValue(env, rval, term2) )
     return rval;
 
-  return NULL;				/* oughta warn of failure? */
+  return NULL;                          /* oughta warn of failure? */
 }
 
 /*
@@ -3623,7 +3623,7 @@ Java_org_jpl7_fli_Prolog_current_1query(JNIEnv *env, jclass jProlog)
        setUIntPtrValue(env, rval, qid) )
     return rval;
 
-  return NULL;					/* oughta throw exception */
+  return NULL;                                  /* oughta throw exception */
 }
 
 
@@ -3644,7 +3644,7 @@ Java_org_jpl7_fli_Prolog_current_1engine(JNIEnv *env, jclass jProlog)
        setPointerValue(env, rval, (pointer)engine) )
     return rval;
 
-  return NULL;					/* oughta throw exception */
+  return NULL;                                  /* oughta throw exception */
 }
 
 /*
@@ -3657,7 +3657,7 @@ Java_org_jpl7_fli_Prolog_current_1engine_1is_1pool(JNIEnv *env, jclass jProlog)
 { if ( jpl_ensure_pvm_init(env) )
   { return current_pool_engine() >= 0;
   } else
-  { return FALSE;				/* oughta throw exception */
+  { return FALSE;                               /* oughta throw exception */
   }
 }
 
@@ -3675,11 +3675,11 @@ Java_org_jpl7_fli_Prolog_exception(JNIEnv *env, jclass jProlog, jobject jqid)
   DEBUG(1, Sdprintf(">exception(jqid=%p)\n", jqid));
   return (
       jpl_ensure_pvm_init(env) &&
-              (DEBUG(1, Sdprintf("	ok: jpl_ensure_pvm_init(env)\n")), TRUE)
-              /* &&	jqid != NULL	// redundant */
-              && (DEBUG(1, Sdprintf("	ok: jqid != NULL\n")), TRUE) &&
+              (DEBUG(1, Sdprintf("      ok: jpl_ensure_pvm_init(env)\n")), TRUE)
+              /* &&     jqid != NULL    // redundant */
+              && (DEBUG(1, Sdprintf("   ok: jqid != NULL\n")), TRUE) &&
               getQIDValue(env, jqid, &qid)
-              && (DEBUG(1, Sdprintf("	ok: getQIDValue(env,jqid,&qid)\n")),
+              && (DEBUG(1, Sdprintf("   ok: getQIDValue(env,jqid,&qid)\n")),
                   TRUE) &&
               ((term = PL_exception(qid)),
                TRUE) /* we'll build a term_t object regardless */
@@ -3687,13 +3687,13 @@ Java_org_jpl7_fli_Prolog_exception(JNIEnv *env, jclass jProlog, jobject jqid)
               (DEBUG(1, Sdprintf("  ok: ( (term=PL_exception(qid)), TRUE)\n")),
                TRUE) &&
               (term_t = (*env)->AllocObject(env, jTermT_c)) != NULL &&
-              (DEBUG(1, Sdprintf("	ok: "
+              (DEBUG(1, Sdprintf("      ok: "
                                  "(term_t=(*env)->AllocObject(env,jTermT_c)) "
                                  "!= NULL\n")),
                TRUE) &&
               setUIntPtrValue(env, term_t, term) &&
               (DEBUG(1,
-                     Sdprintf("	ok: setUIntPtrValue(env,term_t,term)\n")),
+                     Sdprintf(" ok: setUIntPtrValue(env,term_t,term)\n")),
                TRUE)
           ? (DEBUG(1, Sdprintf("  =%p\n", term_t)), term_t)
           : NULL /* oughta diagnose failure? */
@@ -3701,8 +3701,8 @@ Java_org_jpl7_fli_Prolog_exception(JNIEnv *env, jclass jProlog, jobject jqid)
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  get_arg
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        get_arg
  * Signature: (ILorg/jpl7/fli/term_t;Lorg/jpl7/fli/term_t;)Z
  */
 JNIEXPORT jboolean JNICALL
@@ -3712,11 +3712,11 @@ Java_org_jpl7_fli_Prolog_get_1arg(JNIEnv *env, jclass jProlog, jint jindex,
   term_t arg;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   jarg != NULL &&
-	   getTermValue(env, jterm, &term) &&
-	   (arg = PL_new_term_ref()) &&
-	   PL_get_arg(jindex, term, arg) &&
-	   setUIntPtrValue(env, jarg, arg) );
+           jarg != NULL &&
+           getTermValue(env, jterm, &term) &&
+           (arg = PL_new_term_ref()) &&
+           PL_get_arg(jindex, term, arg) &&
+           setUIntPtrValue(env, jarg, arg) );
 }
 
 /*
@@ -3732,11 +3732,11 @@ Java_org_jpl7_fli_Prolog_get_1atom_1chars(JNIEnv *env, jclass jProlog,
   jstring string;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   jstring_holder != NULL &&
-	   getTermValue(env, jterm, &term) &&
-	   PL_get_atom(term, &a) &&
-	   jni_atom_to_String(env, a, &string) &&
-	   setStringValue(env, jstring_holder, string) );
+           jstring_holder != NULL &&
+           getTermValue(env, jterm, &term) &&
+           PL_get_atom(term, &a) &&
+           jni_atom_to_String(env, a, &string) &&
+           setStringValue(env, jstring_holder, string) );
 }
 
 /*
@@ -3754,12 +3754,12 @@ Java_org_jpl7_fli_Prolog_get_1jref_1object(JNIEnv *env, jclass jProlog,
   PL_blob_t *  type;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   jobject_holder != NULL &&
-	   getTermValue(env, jterm, &term) &&
-	   PL_get_atom(term, &a) &&
-	   (ref = PL_blob_data(a, NULL, &type)) &&
-	   type == &jref_blob &&
-	   setObjectValue(env, jobject_holder, (void *)ref->iref) );
+           jobject_holder != NULL &&
+           getTermValue(env, jterm, &term) &&
+           PL_get_atom(term, &a) &&
+           (ref = PL_blob_data(a, NULL, &type)) &&
+           type == &jref_blob &&
+           setObjectValue(env, jobject_holder, (void *)ref->iref) );
 }
 
 /*
@@ -3784,15 +3784,15 @@ Java_org_jpl7_fli_Prolog_get_1float(JNIEnv *env, jclass jProlog, jobject jterm,
   double d;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   jdouble_holder != NULL &&
-	   getTermValue(env, jterm, &term) &&
-	   PL_get_float(term, &d) &&
-	   setDoubleValue(env, jdouble_holder, d) );
+           jdouble_holder != NULL &&
+           getTermValue(env, jterm, &term) &&
+           PL_get_float(term, &d) &&
+           setDoubleValue(env, jdouble_holder, d) );
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  get_integer
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        get_integer
  * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/Int64Holder;)Z
  */
 JNIEXPORT jboolean JNICALL
@@ -3802,10 +3802,10 @@ Java_org_jpl7_fli_Prolog_get_1integer(JNIEnv *env, jclass jProlog,
   int64_t i64;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   jint64_holder != NULL &&
-	   getTermValue(env, jterm, &term) &&
-	   PL_get_int64(term, &i64) &&
-	   setLongValue(env, jint64_holder, i64) );
+           jint64_holder != NULL &&
+           getTermValue(env, jterm, &term) &&
+           PL_get_int64(term, &i64) &&
+           setLongValue(env, jint64_holder, i64) );
 }
 
 /*
@@ -3823,11 +3823,11 @@ Java_org_jpl7_fli_Prolog_get_1integer_1big(
   jstring jbigint;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   jbigint_holder != NULL &&
-	   getTermValue(env, jterm, &term) &&
-	   PL_get_chars(term, &bigint, CVT_INTEGER) &&
-	   (jbigint = (*env)->NewStringUTF(env, bigint)) &&
-	   setStringValue(env, jbigint_holder, jbigint) );
+           jbigint_holder != NULL &&
+           getTermValue(env, jterm, &term) &&
+           PL_get_chars(term, &bigint, CVT_INTEGER) &&
+           (jbigint = (*env)->NewStringUTF(env, bigint)) &&
+           setStringValue(env, jbigint_holder, jbigint) );
 }
 
 /*
@@ -3845,13 +3845,13 @@ Java_org_jpl7_fli_Prolog_get_1name_1arity(
   size_t  arity;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   jname_holder != NULL &&
-	   jarity_holder != NULL &&
-	   getTermValue(env, jterm, &term) &&
-	   PL_get_name_arity(term, &atom, &arity) &&
-	   jni_atom_to_String(env, atom, &jname) &&
-	   setStringValue(env, jname_holder, jname) &&
-	   setIntValue(env, jarity_holder, arity) );
+           jname_holder != NULL &&
+           jarity_holder != NULL &&
+           getTermValue(env, jterm, &term) &&
+           PL_get_name_arity(term, &atom, &arity) &&
+           jni_atom_to_String(env, atom, &jname) &&
+           setStringValue(env, jname_holder, jname) &&
+           setIntValue(env, jarity_holder, arity) );
 }
 
 /*
@@ -3867,10 +3867,10 @@ Java_org_jpl7_fli_Prolog_get_1string_1chars(JNIEnv *env, jclass jProlog,
   jstring string;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   jstring_holder != NULL &&
-	   getTermValue(env, jterm, &term) &&
-	   jni_string_to_String(env, term, &string) &&
-	   setStringValue(env, jstring_holder, string) );
+           jstring_holder != NULL &&
+           getTermValue(env, jterm, &term) &&
+           jni_string_to_String(env, term, &string) &&
+           setStringValue(env, jstring_holder, string) );
 }
 
 /*
@@ -3889,7 +3889,7 @@ Java_org_jpl7_fli_Prolog_new_1atom(JNIEnv *env, jclass jProlog, jstring jname)
        setUIntPtrValue(env, rval, atom) )
     return rval;
 
-  return NULL;					/* oughta warn of failure? */
+  return NULL;                                  /* oughta warn of failure? */
 }
 
 /*
@@ -3912,7 +3912,7 @@ Java_org_jpl7_fli_Prolog_new_1functor(JNIEnv *env, jclass jProlog,
        setUIntPtrValue(env, rval, functor) )
     return rval;
 
-  return NULL;					/* oughta warn of failure? */
+  return NULL;                                  /* oughta warn of failure? */
 }
 
 /*
@@ -3933,12 +3933,12 @@ Java_org_jpl7_fli_Prolog_new_1module(JNIEnv *env, jclass jProlog, jobject jatom)
        setPointerValue(env, rval, (pointer)module) )
     return rval;
 
-  return NULL;					/* oughta warn of failure? */
+  return NULL;                                  /* oughta warn of failure? */
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  new_term_ref
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        new_term_ref
  * Signature: ()Lorg/jpl7/fli/term_t;
  */
 JNIEXPORT jobject JNICALL
@@ -3974,7 +3974,7 @@ Java_org_jpl7_fli_Prolog_new_1term_1refs(JNIEnv *env, jclass jProlog, jint jn)
        (trefs = PL_new_term_refs((int)jn), TRUE) &&
        setUIntPtrValue(env, rval, trefs) )
   { DEBUG(1, Sdprintf("  ok: stashed trefs=%ld into new term_t object\n",
-		      (long)trefs));
+                      (long)trefs));
     return rval;
   }
 
@@ -3990,7 +3990,7 @@ JNIEXPORT jboolean JNICALL
 Java_org_jpl7_fli_Prolog_next_1solution(JNIEnv *env, jclass jProlog,
                                         jobject jqid /* read */
                                         )
-{ qid_t qid = 0;				/* make compiler happy */
+{ qid_t qid = 0;                                /* make compiler happy */
 
   DEBUG(1, Sdprintf(">next_solution(env=%p,jProlog=%p,jqid=%p)...\n", env,
                     jProlog, jqid));
@@ -3998,11 +3998,11 @@ Java_org_jpl7_fli_Prolog_next_1solution(JNIEnv *env, jclass jProlog,
   if ( jpl_ensure_pvm_init(env) &&
        getQIDValue(env, jqid, &qid) &&
        PL_next_solution(qid) )
-  { DEBUG(1, Sdprintf("	ok: PL_next_solution(qid=%lu)=TRUE\n", (long)qid));
+  { DEBUG(1, Sdprintf(" ok: PL_next_solution(qid=%lu)=TRUE\n", (long)qid));
     return TRUE;
   }
 
-  DEBUG(1, Sdprintf("	ok: PL_next_solution(qid=%lu)=FALSE\n", (long)qid));
+  DEBUG(1, Sdprintf("   ok: PL_next_solution(qid=%lu)=FALSE\n", (long)qid));
   return FALSE;
 }
 
@@ -4071,8 +4071,8 @@ Java_org_jpl7_fli_Prolog_open_1query(JNIEnv *env, jclass jProlog,
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  predicate
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        predicate
  * Signature: (Ljava/lang/String;ILjava/lang/String;)Lorg/jpl7/fli/predicate_t;
  */
 JNIEXPORT jobject JNICALL
@@ -4115,8 +4115,8 @@ Java_org_jpl7_fli_Prolog_predicate(JNIEnv *env, jclass jProlog,
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  put_float
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        put_float
  * Signature: (Lorg/jpl7/fli/term_t;D)V
  */
 JNIEXPORT jboolean JNICALL
@@ -4133,8 +4133,8 @@ Java_org_jpl7_fli_Prolog_put_1float(JNIEnv *env, jclass jProlog, jobject jterm,
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  put_integer
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        put_integer
  * Signature: (Lorg/jpl7/fli/term_t;J)V
  */
 JNIEXPORT jboolean JNICALL
@@ -4180,8 +4180,8 @@ Java_org_jpl7_fli_Prolog_put_1nil(JNIEnv *env, // 1/Feb/2015
 { term_t term;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   getTermValue(env, jterm, &term) &&
-	   PL_put_nil(term) );
+           getTermValue(env, jterm, &term) &&
+           PL_put_nil(term) );
 }
 
 /*
@@ -4197,10 +4197,10 @@ Java_org_jpl7_fli_Prolog_put_1atom_1chars(
   atom_t a;
 
   return ( jpl_ensure_pvm_init(env) &&
-	   getTermValue(env, jterm, &term) &&
-	   jni_String_to_atom(env, chars, &a) &&
-	   PL_put_atom(term, a) &&
-	   (PL_unregister_atom(a),TRUE) );
+           getTermValue(env, jterm, &term) &&
+           jni_String_to_atom(env, chars, &a) &&
+           PL_put_atom(term, a) &&
+           (PL_unregister_atom(a),TRUE) );
 }
 
 
@@ -4213,7 +4213,7 @@ Java_org_jpl7_fli_Prolog_put_1atom_1chars(
  */
 JNIEXPORT void JNICALL /* maybe oughta return jboolean (false iff given object is null) */
 Java_org_jpl7_fli_Prolog_put_1term(JNIEnv *env, jclass jProlog,
-				   jobject jterm1, jobject jterm2)
+                                   jobject jterm1, jobject jterm2)
 { term_t term1;
   term_t term2;
 
@@ -4239,7 +4239,7 @@ Java_org_jpl7_fli_Prolog_put_1jref(JNIEnv *env, jclass jProlog, jobject jterm,
   if ( jpl_ensure_pvm_init(env) &&
        jni_ensure_jvm() &&
        getTermValue(env, jterm, &term) )
-  { jni_jobject_to_term(jref, term, env);	/* assumes term is var */
+  { jni_jobject_to_term(jref, term, env);       /* assumes term is var */
   }
 }
 
@@ -4251,7 +4251,7 @@ Java_org_jpl7_fli_Prolog_put_1jref(JNIEnv *env, jclass jProlog, jobject jterm,
  */
 JNIEXPORT void JNICALL
 Java_org_jpl7_fli_Prolog_put_1variable(JNIEnv *env, jclass jProlog,
-				       jobject jterm)
+                                       jobject jterm)
 { term_t term;
 
   if ( jpl_ensure_pvm_init(env) &&
@@ -4273,7 +4273,7 @@ Java_org_jpl7_fli_Prolog_term_1type(JNIEnv *env, jclass jProlog, jobject jterm)
        getTermValue(env, jterm, &term) )
     return PL_term_type(term);
 
-  return -1;					/* i.e. when jterm is null */
+  return -1;                                    /* i.e. when jterm is null */
 }
 
 /*
@@ -4297,8 +4297,8 @@ Java_org_jpl7_fli_Prolog_unregister_1atom(JNIEnv *env, jclass jProlog,
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
- * Method:	  open_foreign_frame
+ * Class:         org_jpl7_fli_Prolog
+ * Method:        open_foreign_frame
  * Signature: ()Lorg/jpl7/fli/fid_t;
  */
 JNIEXPORT jobject JNICALL
@@ -4383,7 +4383,7 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
   int     i;
 
   if ( !jpl_ensure_pvm_init(env) )
-    return NULL;				/* FIXME: throw exception */
+    return NULL;                                /* FIXME: throw exception */
 
   /* Find an engine. Try setting each of the engines in the pool. */
   /* If they are all in use wait for the condition variable and try again. */
@@ -4401,13 +4401,13 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
       { DEBUG(1, Sdprintf("JPL attaching engine[%d]=%p\n", i, engines[i]));
         pthread_mutex_unlock(&engines_mutex);
 
-	if ( (rval = (*env)->AllocObject(env, jEngineT_c)) )
-	{ setPointerValue(env, rval, (pointer)engines[i]);
-	  return rval;
-	}
+        if ( (rval = (*env)->AllocObject(env, jEngineT_c)) )
+        { setPointerValue(env, rval, (pointer)engines[i]);
+          return rval;
+        }
 
-	PL_set_engine(NULL, NULL);
-	return NULL;
+        PL_set_engine(NULL, NULL);
+        return NULL;
       }
       if ( rc != PL_ENGINE_INUSE )
       { DEBUG(1, Sdprintf("JPL PL_set_engine %d fails with %d\n", i, rc));
@@ -4689,7 +4689,7 @@ jpl_get_syntax(JNIEnv *env)
 }
 
 /*
- * Class:	  org_jpl7_fli_Prolog
+ * Class:         org_jpl7_fli_Prolog
  * Method:    get_syntax
  * Signature: ()I
  */
@@ -4701,35 +4701,35 @@ Java_org_jpl7_fli_Prolog_get_1syntax(JNIEnv *env, jclass jProlog)
 /*=== FLI metadata ======================================================== */
 
 static PL_extension predspecs[] = {
-  {"jni_get_created_jvm_count",	   1, jni_get_created_jvm_count_plc,	0},
-  {"jni_ensure_jvm",		   0, jni_ensure_jvm_plc,		0},
-  {"jni_tag_to_iref",		   2, jni_tag_to_iref_plc,		0},
-  {"jni_hr_info",		   4, jni_hr_info_plc,			0},
-  {"jni_hr_table",		   1, jni_hr_table_plc,			0},
-  {"jni_byte_buf_length_to_codes", 3, jni_byte_buf_length_to_codes_plc,	0},
-  {"jni_param_put",		   4, jni_param_put_plc,		0},
-  {"jni_alloc_buffer",		   3, jni_alloc_buffer_plc,		0},
-  {"jni_free_buffer",		   1, jni_free_buffer_plc,		0},
-  {"jni_fetch_buffer_value",	   4, jni_fetch_buffer_value_plc,	0},
-  {"jni_stash_buffer_value",	   4, jni_stash_buffer_value_plc,	0},
-  {"jni_void",			   1, jni_void_0_plc,			0},
-  {"jni_void",			   2, jni_void_1_plc,			0},
-  {"jni_void",			   3, jni_void_2_plc,			0},
-  {"jni_void",			   4, jni_void_3_plc,			0},
-  {"jni_void",			   5, jni_void_4_plc,			0},
-  {"jni_func",			   2, jni_func_0_plc,			0},
-  {"jni_func",			   3, jni_func_1_plc,			0},
-  {"jni_func",			   4, jni_func_2_plc,			0},
-  {"jni_func",			   5, jni_func_3_plc,			0},
-  {"jni_func",			   6, jni_func_4_plc,			0},
-  {"jpl_c_lib_version",		   1, jpl_c_lib_version_1_plc,		0},
-  {"jpl_c_lib_version",		   4, jpl_c_lib_version_4_plc,		0},
-  {"jni_term_to_jref",		   2, jni_term_to_jref_plc,		0},
-  {"jni_jref_to_term",		   2, jni_jref_to_term_plc,		0},
-  {"jni_get_default_jvm_opts",	   1, jni_get_default_jvm_opts_plc,	0},
-  {"jni_set_default_jvm_opts",	   2, jni_set_default_jvm_opts_plc,	0},
-  {"jni_get_actual_jvm_opts",	   1, jni_get_actual_jvm_opts_plc,	0},
-  {NULL,			   0, NULL,				0}
+  {"jni_get_created_jvm_count",    1, jni_get_created_jvm_count_plc,    0},
+  {"jni_ensure_jvm",               0, jni_ensure_jvm_plc,               0},
+  {"jni_tag_to_iref",              2, jni_tag_to_iref_plc,              0},
+  {"jni_hr_info",                  4, jni_hr_info_plc,                  0},
+  {"jni_hr_table",                 1, jni_hr_table_plc,                 0},
+  {"jni_byte_buf_length_to_codes", 3, jni_byte_buf_length_to_codes_plc, 0},
+  {"jni_param_put",                4, jni_param_put_plc,                0},
+  {"jni_alloc_buffer",             3, jni_alloc_buffer_plc,             0},
+  {"jni_free_buffer",              1, jni_free_buffer_plc,              0},
+  {"jni_fetch_buffer_value",       4, jni_fetch_buffer_value_plc,       0},
+  {"jni_stash_buffer_value",       4, jni_stash_buffer_value_plc,       0},
+  {"jni_void",                     1, jni_void_0_plc,                   0},
+  {"jni_void",                     2, jni_void_1_plc,                   0},
+  {"jni_void",                     3, jni_void_2_plc,                   0},
+  {"jni_void",                     4, jni_void_3_plc,                   0},
+  {"jni_void",                     5, jni_void_4_plc,                   0},
+  {"jni_func",                     2, jni_func_0_plc,                   0},
+  {"jni_func",                     3, jni_func_1_plc,                   0},
+  {"jni_func",                     4, jni_func_2_plc,                   0},
+  {"jni_func",                     5, jni_func_3_plc,                   0},
+  {"jni_func",                     6, jni_func_4_plc,                   0},
+  {"jpl_c_lib_version",            1, jpl_c_lib_version_1_plc,          0},
+  {"jpl_c_lib_version",            4, jpl_c_lib_version_4_plc,          0},
+  {"jni_term_to_jref",             2, jni_term_to_jref_plc,             0},
+  {"jni_jref_to_term",             2, jni_jref_to_term_plc,             0},
+  {"jni_get_default_jvm_opts",     1, jni_get_default_jvm_opts_plc,     0},
+  {"jni_set_default_jvm_opts",     2, jni_set_default_jvm_opts_plc,     0},
+  {"jni_get_actual_jvm_opts",      1, jni_get_actual_jvm_opts_plc,      0},
+  {NULL,                           0, NULL,                             0}
 };
 
 install_t
