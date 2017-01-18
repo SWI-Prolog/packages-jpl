@@ -72,6 +72,11 @@ refactoring (trivial):
 
 /*=== includes ============================================================ */
 
+/* SWI-Prolog headers: */
+#include <config.h>
+#include <SWI-Stream.h>
+#include <SWI-Prolog.h>
+
 #ifdef __WINDOWS__
 /* OS-specific header (SWI-Prolog FLI and Java Invocation API both seem to need
  * this): but not if we use the .NET 2.0 C compiler
@@ -86,11 +91,6 @@ refactoring (trivial):
 #define SIZEOF_VOIDP 4
 #endif
 #endif
-
-/* SWI-Prolog headers: */
-#include <config.h>
-#include <SWI-Stream.h>
-#include <SWI-Prolog.h>
 
 /* Java Native Interface and Invocation Interface header: */
 #include <jni.h>
