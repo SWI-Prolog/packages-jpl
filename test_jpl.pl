@@ -18,6 +18,16 @@
 :- begin_tests(jpl).
 
 test(
+        exception_jref_1,
+        [       true((
+                        E = error(java_exception(JRef), 'java.lang.IllegalArgumentException'),
+                        blob(JRef, jref)
+                ))
+        ]
+) :-
+    catch(jpl_new('java.util.Date', [never], _), E, true).
+
+test(
         array_to_from_terms_1,
         [       true(
                         Terms1 == Terms2
