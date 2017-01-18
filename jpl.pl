@@ -1230,7 +1230,8 @@ jpl_pl_lib_version(VersionString) :-
 %  ==
 %  ?- jpl:jpl_pl_lib_version(Major, Minor, Patch, Status).
 %  Major = 7,
-%  Minor = Patch, Patch = 0,
+%  Minor = 4,
+%  Patch = 0,
 %  Status = alpha.
 %  ==
 
