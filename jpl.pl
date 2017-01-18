@@ -1251,6 +1251,42 @@ jpl_pl_lib_version(7, 4, 0, alpha).  % jref as blob
 %  ==
 
 
+%! jpl_java_lib_version(-Version)
+%
+% Version is the fully qualified version identifier of the in-use Java component (jpl.jar) of JPL.
+%
+% Example
+%
+%  ==
+%  ?- jpl:jpl_java_lib_version(V).
+%  V = '7.4.0-alpha'.
+%  ==
+
+%! jpl_java_lib_version(V)
+
+jpl_java_lib_version(V) :-
+    jpl_call('org.jpl7.JPL', version_string, [], V).
+
+
+%! jpl_pl_lib_path(-Path:atom)
+
+jpl_pl_lib_path(Path) :-
+    module_property(jpl, file(Path)).
+
+
+%! jpl_c_lib_path(-Path:atom)
+
+jpl_c_lib_path(Path) :-
+    shlib:current_library(_, _, Path, jpl, _),
+    !.
+
+
+%! jpl_java_lib_path(-Path:atom)
+
+jpl_java_lib_path(Path) :-
+    jpl_call('org.jpl7.JPL', jarPath, [], Path).
+
+
 % jpl_type_alfa(0'$) -->        % presumably not allowed
 %   "$".                        % given the "inner class" syntax?
 
