@@ -1143,7 +1143,7 @@ jpl_assert_policy(jpl_method_spec_is_cached(_), YN) :-
 % Called from jpl.c's jni_free_iref() via jni_tidy_iref_type_cache()
 
 jpl_tidy_iref_type_cache(Iref) :-
-    % write('[decaching types for iref='), write(Iref), write(']'), nl,
+  % write('[decaching types for iref='), write(Iref), write(']'), nl,
     retractall(jpl_iref_type_cache(Iref,_)),
     true.
 
@@ -1292,11 +1292,9 @@ jpl_java_lib_path(Path) :-
 
 jpl_type_alfa(0'_) -->
     "_",
-
     !.
 jpl_type_alfa(C) -->
     [C], { C>=0'a, C=<0'z },
-
     !.
 jpl_type_alfa(C) -->
     [C], { C>=0'A, C=<0'Z }.
@@ -1304,7 +1302,6 @@ jpl_type_alfa(C) -->
 
 jpl_type_alfa_num(C) -->
     jpl_type_alfa(C),
-
     !.
 jpl_type_alfa_num(C) -->
     [C], { C>=0'0, C=<0'9 }.
@@ -1340,11 +1337,9 @@ jpl_type_class_parts([C|Cs]) -->
 
 jpl_type_classname_1(T) -->
     jpl_type_bare_classname(T),
-
     !.
 jpl_type_classname_1(T) -->
     jpl_type_array_classname(T),
-
     !.
 jpl_type_classname_1(T) -->
     jpl_type_primitive(T).
@@ -1366,15 +1361,12 @@ jpl_type_delimited_classname(Class) -->
 
 jpl_type_descriptor_1(T) -->
     jpl_type_primitive(T),
-
     !.
 jpl_type_descriptor_1(T) -->
     jpl_type_class_descriptor(T),
-
     !.
 jpl_type_descriptor_1(T) -->
     jpl_type_array_descriptor(T),
-
     !.
 jpl_type_descriptor_1(T) -->
     jpl_type_method_descriptor(T).
@@ -1454,31 +1446,24 @@ jpl_type_package_part(N) -->
 
 jpl_type_primitive(boolean) -->
     "Z",
-
     !.
 jpl_type_primitive(byte) -->
     "B",
-
     !.
 jpl_type_primitive(char) -->
     "C",
-
     !.
 jpl_type_primitive(short) -->
     "S",
-
     !.
 jpl_type_primitive(int) -->
     "I",
-
     !.
 jpl_type_primitive(long) -->
     "J",
-
     !.
 jpl_type_primitive(float) -->
     "F",
-
     !.
 jpl_type_primitive(double) -->
     "D".
@@ -2685,7 +2670,6 @@ jpl_datums_to_types([D|Ds], [T|Ts]) :-
 
 jpl_ground_is_type(X) :-
     jpl_primitive_type(X),
-
     !.
 jpl_ground_is_type(array(X)) :-
     jpl_ground_is_type(X).
@@ -3041,17 +3025,13 @@ jpl_type_to_canonical_type(array(T), array(Tc)) :-
     !,
     jpl_type_to_canonical_type(T, Tc).
 jpl_type_to_canonical_type(class([],[void]), void) :-
-
     !.
 jpl_type_to_canonical_type(class([],[N]), N) :-
     jpl_primitive_type(N),
-
     !.
 jpl_type_to_canonical_type(class(Ps,Cs), class(Ps,Cs)) :-
-
     !.
 jpl_type_to_canonical_type(void, void) :-
-
     !.
 jpl_type_to_canonical_type(P, P) :-
     jpl_primitive_type(P).
@@ -3264,7 +3244,6 @@ jpl_value_to_type_1(@(false), boolean) :- !.
 jpl_value_to_type_1(@(true), boolean) :- !.
 jpl_value_to_type_1(A, class([java,lang],['String'])) :-   % yes it's a "value"
     atom(A),
-
     !.
 jpl_value_to_type_1(I, T) :-
     integer(I),
@@ -3366,11 +3345,11 @@ jpl_is_object_type(T) :-
 % or to Java's notional but important 'null' non-object.
 
 jpl_is_ref(Term) :-
-	(	jpl_is_object(Term)
-	->	true
-	;	jpl_is_null(Term)
-	->	true
-	).
+    (	jpl_is_object(Term)
+    ->	true
+    ;	jpl_is_null(Term)
+    ->	true
+    ).
 
 
 %! jpl_is_true(@Term)
@@ -3923,10 +3902,10 @@ to_atom(Term, Atom) :-
 % unifies Syntax with 'traditional' or 'modern' according to the mode in which SWI Prolog 7.x was started
 
 jpl_pl_syntax(Syntax) :-
-    (       [] == '[]'
-    ->      Syntax = traditional
-    ;       Syntax = modern
-    ).
+	(	[] == '[]'
+	->	Syntax = traditional
+	;	Syntax = modern
+	).
 
          /*******************************
          *            MESSAGES          *
