@@ -12,7 +12,7 @@ import org.jpl7.fli.Prolog;
  * initialized before any queries are made, but this will happen automatically
  * (upon the first call to a Prolog FLI routine) if it has not already been done
  * explicitly.
- * 
+ *
  * <hr>
  * Copyright (C) 2004 Paul Singleton
  * <p>
@@ -43,7 +43,7 @@ import org.jpl7.fli.Prolog;
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
- * 
+ *
  */
 public class JPL {
 	protected static final boolean DEBUG = false;
@@ -136,7 +136,7 @@ public class JPL {
 	 * This method should be regarded as experimental, and may subsequently be
 	 * deprecated in favour of some more general mechanism for setting options,
 	 * perhaps per-Query and per-call as well as globally.
-	 * 
+	 *
 	 * @param dtm
 	 *            new "dont-tell-me" mode value
 	 */
@@ -187,7 +187,7 @@ public class JPL {
 	 * the default init args are irrelevant and the actual init args are of
 	 * interest)
 	 * <p>
-	 * 
+	 *
 	 * @see org.jpl7.JPL#getActualInitArgs
 	 * @return current default initialisation arguments, or null if already
 	 *         initialised
@@ -200,7 +200,7 @@ public class JPL {
 	 * Specifies, in an array of String, the sequence of command-line arguments
 	 * that should be used if the Prolog engine is subsequently initialised.
 	 * <p>
-	 * 
+	 *
 	 * @param args
 	 *            new default initialization arguments
 	 */
@@ -243,10 +243,10 @@ public class JPL {
 	/**
 	 * Returns, in an array of String, the sequence of command-line arguments
 	 * that were actually used when the Prolog engine was formerly initialised.
-	 * 
+	 *
 	 * This method returns null if the Prolog engine has not yet been
 	 * initialised, and thus may be used to test this condition.
-	 * 
+	 *
 	 * @return actual initialization arguments
 	 */
 	public static String[] getActualInitArgs() {
@@ -262,9 +262,9 @@ public class JPL {
 	 * local Prolog documentation. The parameter values are passed directly to
 	 * initialization routines for the Prolog environment.
 	 * <p>
-	 * 
+	 *
 	 * This method must be called before making any queries.
-	 * 
+	 *
 	 * @param args
 	 *            Initialization parameter list
 	 */
@@ -326,22 +326,22 @@ public class JPL {
 	// }
 
 	/**
-	 * @param obj
+	 * @param object
 	 * @return a new Term instance which canonically represents the given object
 	 *         reference (concrete or null)
 	 */
-	public static Term newJRef(Object obj) {
-		if (obj == null) {
+	public static Term newJRef(Object object) {
+		if (object == null) {
 			return JPL.JNULL;
 		} else {
-			return new JObject(obj);
+			return new JRef(object);
 		}
 	}
 
 	/**
 	 * Returns a quoted (iff necessary) form of the Atom's name, as understood
 	 * by Prolog read/1
-	 * 
+	 *
 	 * @return a quoted form of the Atom's name, as understood by Prolog read/1
 	 */
 	protected static String quotedName(String name) {
@@ -351,10 +351,10 @@ public class JPL {
 	/**
 	 * Terminates the Prolog session.
 	 * <p>
-	 * 
+	 *
 	 * <b>Note.</b> This method calls the FLI halt() method with a status of 0,
 	 * but the halt method currently is a no-op in SWI.
-	 * 
+	 *
 	 * @deprecated
 	 */
 	public static void halt() {
@@ -368,7 +368,7 @@ public class JPL {
 
 	/**
 	 * Returns (as a Version) an identification of this version of JPL.
-	 * 
+	 *
 	 * @return the running version of JPL.
 	 */
 	public static Version version() {
@@ -377,7 +377,7 @@ public class JPL {
 
 	/**
 	 * Returns a String (eg "3.0.0-alpha") identifying this version of JPL.
-	 * 
+	 *
 	 * @return a String (eg "3.0.0-alpha") identifying this version of JPL.
 	 */
 	public static String version_string() {

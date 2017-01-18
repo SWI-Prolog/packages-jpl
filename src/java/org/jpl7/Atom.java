@@ -6,47 +6,40 @@ import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
 
 /**
- * Atom is a specialised Term, representing a Prolog atom with the same name. An
- * Atom is constructed with a String parameter (its name, unquoted), which
- * cannot thereafter be changed.
+ * Atom is a specialised Term, representing a Prolog atom with the same name. An Atom is constructed with a String
+ * parameter (its name, unquoted), which cannot thereafter be changed.
  *
  * <pre>
  * Atom a = new Atom(&quot;hello&quot;);
  * </pre>
  *
- * An Atom can be used (and re-used) as an argument of Compound Terms. Two Atom
- * instances are equal (by equals()) iff they are of the same type and have
- * equal values.
+ * An Atom can be used (and re-used) as an argument of Compound Terms. Two Atom instances are equal (by equals()) iff
+ * they are of the same type and have equal values.
  *
  * <hr>
  * Copyright (C) 2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
  * <p>
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
  * <ol>
- * <li>Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
+ * <li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+ * disclaimer.
  *
- * <li>Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ * <li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ * following disclaimer in the documentation and/or other materials provided with the distribution.
  * </ol>
  *
  * <p>
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  *
  * @see org.jpl7.Term
@@ -60,13 +53,18 @@ public class Atom extends Term {
 	protected final String name;
 
 	/**
-	 * the type of this Atom (e.g. "text")
+	 * the type of this Atom (e.g. "text", "string", "reserved_symbol")
 	 */
 	protected final String type; // should this be private?
 
 	/**
+	 * This constructs a "text" Atom, and is equivalent to
+	 * <p>
+	 * &nbsp;&nbsp;<code>new Atom(name, "text")</code>
 	 * @param name
 	 *            the Atom's name (unquoted)
+	 * @throws JPLException
+	 *             if name is null
 	 */
 	public Atom(String name) {
 		if (name == null) {
@@ -77,22 +75,27 @@ public class Atom extends Term {
 		}
 	}
 
+	/**
+	 * @param name
+	 *            the Atom's name (unquoted)
+	 * @param type
+	 *            the required Atom type, e.g. "text" or "string"
+	 * @throws JPLException
+	 *             if name or type is null, or if type is "jref"
+	 */
 	public Atom(String name, String type) {
 		if (name == null) {
 			throw new JPLException("cannot construct with null name");
 		} else if (type == null) {
 			throw new JPLException("cannot construct with null type");
+		} else if (type.equals("jref")) {
+			throw new JPLException("cannot construct a <jref>() atom (use JPL.newJRef)");
 		} else {
 			this.name = name;
 			this.type = type;
 		}
 	}
 
-	/**
-	 * the (zero) arguments of an Atom, as a (zero-length) Term[]
-	 *
-	 * @return the (zero) arguments of an Atom, as a (zero-length) Term[]
-	 */
 	public Term[] args() {
 		return new Term[] {};
 	}
@@ -102,8 +105,7 @@ public class Atom extends Term {
 	}
 
 	/**
-	 * Two Atoms are equal if they are identical (same object) or their
-	 * respective names and blobTypes are equal
+	 * Two Atoms are equal if they are identical (same object) or their respective names and blobTypes are equal
 	 *
 	 * @param obj
 	 *            the Object to compare (not necessarily another Atom)
@@ -123,9 +125,22 @@ public class Atom extends Term {
 	}
 
 	/**
+	 * for internal use only
+	 *
+	 * @param name
+	 *            an Atom name
+	 * @param type
+	 *            an Atom (blob) type, e.g. "text", "reserved_symbol"
+	 * @return whether this Term instance is an Atom with name and type
+	 */
+	protected final boolean isAtomOfNameType(String name, String type) {
+		return name != null && type != null && name.equals(this.name) && type.equals(this.type);
+	}
+
+	/**
 	 * whether this Term denotes (syntax-specifically) an empty list
 	 */
-	public boolean isListNil() {
+	public final boolean isListNil() {
 		return this.equals(JPL.LIST_NIL);
 	}
 
@@ -139,22 +154,22 @@ public class Atom extends Term {
 	}
 
 	/**
-	 * To put an Atom in a term, we create a sequence of term_t references from
-	 * the Term.terms_to_term_ts() method, and then use the
-	 * Prolog.cons_functor_v() method to create a Prolog compound term.
+	 * To put an Atom in a term, we create a sequence of term_t references from the Term.terms_to_term_ts() method, and
+	 * then use the Prolog.cons_functor_v() method to create a Prolog compound term.
 	 *
 	 * @param varnames_to_vars
 	 *            A Map from variable names to Prolog variables
 	 * @param term
-	 *            A (previously created) term_t which is to be set to a Prolog
-	 *            term corresponding to the Term subtype (Atom, Variable,
-	 *            Compound, etc.) on which the method is invoked.
+	 *            A (previously created) term_t which is to be set to a Prolog term corresponding to the Term subtype
+	 *            (Atom, Variable, Compound, etc.) on which the method is invoked.
 	 */
 	protected void put(Map<String, term_t> varnames_to_vars, term_t term) {
 		if (this.equals(JPL.LIST_NIL)) {
 			Prolog.put_nil(term);
-		} else {
-			Prolog.put_atom_chars(term, name);
+		} else { // TODO simplify this special case of putting a Compound
+			Term[] args = new Term[] {};
+			Prolog.cons_functor_v(term, Prolog.new_functor(Prolog.new_atom(name), args.length),
+					Term.putTerms(varnames_to_vars, args));
 		}
 	}
 

@@ -9,14 +9,14 @@ import org.jpl7.fli.term_t;
  * Float is a specialised Term with a double field, representing a Prolog 64-bit
  * ISO/IEC floating point value. Once constructed, a Float's value cannot be
  * altered.
- * 
+ *
  * <pre>
  * Float f = new Float(3.14159265);
  * </pre>
- * 
+ *
  * A Float can be used (and re-used) in Compound Terms. Two Float instances are
  * equal (by .equals()) iff their (double) values are equal.
- * 
+ *
  * <hr>
  * Copyright (C) 2004 Paul Singleton
  * <p>
@@ -47,7 +47,7 @@ import org.jpl7.fli.term_t;
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
- * 
+ *
  * @see org.jpl7.Term
  * @see org.jpl7.Compound
  */
@@ -60,7 +60,7 @@ public class Float extends Term {
 
 	/**
 	 * construct a Float with the supplied (double) value
-	 * 
+	 *
 	 * @param value
 	 *            this Float's value
 	 */
@@ -68,18 +68,13 @@ public class Float extends Term {
 		this.value = value;
 	}
 
-	/**
-	 * the (zero) arguments of a Float, as a (zero-length) Term[]
-	 * 
-	 * @return the (zero) arguments of a Float, as a (zero-length) Term[]
-	 */
 	public Term[] args() {
 		return new Term[] {};
 	}
 
 	/**
 	 * returns the (double) value of this Float
-	 * 
+	 *
 	 * @return the (double) value of this Float
 	 */
 	public final double doubleValue() {
@@ -89,7 +84,7 @@ public class Float extends Term {
 	/**
 	 * Two Floats are equal if they are the same object, or their values are
 	 * equal
-	 * 
+	 *
 	 * @param obj
 	 *            The Object to compare
 	 * @return true if the Object satisfies the above condition
@@ -100,7 +95,7 @@ public class Float extends Term {
 
 	/**
 	 * returns the (double) value of this Float, converted to a float
-	 * 
+	 *
 	 * @return the (double) value of this Float, converted to a float
 	 */
 	public final float floatValue() {
@@ -109,7 +104,7 @@ public class Float extends Term {
 
 	/**
 	 * Tests whether this Float's functor has (double) 'name' and 'arity'
-	 * 
+	 *
 	 * @return whether this Float's functor has (double) 'name' and 'arity'
 	 */
 	public final boolean hasFunctor(double val, int arity) {
@@ -118,7 +113,7 @@ public class Float extends Term {
 
 	/**
 	 * returns the (double) value of this Float, converted to an int
-	 * 
+	 *
 	 * @return the (double) value of this Float, converted to an int
 	 */
 	public final int intValue() {
@@ -126,12 +121,12 @@ public class Float extends Term {
 	}
 
 	public Object jrefToObject() {
-		throw new JPLException("term is not a jreference (neither a JObject nor @(null))");
+		throw new JPLException("term is neither a JRef nor @(null)");
 	}
 
 	/**
 	 * returns the (double) value of this Float, converted to a long
-	 * 
+	 *
 	 * @return the (double) value of this Float, converted to a long
 	 */
 	public final long longValue() {
@@ -141,7 +136,7 @@ public class Float extends Term {
 	/**
 	 * To convert a JPL Float to a Prolog term, we put its value field into the
 	 * term_t as a float.
-	 * 
+	 *
 	 * @param varnames_to_vars
 	 *            A Map from variable names to Prolog variables.
 	 * @param term
@@ -154,7 +149,7 @@ public class Float extends Term {
 
 	/**
 	 * Returns a Prolog source text representation of this Float
-	 * 
+	 *
 	 * @return a Prolog source text representation of this Float
 	 */
 	public String toString() {
