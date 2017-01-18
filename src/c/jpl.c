@@ -1054,7 +1054,7 @@ static bool
 jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
 {
 #if SIZEOF_WCHAR_T == 2
-  return (*obj = (*env)->NewString(env, wp, len)) != NULL;
+  return (*obj = (*env)->NewString(env, s, len)) != NULL;
 #else
   jchar tmp[FASTJCHAR];
   jchar *js;
