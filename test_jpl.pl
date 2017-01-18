@@ -18,6 +18,17 @@
 :- begin_tests(jpl).
 
 test(
+        array_to_from_terms_1,
+        [       true(
+                        Terms1 == Terms2
+                )
+        ]
+) :-
+    Terms1 = [x,[1,a,7,[y,z]],k,[]],
+    jpl_terms_to_array(Terms1, JRef),
+    jpl_array_to_terms(JRef, Terms2).
+
+test(
         ancestor_types_1,
         [       true(
                         Ts == [class([org,jpl7],['Term']),class([java,lang],['Object'])]

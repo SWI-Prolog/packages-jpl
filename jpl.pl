@@ -78,6 +78,7 @@
         jpl_iterator_element/2,
         jpl_list_to_array/2,
         jpl_terms_to_array/2,
+        jpl_array_to_terms/2,
         jpl_map_element/2,
         jpl_set_element/2
     ]).
@@ -3593,6 +3594,15 @@ jpl_terms_to_array(Ts, A) :-
 jpl_terms_to_array_1([], []).
 jpl_terms_to_array_1([T|Ts], [{T}|Ts2]) :-
     jpl_terms_to_array_1(Ts, Ts2).
+
+
+%! jpl_array_to_terms(+JRef:jref, -Terms:list(term))
+%
+% JRef should be a JPL reference to a Java array of org.jpl7.Term instances (or ots subtypes);
+% Terms will be a list of the terms which the respective array elements represent.
+
+jpl_array_to_terms(JRef, Terms) :-
+    jpl_call('org.jpl7.Util', termArrayToList, [JRef], {Terms}).
 
 
 %! jpl_map_element(+Map:jref, -KeyValue:pair(datum,datum)) is nondet
