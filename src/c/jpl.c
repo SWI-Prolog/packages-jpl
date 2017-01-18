@@ -340,8 +340,9 @@ static int          engines_allocated = 0; /* size of engines array */
 static pthread_mutex_t engines_mutex = PTHREAD_MUTEX_INITIALIZER; /* pool access*/
 static pthread_cond_t engines_cond   = PTHREAD_COND_INITIALIZER;  /* pool access*/
 
-static pthread_mutex_t jvm_init_mutex = PTHREAD_MUTEX_INITIALIZER; /* lazy init */
-static pthread_mutex_t pvm_init_mutex = PTHREAD_MUTEX_INITIALIZER; /* lazy init */
+static pthread_mutex_t jvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t pvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t jref_mutex     = PTHREAD_MUTEX_INITIALIZER;
 
 static int jpl_syntax = JPL_SYNTAX_UNDEFINED; /* init sets
                                                  JPL_SYNTAX_TRADITIONAL or
@@ -1287,16 +1288,20 @@ jni_hr_hash(JNIEnv *env, jobject obj, int *hash)
   return (e = (*env)->ExceptionOccurred(env)) == NULL;
 }
 
-/* returns */
-/*   JNI_HR_ADD_NEW -> referenced object is novel */
-/*   JNI_HR_ADD_OLD -> referenced object is already known */
-/*   JNI_HR_ADD_FAIL -> something went wrong */
-/* and, in *iref, an integerised canonical global ref to the object */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Add jobject `lref` to object proxy table, setting `iref` to the
+integerised canonical global ref for `lref`.
+
+returns
+  JNI_HR_ADD_NEW  -> referenced object is novel
+  JNI_HR_ADD_OLD  -> referenced object is already known
+  JNI_HR_ADD_FAIL -> something went wrong
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+#define HASH_INDEX(table, hash) (((hash) & 0x7fffffff) % (table)->length)
+
 static int
-jni_hr_add(JNIEnv * env,
-           jobject  lref, /* new JNI local ref from a regular JNI call  */
-           pointer *iref  /* for integerised canonical global ref */
-           )
+jni_hr_add_unlocked(JNIEnv * env, jobject  lref, pointer *iref)
 { int      hash;  /* System.identityHashCode of lref */
   int      index; /* lref's slot index, from hash */
   HrEntry *ep;    /* temp entry pointer for chain traversal */
@@ -1306,11 +1311,10 @@ jni_hr_add(JNIEnv * env,
   { return JNI_HR_ADD_FAIL; /* lazy table creation failed: oughta sort return
                                codes */
   }
-  if (!jni_hr_hash(env, lref,
-                   &hash)) /* renamed in v3.0.4 from jni_object_to_hash */
+  if (!jni_hr_hash(env, lref, &hash))
   { return JNI_HR_ADD_FAIL; /* System.identityHashCode() failed (?) */
   }
-  index = (hash & 0x7fffffff) % hr_table->length; /* make this a macro? */
+  index = HASH_INDEX(hr_table, hash);
   for (ep = hr_table->slots[index]; ep != NULL; ep = ep->next)
   { if (ep->hash == hash)
     { if ((*env)->IsSameObject(env, ep->obj, lref))
@@ -1323,11 +1327,10 @@ jni_hr_add(JNIEnv * env,
   }
   if (hr_table->count >= hr_table->threshold)
   { (void)jni_hr_rehash(); /* oughta check for failure, and return it... */
-    return jni_hr_add(env, lref, iref); /* try again with new, larger table */
+    index = HASH_INDEX(hr_table, hash);
   }
   /* referenced object is novel, and we can add it to table */
-  if ((gref = (*env)->NewGlobalRef(env, lref)) ==
-      NULL) /* derive a global ref */
+  if ( (gref = (*env)->NewGlobalRef(env, lref)) == NULL) /* derive a global ref */
   { return JNI_HR_ADD_FAIL;
   }
   (*env)->DeleteLocalRef(env, lref); /* free redundant (local) ref */
@@ -1341,13 +1344,14 @@ jni_hr_add(JNIEnv * env,
   return JNI_HR_ADD_NEW; /* obj was newly interned, under iref as supplied */
 }
 
-/* iref corresponded to an entry in the current HashedRef table; */
-/* now that entry is gone, its space is recovered, counts are adjusted etc. */
-/* called only from jni_free_iref() */
-/* iref: a possibly spurious canonical global iref */
+/* iref corresponded to an entry in the current HashedRef table;
+   now that entry is gone, its space is recovered, counts are adjusted
+   etc. called only from jni_free_iref() iref: a possibly spurious
+   canonical global iref
+*/
 
 static bool
-jni_hr_del(JNIEnv *env, pointer iref)
+jni_hr_del_unlocked(JNIEnv *env, pointer iref)
 { int       index; /* index to a HashedRef table slot */
   HrEntry * ep;    /* pointer to a HashedRef table entry */
   HrEntry **epp;   /* pointer to ep's handle, in case it needs updating */
@@ -1375,6 +1379,29 @@ jni_hr_del(JNIEnv *env, pointer iref)
                     iref));
   return FALSE;
 }
+
+static int
+jni_hr_add(JNIEnv * env, jobject  lref, pointer *iref)
+{ int rc;
+
+  pthread_mutex_lock(&jref_mutex);
+  rc = jni_hr_add_unlocked(env, lref, iref);
+  pthread_mutex_unlock(&jref_mutex);
+
+  return rc;
+}
+
+static int
+jni_hr_del(JNIEnv * env, pointer iref)
+{ int rc;
+
+  pthread_mutex_lock(&jref_mutex);
+  rc = jni_hr_del_unlocked(env, iref);
+  pthread_mutex_unlock(&jref_mutex);
+
+  return rc;
+}
+
 
 /*=== JNI initialisation ================================================== */
 
