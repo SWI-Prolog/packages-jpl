@@ -2726,7 +2726,7 @@ jpl_object_array_to_list_1(A, I, N, Xs) :-
 % NB what's the point of caching the type if we don't look there first?
 
 jpl_object_to_class(Obj, C) :-
-	jpl_is_object(Obj),
+    jpl_is_object(Obj),
     jGetObjectClass(Obj, C),
     jpl_cache_type_of_ref(class([java,lang],['Class']), C).
 
@@ -2739,7 +2739,7 @@ jpl_object_to_class(Obj, C) :-
 % Type is the JPL type of that object.
 
 jpl_object_to_type(Ref, Type) :-
-	jpl_is_object(Ref),
+    jpl_is_object(Ref),
     (   jpl_iref_type_cache(Ref, T)
     ->  true                                % T is Tag's type
     ;   jpl_object_to_class(Ref, Cobj),     % else get ref to class obj
@@ -2862,16 +2862,18 @@ jpl_primitive_type_term_to_value_1(long, I, I) :-
     integer(I),
     I >= -9223372036854775808,  % -(2**63)
     I =<  9223372036854775807.  %  (2**63)-1
-jpl_primitive_type_term_to_value_1(float, I, F) :-
-    integer(I),
-    F is float(I).
-jpl_primitive_type_term_to_value_1(float, F, F) :-
-    float(F).
-jpl_primitive_type_term_to_value_1(double, I, F) :-
-    integer(I),
-    F is float(I).
-jpl_primitive_type_term_to_value_1(double, F, F) :-
-    float(F).
+jpl_primitive_type_term_to_value_1(float, V, F) :-
+    (   integer(V)
+    ->  F is float(V)
+    ;   float(V)
+    ->  F = V
+    ).
+jpl_primitive_type_term_to_value_1(double, V, F) :-
+    (   integer(V)
+    ->  F is float(V)
+    ;   float(V)
+    ->  F = V
+    ).
 
 
 jpl_primitive_type_to_ancestor_types(T, Ts) :-
