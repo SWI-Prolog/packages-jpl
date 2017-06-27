@@ -1788,6 +1788,28 @@ jni_get_created_jvm_count()
               : -1);
 }
 
+#ifdef __linux__
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Work around a temporary Linux issue.  See [1]
+
+https://stackoverflow.com/questions/44763387/jni-createjavavm-stack-corruption-in-recent-ubuntu-16-04
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+static int
+fix_thread_stack(JavaVMOption *opt, int optn)
+{ int i;
+
+  for(i=0; i<optn; i++)
+  { if ( strncmp(opt[i].optionString, "-Xss", 3) == 0 )
+      break;
+  }
+  if ( i == optn )
+    opt[optn++].optionString = "-Xss1280k";
+
+  return optn;
+}
+#endif
+
 #define MAX_JVM_OPTIONS 100
 
 static int
@@ -1836,6 +1858,10 @@ jni_create_jvm_c(char *classpath)
     jvm_aia = jvm_dia;
     jvm_dia = NULL;
   }
+
+#ifdef __linux__
+  optn = fix_thread_stack(opt, optn);
+#endif
 
   vm_args.nOptions = optn;
   /* vm_args.ignoreUnrecognized = TRUE; */
