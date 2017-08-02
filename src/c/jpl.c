@@ -3954,7 +3954,7 @@ JNIEXPORT jobject JNICALL
 Java_org_jpl7_fli_Prolog_new_1functor(JNIEnv *env, jclass jProlog,
                                       jobject jatom, /* read-only */
                                       jint    jarity)
-{ term_t    atom;
+{ atom_t    atom;
   functor_t functor;
   jobject   rval;
 
