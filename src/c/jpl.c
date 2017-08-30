@@ -90,6 +90,7 @@ refactoring (trivial):
 #else
 #define SIZEOF_VOIDP 4
 #endif
+#define USE_WIN_EVENTS 1
 #endif
 
 /* Java Native Interface and Invocation Interface header: */
@@ -337,12 +338,13 @@ static jobject pvm_dia = NULL;          /* default PVM init args (after
 static jobject      pvm_aia = NULL;     /* actual PVM init args (after pvm init)*/
 static PL_engine_t *engines = NULL;     /* handles of the pooled Prolog engines */
 static int          engines_allocated = 0; /* size of engines array */
-#ifdef __WINDOWS__
+#ifdef USE_WIN_EVENTS
 static HANDLE engines_event;
+static CRITICAL_SECTION engines_mutex;
 #else
 static pthread_cond_t engines_cond   = PTHREAD_COND_INITIALIZER;  /* pool access*/
-#endif
 static pthread_mutex_t engines_mutex = PTHREAD_MUTEX_INITIALIZER; /* pool access*/
+#endif
 
 static pthread_mutex_t jvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t pvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -1418,10 +1420,6 @@ jni_init(void)
 
   if (env == NULL)
     return -8;
-
-#ifdef __WINDOWS__
-  engines_event = CreateEvent(NULL, FALSE, FALSE, NULL);
-#endif
 
   /* these initialisations require an active PVM: */
   JNI_atom_false = PL_new_atom("false");
@@ -4417,6 +4415,10 @@ create_pool_engines(void)
 { int i;
 
   DEBUG(1, Sdprintf("JPL creating engine pool:\n"));
+#ifdef USE_WIN_EVENTS
+  engines_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+  InitializeCriticalSection(&engines_mutex);
+#endif
   engines_allocated = JPL_MAX_POOL_ENGINES;
   if ((engines = malloc(sizeof(PL_engine_t) * engines_allocated)) == NULL)
     return -1;
@@ -4438,16 +4440,12 @@ create_pool_engines(void)
  * Method:    attach_pool_engine
  * Signature: ()Lorg/jpl7/fli/engine_t;
  */
-#ifndef __WINDOWS__
+#ifdef USE_WIN_EVENTS
+#define LOCK_ENGINES() EnterCriticalSection(&engines_mutex)
+#define UNLOCK_ENGINES() LeaveCriticalSection(&engines_mutex)
+#else
 #define LOCK_ENGINES() pthread_mutex_lock(&engines_mutex)
 #define UNLOCK_ENGINES() pthread_mutex_unlock(&engines_mutex)
-#define LOCK_CREATE_ENGINE() (void)0
-#define UNLOCK_CREATE_ENGINE() (void)0
-#else
-#define LOCK_ENGINES() (void)0
-#define UNLOCK_ENGINES() (void)0
-#define LOCK_CREATE_ENGINE() pthread_mutex_lock(&engines_mutex)
-#define UNLOCK_CREATE_ENGINE() pthread_mutex_unlock(&engines_mutex)
 #endif
 
 JNIEXPORT jobject JNICALL
@@ -4491,26 +4489,24 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
 
     for (i = 0; i < engines_allocated; i++)
     { if ( !engines[i] )
-      { LOCK_CREATE_ENGINE();
-	if ( !engines[i] )
-	  engines[i] = PL_create_engine(NULL);
-	UNLOCK_CREATE_ENGINE();
-
-	if ( !engines[i] )
+      { if ( !(engines[i] = PL_create_engine(NULL)) )
 	{ Sdprintf("JPL: Failed to create engine %d\n", i);
 	  return NULL;
 	}
+
+	DEBUG(1, Sdprintf("JPL created engine[%d]=%p\n", i, engines[i]));
 
 	goto try_again;
       }
     }
 
     DEBUG(1, Sdprintf("JPL no engines ready; waiting...\n"));
-#ifdef __WINDOWS__
-    WaitForSingleObject(engines_event, INFINITE);
+#ifdef USE_WIN_EVENTS
+    UNLOCK_ENGINES();
+    WaitForSingleObject(engines_event, 1000);
+    LOCK_ENGINES();
 #else
-    while (pthread_cond_wait(&engines_cond, &engines_mutex) == EINTR)
-      ;
+    pthread_cond_wait(&engines_cond, &engines_mutex);
 #endif
   }
 }
@@ -4588,12 +4584,14 @@ Java_org_jpl7_fli_Prolog_release_1pool_1engine(JNIEnv *env, jclass jProlog)
     i = current_pool_engine_handle(&e);
     if (i > 0)
     { DEBUG(1, Sdprintf("JPL releasing engine[%d]=%p\n", i, e));
+      LOCK_ENGINES();
       PL_set_engine(NULL, NULL);
-#ifdef __WINDOWS__
+#ifdef USE_WIN_EVENTS
       SetEvent(engines_event);
 #else
       pthread_cond_signal(&engines_cond); /* alert waiters */
 #endif
+      UNLOCK_ENGINES();
     }
     return i;
   } else
