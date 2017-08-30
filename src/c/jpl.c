@@ -337,8 +337,12 @@ static jobject pvm_dia = NULL;          /* default PVM init args (after
 static jobject      pvm_aia = NULL;     /* actual PVM init args (after pvm init)*/
 static PL_engine_t *engines = NULL;     /* handles of the pooled Prolog engines */
 static int          engines_allocated = 0; /* size of engines array */
-static pthread_mutex_t engines_mutex = PTHREAD_MUTEX_INITIALIZER; /* pool access*/
+#ifdef __WINDOWS__
+static HANDLE engines_event;
+#else
 static pthread_cond_t engines_cond   = PTHREAD_COND_INITIALIZER;  /* pool access*/
+#endif
+static pthread_mutex_t engines_mutex = PTHREAD_MUTEX_INITIALIZER; /* pool access*/
 
 static pthread_mutex_t jvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t pvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -1414,6 +1418,10 @@ jni_init(void)
 
   if (env == NULL)
     return -8;
+
+#ifdef __WINDOWS__
+  engines_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+#endif
 
   /* these initialisations require an active PVM: */
   JNI_atom_false = PL_new_atom("false");
@@ -4430,6 +4438,18 @@ create_pool_engines(void)
  * Method:    attach_pool_engine
  * Signature: ()Lorg/jpl7/fli/engine_t;
  */
+#ifndef __WINDOWS__
+#define LOCK_ENGINES() pthread_mutex_lock(&engines_mutex)
+#define UNLOCK_ENGINES() pthread_mutex_unlock(&engines_mutex)
+#define LOCK_CREATE_ENGINE() (void)0
+#define UNLOCK_CREATE_ENGINE() (void)0
+#else
+#define LOCK_ENGINES() (void)0
+#define UNLOCK_ENGINES() (void)0
+#define LOCK_CREATE_ENGINE() pthread_mutex_lock(&engines_mutex)
+#define UNLOCK_CREATE_ENGINE() pthread_mutex_unlock(&engines_mutex)
+#endif
+
 JNIEXPORT jobject JNICALL
 Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
 { jobject rval;
@@ -4440,7 +4460,7 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
 
   /* Find an engine. Try setting each of the engines in the pool. */
   /* If they are all in use wait for the condition variable and try again. */
-  pthread_mutex_lock(&engines_mutex);
+  LOCK_ENGINES();
   for (;;)
   { try_again:
     for (i = 0; i < engines_allocated; i++)
@@ -4452,7 +4472,7 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
       DEBUG(1, Sdprintf("JPL trying engine[%d]=%p\n", i, engines[i]));
       if ((rc = PL_set_engine(engines[i], NULL)) == PL_ENGINE_SET)
       { DEBUG(1, Sdprintf("JPL attaching engine[%d]=%p\n", i, engines[i]));
-        pthread_mutex_unlock(&engines_mutex);
+        UNLOCK_ENGINES();
 
         if ( (rval = (*env)->AllocObject(env, jEngineT_c)) )
         { setPointerValue(env, rval, (pointer)engines[i]);
@@ -4464,25 +4484,34 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
       }
       if ( rc != PL_ENGINE_INUSE )
       { DEBUG(1, Sdprintf("JPL PL_set_engine %d fails with %d\n", i, rc));
-        pthread_mutex_unlock(&engines_mutex);
+        UNLOCK_ENGINES();
         return NULL; /* bad engine status: oughta throw exception */
       }
     }
 
     for (i = 0; i < engines_allocated; i++)
-    { if (!engines[i])
-      { DEBUG(1, Sdprintf("JPL no engines ready; creating new one\n"));
-        if ((engines[i] = PL_create_engine(NULL)) == NULL)
-        { Sdprintf("JPL: Failed to create engine %d\n", i);
-          return NULL;
-        }
-        goto try_again;
+    { if ( !engines[i] )
+      { LOCK_CREATE_ENGINE();
+	if ( !engines[i] )
+	  engines[i] = PL_create_engine(NULL);
+	UNLOCK_CREATE_ENGINE();
+
+	if ( !engines[i] )
+	{ Sdprintf("JPL: Failed to create engine %d\n", i);
+	  return NULL;
+	}
+
+	goto try_again;
       }
     }
 
     DEBUG(1, Sdprintf("JPL no engines ready; waiting...\n"));
+#ifdef __WINDOWS__
+    WaitForSingleObject(engines_event, INFINITE);
+#else
     while (pthread_cond_wait(&engines_cond, &engines_mutex) == EINTR)
       ;
+#endif
   }
 }
 
@@ -4560,7 +4589,11 @@ Java_org_jpl7_fli_Prolog_release_1pool_1engine(JNIEnv *env, jclass jProlog)
     if (i > 0)
     { DEBUG(1, Sdprintf("JPL releasing engine[%d]=%p\n", i, e));
       PL_set_engine(NULL, NULL);
+#ifdef __WINDOWS__
+      SetEvent(engines_event);
+#else
       pthread_cond_signal(&engines_cond); /* alert waiters */
+#endif
     }
     return i;
   } else
