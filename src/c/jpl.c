@@ -309,7 +309,7 @@ static jfieldID jBooleanHolderValue_f;
  * enough) ================= */
 
 const char *default_args[] =
-{ "swipl", "-g", "true", "-nosignals", NULL };
+{ "swipl", "-g", "true", "--nosignals", NULL };
 
 /*=== JNI global state (initialised by jni_create_jvm_c) ================== */
 

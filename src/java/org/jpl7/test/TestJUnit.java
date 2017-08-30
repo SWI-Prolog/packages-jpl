@@ -36,11 +36,15 @@ public class TestJUnit extends TestCase {
 	public static junit.framework.Test suite() {
 		if (syntax.equals("traditional")) {
 			JPL.setTraditional();
-			Prolog.set_default_init_args(new String[] { "swipl.dll", "-x", startup, "-f", "none", "-g", "true",
-					"--traditional", "-q", "--home=../.." });
+			Prolog.set_default_init_args(new String[] {
+				"swipl.dll", "-x", startup, "-f", "none",
+				"-g", "true", "--traditional", "-q",
+				"--home=../..", "--nosignals" });
 		} else {
-			Prolog.set_default_init_args(
-					new String[] { "swipl.dll", "-x", startup, "-f", "none", "-g", "true", "-q", "--home=../.." });
+			Prolog.set_default_init_args(new String[] {
+				"swipl.dll", "-x", startup, "-f", "none",
+				"-g", "true", "-q",
+				"--home=../..", "--nosignals" });
 		}
 		assertTrue((new Query("consult", new Term[] { new Atom(test_jpl) })).hasSolution());
 		assertTrue((new Query("use_module(library(jpl))")).hasSolution());
