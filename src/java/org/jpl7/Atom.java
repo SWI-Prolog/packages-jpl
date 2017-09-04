@@ -166,10 +166,8 @@ public class Atom extends Term {
 	protected void put(Map<String, term_t> varnames_to_vars, term_t term) {
 		if (this.equals(JPL.LIST_NIL)) {
 			Prolog.put_nil(term);
-		} else { // TODO simplify this special case of putting a Compound
-			Term[] args = new Term[] {};
-			Prolog.cons_functor_v(term, Prolog.new_functor(Prolog.new_atom(name), args.length),
-					Term.putTerms(varnames_to_vars, args));
+		} else {
+			Prolog.put_atom_chars(term, name);
 		}
 	}
 
