@@ -30,16 +30,16 @@ available documentation. It contains errors, references to obsolete
 constructs, limitations that have been removed, etc.
 
 \begin{itemize}
-   \item href{jpl/objectives.html}{Objectives}
-   \item href{jpl/java_api/index.html}{Using Prolog from Java}
+   \item \href{jpl/objectives.html}{Objectives}
+   \item \href{jpl/java_api/index.html}{Using Prolog from Java}
    \item Using Java from Prolog
    \begin{itemize}
         \item The API is described in \secref{jpl}.
-	\item href{jpl/prolog_api/overview.html}{User guide}
-	\item href{jpl/prolog_api/gotchas.html}{Gotchas}
+	\item \href{jpl/prolog_api/overview.html}{User guide}
+	\item \href{jpl/prolog_api/gotchas.html}{Gotchas}
    \end{itemize}
-   \item href{jpl/installation.html}{Installation}
-   \item href{jpl/release_notes.html}{Release notes}
+   \item \href{jpl/installation.html}{Installation}
+   \item \href{jpl/release_notes.html}{Release notes}
 \end{itemize}
 
 \input{jpldoc.tex}
