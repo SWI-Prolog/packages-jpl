@@ -73,7 +73,9 @@ done
 case "$host_os" in
 mingw32*)       JNI_CLIENT_DIRS="$_JTOPDIR/lib"
                 ;;
-
+darwin*)	_JNI_LIBDIRS="lib"
+		_JNI_LIBSUBDIRS="server"
+		;;
 *)  case "$host_cpu" in
 	i?86)
 		_JNI_LIBDIRS="lib/i386"
@@ -110,20 +112,20 @@ mingw32*)       JNI_CLIENT_DIRS="$_JTOPDIR/lib"
 		# amd64 and powerpc which are special cased above.
 		_JNI_LIBDIRS="lib/$host_cpu"
 		_JNI_LIBSUBDIRS="server"
+  esac
+;;
 esac
 
-for d in $_JNI_LIBDIRS; do
+if test -z "$JNI_CLIENT_DIRS"; then
+  for d in $_JNI_LIBDIRS; do
 	for subd in $_JNI_LIBSUBDIRS; do
 		echo "Trying $_JTOPDIR/jre/$d/$subd"
 		if test -d $_JTOPDIR/jre/$d/$subd; then
 			JNI_CLIENT_DIRS="$JNI_CLIENT_DIRS $_JTOPDIR/jre/$d/$subd $_JTOPDIR/jre/$d"
 		fi
 	done
-done
-
-;;
-esac
-
+  done
+fi
 ])
 
 # _ACJNI_FOLLOW_SYMLINKS <path>

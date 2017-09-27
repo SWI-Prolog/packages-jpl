@@ -23,7 +23,15 @@ CMDEXT=sh
 if test "x$JAVALIBS" = "x"; then
   case "$PLARCH" in
      *darwin*)
-	  JAVALIBS="-Wl,-framework,JavaVM"
+	  JAVALIBS="-ljvm"
+	  AC_CHECKING("JAVA_HOME")
+	  if test -z "$JAVA_HOME" -o ! -d "$JAVA_HOME"; then
+	    JAVA_HOME=$(/usr/libexec/java_home)
+	  fi
+	  AC_MSG_RESULT($JAVA_HOME)
+	  JAVA_BINDIR="${JAVA_BINDIR:-$JAVA_HOME/bin}"
+	  PATH="$JAVA_BINDIR:$PATH"
+	  java_abs_paths=yes
 	  ;;
      *powerpc-linux*)
 	  JAVALIBS="-ljava -ljvm"
@@ -69,7 +77,7 @@ m4_include([ac/ac_prog_javadoc.m4])
 m4_include([ac/ac_jni_include_dirs.m4])
 m4_include([ac/ac_prog_jar.m4])
 
-java_abs_paths=no
+java_abs_paths=${java_abs_paths:-no}
 AC_CHECKING(Java configuration)
 if test -r /etc/java/java2.conf; then
   AC_MSG_RESULT(Using /etc/java/java2.conf)
