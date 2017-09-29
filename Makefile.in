@@ -33,7 +33,7 @@ SO_PATH=@SO_PATH@
 
 PLFLAGS=
 
-LIBPL=		jpl.pl
+LIBPL=		jpl.pl @OSLIBPL@
 LIBJPL=		@LIBJPL@.@SO@
 TARGETS=	$(LIBJPL)
 OBJ=		src/c/jpl.o

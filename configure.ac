@@ -12,6 +12,7 @@ AC_SUBST(JUNIT)
 AC_SUBST(JPLCFLAGS)
 AC_SUBST(JPLLDFLAGS)
 AC_SUBST(LIBJPL)
+AC_SUBST(OSLIBPL)
 AC_SUBST(JAVA_PRELOAD)
 AC_SUBST(JAVA_LIBRARY_PATH)
 AC_SUBST(CMDEXT)
@@ -19,6 +20,7 @@ AC_SUBST(CMDEXT)
 m4_include([../ac_swi_c.m4])
 
 CMDEXT=sh
+OSLIBPL=
 
 if test "x$JAVALIBS" = "x"; then
   case "$PLARCH" in
@@ -32,6 +34,7 @@ if test "x$JAVALIBS" = "x"; then
 	  JAVA_BINDIR="${JAVA_BINDIR:-$JAVA_HOME/bin}"
 	  PATH="$JAVA_BINDIR:$PATH"
 	  java_abs_paths=yes
+	  OSLIBPL=jpl_config.pl
 	  ;;
      *powerpc-linux*)
 	  JAVALIBS="-ljava -ljvm"
