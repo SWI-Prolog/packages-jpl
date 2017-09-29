@@ -3997,6 +3997,10 @@ search_path_separator(:).
 %   we do not check for that.
 
 check_java_environment :-
+    current_prolog_flag(apple, true),
+    !,
+    print_message(error, jpl(run(jpl_config_dylib))).
+check_java_environment :-
     check_lib(java),
     check_lib(jvm).
 
@@ -4224,6 +4228,10 @@ report_java_setup_problem(E) :-
 prolog:message(extend_ld_path(Dirs)) -->
     [ 'Extended DLL search path with'-[] ],
     dir_per_line(Dirs).
+prolog:message(jpl(run(Command))) -->
+    [ 'Could not find libjpl.dylib dependencies.'-[],
+      'Please run `?- ~p.` to correct this'-[Command]
+    ].
 
 dir_per_line([]) --> [].
 dir_per_line([H|T]) -->
