@@ -122,6 +122,8 @@ if test -z "$JNI_CLIENT_DIRS"; then
 		echo "Trying $_JTOPDIR/jre/$d/$subd"
 		if test -d $_JTOPDIR/jre/$d/$subd; then
 			JNI_CLIENT_DIRS="$JNI_CLIENT_DIRS $_JTOPDIR/jre/$d/$subd $_JTOPDIR/jre/$d"
+		elif test -d $_JTOPDIR/$d/$subd; then
+			JNI_CLIENT_DIRS="$JNI_CLIENT_DIRS $_JTOPDIR/$d/$subd $_JTOPDIR/$d"
 		fi
 	done
   done
