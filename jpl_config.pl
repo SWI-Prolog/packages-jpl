@@ -72,7 +72,8 @@ update_dylib(JavaHome, Dylib, Dependencies, Lib) :-
     debug(dylib(jpl), 'Points at ~p', [Lib0]),
     (   sub_atom(Lib0, 0, _, _, JavaHome)
     ->  debug(dylib(jpl), 'In Java home.  OK', [])
-    ;   atomic_list_concat([ JavaHome, '/jre/lib/server/', Lib], NewLib),
+    ;   jni_dylib_dir(JDylibDir),
+        atomic_list_concat([ JavaHome, JDylibDir, Lib], '/', NewLib),
         exists_file(NewLib)
     ->  debug(dylib(jpl), '~w at ~p', [Lib, NewLib]),
         process_create('/usr/bin/install_name_tool',
@@ -81,6 +82,9 @@ update_dylib(JavaHome, Dylib, Dependencies, Lib) :-
     ;   print_message(error, jpl_config(not_found(Dylib, Lib))),
         fail
     ).
+
+jni_dylib_dir('jre/lib/server').
+jni_dylib_dir('lib/server').                    % Java 8
 
 java_home(Dir) :-
     getenv('JAVA_HOME', Dir),
