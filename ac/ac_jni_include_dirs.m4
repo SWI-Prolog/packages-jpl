@@ -113,6 +113,8 @@ darwin*)	_JNI_LIBDIRS="lib"
 		_JNI_LIBDIRS="lib/$host_cpu"
 		_JNI_LIBSUBDIRS="server"
   esac
+  # also check directly under lib without architecture directory for jdk9
+  _JNI_LIBDIRS="$_JNI_LIBDIRS lib"
 ;;
 esac
 
