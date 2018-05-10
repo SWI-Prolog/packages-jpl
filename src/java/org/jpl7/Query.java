@@ -334,7 +334,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		term0 = Term.putTerms(varnames_to_vars, goal.args());
 		// THINKS: invert varnames_to_Vars and use it when getting
 		// substitutions?
-		qid = Prolog.open_query(Prolog.new_module(Prolog.new_atom(contextModule)), Prolog.Q_CATCH_EXCEPTION, predicate,
+		qid = Prolog.open_query(Prolog.new_module(Prolog.new_atom(module)), Prolog.Q_CATCH_EXCEPTION, predicate,
 				term0);
 		open = true;
 	}
