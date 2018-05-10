@@ -1,0 +1,141 @@
+<!-- 
+    pom.xml adapted from jpl-7.4.0.pom provided
+    with JPL library hosted at Maven Central.
+    https://mvnrepository.com/artifact/jpl/jpl/7.4.0
+
+    Used for convenient build management of JPL Java API.
+    Adapted for use by Matthew McNally.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>jpl</groupId>
+    <artifactId>jpl</artifactId>
+    <version>7.4.1-SNAPSHOT</version>
+    
+    <packaging>jar</packaging>
+    
+    <name>jpl</name>
+    <description>A Java Interface to Prolog</description>
+    <url>http://jpl7.org/</url>
+
+    <!-- JPL uses Simplified BSD license -->
+    <licenses>
+        <license>
+          <name>Simplified BSD License</name>
+          <url>https://github.com/SWI-Prolog/swipl-devel/blob/master/LICENSE</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git@github.com:SWI-Prolog/packages-jpl.git</connection>
+        <url>git@github.com:SWI-Prolog/packages-jpl.git</url>
+    </scm>
+
+    <!-- JPL authors -->
+    <developers>
+        <developer>
+            <name>Paul Singleton</name>
+        </developer>
+        <developer>
+            <name>Fred Dushin</name>
+        </developer>
+        <developer>
+            <name>Jan Wielemaker</name>
+        </developer>
+    </developers>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    
+    <prerequisites>
+        <maven>2.2.1</maven>
+    </prerequisites>
+
+    <dependencies>
+        <!-- JUnit testing framework -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>
+
+    <build>
+        <!-- Ensure custom source directory structure taken into account -->
+        <sourceDirectory>src/java</sourceDirectory>
+        <testSourceDirectory>src/java/org/jpl7/test</testSourceDirectory>
+
+        <plugins>
+            <plugin>
+                <!-- Java source compilation plugin -->
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                    <!-- Exclude tests from source compilation as JUnit is a test dependency -->
+                    <excludes>
+                        <exclude>org/jpl7/test/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <!-- Javadoc generation plugin -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <!-- Unit test execution -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>disable-java8-doclint</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <additionalparam>-Xdoclint:none</additionalparam>
+            </properties>
+        </profile>
+    </profiles>
+</project>
