@@ -27,4 +27,10 @@ swipl_plugin(
 target_include_directories(
     plugin_libjpl BEFORE PRIVATE ${JNI_INCLUDE_DIRS})
 
+# Does not yet work due to path issues.
+if(0)
+test_libs(jpl
+	  PACKAGES plunit)
+endif()
+
 endif(JNI_FOUND)
