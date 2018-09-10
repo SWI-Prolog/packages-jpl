@@ -5,7 +5,8 @@ include("../cmake/PrologPackage.cmake")
 
 find_package(JNI)
 if(JNI_FOUND)
-set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${LIBEDIT_LIBRARIES})
+
+add_subdirectory(src/java)
 
 AC_CHECK_HEADERS(wchar.h)
 
@@ -19,11 +20,11 @@ configure_file(config.h.cmake config.h)
 link_directories(${JNI_INCLUDE_DIRS})
 
 swipl_plugin(
-    jpl
+    libjpl
     C_SOURCES src/c/jpl.c
     C_LIBS ${JNI_LIBRARIES}
     PL_LIBS jpl.pl)
 target_include_directories(
-    plugin_jpl BEFORE PRIVATE ${JNI_INCLUDE_DIRS})
+    plugin_libjpl BEFORE PRIVATE ${JNI_INCLUDE_DIRS})
 
 endif(JNI_FOUND)
