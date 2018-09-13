@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(swipl-jpl-jar)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include("../../../cmake/PrologPackage.cmake")
-
 find_package(Java COMPONENTS Development)
 include(UseJava)
 include(JUnit)
