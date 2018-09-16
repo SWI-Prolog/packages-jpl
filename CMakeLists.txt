@@ -44,4 +44,9 @@ prepend(EXJAVA examples/java ${EXJAVA})
 swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
 swipl_examples(DIRECTORIES ${EXJAVA} SUBDIR java)
 
+pkg_doc(
+    jpl
+    SUBSECTION
+	SOURCE jpl.pl jpldoc.tex)
+
 endif(JNI_FOUND)
