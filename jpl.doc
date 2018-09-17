@@ -44,8 +44,8 @@ constructs, limitations that have been removed, etc.
 
 \input{jpldoc.tex}
 
-\bibliographystyle{plain}
-\bibliography{jpl}
+%\bibliographystyle{plain}
+%\bibliography{jpl}
 
 \printindex
 
