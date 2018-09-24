@@ -45,7 +45,34 @@ There is an issue with using JPL in Mac OS due to a linking error in JPL. Here T
 
 The problem was that SWI-Prolog come as a _relocatable_ app and the JPL library is therefore _run-path dependent_, causing the linking error when loaded without the proper run-path search paths. That is JPL does not know where SWI is.
  
-Output of `otool -L` on the lib:
+
+The problem is with `libswipl.dylib`, which is not installed in  `@executable_path/../swipl/lib/x86_64-darwin15.6.0/libswipl.dylib` but instead in `/usr/local/lib/swipl-7.7.19/lib/x86_64-darwin17.7.0/libswipl.dylib`
+ 
+So, one way to solve this would to use a _not_ relocatable version of SWI-prolog such as the homebrew or macport installs. However, those do not include the JPL library. :-(
+ 
+The only option is therefore to manually remove the run-path dependencies from the lib using the `install_name_tool`: 
+
+    install_name_tool <old_path> <new_path> dynlib
+
+So the first step is to install a not relocatable version of SWI-prolog:
+
+    brew install swi-prolog
+
+This will install prolog in `/usr/local/Cellar/`
+
+As the homebrew version does _not_ come with the JPL library (an issue on the homebrew github as been opened about this), the second step is therefore to buid the library from source. Alternatively, you can download the already compiled  [libjpl.dylib]() and copy it in:
+
+    /usr/local/Cellar/swi-prolog/7.6.4/libexec/lib/swipl-7.6.4/lib/
+
+Then cd into this directory.
+
+The last step is to ensure all dependencies link of the lib are valid (and absolute):
+
+You can check all the dependencies paths using the command:
+
+    otool -L libjpl.dylib
+
+For example:
 
     libjpl.dylib:
     /Applications/SWI-Prolog.app/Contents/swipl/lib/x86_64-darwin15.6.0/libjpl.dylib:
@@ -53,15 +80,11 @@ Output of `otool -L` on the lib:
         @rpath/libjvm.dylib (compatibility version 1.0.0, current version 1.0.0)
         @executable_path/../swipl/lib/x86_64-darwin15.6.0/libswipl.dylib (compatibility version 0.0.0, current version 7.6.4)
         /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1226.10.1)
- 
-The problem is with `libswipl.dylib`, which is not installed in  `@executable_path/../swipl/lib/x86_64-darwin15.6.0/libswipl.dylib` but instead in `/usr/local/lib/swipl-7.7.19/lib/x86_64-darwin17.7.0/libswipl.dylib`
- 
-So, one way to solve this would to use a _not_ relocatable version of SWI-prolog such as the homebrew or macport installs. However, those do not include the JPL library. :-(
- 
-The only option is therefore to manually remove the run-path dependencies from the lib using the `install_name_tool`:
 
-    install_name_tool <old_path> <new_path> dynlib
 
+If an entry is not a valid path on your system you can change it using the command:
+
+    install_name_tool -change <the_invalid_path> <your_new_valid_path> libjpl.dylib
 
 After doing this your lib should not depend on any external run-path:
 
@@ -70,9 +93,14 @@ After doing this your lib should not depend on any external run-path:
      /Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/jre/lib/server/libjvm.dylib (compatibility version 1.0.0, current version 1.0.0)
      /usr/local/lib/swipl-7.7.19/lib/x86_64-darwin17.7.0/libswipl.dylib (compatibility version 0.0.0, current version 7.7.19)
      /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.50.4)
- 
-You can then add the executable path path to your `java.library.path` so that JPL can find lib 
 
+
+Once all entries are valid, you can add the path to this library:
+
+    /usr/local/Cellar/swi-prolog/7.6.4/libexec/lib/swipl-7.6.4/lib/ 
+
+to your `java.path.libray` and it will, hopefully, link correctly: :-)
+  
     java -Djava.library.path=/usr/local/Cellar/swi-prolog/7.6.4/libexec/lib/swipl-7.6.4/lib/x86_64-darwin17.3.0/
  
 The Java Virtual Machine (JVM) uses the `java.library.path` property in order to locate and load _native libraries_. When a Java application loads a native library using the `System.loadLibrary()` method, the `java.library.path` is scanned for the specified library. If the JVM is not able to detect the requested library, it throws an `UnsatisfiedLinkError`. See [this tutorial](https://examples.javacodegeeks.com/java-basics/java-library-path-what-is-it-and-how-to-use/) for more explanation on that variable.
@@ -89,6 +117,7 @@ You can also do this in Eclipse:
  
 And that's it, your project will link and run properly on Mac OS ;)
 
+Thanks Theo!
 
 ## CONTACT
 
