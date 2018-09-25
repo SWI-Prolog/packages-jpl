@@ -38,6 +38,8 @@ More generaly, I am using SWI+JPL to provide Prolog knowledgebase management to 
 One example of such use is the SARL Agent System to play the [2017 Multi-Agent Agents in City game](https://multiagentcontest.org/2017/). A base sytem, showcasing how to use SWI Prolog via JPL, can be obtained in [this repo](https://bitbucket.org/ssardina-research/sarl-agtcity-base). 
 
 
+## Making JPL work under Mac OS
+
 (notes from student The Champion in the context of my AOPD course in 2018)
  
 There is an issue with using JPL in Mac OS due to a linking error in JPL. Here Theo describes his solution (edited with some extra info): 
@@ -74,12 +76,18 @@ For example:
         @executable_path/../swipl/lib/x86_64-darwin15.6.0/libswipl.dylib (compatibility version 0.0.0, current version 7.6.4)
         /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1226.10.1)
 
-
 If an entry is not a valid path on your system you can change it using the command:
 
     install_name_tool -change <the_invalid_path> <your_new_valid_path> libjpl.dylib
 
-Above, for example, the problem is with `libswipl.dylib`, which is not installed in  `@executable_path/../swipl/lib/x86_64-darwin15.6.0/libswipl.dylib` but instead in `/usr/local/lib/swipl-7.7.19/lib/x86_64-darwin17.7.0/libswipl.dylib`
+Above, for example, `libswipl.dylib` is not installed in  `@executable_path/../swipl/lib/x86_64-darwin15.6.0/libswipl.dylib` but instead in `/usr/local/lib/swipl-7.7.19/lib/x86_64-darwin17.7.0/libswipl.dylib`
+So we can do:
+
+    install_name_tool -change @rpath/libjsig.dylib /Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/jre/lib/server/libjsig.dylib libjpl.dylib
+    install_name_tool -change @rpath/libjvm.dylib /Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/jre/lib/server/libjvm.dylib libjpl.dylib
+    install_name_tool -change @executable_path/../swipl/lib/x86_64-darwin15.6.0/libswipl.dylib /usr/local/lib/swipl-7.7.19/lib/x86_64-darwin17.7.0/libswipl.dylib libjpl.dylib
+
+As you can see the goal here is to replace of the run-path dependent part (`@rpath` or `@executable_path`) with an absolute path on your system.
 
 After doing this step using `install_name_tool`, your lib should not depend on any external run-path:
 
