@@ -13,7 +13,7 @@
     
     <groupId>com.github.ssardina-research</groupId>
     <artifactId>packages-jpl</artifactId>
-    <version>7.7.19-ssardina</version>
+    <version>7.7.20-ssardina</version>
     
     <packaging>jar</packaging>
     
@@ -51,19 +51,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     
-    <prerequisites>
-        <maven>2.2.1</maven>
-    </prerequisites>
+    <!--<prerequisites>-->
+        <!--<maven>2.2.1</maven>-->
+    <!--</prerequisites>-->
 
     <dependencies>
         <!-- JUnit testing framework -->
-        <dependency>
+        <dgependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
-        </dependency>
-        
+        </dgependency>
+
     </dependencies>
 
     <build>
