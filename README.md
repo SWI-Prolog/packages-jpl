@@ -4,7 +4,7 @@
 
 JPL is a "library using the SWI-Prolog foreign interface and the Java jni interface providing a _bidirectional interface between Java and Prolog_ that can be used to embed Prolog in Java _as well_ as for embedding Java in Prolog. In both setups it provides a reentrant bidirectional interface."
 
-As far as I can tell, JPL has been developed and maintained by Paul Singleton.
+As far as I can tell, JPL has been developed originally by Paul Singleton and maintained by him and Jan Wielemaker (and possibly others?).
 
 JPL has been integrated into the full SWI-Prolog distribution starting with version 5.4.x, including binaries for MS-Windows and a Linux RPM. 
 
@@ -127,7 +127,7 @@ Thanks Theo!
 
 ## CONTACT
 
-Sebastian Sardina - ssardina@gmail.com
+Sebastian Sardina - ssardina@gmail.com (for this fork)
 
 
 
