@@ -2,6 +2,7 @@ package org.jpl7;
 
 import java.io.File;
 
+import com.sun.deploy.util.StringUtils;
 import org.jpl7.fli.Prolog;
 
 /**
@@ -291,6 +292,8 @@ public class JPL {
 		if (s == null) {
 			throw new java.lang.NullPointerException(); // JPL won't call it
 														// this way
+		} else if (StringUtils.trimWhitespace(s).equals(":")) {
+			return true;    // In case we are using : for accessing modules
 		} else if ((len = s.length()) == 0) {
 			return false;
 		} else if ((c = s.charAt(0)) < 'a' || c > 'z') {
@@ -344,7 +347,7 @@ public class JPL {
 	 *
 	 * @return a quoted form of the Atom's name, as understood by Prolog read/1
 	 */
-	protected static String quotedName(String name) {
+	public static String quotedName(String name) {
 		if (isSimpleName(name)) {
 			return name;
 		} else {
