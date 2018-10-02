@@ -13,8 +13,9 @@
     
     <groupId>com.github.ssardina-research</groupId>
     <artifactId>packages-jpl</artifactId>
-    <version>7.7.20-ssardina</version>
-    
+    <!--<version>7.7.21-ssardina-devel</version>-->
+    <version>ssardina-devel</version>
+
     <packaging>jar</packaging>
     
     <name>jpl</name>
