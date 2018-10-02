@@ -114,6 +114,15 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
+	 * Returns the context module for this Query
+	 *
+	 * @return a String representing the context in which the goal will be run
+	 */
+	public final String getContext() { return contextModule; }
+
+
+
+	/**
 	 * This constructor creates a Query whose goal is the specified Term. The
 	 * Query is initially closed. <b>NB</b> Creating an instance of the Query
 	 * class does not result in a call to a Prolog engine. <b>NB</b> The goal
@@ -252,7 +261,15 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		return open;
 	}
 
-	/**
+    /**
+     * Returns the engine attached to this query
+     *
+     * @return a long number representing the id of the SWI Prolog engine used in this query
+     */
+    public final long getEngine() { return engine.value; }
+
+
+    /**
 	 * This method returns true if JPL was able to initiate a "call" of this
 	 * Query within a Prolog engine. It is designed to be used with the
 	 * nextSolution() method to retrieve one or more substitutions in the form
@@ -301,12 +318,12 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 											// Prolog engine?
 			engine = Prolog.attach_pool_engine(); // may block for a while, or
 													// fail
-			System.out.println("JPL attaching engine[" + engine.value + "] for " +
-					   this.hashCode() + ":" + this.toString());
+//			System.out.println("###########> JPL attaching engine[" + engine.value + "] for " +
+//					   this.hashCode() + ":" + this.toString());
 		} else { // this Java thread has an attached engine
 			engine = Prolog.current_engine();
-			System.out.println("JPL reusing engine[" + engine.value + "] for " +
-					   this.hashCode() + ":" + this.toString());
+//			System.out.println("=========> JPL reusing engine[" + engine.value + "] for " +
+//					   this.hashCode() + ":" + this.toString());
 		}
 		//
 		// here, we must check for a module prefix, e.g.
