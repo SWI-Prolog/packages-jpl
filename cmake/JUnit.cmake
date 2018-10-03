@@ -3,7 +3,7 @@
 #
 # Available Functions:
 #
-#   add_junit_test(<target name> 
+#   add_junit_test(<target name>
 #       CLASSPATH [path1 ...]
 #       TESTS [class1 ...]
 #   )
@@ -19,6 +19,7 @@ find_file(JUNIT_JAR
         ${JAVA_LIB_INSTALL_DIR}
         /usr/share/java
 )
+MARK_AS_ADVANCED(JUNIT_JAR)
 
 function(add_junit_test TARGET_NAME)
 
@@ -33,7 +34,7 @@ function(add_junit_test TARGET_NAME)
     foreach (ARG ${ARGN})
         if (ARG MATCHES "(CLASSPATH|TESTS|REPORTS_DIR)")
             set(TYPE ${ARG})
-        
+
         else (ARG MATCHES "(CLASSPATH|TESTS|REPORTS_DIR)")
 
             if (TYPE MATCHES "CLASSPATH")
