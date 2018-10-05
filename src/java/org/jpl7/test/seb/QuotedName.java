@@ -1,4 +1,4 @@
-package org.jpl7.test;
+package org.jpl7.test.seb;
 
 import java.util.Map;
 
@@ -24,7 +24,7 @@ public class QuotedName {
         String name;
         Term t;
 
-		if (Query.hasSolution("consult('src/java/org/jpl7/test/quoted_name.pl')")) {
+		if (Query.hasSolution("consult('src/java/org/jpl7/test/seb/quoted_name.pl')")) {
             System.out.println("Loaded...........");
         }
 
