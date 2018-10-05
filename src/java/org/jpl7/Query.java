@@ -1,10 +1,6 @@
 package org.jpl7;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.engine_t;
@@ -12,6 +8,10 @@ import org.jpl7.fli.fid_t;
 import org.jpl7.fli.predicate_t;
 import org.jpl7.fli.qid_t;
 import org.jpl7.fli.term_t;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * A Query instance is created by an application in order to query the Prolog
@@ -93,6 +93,10 @@ import org.jpl7.fli.term_t;
  */
 public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, Term>> { // was
 																							// Enumeration<Object>
+
+    private static final Logger LOGGER = Logger.getLogger( Query.class.getName() );
+    private static final Level levelLog = Level.INFO;
+
 	/**
 	 * the Compound or Atom (but not Dict, Float, Integer or Variable)
 	 * corresponding to the goal of this Query
@@ -134,7 +138,9 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 */
 	public Query(Term t) { // formerly insisted (confusingly) on a Compound (or
 							// Atom)
-		this.goal_ = Query1(t);
+        LOGGER.setLevel(levelLog);
+
+        this.goal_ = Query1(t);
 	}
 
 	private Term Query1(Term t) {
@@ -175,7 +181,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	private static Term Query1(String text, Term[] args) {
-		Term t = Util.textToTerm(text);
+        Term t = Util.textToTerm(text);
 		if (t instanceof Atom) {
 			return new Compound(text, args);
 		} else {
@@ -191,7 +197,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *            the Prolog source text of this Query
 	 */
 	public Query(String text) {
-		this(Util.textToTerm(text));
+        this(Util.textToTerm(text));
 	}
 
 	/**
@@ -251,6 +257,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 									// else undefined
 	private qid_t qid = null; // id of current Prolog query iff open, else null
 
+    private Boolean hasNextSolution = null; // is there a next solution? null means "we do not know yet, haven't fetch"
 	//
 	/**
 	 * isOpen() returns true iff the query is open.
@@ -286,30 +293,33 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @return true if the Prolog query succeeds; otherwise false.
 	 */
 	public final boolean hasMoreSolutions() {
-		if (!open) {
-			open();
-		}
-		return fetchNextSolution();
+		if (hasNextSolution == null) {
+            if (!open) open();
+            hasNextSolution = fetchNextSolution();
+        }
+        return hasNextSolution;
 	}
 
-	/**
-	 * This method returns true if JPL was able to initiate a "call" of this
-	 * Query within the Prolog engine. It is designed to be used with the
-	 * getSolution() and close() methods to retrieve one or more substitutions
-	 * in the form of Maps.
-	 *
-	 * <pre>
-	 * Query q = // obtain Query reference
-	 * Map soln;
-	 * q.open();
-	 * while ((soln = q.getSolution()) != null) {
-	 *      // process solution...
-	 * }
-	 * </pre>
-	 * <p>
-	 * If this method is called on an already-open Query, or if the query cannot
-	 * be set up for whatever reason, then a JPLException will be thrown.
-	 */
+
+
+        /**
+         * This method returns true if JPL was able to initiate a "call" of this
+         * Query within the Prolog engine. It is designed to be used with the
+         * getSolution() and close() methods to retrieve one or more substitutions
+         * in the form of Maps.
+         *
+         * <pre>
+         * Query q = // obtain Query reference
+         * Map soln;
+         * q.open();
+         * while ((soln = q.getSolution()) != null) {
+         *      // process solution...
+         * }
+         * </pre>
+         * <p>
+         * If this method is called on an already-open Query, or if the query cannot
+         * be set up for whatever reason, then a JPLException will be thrown.
+         */
 	public final void open() {
 		if (open) {
 			throw new JPLException("Query is already open");
@@ -354,15 +364,25 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		qid = Prolog.open_query(Prolog.new_module(Prolog.new_atom(module)), Prolog.Q_CATCH_EXCEPTION, predicate,
 				term0);
 		open = true;
+		hasNextSolution = null; // we have not fetch yet any solution
 	}
 
     /**
-     * Tell Prolog engine to fetch the next solution for the current active query (like hitting ;)
-     * If there are no more solutions, then just close the query
+     * Reset the query to its start: closed and no solution found so far. This will allow a query to re-start
      *
-     * @return whether a new solutions was found or there are no more solutions
-     * @throws PrologException with the term of the error from Prolog (e.g., syntax error in query or non existence of predicates)
      */
+    public final void reset() {
+        close();
+        hasNextSolution = null;
+    }
+
+        /**
+         * Tell Prolog engine to fetch the next solution for the current active query (like hitting ;)
+         * If there are no more solutions, then just close the query
+         *
+         * @return whether a new solutions was found or there are no more solutions
+         * @throws PrologException with the term of the error from Prolog (e.g., syntax error in query or non existence of predicates)
+         */
 	private final boolean fetchNextSolution() { // try to get the next solution; if none,
 									// close the query;
 		if (Prolog.next_solution(qid)) {
@@ -466,12 +486,16 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @return A Map representing a substitution.
 	 */
 	public final Map<String, Term> nextSolution() {
-		return getCurrentSolutionBindings();
+        if (hasMoreSolutions()) {
+            hasNextSolution = null; // we reset this as we moved the pointer (we now do not know if there is a new one)
+            return getCurrentSolutionBindings();
+        } else
+            throw new NoSuchElementException("Query has already yielded all solutions");
 	}
 
 	private final Map<String, Term> getCurrentSolutionBindings() {
 		if (!open) {
-			throw new JPLException("Query is not open");
+			throw new JPLException("Query is not open, cannot retrive solution bindings.");
 		} else {
 			Map<String, Term> substitution = new HashMap<String, Term>();
 			Term.getSubsts(substitution, new HashMap<term_t, Variable>(), goal_.args()); // NB
@@ -584,9 +608,8 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			// System.out.println("JPL retaining engine[" + engine.value + "]
 		}
 		open = false; // this Query is now closed
-		engine = null; // this Query, being closed, is no longer associated with
-						// any Prolog engine
-	}
+		engine = null; // this Query, being closed, is no longer associated with any Prolog engine
+    }
 
 	/**
 	 * calls the Query's goal to exhaustion and returns an array of zero or more
