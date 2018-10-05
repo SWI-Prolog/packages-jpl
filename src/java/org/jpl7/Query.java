@@ -369,13 +369,13 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
         hasNextSolution = null;
     }
 
-        /**
-         * Tell Prolog engine to fetch the next solution for the current active query (like hitting ;)
-         * If there are no more solutions, then just close the query
-         *
-         * @return whether a new solutions was found or there are no more solutions
-         * @throws PrologException with the term of the error from Prolog (e.g., syntax error in query or non existence of predicates)
-         */
+    /**
+     * Tell Prolog engine to fetch the next solution for the current active query (like hitting ;)
+     * If there are no more solutions, then just close the query
+     *
+     * @return whether a new solutions was found or there are no more solutions
+     * @throws PrologException with the term of the error from Prolog (e.g., syntax error in query or non existence of predicates)
+     */
 	private final boolean fetchNextSolution() { // try to get the next solution; if none,
 									// close the query;
 		if (Prolog.next_solution(qid)) {
@@ -433,7 +433,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * </pre>
 	 *
 	 * Programmers should be careful to call this method after checking that
-     * there is indede a solution, via methodhasMoreSolutions().
+     * there is indeed a solution, via method hasMoreSolutions().
 	 *
      *  @return A Map representing a substitution of the next solution.
      *  @throws JPLException if Query is not open.
