@@ -201,20 +201,19 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * whether this Query has a (further) solution
+	 * Whether this Query has a (further) solution.
+     * Same as {@link #hasMoreSolutions()}
 	 *
 	 * @see java.util.Iterator#hasNext()
 	 */
 	public boolean hasNext() {
-		if (!open) { // lazily open the Query, enabling it to be its own
-						// iterator
-			open();
-		}
-		return fetchNextSolution();
+	    return hasMoreSolutions();
 	}
 
 	/**
-	 * this Query's next solution
+	 * Returns the next solution (if any); otherwise exception
+     *
+     * Same as {@link #nextSolution()}
 	 *
 	 * @see java.util.Iterator#next()
 	 */
@@ -223,7 +222,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * this method (required by Iterator interface) is a no-op
+	 * This method (required by Iterator interface) is a no-op
 	 *
 	 * @see java.util.Iterator#remove()
 	 */
@@ -283,9 +282,20 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
         return hasNextSolution;
 	}
 
+    /**
+     * This method implements part of the java.util.Enumeration interface. It is
+     * a wrapper for hasMoreSolutions.
+     *
+     * @return true if the Prolog query yields a (or another) solution, else
+     *         false.
+     */
+    public final boolean hasMoreElements() {
+        return hasMoreSolutions();
+    }
 
 
-        /**
+
+    /**
          * This method returns true if JPL was able to initiate a "call" of this
          * Query within the Prolog engine. It is designed to be used with the
          * getSolution() and close() methods to retrieve one or more substitutions
@@ -385,45 +395,11 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * This method returns a java.util.Map, which represents a set of bindings
-	 * from the names of query variables to terms within the solution.
-	 * <p>
-	 * For example, if a Query has an occurrence of a jpl.Variable, say, named
-	 * "X", one can obtain the Term bound to "X" in the solution by looking up
-	 * "X" in the Map.
-	 *
-	 * <pre>
-	 * Variable x = new Variable("X");
-	 * Query q = // obtain Query reference (with x in the Term array)
-	 * while (q.hasMoreSolutions()) {
-	 *     Map solution = q.nextSolution();
-	 *     // make t the Term bound to "X" in the solution
-	 *     Term t = (Term) solution.get("X");
-	 *     // ...
-	 * }
-	 * </pre>
-	 *
-	 * Programmers should obey the following rules when using this method.
-	 * <menu>
-	 * <li>The nextSolution() method should only be called after the
-	 * hasMoreSolutions() method returns true; otherwise a JPLException will be
-	 * raised, indicating that the Query is no longer open.
-	 * <li>The nextSolution() and hasMoreSolutions() should be called in the
-	 * same thread of execution, for a given Query instance. </menu>
-	 *
-	 * This method will throw a JPLException if Query is not open.
-	 *
-	 * @return A Map representing a substitution, or null
+	 * @Deprecated use nextSolution()
 	 */
+	@Deprecated
 	public final Map<String, Term> getSolution() {
-		// oughta check: thread has query's engine
-		if (!open) {
-			throw new JPLException("Query is not open");
-		} else if (fetchNextSolution()) {
-			return getCurrentSolutionBindings();
-		} else {
-			return null;
-		}
+	    return nextSolution();
 	}
 
 	public final Map<String, Term> getSubstWithNameVars() {
@@ -439,7 +415,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 
 	/**
 	 * This method returns a java.util.Map, which represents a binding from the
-	 * names of query variables to terms within the solution.
+	 * names of query variables to terms within the next solution.
 	 * <p>
 	 * For example, if a Query has an occurrence of a jpl.Variable, say, named
 	 * "X", one can obtain the Term bound to "X" in the solution by looking up
@@ -456,17 +432,12 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * }
 	 * </pre>
 	 *
-	 * Programmers should obey the following rules when using this method.
-	 * <menu>
-	 * <li>The nextSolution() method should only be called after the
-	 * hasMoreSolutions() method returns true; otherwise a JPLException will be
-	 * raised, indicating that the Query is no longer open.
-	 * <li>The nextSolution() and hasMoreSolutions() should be called in the
-	 * same thread of execution, for a given Query instance. </menu>
+	 * Programmers should be careful to call this method after checking that
+     * there is indede a solution, via methodhasMoreSolutions().
 	 *
-	 * This method will throw a JPLException if Query is not open.
-	 *
-	 * @return A Map representing a substitution.
+     *  @return A Map representing a substitution of the next solution.
+     *  @throws JPLException if Query is not open.
+     *  @throws NoSuchElementException if there are no more new solutions.
 	 */
 	public final Map<String, Term> nextSolution() {
         if (hasMoreSolutions()) {
@@ -481,17 +452,9 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			throw new JPLException("Query is not open, cannot retrive solution bindings.");
 		} else {
 			Map<String, Term> substitution = new HashMap<String, Term>();
-			Term.getSubsts(substitution, new HashMap<term_t, Variable>(), goal_.args()); // NB
-																							// I
-																							// reckon
-																							// getSubsts
-																							// needn't
-																							// be
-																							// in
-																							// Term
-																							// (but
-																							// where
-																							// else?)
+			// TODO: getSubsts is in Term class, should it be there? Otherwise, where else?
+			Term.getSubsts(substitution, new HashMap<term_t, Variable>(), goal_.args());
+
 			return substitution;
 		}
 	}
@@ -519,16 +482,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		}
 	}
 
-	/**
-	 * This method implements part of the java.util.Enumeration interface. It is
-	 * a wrapper for hasMoreSolutions.
-	 *
-	 * @return true if the Prolog query yields a (or another) solution, else
-	 *         false.
-	 */
-	public final boolean hasMoreElements() {
-		return hasMoreSolutions();
-	}
 
 	/**
 	 * This method implements part of the java.util.Enumeration interface. It is
