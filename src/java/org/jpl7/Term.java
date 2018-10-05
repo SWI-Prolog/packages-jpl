@@ -166,11 +166,11 @@ public abstract class Term {
 	 * Just calls computeSubstitution for each Term in the array.
 	 *
 	 * @param varnames_to_Terms
-	 *            a Map from variable names to Terms
+	 *            a Map from variable names to Terms (what each variable string is to be replaced by)
 	 * @param vars_to_Vars
-	 *            a Map from Prolog variables to JPL Variables
+	 *            a Map from Prolog variables (which may be bounded in the engine) to JPL Variables (which are Java objects)
 	 * @param args
-	 *            an array of Terms
+	 *            an array of Terms to which the substitution is to be applied
 	 */
 	protected static void getSubsts(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars,
 			Term[] args) {

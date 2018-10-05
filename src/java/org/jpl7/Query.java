@@ -213,7 +213,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 						// iterator
 			open();
 		}
-		return get1();
+		return fetchNextSolution();
 	}
 
 	/**
@@ -289,7 +289,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		if (!open) {
 			open();
 		}
-		return get1();
+		return fetchNextSolution();
 	}
 
 	/**
@@ -356,7 +356,14 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		open = true;
 	}
 
-	private final boolean get1() { // try to get the next solution; if none,
+    /**
+     * Tell Prolog engine to fetch the next solution for the current active query (like hitting ;)
+     * If there are no more solutions, then just close the query
+     *
+     * @return whether a new solutions was found or there are no more solutions
+     * @throws PrologException with the term of the error from Prolog (e.g., syntax error in query or non existence of predicates)
+     */
+	private final boolean fetchNextSolution() { // try to get the next solution; if none,
 									// close the query;
 		if (Prolog.next_solution(qid)) {
 			return true;
@@ -409,8 +416,8 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		// oughta check: thread has query's engine
 		if (!open) {
 			throw new JPLException("Query is not open");
-		} else if (get1()) {
-			return get2();
+		} else if (fetchNextSolution()) {
+			return getCurrentSolutionBindings();
 		} else {
 			return null;
 		}
@@ -420,7 +427,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		// oughta check: thread has query's engine
 		if (!open) {
 			throw new JPLException("Query is not open");
-		} else if (get1()) {
+		} else if (fetchNextSolution()) {
 			return get2WithNameVars();
 		} else {
 			return null;
@@ -459,10 +466,10 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @return A Map representing a substitution.
 	 */
 	public final Map<String, Term> nextSolution() {
-		return get2();
+		return getCurrentSolutionBindings();
 	}
 
-	private final Map<String, Term> get2() {
+	private final Map<String, Term> getCurrentSolutionBindings() {
 		if (!open) {
 			throw new JPLException("Query is not open");
 		} else {
