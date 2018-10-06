@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import java.util.NoSuchElementException;
+
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.engine_t;
 import org.jpl7.fli.fid_t;
