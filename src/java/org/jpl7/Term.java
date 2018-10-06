@@ -94,7 +94,7 @@ public abstract class Term {
 	 */
 	public int arity() { // overridden in Compound, Variable
 		return 0;
-	};
+	}
 
 	/**
 	 * @return the type ("text", "string", "reserved_symbol", "jref" etc.) of an Atom
@@ -153,9 +153,9 @@ public abstract class Term {
 	 * Variable instances in this table are guaranteed to be unique and are keyed on Strings which are Prolog internal
 	 * representations of the variables.
 	 *
-	 * @param bindings
+	 * @param varnames_to_Terms
 	 *            table holding Term substitutions, keyed on names of Variables.
-	 * @param vars
+	 * @param vars_to_Vars
 	 *            A Map holding the Variables that occur thus far in the term; keyed by internal (Prolog) string rep.
 	 */
 	protected void getSubst(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars) {
@@ -546,7 +546,7 @@ public abstract class Term {
 	 */
 	public String name() { // overridden in Atom, Compound, Variable
 		throw new JPLException("name() is undefined for " + this.typeName());
-	};
+	}
 
 	/**
 	 * The (non-null, non-String) Object which this org.jpl7.JRef refers to, iff this Term is a JRef.
