@@ -118,6 +118,15 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
+	 * Returns the context module for this Query
+	 *
+	 * @return a String representing the context in which the goal will be run
+	 */
+	public final String getContext() { return contextModule; }
+
+
+
+	/**
 	 * This constructor creates a Query whose goal is the specified Term. The
 	 * Query is initially closed. <b>NB</b> Creating an instance of the Query
 	 * class does not result in a call to a Prolog engine. <b>NB</b> The goal
@@ -172,7 +181,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	private static Term Query1(String text, Term[] args) {
-        Term t = Util.textToTerm(text);
+		Term t = Util.textToTerm(text);
 		if (t instanceof Atom) {
 			return new Compound(text, args);
 		} else {
@@ -188,10 +197,11 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *            the Prolog source text of this Query
 	 */
 	public Query(String text) {
-        this(Util.textToTerm(text));
+		this(Util.textToTerm(text));
 	}
 
 	/**
+     * This method is required by Iterator interface
 	 * a Query is its own Iterator
 	 *
 	 * @see java.lang.Iterable#iterator()
@@ -200,20 +210,19 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		return this;
 	}
 
-	/**
-	 * Whether this Query has a (further) solution.
-     * Same as {@link #hasMoreSolutions()}
-	 *
-	 * @see java.util.Iterator#hasNext()
-	 */
+    /**
+     * This method is required by Iterator interface
+     * It is a wrapper for {@link #hasMoreSolutions()}
+     *
+     * @see java.util.Iterator#hasNext()
+     */
 	public boolean hasNext() {
 	    return hasMoreSolutions();
 	}
 
 	/**
-	 * Returns the next solution (if any); otherwise exception
-     *
-     * Same as {@link #nextSolution()}
+     * This method is required by Iterator interface
+     * It is a wrapper for {@link #nextSolution()}
 	 *
 	 * @see java.util.Iterator#next()
 	 */
@@ -230,7 +239,30 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		// no op
 	}
 
-	/**
+    /**
+     * This method implements part of the java.util.Enumeration interface.
+     * It is a wrapper for {@link #hasMoreSolutions()}.
+     *
+     * @return true if the Prolog query yields a (or another) solution, else
+     *         false.
+     */
+    public final boolean hasMoreElements() {
+        return hasMoreSolutions();
+    }
+
+    /**
+     * This method implements part of the java.util.Enumeration interface.
+     * It is a wrapper for {@link #nextSolution()}
+     * <p>
+     *
+     * @return A Map representing a substitution.
+     */
+    public final Object nextElement() {
+        return nextSolution();
+    }
+
+
+    /**
 	 * These variables are used and set across the hasMoreElements and
 	 * nextElement Enumeration interface implementation
 	 */
@@ -248,9 +280,10 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	private qid_t qid = null; // id of current Prolog query iff open, else null
 
     private Boolean hasNextSolution = null; // is there a next solution? null means "we do not know yet, haven't fetch"
-	//
+
+
 	/**
-	 * isOpen() returns true iff the query is open.
+	 * Whether the query is open.
 	 *
 	 * @return true if the query is open, otherwise false.
 	 */
@@ -258,7 +291,15 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		return open;
 	}
 
-	/**
+    /**
+     * Returns the engine attached to this query
+     *
+     * @return a long number representing the id of the SWI Prolog engine used in this query
+     */
+    public final long getEngine() { return engine.value; }
+
+
+    /**
 	 * This method returns true if JPL was able to initiate a "call" of this
 	 * Query within a Prolog engine. It is designed to be used with the
 	 * nextSolution() method to retrieve one or more substitutions in the form
@@ -282,20 +323,9 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
         return hasNextSolution;
 	}
 
-    /**
-     * This method implements part of the java.util.Enumeration interface. It is
-     * a wrapper for hasMoreSolutions.
-     *
-     * @return true if the Prolog query yields a (or another) solution, else
-     *         false.
-     */
-    public final boolean hasMoreElements() {
-        return hasMoreSolutions();
-    }
 
 
-
-    /**
+        /**
          * This method returns true if JPL was able to initiate a "call" of this
          * Query within the Prolog engine. It is designed to be used with the
          * getSolution() and close() methods to retrieve one or more substitutions
@@ -480,18 +510,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			}
 			return varnames_to_Terms2;
 		}
-	}
-
-
-	/**
-	 * This method implements part of the java.util.Enumeration interface. It is
-	 * a wrapper for nextSolution.
-	 * <p>
-	 *
-	 * @return A Map representing a substitution.
-	 */
-	public final Object nextElement() {
-		return nextSolution();
 	}
 
 	/**

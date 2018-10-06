@@ -153,9 +153,9 @@ public abstract class Term {
 	 * Variable instances in this table are guaranteed to be unique and are keyed on Strings which are Prolog internal
 	 * representations of the variables.
 	 *
-	 * @param bindings
+	 * @param varnames_to_Terms
 	 *            table holding Term substitutions, keyed on names of Variables.
-	 * @param vars
+	 * @param vars_to_Vars
 	 *            A Map holding the Variables that occur thus far in the term; keyed by internal (Prolog) string rep.
 	 */
 	protected void getSubst(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars) {

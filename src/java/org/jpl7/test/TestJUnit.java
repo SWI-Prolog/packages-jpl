@@ -283,6 +283,16 @@ public class TestJUnit extends TestCase {
 		assertEquals("an Atom's .toString() value is quoted iff appropriate", a.toString(), toString);
 	}
 
+	public void testEscapesInAtomToString() {
+		Atom atom = new Atom("a'b");
+		assertEquals("'a\\'b'", atom.toString());
+	}
+
+	public void testEscapesInCompoundToString() {
+		Compound comp = new Compound("p'q");
+		assertEquals("'p\\'q'", comp.toString());
+	}
+
 	public void testAtomArity() {
 		Atom a = new Atom("willy");
 		assertEquals("an Atom has arity zero", a.arity(), 0);

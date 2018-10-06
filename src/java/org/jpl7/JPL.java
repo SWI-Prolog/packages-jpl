@@ -1,7 +1,9 @@
 package org.jpl7;
 
 import java.io.File;
+import java.util.Map;
 
+//import com.sun.deploy.util.StringUtils;
 import org.jpl7.fli.Prolog;
 
 /**
@@ -291,7 +293,11 @@ public class JPL {
 		if (s == null) {
 			throw new java.lang.NullPointerException(); // JPL won't call it
 														// this way
-		} else if ((len = s.length()) == 0) {
+            // to handle exceptions coming from Prolog of this form:
+            // error(existence_error(procedure, ':'(jpl, '/'(test, 0))), context(':'(system, '/'('$c_call_prolog', 0)), _4))
+//        } else if (StringUtils.trimWhitespace(s).equals(":") || (s.equals("/"))) {
+//		    return true
+        } else if ((len = s.length()) == 0) {
 			return false;
 		} else if ((c = s.charAt(0)) < 'a' || c > 'z') {
 			return false;
@@ -345,7 +351,27 @@ public class JPL {
 	 * @return a quoted form of the Atom's name, as understood by Prolog read/1
 	 */
 	protected static String quotedName(String name) {
-		return (isSimpleName(name) ? name : "'" + name + "'");
+        // TODO: This is not fully robust, as it fails to convert things like this:
+        // error(existence_error(procedure, ':'(jpl, '/'(test, 0))), context(':'(system, '/'('$c_call_prolog', 0)), _4))
+        // '/'('$c_call_prolog', 0)
+        // '$c_call_prolog' -------> will build following query term: :( jpl, quoted_name('$'(c_call_prolog), S) )
+        if (isSimpleName(name)) {
+			return name;
+		} else {
+//            Term t = new Compound(":", new Term[] {
+//                    new Atom("jpl"),
+//                    new Compound("quoted_name", new Term[] {
+//                            new Atom(name),
+//                            new Variable("S")
+//                    }) });
+
+            String query = String.format("jpl:quoted_name(%s,S)", name);
+            Query q = new Query(query);
+//            System.out.println((q.toString()));
+            Map<String,Term> sol = q.oneSolution();
+            Atom var_s = (Atom) sol.get("S");
+            return var_s.name;
+		}
 	}
 
 	/**
