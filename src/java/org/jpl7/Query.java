@@ -201,6 +201,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
+     * This method is required by Iterator interface
 	 * a Query is its own Iterator
 	 *
 	 * @see java.lang.Iterable#iterator()
@@ -209,19 +210,19 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		return this;
 	}
 
-	/**
-	 * whether this Query has a (further) solution
-	 *
-	 * @see java.util.Iterator#hasNext()
-	 */
+    /**
+     * This method is required by Iterator interface
+     * It is a wrapper for {@link #hasMoreSolutions()}
+     *
+     * @see java.util.Iterator#hasNext()
+     */
 	public boolean hasNext() {
 	    return hasMoreSolutions();
 	}
 
 	/**
-	 * Returns the next solution (if any); otherwise exception
-     *
-     * Same as {@link #nextSolution()}
+     * This method is required by Iterator interface
+     * It is a wrapper for {@link #nextSolution()}
 	 *
 	 * @see java.util.Iterator#next()
 	 */
@@ -238,7 +239,30 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		// no op
 	}
 
-	/**
+    /**
+     * This method implements part of the java.util.Enumeration interface.
+     * It is a wrapper for {@link #hasMoreSolutions()}.
+     *
+     * @return true if the Prolog query yields a (or another) solution, else
+     *         false.
+     */
+    public final boolean hasMoreElements() {
+        return hasMoreSolutions();
+    }
+
+    /**
+     * This method implements part of the java.util.Enumeration interface.
+     * It is a wrapper for {@link #nextSolution()}
+     * <p>
+     *
+     * @return A Map representing a substitution.
+     */
+    public final Object nextElement() {
+        return nextSolution();
+    }
+
+
+    /**
 	 * These variables are used and set across the hasMoreElements and
 	 * nextElement Enumeration interface implementation
 	 */
@@ -256,9 +280,10 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	private qid_t qid = null; // id of current Prolog query iff open, else null
 
     private Boolean hasNextSolution = null; // is there a next solution? null means "we do not know yet, haven't fetch"
-	//
+
+
 	/**
-	 * isOpen() returns true iff the query is open.
+	 * Whether the query is open.
 	 *
 	 * @return true if the query is open, otherwise false.
 	 */
@@ -485,28 +510,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			}
 			return varnames_to_Terms2;
 		}
-	}
-
-	/**
-	 * This method implements part of the java.util.Enumeration interface. It is
-	 * a wrapper for hasMoreSolutions.
-	 *
-	 * @return true if the Prolog query yields a (or another) solution, else
-	 *         false.
-	 */
-	public final boolean hasMoreElements() {
-		return hasMoreSolutions();
-	}
-
-	/**
-	 * This method implements part of the java.util.Enumeration interface. It is
-	 * a wrapper for nextSolution.
-	 * <p>
-	 *
-	 * @return A Map representing a substitution.
-	 */
-	public final Object nextElement() {
-		return nextSolution();
 	}
 
 	/**
