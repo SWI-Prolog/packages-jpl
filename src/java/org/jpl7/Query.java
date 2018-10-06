@@ -181,7 +181,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	private static Term Query1(String text, Term[] args) {
-        Term t = Util.textToTerm(text);
+		Term t = Util.textToTerm(text);
 		if (t instanceof Atom) {
 			return new Compound(text, args);
 		} else {
@@ -197,7 +197,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *            the Prolog source text of this Query
 	 */
 	public Query(String text) {
-        this(Util.textToTerm(text));
+		this(Util.textToTerm(text));
 	}
 
 	/**
@@ -215,15 +215,13 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @see java.util.Iterator#hasNext()
 	 */
 	public boolean hasNext() {
-		if (!open) { // lazily open the Query, enabling it to be its own
-						// iterator
-			open();
-		}
-		return fetchNextSolution();
+	    return hasMoreSolutions();
 	}
 
 	/**
-	 * this Query's next solution
+	 * Returns the next solution (if any); otherwise exception
+     *
+     * Same as {@link #nextSolution()}
 	 *
 	 * @see java.util.Iterator#next()
 	 */
@@ -232,7 +230,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * this method (required by Iterator interface) is a no-op
+	 * This method (required by Iterator interface) is a no-op
 	 *
 	 * @see java.util.Iterator#remove()
 	 */
@@ -328,12 +326,12 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 											// Prolog engine?
 			engine = Prolog.attach_pool_engine(); // may block for a while, or
 													// fail
-//			System.out.println("###########> JPL attaching engine[" + engine.value + "] for " +
-//					   this.hashCode() + ":" + this.toString());
+			//System.out.println("JPL attaching engine[" + engine.value + "] for " +
+			//		   this.hashCode() + ":" + this.toString());
 		} else { // this Java thread has an attached engine
 			engine = Prolog.current_engine();
-//			System.out.println("=========> JPL reusing engine[" + engine.value + "] for " +
-//					   this.hashCode() + ":" + this.toString());
+			//System.out.println("JPL reusing engine[" + engine.value + "] for " +
+			//		   this.hashCode() + ":" + this.toString());
 		}
 		//
 		// here, we must check for a module prefix, e.g.
@@ -376,13 +374,13 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
         hasNextSolution = null;
     }
 
-        /**
-         * Tell Prolog engine to fetch the next solution for the current active query (like hitting ;)
-         * If there are no more solutions, then just close the query
-         *
-         * @return whether a new solutions was found or there are no more solutions
-         * @throws PrologException with the term of the error from Prolog (e.g., syntax error in query or non existence of predicates)
-         */
+    /**
+     * Tell Prolog engine to fetch the next solution for the current active query (like hitting ;)
+     * If there are no more solutions, then just close the query
+     *
+     * @return whether a new solutions was found or there are no more solutions
+     * @throws PrologException with the term of the error from Prolog (e.g., syntax error in query or non existence of predicates)
+     */
 	private final boolean fetchNextSolution() { // try to get the next solution; if none,
 									// close the query;
 		if (Prolog.next_solution(qid)) {
@@ -402,45 +400,11 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * This method returns a java.util.Map, which represents a set of bindings
-	 * from the names of query variables to terms within the solution.
-	 * <p>
-	 * For example, if a Query has an occurrence of a jpl.Variable, say, named
-	 * "X", one can obtain the Term bound to "X" in the solution by looking up
-	 * "X" in the Map.
-	 *
-	 * <pre>
-	 * Variable x = new Variable("X");
-	 * Query q = // obtain Query reference (with x in the Term array)
-	 * while (q.hasMoreSolutions()) {
-	 *     Map solution = q.nextSolution();
-	 *     // make t the Term bound to "X" in the solution
-	 *     Term t = (Term) solution.get("X");
-	 *     // ...
-	 * }
-	 * </pre>
-	 *
-	 * Programmers should obey the following rules when using this method.
-	 * <menu>
-	 * <li>The nextSolution() method should only be called after the
-	 * hasMoreSolutions() method returns true; otherwise a JPLException will be
-	 * raised, indicating that the Query is no longer open.
-	 * <li>The nextSolution() and hasMoreSolutions() should be called in the
-	 * same thread of execution, for a given Query instance. </menu>
-	 *
-	 * This method will throw a JPLException if Query is not open.
-	 *
-	 * @return A Map representing a substitution, or null
+	 * @Deprecated use nextSolution()
 	 */
+	@Deprecated
 	public final Map<String, Term> getSolution() {
-		// oughta check: thread has query's engine
-		if (!open) {
-			throw new JPLException("Query is not open");
-		} else if (fetchNextSolution()) {
-			return getCurrentSolutionBindings();
-		} else {
-			return null;
-		}
+	    return nextSolution();
 	}
 
 	public final Map<String, Term> getSubstWithNameVars() {
@@ -456,7 +420,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 
 	/**
 	 * This method returns a java.util.Map, which represents a binding from the
-	 * names of query variables to terms within the solution.
+	 * names of query variables to terms within the next solution.
 	 * <p>
 	 * For example, if a Query has an occurrence of a jpl.Variable, say, named
 	 * "X", one can obtain the Term bound to "X" in the solution by looking up
@@ -473,17 +437,12 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * }
 	 * </pre>
 	 *
-	 * Programmers should obey the following rules when using this method.
-	 * <menu>
-	 * <li>The nextSolution() method should only be called after the
-	 * hasMoreSolutions() method returns true; otherwise a JPLException will be
-	 * raised, indicating that the Query is no longer open.
-	 * <li>The nextSolution() and hasMoreSolutions() should be called in the
-	 * same thread of execution, for a given Query instance. </menu>
+	 * Programmers should be careful to call this method after checking that
+     * there is indeed a solution, via method hasMoreSolutions().
 	 *
-	 * This method will throw a JPLException if Query is not open.
-	 *
-	 * @return A Map representing a substitution.
+     *  @return A Map representing a substitution of the next solution.
+     *  @throws JPLException if Query is not open.
+     *  @throws NoSuchElementException if there are no more new solutions.
 	 */
 	public final Map<String, Term> nextSolution() {
         if (hasMoreSolutions()) {
@@ -498,17 +457,9 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			throw new JPLException("Query is not open, cannot retrive solution bindings.");
 		} else {
 			Map<String, Term> substitution = new HashMap<String, Term>();
-			Term.getSubsts(substitution, new HashMap<term_t, Variable>(), goal_.args()); // NB
-																							// I
-																							// reckon
-																							// getSubsts
-																							// needn't
-																							// be
-																							// in
-																							// Term
-																							// (but
-																							// where
-																							// else?)
+			// TODO: getSubsts is in Term class, should it be there? Otherwise, where else?
+			Term.getSubsts(substitution, new HashMap<term_t, Variable>(), goal_.args());
+
 			return substitution;
 		}
 	}
