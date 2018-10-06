@@ -19,11 +19,16 @@ configure_file(config.h.cmake config.h)
 
 link_directories(${JNI_INCLUDE_DIRS})
 
+set(JPLCONFIG)
+if(APPLE)
+  set(JPLCONFIG jpl_config.pl)
+endif()
+
 swipl_plugin(
     libjpl
     C_SOURCES src/c/jpl.c
     C_LIBS ${JNI_LIBRARIES}
-    PL_LIBS jpl.pl)
+    PL_LIBS jpl.pl ${JPLCONFIG})
 target_include_directories(
     plugin_libjpl BEFORE PRIVATE ${JNI_INCLUDE_DIRS})
 
