@@ -17,7 +17,7 @@ The **objectives of JPL** are to:
 To learn about JPL refer to the main [JPL 7 site])(https://jpl7.org/), which includes the Java API (to access Prolog from Java) and the Prolog API (to access Java from Prolog), and our [Wiki](https://github.com/ssardina-research/packages-jpl/wiki) with some useful information and guides on how to use (and understand) JPL.
 
 
-## WHY THIS FORK THEN?
+## Why this fork then?
 
 I have forked the main [JPL Github repo](https://github.com/SWI-Prolog/packages-jpl) mainly for two reasons:
 
@@ -39,7 +39,7 @@ One example of such use is the SARL Agent System to play the [2017 Multi-Agent A
 * The old JPL 3.x documentation: <http://www.swi-prolog.org/packages/jpl/>
 
 
-## CONTACT
+## Contact
 
 Sebastian Sardina - ssardina@gmail.com (for this fork)
 
