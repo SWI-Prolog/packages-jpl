@@ -25,12 +25,12 @@ if(APPLE)
 endif()
 
 swipl_plugin(
-    libjpl
+    jpl
+    MODULE libjpl
     C_SOURCES src/c/jpl.c
     C_LIBS ${JNI_LIBRARIES}
+    C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
-target_include_directories(
-    plugin_libjpl BEFORE PRIVATE ${JNI_INCLUDE_DIRS})
 
 # Does not yet work due to path issues.
 if(0)
@@ -52,6 +52,7 @@ swipl_examples(DIRECTORIES ${EXJAVA} SUBDIR java)
 pkg_doc(
     jpl
     SUBSECTION
-	SOURCE jpl.pl jpldoc.tex)
+	SOURCE jpl.pl jpldoc.tex
+    DEPENDS jpl)
 
 endif(JNI_FOUND)
