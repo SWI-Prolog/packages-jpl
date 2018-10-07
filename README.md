@@ -22,6 +22,7 @@ The objectives of JPL are to:
   * It includes the Java API (to access Prolog from Java) and the Prolog API (to access Java from Prolog).
 * The main Github repository for JPL 7 (which this one is a fork of): <https://github.com/SWI-Prolog/packages-jpl> 
 * The documentation of SWI `library(jpl)`: <http://www.swi-prolog.org/pldoc/man?section=jpl>
+* [Our Wiki](https://github.com/ssardina-research/packages-jpl/wiki) with some useful information and guides.
 * The old JPL 3.x documentation: <http://www.swi-prolog.org/packages/jpl/>
 
 
