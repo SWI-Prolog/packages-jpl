@@ -3,6 +3,42 @@ project(swipl-jpl)
 
 include("../cmake/PrologPackage.cmake")
 
+# On MacOS we have /usr/libexec/java_home to find the appropriate
+# JAVA_HOME.  We now use `java_home` when found.  Should we limit
+# this to APPLE?  The java_home program claims to support -t JNI,
+# which makes sense as that is what we want.  Unfortunately, with
+# this flag we get an old MacOS version rather than the Oracle one.
+
+if(NOT JAVA_HOME)
+  find_program(
+      PROG_JAVA_HOME
+      java_home
+      HINTS /usr/libexec
+      DOC "Tool to find Java home")
+  mark_as_advanced(PROG_JAVA_HOME)
+
+  if(PROG_JAVA_HOME)
+    message("-- Find Java home using ${PROG_JAVA_HOME}")
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(jdatamodel -d64)
+    else()
+      set(jdatamodel -d32)
+    endif()
+
+    exec_program(${PROG_JAVA_HOME} ARGS ${jdatamodel}
+		 OUTPUT_VARIABLE jhome
+		 RETURN_VALUE jhome_ret)
+    message("${jhome_ret}")		 
+    if(jhome_ret EQUAL 0)
+      set(JAVA_HOME ${jhome} CACHE FILEPATH "Home of Java")
+      message("-- ${PROG_JAVA_HOME} claims Java at ${JAVA_HOME}")
+    else()
+      message(WARNING "-- ${PROG_JAVA_HOME} - failed: ${jhome}")
+    endif()
+  endif()
+endif()
+
 find_package(JNI)
 if(JNI_FOUND)
 
