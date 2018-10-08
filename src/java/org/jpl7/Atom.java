@@ -177,7 +177,7 @@ public class Atom extends Term {
 	 * @return string representation of an Atom
 	 */
 	public String toString() {
-		return JPL.quotedName(name);
+		return (JPL.isSimpleName(name) ? name : "'" + name + "'");
 	}
 
 	/**
