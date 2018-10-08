@@ -29,7 +29,6 @@ if(NOT JAVA_HOME)
     exec_program(${PROG_JAVA_HOME} ARGS ${jdatamodel}
 		 OUTPUT_VARIABLE jhome
 		 RETURN_VALUE jhome_ret)
-    message("${jhome_ret}")		 
     if(jhome_ret EQUAL 0)
       set(JAVA_HOME ${jhome} CACHE FILEPATH "Home of Java")
       message("-- ${PROG_JAVA_HOME} claims Java at ${JAVA_HOME}")
@@ -68,11 +67,14 @@ swipl_plugin(
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
 
-# Does not yet work due to path issues.
-if(0)
+################
+# Testing
+
 test_libs(jpl
 	  PACKAGES plunit)
-endif()
+
+################
+# Install examples
 
 set(EXPL jpl_colour_choose_demo.pl jpl_jlist_demo.pl jpl_table_demo.pl
          jpl_text_entry_demo.pl jpl_versions_demo.pl)
@@ -84,6 +86,9 @@ prepend(EXJAVA examples/java ${EXJAVA})
 
 swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
 swipl_examples(DIRECTORIES ${EXJAVA} SUBDIR java)
+
+################
+# Documentation
 
 pkg_doc(
     jpl
