@@ -414,7 +414,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * @Deprecated use nextSolution()
+	 * @deprecated use nextSolution()
 	 */
 	@Deprecated
 	public final Map<String, Term> getSolution() {
