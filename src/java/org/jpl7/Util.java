@@ -141,8 +141,7 @@ public final class Util {
 	 *
 	 * Throws PrologException containing error(syntax_error(_),_) if text is invalid.
 	 *
-	 * @param text
-	 *            A Prolog source text denoting a term
+	 * @param text A Prolog source text denoting a term
 	 * @return Term a JPL Term equivalent to the given source text
 	 */
 	public static Term textParamsToTerm(String text, Term[] params) {
@@ -197,7 +196,7 @@ public final class Util {
 	/**
 	 * whether the Term represents a proper list
 	 *
-	 * @param term
+	 * @param term the term to check if it is a list
 	 * @return whether the Term represents a proper list
 	 */
 	public static final boolean isList(Term term) {
@@ -205,8 +204,7 @@ public final class Util {
 	}
 
 	/**
-	 * @param term
-	 *            any Term
+	 * @param term any Term
 	 * @return the length of the proper list which the Term represents, else -1
 	 */
 	public static int listToLength(Term term) {
@@ -222,12 +220,12 @@ public final class Util {
 	/**
 	 * converts a proper list to an array of terms, else throws an exception
 	 *
-	 * @throws JPLException
+	 * @throws JPLException if the term passed is not itself a Prolog list term
 	 * @return an array of terms whose successive elements are the corresponding members of the list (if it is a list)
 	 */
 	public static Term[] listToTermArray(Term t) {
 		try {
-			int len = t.listLength(); // exception if not a list
+			int len = Util.listToLength(t); // exception if not a list
 			Term[] ts = new Term[len];
 			for (int i = 0; i < len; i++) {
 				ts[i] = t.arg(1);

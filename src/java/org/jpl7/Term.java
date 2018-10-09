@@ -512,7 +512,7 @@ public abstract class Term {
 	/**
 	 * The length of this list, iff it is one, else an exception is thrown.
 	 *
-	 * @throws JPLException
+	 * @throws JPLException if the term is not a list
 	 * @return the length (as an int) of this list, iff it is one.
 	 * @deprecated Use {@link Util#listToLength(Term)}
 	 */
@@ -619,21 +619,22 @@ public abstract class Term {
 	 * This internal method is public because it needs to be callable via JNI, but it is not part of JPL's public API
 	 * and should not be used by applications.
 	 *
-	 * @param ps
-	 * @return
-	 * @throws JPLException
-	 *             if there are more actual than formal parameters.
+	 * @param params a list of terms to fill the ? placeholders in the Term object
+	 * @return a new term representing the original term with all its placeholders ? replaced by the corresponding
+	 * 			successive parameter
+	 * @throws JPLException if there are more actual than formal parameters.
 	 */
-	public Term putParams(Term[] ps) { // necessarily (?) public
+	public Term putParams(Term[] params) { // necessarily (?) public
 		IntHolder next = new IntHolder();
 		next.value = 0;
-		Term t2 = this.putParams1(next, ps);
-		if (next.value != ps.length) {
+		Term t2 = this.putParams1(next, params);
+		if (next.value != params.length) {
 			throw new JPLException("more actual params than formal");
 		}
 		return t2;
 	}
 
+	// TODO: is this used at all? Can we remove it?
 	protected Term putParams(Term plist) { // was public
 		Term[] ps = plist.toTermArray();
 		return putParams(ps);
@@ -721,7 +722,7 @@ public abstract class Term {
 	 */
 	public final Term[] toTermArray() {
 		try {
-			int len = this.listLength(); // exception if not a well formed list
+			int len = Util.listToLength(this); // exception if not a well formed list
 			Term[] ts = new Term[len];
 			Term t = this;
 			for (int i = 0; i < len; i++) { // no need to check functor (it's a list)

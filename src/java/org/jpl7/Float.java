@@ -54,12 +54,12 @@ import org.jpl7.fli.term_t;
 public class Float extends Term {
 
 	/**
-	 * this Float's immutable (double) value
+	 * This Float's immutable (double) value
 	 */
 	protected final double value;
 
 	/**
-	 * construct a Float with the supplied (double) value
+	 * Construct a Float with the supplied (double) value
 	 *
 	 * @param value
 	 *            this Float's value
@@ -73,7 +73,7 @@ public class Float extends Term {
 	}
 
 	/**
-	 * returns the (double) value of this Float
+	 * Returns the (double) value of this Float
 	 *
 	 * @return the (double) value of this Float
 	 */
@@ -94,12 +94,12 @@ public class Float extends Term {
 	}
 
 	/**
-	 * returns the (double) value of this Float, converted to a float
+	 * Returns the (double) value of this Float, converted to a float
 	 *
 	 * @return the (double) value of this Float, converted to a float
 	 */
 	public final float floatValue() {
-		return (new Double(value)).floatValue();
+		return (float) value;
 	}
 
 	/**
@@ -112,25 +112,21 @@ public class Float extends Term {
 	}
 
 	/**
-	 * returns the (double) value of this Float, converted to an int
+	 * Returns the (double) value of this Float, converted to an int
 	 *
 	 * @return the (double) value of this Float, converted to an int
 	 */
 	public final int intValue() {
-		return (new Double(value)).intValue();
-	}
-
-	public Object jrefToObject() {
-		throw new JPLException("term is neither a JRef nor @(null)");
+		return (int) value;
 	}
 
 	/**
-	 * returns the (double) value of this Float, converted to a long
+	 * Returns the (double) value of this Float, converted to a long
 	 *
 	 * @return the (double) value of this Float, converted to a long
 	 */
 	public final long longValue() {
-		return (new Double(value)).longValue();
+		return (long) value;
 	}
 
 	/**
