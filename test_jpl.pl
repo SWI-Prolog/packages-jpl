@@ -51,6 +51,9 @@
 :- use_module(library(jpl)).
 :- use_module(library(plunit)).
 
+% Using cmake location
+:- jpl:add_search_path('CLASSPATH', 'src/java/jpltest.jar').
+% For before cmake
 :- jpl:add_search_path('CLASSPATH', 'jpltest.jar').
 
 test_jpl :-
