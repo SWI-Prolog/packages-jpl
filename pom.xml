@@ -78,8 +78,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <!--<source>1.8</source>-->
+                    <target>1.7</target>
                     <!-- Exclude tests from source compilation as JUnit is a test dependency -->
                     <excludes>
                         <exclude>org/jpl7/test/*.java</exclude>
