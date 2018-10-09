@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2017, VU University Amsterdam
+    Copyright (c)  2017-2018, VU University Amsterdam
+                              CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,7 +54,7 @@
 jpl_config_dylib :-
     current_prolog_flag(apple, true),
     !,
-    jpl_config_dylib(['libjvm.dylib', 'libjsig.dylib']).
+    jpl_config_dylib(['libjvm.dylib', 'libjsig.dylib', 'libjawt.dylib']).
 jpl_config_dylib :-
     print_message(warning, jpl_config(apple_only)).
 
@@ -82,9 +83,13 @@ update_dylib(JavaHome, Dylib, Dependencies, Lib) :-
     ;   print_message(error, jpl_config(not_found(Dylib, Lib))),
         fail
     ).
+update_dylib(_, _, _, Lib) :-
+    debug(dylib(jpl), 'Skipping ~p as this is not a dependency', [Lib]).
+
 
 jni_dylib_dir('jre/lib/server').
 jni_dylib_dir('lib/server').                    % Java 8
+jni_dylib_dir('lib').                           % Java 10 libjawt.dylib
 
 java_home(Dir) :-
     getenv('JAVA_HOME', Dir),
