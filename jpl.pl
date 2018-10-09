@@ -3909,11 +3909,6 @@ to_atom(Term, Atom) :-
     ;   term_to_atom(Term, Atom)
     ).
 
-:- public quoted_name/2.                        % called from JPL.quotedName()
-
-quoted_name(Atom, Quoted) :-
-    format(atom(Quoted), '~q', [Atom]).
-
 %! jpl_pl_syntax(-Syntax:atom)
 %
 % unifies Syntax with 'traditional' or 'modern' according to the mode in which SWI Prolog 7.x was started

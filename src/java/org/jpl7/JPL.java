@@ -345,19 +345,7 @@ public class JPL {
 	 * @return a quoted form of the Atom's name, as understood by Prolog read/1
 	 */
 	protected static String quotedName(String name) {
-		if (isSimpleName(name)) {
-			return name;
-		} else {
-			return ((Atom)
-			new Query(
-				new Compound(":", new Term[] {
-					new Atom("jpl"),
-					new Compound("quoted_name", new Term[] {
-						new Atom(name),
-						new Variable("S")
-					})
-				})).oneSolution().get("S")).name;
-		}
+		return (isSimpleName(name) ? name : "'" + name + "'");
 	}
 
 	/**

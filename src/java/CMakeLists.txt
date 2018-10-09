@@ -52,7 +52,22 @@ set(TEST org/jpl7/test/Family.java
 	org/jpl7/test/TestJUnit.java
 	org/jpl7/test/TestOLD.java)
 
-set(CMAKE_JAVA_COMPILE_FLAGS -source 7 -target 7)
+option(JAVA_COMPATIBILITY
+       "Make jpl.jar compatible with older Java versions"
+       OFF)
+set(JAVA_COMPATIBILITY_VERSION 7 CACHE STRING
+    "Java compatibility version for jpl.jar")
+
+# The -Xlint:-options silences the build warning about boot classpath
+# compatibility.
+
+if(JAVA_COMPATIBILITY)
+  set(CMAKE_JAVA_COMPILE_FLAGS
+      -source 7 -target 7 -Xlint:-options)
+else()
+  set(CMAKE_JAVA_COMPILE_FLAGS)
+endif()
+
 add_jar(jpl_jar
 	SOURCES ${CLS} ${FLI}
 	OUTPUT_NAME jpl)

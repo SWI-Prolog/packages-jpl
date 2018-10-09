@@ -39,7 +39,9 @@ if(NOT JAVA_HOME)
 endif()
 
 find_package(JNI)
-if(JNI_FOUND)
+find_package(Java COMPONENTS Development)
+if(JNI_FOUND AND Java_FOUND)
+include(JUnit)
 
 add_subdirectory(src/java)
 
@@ -63,15 +65,27 @@ swipl_plugin(
     jpl
     MODULE libjpl
     C_SOURCES src/c/jpl.c
-    C_LIBS ${JNI_LIBRARIES}
+    C_LIBS ${JNI_LIBRARIES} libswipl
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
 
 ################
 # Testing
 
-test_libs(jpl
-	  PACKAGES plunit)
+test_lib(jpl
+	 NAME java_in_prolog
+	 PACKAGES plunit)
+
+if(JUNIT_JAR)
+add_test(
+    NAME jpl:prolog_in_java
+    COMMAND env SWI_HOME_DIR=../../home
+                TEST_JPL=../../../packages/jpl/test_jpl.pl
+	    ${Java_JAVA_EXECUTABLE}
+		 -Djava.library.path=.
+                 -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
+                 junit.textui.TestRunner org.jpl7.test.TestJUnit)
+endif()
 
 ################
 # Install examples
@@ -96,4 +110,4 @@ pkg_doc(
 	SOURCE jpl.pl jpldoc.tex
     DEPENDS jpl)
 
-endif(JNI_FOUND)
+endif(JNI_FOUND AND Java_FOUND)
