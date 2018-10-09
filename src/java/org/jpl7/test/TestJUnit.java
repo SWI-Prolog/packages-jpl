@@ -858,7 +858,7 @@ public class TestJUnit extends TestCase {
 	public void testJRef1() {
 		int i = 76543;
 		Integer I = new Integer(i);
-		Query q = new Query("jpl_call(?,intValue,[],I2)", new Term[] { Term.objectToJRef(I) });
+		Query q = new Query("jpl_call(?,intValue,[],I2)", new Term[] { JPL.newJRef(I) });
 		Term I2 = q.oneSolution().get("I2");
 		assertTrue(I2.isInteger() && I2.intValue() == i);
 	}
@@ -896,25 +896,25 @@ public class TestJUnit extends TestCase {
 
 	public void testJRef4() {
 		Term jrefSB = Query.oneSolution("jpl_new('java.lang.StringBuffer',['abc'],SB)").get("SB");
-		assertTrue(jrefSB.isJRef() && ((StringBuffer) jrefSB.jrefToObject()).toString().equals("abc"));
+		assertTrue(jrefSB.isJRef() && ((StringBuffer) jrefSB.object()).toString().equals("abc"));
 	}
 
 	public void testJRef5() {
 		String token = "foobar345";
 		Term a = Query.oneSolution("jpl_new('java.lang.StringBuffer',[?],A)", new Term[] { new Atom(token) }).get("A");
-		assertTrue(((java.lang.StringBuffer) (a.jrefToObject())).toString().equals(token));
+		assertTrue(((java.lang.StringBuffer) (a.object())).toString().equals(token));
 	}
 
 	public void testRef6() {
 		Term nullJRef = new Compound("@", new Term[] { new Atom("null") });
-		Object nullObject = nullJRef.jrefToObject();
+		Object nullObject = nullJRef.object();
 		assertNull("@(null) .jrefToObject() yields null", nullObject);
 	}
 
 	public void testRef7() {
 		Term badJRef = new Compound("@", new Term[] { new Atom("foobar") });
 		try {
-			badJRef.jrefToObject(); // should throw exception
+			badJRef.object(); // should throw exception
 			fail("@(foobar) .jrefToObject() shoulda thrown JPLException"); // shouldn't
 																			// get
 																			// to
@@ -941,7 +941,7 @@ public class TestJUnit extends TestCase {
 		Query q = new Query("atom_chars(prolog, Cs), member(C, Cs)");
 		Map<String, Term> soln;
 		q.open();
-		while ((soln = q.getSolution()) != null) {
+		while ((soln = q.nextSolution()) != null) {
 			sb.append(((Atom) soln.get("C")).name());
 		}
 		q.close();
@@ -951,7 +951,7 @@ public class TestJUnit extends TestCase {
 	public void testOpenGetClose2() {
 		Query q = new Query("dummy"); // we're not going to open this...
 		try {
-			q.getSolution(); // should throw exception (query not open)
+			q.nextSolution(); // should throw exception (query not open)
 			fail("getSolution() succeeds on unopened Query"); // shouldn't get
 																// to here
 		} catch (JPLException e) { // expected exception class
@@ -979,16 +979,16 @@ public class TestJUnit extends TestCase {
 	public void testGetSolution1() {
 		Query q = new Query("fail");
 		q.open();
-		q.getSolution();
+		q.nextSolution();
 		assertTrue("an opened query on which getSolution has failed once is closed", !q.isOpen());
 	}
 
 	public void testGetSolution2() {
 		Query q = new Query("fail"); // this query has no solutions
 		q.open(); // this opens the query
-		q.getSolution(); // this finds no solution, and closes the query
+		q.nextSolution(); // this finds no solution, and closes the query
 		try {
-			q.getSolution(); // this call is invalid, as the query is closed
+			q.nextSolution(); // this call is invalid, as the query is closed
 			// shouldn't get to here
 			fail("jpl.Query#getSolution() shoulda thrown JPLException");
 		} catch (JPLException e) { // correct exception class, but is it correct
@@ -1039,7 +1039,7 @@ public class TestJUnit extends TestCase {
 		Query q = new Query("atom_chars(prolog, Cs), member(C, Cs)");
 		Map<String, Term> soln;
 		q.open();
-		while ((soln = q.getSolution()) != null) {
+		while ((soln = q.nextSolution()) != null) {
 			Atom a = (Atom) soln.get("C");
 			if (Query.hasSolution("memberchk(?, [l,o,r])", new Term[] { a })) { // this
 																				// query
