@@ -27,6 +27,8 @@ public class TestJUnit extends TestCase {
 			: System.getenv("TEST_JPL"));
 	public static final String syntax = (System.getenv("SWIPL_SYNTAX") == null ? "modern"
 			: System.getenv("SWIPL_SYNTAX"));
+	public static final String home = (System.getenv("SWI_HOME_DIR") == null ? "../.."
+			: System.getenv("SWI_HOME_DIR"));
 
 	public TestJUnit(String name) { // called for each public void test*()
 									// method
@@ -39,12 +41,12 @@ public class TestJUnit extends TestCase {
 			Prolog.set_default_init_args(new String[] {
 				"swipl.dll", "-x", startup, "-f", "none",
 				"-g", "true", "--traditional", "-q",
-				"--home=../..", "--nosignals" });
+				"--home="+home, "--nosignals" });
 		} else {
 			Prolog.set_default_init_args(new String[] {
 				"swipl.dll", "-x", startup, "-f", "none",
 				"-g", "true", "-q",
-				"--home=../..", "--nosignals" });
+				"--home="+home, "--nosignals" });
 		}
 		assertTrue((new Query("consult", new Term[] { new Atom(test_jpl) })).hasSolution());
 		assertTrue((new Query("use_module(library(jpl))")).hasSolution());
