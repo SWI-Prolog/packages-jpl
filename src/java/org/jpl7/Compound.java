@@ -235,20 +235,6 @@ public class Compound extends Term {
 	}
 
 	/**
-	 * returns null iff this Compound represents @(null)
-	 *
-	 * @see org.jpl7.Term#jrefToObject()
-	 * @see org.jpl7.Atom#jrefToObject()
-	 */
-	public Object jrefToObject() {
-		if (this.isJNull()) {
-			return null; // it's a valid jref, representing null
-		} else {
-			throw new JPLException("term is not a JRef");
-		}
-	}
-
-	/**
 	 * the name (unquoted) of this Compound
 	 *
 	 * @return the name (unquoted) of this Compound

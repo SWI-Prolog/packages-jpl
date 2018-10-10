@@ -177,15 +177,7 @@ public class Atom extends Term {
 	 * @return string representation of an Atom
 	 */
 	public String toString() {
-        // Old version calling Prolog - not robust with strings coming from Prolog lib as exceptions like:
-        // error(existence_error(procedure, ':'(jpl, '/'(test, 0))), context(':'(system, '/'('$c_call_prolog', 0)), _4))
-        // return JPL.quotedName(name);
-
-		if (JPL.isSimpleName(name)) {
-			return name;
-		} else {
-			return "'" + name + "'";
-		}
+		return (JPL.isSimpleName(name) ? name : "'" + name + "'");
 	}
 
 	/**
