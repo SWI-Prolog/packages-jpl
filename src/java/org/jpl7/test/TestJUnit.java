@@ -19,6 +19,9 @@ import org.jpl7.Util;
 import org.jpl7.Variable;
 import org.jpl7.fli.Prolog;
 
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 
 // This class defines all the tests which are run from Java.
 // It needs junit.framework.TestCase and junit.framework.TestSuite, which are not supplied with JPL.
@@ -908,29 +911,27 @@ public class TestJUnit extends TestCase {
 	}
 
 	public void testRef6() {
-		Term nullJRef = new Compound("@", new Term[] { new Atom("null") });
+		Term nullJRef = JPL.newJRef(null);
 		Object nullObject = nullJRef.object();
-		assertNull("@(null) .jrefToObject() yields null", nullObject);
+		assertNull("JPL null Term yields a null object", nullObject);
 	}
 
 	public void testRef7() {
-		Term badJRef = new Compound("@", new Term[] { new Atom("foobar") });
+		Term badJRef = new Compound("hello", new Term[] { new Atom("foobar") }); // term hello(foobar)
 		try {
 			badJRef.object(); // should throw exception
-			fail("@(foobar) .jrefToObject() shoulda thrown JPLException"); // shouldn't
-																			// get
-																			// to
-																			// here
+			fail("@(foobar).object() should thrown JPLException"); // shouldn't get to here
 		} catch (JPLException e) { // expected exception class
 			if (e.getMessage().endsWith("term is not a JRef")) {
 				// OK: an appropriate exception was thrown
 			} else {
-				fail("@(foobar) .jrefToObject() threw wrong JPLException: " + e);
+				fail("hello(foobar).object() threw wrong JPLException: " + e);
 			}
 		} catch (Exception e) {
-			fail("@(foobar) .jrefToObject() threw wrong exception class: " + e);
+			fail("hello(foobar).object() threw wrong exception class: " + e);
 		}
 	}
+
 
 	public void testForeignFrame1() {
 		int ls1 = Query.oneSolution("statistics(localused,LS)").get("LS").intValue();
@@ -954,16 +955,16 @@ public class TestJUnit extends TestCase {
 		Query q = new Query("dummy"); // we're not going to open this...
 		try {
 			q.nextSolution(); // should throw exception (query not open)
-			fail("getSolution() succeeds on unopened Query"); // shouldn't get
+			fail("nextSolution() succeeds on unopened Query"); // shouldn't get
 			// to here
 		} catch (JPLException e) { // expected exception class
 			if (e.getMessage().contains("existence_error")) {
 				// OK: an appropriate exception was thrown
 			} else {
-				fail("jpl.Query#getSolution() threw wrong JPLException: " + e);
+				fail("jpl.Query#nextSolution() threw wrong JPLException: " + e);
 			}
 		} catch (Exception e) {
-			fail("jpl.Query#getSolution() threw wrong exception class: " + e);
+			fail("jpl.Query#nextSolution() threw wrong exception class: " + e);
 		}
 	}
 
@@ -991,11 +992,11 @@ public class TestJUnit extends TestCase {
 		try {
 			q.nextSolution(); // this call is invalid, as the query is closed
 			// shouldn't get to here
-			fail("jpl.Query#getSolution() should have thrown JPLException");
+			fail("jpl.Query#nextSolution() should have thrown JPLException");
 		} catch (NoSuchElementException e) {
 			// all good, right exception threw
 		} catch (Exception e) {
-			fail("jpl.Query#getSolution() threw wrong class of exception: " + e);
+			fail("jpl.Query#nextSolution() threw wrong class of exception: " + e);
 		}
 	}
 
