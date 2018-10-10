@@ -2,6 +2,7 @@ package org.jpl7.test;
 
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -17,6 +18,7 @@ import org.jpl7.Term;
 import org.jpl7.Util;
 import org.jpl7.Variable;
 import org.jpl7.fli.Prolog;
+
 
 // This class defines all the tests which are run from Java.
 // It needs junit.framework.TestCase and junit.framework.TestSuite, which are not supplied with JPL.
@@ -941,8 +943,8 @@ public class TestJUnit extends TestCase {
 		Query q = new Query("atom_chars(prolog, Cs), member(C, Cs)");
 		Map<String, Term> soln;
 		q.open();
-		while ((soln = q.nextSolution()) != null) {
-			sb.append(((Atom) soln.get("C")).name());
+		while (q.hasMoreSolutions()) {
+			sb.append(((Atom) q.nextSolution().get("C")).name());
 		}
 		q.close();
 		assertEquals("prolog", sb.toString());
@@ -953,9 +955,9 @@ public class TestJUnit extends TestCase {
 		try {
 			q.nextSolution(); // should throw exception (query not open)
 			fail("getSolution() succeeds on unopened Query"); // shouldn't get
-																// to here
+			// to here
 		} catch (JPLException e) { // expected exception class
-			if (e.getMessage().endsWith("Query is not open")) {
+			if (e.getMessage().contains("existence_error")) {
 				// OK: an appropriate exception was thrown
 			} else {
 				fail("jpl.Query#getSolution() threw wrong JPLException: " + e);
@@ -979,29 +981,19 @@ public class TestJUnit extends TestCase {
 	public void testGetSolution1() {
 		Query q = new Query("fail");
 		q.open();
-		q.nextSolution();
-		assertTrue("an opened query on which getSolution has failed once is closed", !q.isOpen());
+		if (q.hasMoreSolutions()) q.nextSolution();
+		assertTrue("A query has exhausted all solutions but it is still open", !q.isOpen());
 	}
 
 	public void testGetSolution2() {
 		Query q = new Query("fail"); // this query has no solutions
 		q.open(); // this opens the query
-		q.nextSolution(); // this finds no solution, and closes the query
 		try {
 			q.nextSolution(); // this call is invalid, as the query is closed
 			// shouldn't get to here
-			fail("jpl.Query#getSolution() shoulda thrown JPLException");
-		} catch (JPLException e) { // correct exception class, but is it correct
-									// in detail?
-			if (e.getMessage().endsWith("Query is not open")) { // ...which
-																// should throw
-																// a
-																// JPLException
-																// like this
-				// OK: an appropriate exception was thrown
-			} else {
-				fail("jpl.Query#getSolution() threw incorrect JPLException: " + e);
-			}
+			fail("jpl.Query#getSolution() should have thrown JPLException");
+		} catch (NoSuchElementException e) {
+			// all good, right exception threw
 		} catch (Exception e) {
 			fail("jpl.Query#getSolution() threw wrong class of exception: " + e);
 		}
@@ -1039,25 +1031,15 @@ public class TestJUnit extends TestCase {
 		Query q = new Query("atom_chars(prolog, Cs), member(C, Cs)");
 		Map<String, Term> soln;
 		q.open();
-		while ((soln = q.nextSolution()) != null) {
+		while (q.hasMoreSolutions()) {
+			soln = q.nextSolution();
 			Atom a = (Atom) soln.get("C");
-			if (Query.hasSolution("memberchk(?, [l,o,r])", new Term[] { a })) { // this
-																				// query
-																				// opens
-																				// and
-																				// closes
-																				// while
-																				// an
-																				// earlier
-																				// query
-																				// is
-																				// still
-																				// open
+			if (Query.hasSolution("memberchk(?, [l,o,r])", new Term[] { a })) {
+				// this query opens and closes while an earlier query is still open
 				sb.append(((Atom) soln.get("C")).name());
 			}
 		}
-		assertTrue(!q.isOpen()); // q will have been closed by the final
-									// getSolution()
+		assertTrue(!q.isOpen()); // q will have been closed by solution exhaustion
 		assertEquals("rolo", sb.toString());
 	}
 
