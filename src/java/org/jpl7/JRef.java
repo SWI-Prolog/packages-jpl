@@ -85,10 +85,16 @@ public class JRef extends Term {
 	 * @deprecated Use org.jpl7.JRef.object()
 	 * @see org.jpl7.JRef#object()
 	 */
+	@Deprecated
 	public Object jrefToObject() {
 		return object;
 	}
 
+	/**
+	 * Returns the actual object the JREF stands for
+	 *
+	 * @return the object of the JREF term
+	 */
 	public Object object() {
 		return object;
 	}
@@ -107,11 +113,10 @@ public class JRef extends Term {
 	}
 
 	/**
-	 * The (non-null, non-String) Object which this org.jpl7.JRef represents
-	 *
-	 * @return the (non-null, non-String) Object which this org.jpl7.JRef represents
-	 * @deprecated
+	 * @deprecated Use org.jpl7.JRef.object()
+	 * @see org.jpl7.JRef#object()
 	 */
+	@Deprecated
 	public Object ref() {
 		return object;
 	}

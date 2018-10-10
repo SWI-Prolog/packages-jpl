@@ -280,6 +280,8 @@ public class Compound extends Term {
 		}
 	}
 
+
+
 	/**
 	 * a prefix functional representation of a Compound of the form name(arg1,...), where 'name' is quoted iff necessary
 	 * (to be valid Prolog soutce text) and each argument is represented according to its toString() method.

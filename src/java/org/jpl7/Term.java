@@ -549,14 +549,16 @@ public abstract class Term {
 	}
 
 	/**
-	 * The (non-null, non-String) Object which this org.jpl7.JRef refers to, iff this Term is a JRef.
+	 * The Object which this org.jpl7.JRef refers to, iff this Term is a JRef or just JPL.JNULL.
 	 *
-	 * @return the (non-null, non-String) Object which this Term refers to, iff this Term is a JRef.
-	 * @throws JPLException
-	 *             if this Term is not a JRef.
+	 * @return the Object which this Term refers to, iff this Term is a JRef.
+	 * @throws JPLException if this Term is not a JRef or not NULL term
 	 */
 	public Object object() { // overridden in JRef
-		throw new JPLException("this Term is not a JRef");
+		if (this == JPL.JNULL)
+		    return null;
+        else
+            throw new JPLException("this term is not a JRef");
 	}
 
 	/**
