@@ -65,7 +65,7 @@ swipl_plugin(
     jpl
     MODULE libjpl
     C_SOURCES src/c/jpl.c
-    C_LIBS ${JNI_LIBRARIES} libswipl
+    C_LIBS ${JAVA_JVM_LIBRARY} libswipl
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
 
