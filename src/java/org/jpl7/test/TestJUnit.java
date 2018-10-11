@@ -19,10 +19,6 @@ import org.jpl7.Util;
 import org.jpl7.Variable;
 import org.jpl7.fli.Prolog;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-
 // This class defines all the tests which are run from Java.
 // It needs junit.framework.TestCase and junit.framework.TestSuite, which are not supplied with JPL.
 public class TestJUnit extends TestCase {
