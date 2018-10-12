@@ -84,6 +84,7 @@
     ]).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 
 /** <module> A Java interface for SWI Prolog 7.x
 
@@ -3944,25 +3945,26 @@ prolog:error_message(java_exception(Ex)) -->
 
 user:file_search_path(jar, swi(lib)).
 
-%! add_search_path(+Var, +Value) is det.
+%!  add_search_path(+Var, +Value) is det.
 %
-%    Add value to the end of  search-path   Var.  Value is normally a
-%    directory. Does not change the environment  if Dir is already in
-%    Var.
+%   Add value to the  end  of  search-path   Var.  Value  is  normally a
+%   directory. Does not change the environment if Dir is already in Var.
 %
-%    @param Value    Path to add in OS notation.
+%   @param Value    Path to add in OS notation.
 
 add_search_path(Path, Dir) :-
     (   getenv(Path, Old)
-    ->  (   current_prolog_flag(windows, true)
-        ->  Sep = (;)
-        ;   Sep = (:)
-        ),
+    ->  search_path_separator(Sep),
         (   atomic_list_concat(Current, Sep, Old),
-        memberchk(Dir, Current)
+            memberchk(Dir, Current)
         ->  true            % already present
         ;   atomic_list_concat([Old, Sep, Dir], New),
-        setenv(Path, New)
+            (   debugging(jpl(path))
+            ->  env_var_separators(A,Z),
+                debug(jpl(path), 'Set ~w~w~w to ~p', [A,Path,Z,New])
+            ;   true
+            ),
+            setenv(Path, New)
         )
     ;   setenv(Path, Dir)
     ).
@@ -3976,6 +3978,12 @@ search_path_separator((;)) :-
     current_prolog_flag(windows, true),
     !.
 search_path_separator(:).
+
+env_var_separators(@,@) :-
+    current_prolog_flag(windows, true),
+    !.
+env_var_separators($,'').
+
 
          /*******************************
          *         LOAD THE JVM         *
@@ -4008,14 +4016,11 @@ check_java_environment :-
 check_lib(Name) :-
     check_shared_object(Name, File, EnvVar, Absolute),
     (   Absolute == (-)
-    ->  (   current_prolog_flag(windows, true)
-        ->  A = '%', Z = '%'
-        ;   A = '$', Z = ''
-        ),
+    ->  env_var_separators(A, Z),
         format(string(Msg), 'Please add directory holding ~w to ~w~w~w',
-           [ File, A, EnvVar, Z ]),
+               [ File, A, EnvVar, Z ]),
         throw(error(existence_error(library, Name),
-            context(_, Msg)))
+                    context(_, Msg)))
     ;   true
     ).
 
@@ -4078,10 +4083,7 @@ add_jpl_to_classpath :-
     ->  true
     ;   Old = '.'
     ),
-    (       current_prolog_flag(windows, true)
-    ->      Separator = ';'
-    ;       Separator = ':'
-    ),
+    search_path_separator(Separator),
     atomic_list_concat([JplJAR, Old], Separator, New),
     setenv('CLASSPATH', New).
 
