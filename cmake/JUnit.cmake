@@ -18,6 +18,8 @@ find_file(JUNIT_JAR
     PATHS
         ${JAVA_LIB_INSTALL_DIR}
         /usr/share/java
+	/opt/local/share/java
+	/usr/local/share/java
 )
 MARK_AS_ADVANCED(JUNIT_JAR)
 
