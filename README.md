@@ -31,6 +31,7 @@ One example of such use is the SARL Agent System to play the [2017 Multi-Agent A
 
 ## Important Links
 
+* Thie repo as a Maven artiact in Jitpack: <https://jitpack.io/#ssardina-research/packages-jpl>
 * The main current JPL 7 site: <https://jpl7.org/)
   * It includes the Java API (to access Prolog from Java) and the Prolog API (to access Java from Prolog).
 * The main Github repository for JPL 7 (which this one is a fork of): <https://github.com/SWI-Prolog/packages-jpl> 
