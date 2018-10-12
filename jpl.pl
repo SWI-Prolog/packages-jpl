@@ -4138,10 +4138,28 @@ add_java_to_ldpath :-
     ).
 add_java_to_ldpath.
 
-%! java_dirs// is det.
+%!  extend_java_library_path(+OsDir)
 %
-%    DCG that produces existing candidate directories holding
-%    Java related DLLs
+%   Add Dir (in OS notation) to   the  Java =|-Djava.library.path|= init
+%   options.
+
+extend_java_library_path(OsDir) :-
+    jpl_get_default_jvm_opts(Opts0),
+    (   select(PathOpt0, Opts0, Rest),
+        sub_atom(PathOpt0, 0, _, _, '-Djava.library.path=')
+    ->  search_path_separator(Separator),
+        atomic_list_concat([PathOpt0, Separator, OsDir], PathOpt),
+        NewOpts = [PathOpt|Rest]
+    ;   atom_concat('-Djava.library.path=', OsDir, PathOpt),
+        NewOpts = [PathOpt|Opts0]
+    ),
+    debug(jpl(path), 'Setting Java options to ~p', [NewOpts]),
+    jpl_set_default_jvm_opts(NewOpts).
+
+%!  java_dirs// is det.
+%
+%   DCG  that  produces  existing  candidate  directories  holding  Java
+%   related DLLs
 
 java_dirs -->
     % JDK directories
@@ -4215,8 +4233,8 @@ setup_jvm :-
     add_jpl_to_classpath,
     add_java_to_ldpath,
     libjpl(JPL),
-    add_jpl_to_ldpath(JPL),
     catch(load_foreign_library(JPL), E, report_java_setup_problem(E)),
+    add_jpl_to_ldpath(JPL),
     assert(jvm_ready).
 
 report_java_setup_problem(E) :-
