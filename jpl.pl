@@ -699,13 +699,14 @@ jpl_get_instance_field(array(_), Obj, FieldID, V) :-
     jGetObjectField(Obj, FieldID, V).
 
 
-%! jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs) is det
+%!  jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs) is det
 %
-% Array should be a (zero-based) array of some object (array or non-array)  type;  LoIndex  is  an  integer,   0  =<  LoIndex  <
-%   length(Array); HiIndex is an  integer,   LoIndex-1  =< HiIndex <
-%   length(Array); at call, Vcs will be   unbound; at exit, Vcs will
-%   be  a  list   of   (references    to)   the   array's   elements
-%   [LoIndex..HiIndex] inclusive
+%   Array should be a  (zero-based)  array   of  some  object  (array or
+%   non-array)  type;  LoIndex  is  an   integer,    0   =<   LoIndex  <
+%   length(Array);  HiIndex  is  an  integer,  LoIndex-1  =<  HiIndex  <
+%   length(Array); at call, Vcs will be unbound;  at exit, Vcs will be a
+%   list of (references to)  the   array's  elements  [LoIndex..HiIndex]
+%   inclusive
 
 jpl_get_object_array_elements(Array, Lo, Hi, Vcs) :-
     (   Lo =< Hi
@@ -717,7 +718,7 @@ jpl_get_object_array_elements(Array, Lo, Hi, Vcs) :-
     ).
 
 
-%! jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs) is det.
+%!  jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs) is det.
 %
 %   Array  should  be  a  (zero-based)  Java  array  of  (primitive)
 %   ElementType; Vcs should be unbound on entry, and on exit will be
@@ -4097,30 +4098,32 @@ libjpl(File) :-
     ;   File = foreign(jpl)
     ).
 
-%! add_jpl_to_ldpath(+JPL) is det.
+%!  add_jpl_to_ldpath(+JPL) is det.
 %
-%    Add the directory holding jpl.so  to   search  path  for dynamic
-%    libraries. This is needed for callback   from Java. Java appears
-%    to use its own search  and  the   new  value  of the variable is
-%    picked up correctly.
+%   Add  the  directory  holding  jpl.so  to  search  path  for  dynamic
+%   libraries. This is needed for callback   from  Java. Java appears to
+%   use its own search and the new value   of  the variable is picked up
+%   correctly.
 
 add_jpl_to_ldpath(JPL) :-
     absolute_file_name(JPL, File,
                [ file_type(executable),
+                 access(read),
                  file_errors(fail)
                ]),
     !,
     file_directory_name(File, Dir),
     prolog_to_os_filename(Dir, OsDir),
+    extend_java_library_path(OsDir),
     current_prolog_flag(shared_object_search_path, PathVar),
     add_search_path(PathVar, OsDir).
 add_jpl_to_ldpath(_).
 
-%! add_java_to_ldpath is det.
+%!  add_java_to_ldpath is det.
 %
-%    Adds the directories holding jvm.dll and java.dll to the %PATH%.
-%    This appears to work on Windows. Unfortunately most Unix systems
-%    appear to inspect the content of LD_LIBRARY_PATH only once.
+%   Adds the directories holding jvm.dll  and   java.dll  to the %PATH%.
+%   This appears to work on  Windows.   Unfortunately  most Unix systems
+%   appear to inspect the content of LD_LIBRARY_PATH only once.
 
 add_java_to_ldpath :-
     current_prolog_flag(windows, true),
