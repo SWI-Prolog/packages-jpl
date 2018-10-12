@@ -63,6 +63,7 @@ endif()
 
 swipl_plugin(
     jpl
+    SHARED jpl
     MODULE libjpl
     C_SOURCES src/c/jpl.c
     C_LIBS ${JAVA_JVM_LIBRARY} libswipl
