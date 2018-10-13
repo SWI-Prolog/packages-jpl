@@ -158,7 +158,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 
 	/**
 	 * If text denotes an atom, this constructor is shorthand for
-	 * <font face="monospace">new Query(new Compound(name,args))</font>, but if
+	 * new Query(new Compound(name,args)), but if
 	 * text denotes a term containing N query (?) symbols and there are N args,
 	 * each query is replaced by its corresponding arg to provide the new
 	 * Query's goal.
@@ -414,6 +414,9 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
+     * Returns the next solution of the query
+     *
+     * @return the binding representing the next solution
 	 * @deprecated use nextSolution()
 	 */
 	@Deprecated
@@ -516,7 +519,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * Map&lt;String, Term&gt; sub3 = q.nextSolution();
 	 * q.close();
 	 * </pre>
-	 * <p>
 	 */
 	public final void close() {
 		if (!open) {
@@ -571,7 +573,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *         Variable instances; in JPL 2.x onwards they are keyed by the
 	 *         (String) names of variables, which is consistent with the Term
 	 *         type being just a concrete syntax for terms (and hence queries).
-	 *         <p>
 	 */
 	public final Map<String, Term>[] allSolutions() {
 		if (open) {
@@ -667,6 +668,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * Maps of variablename-to-term bindings) every found solution (in the order
 	 * in which they were found).
 	 *
+     * @param n the number of solutions to cover
 	 * @return an array of Maps (possibly none), each of which is a solution (in
 	 *         the order in which they were found) of the Query; at most 'n'
 	 *         solutions will be found and returned. <b>NB</b> in JPL 1.0.1,
@@ -679,7 +681,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *         Variable instances; in JPL 2.x onwards they are keyed by the
 	 *         (String) names of variables, which is consistent with the Term
 	 *         type being just a concrete syntax for terms (and hence queries).
-	 *         <p>
 	 */
 	public final Map<String, Term>[] nSolutions(long n) {
 		if (open) {
@@ -714,6 +715,8 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @param goal
 	 *            the goal of this Query
+     * @param n the number of solutions to cover
+     * @return an array of up to the the first n binding solutions
 	 */
 	public static final Map<String, Term>[] nSolutions(Term goal, long n) {
 		return (new Query(goal)).nSolutions(n);
@@ -729,6 +732,8 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @param text
 	 *            a Prolog source text fragment denoting a goal
+     * @param n the number of solutions to cover
+     * @return an array of up to the the first n binding solutions
 	 */
 	public static final Map<String, Term>[] nSolutions(String text, long n) {
 		return (new Query(text)).nSolutions(n);
@@ -754,6 +759,8 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @param params
 	 *            terms to be substituted for the respective questionmarks in
 	 *            the query text
+     * @param n the number of solutions to cover
+     * @return an array of up to the the first n binding solutions
 	 */
 	public static final Map<String, Term>[] nSolutions(String text, Term[] params, long n) {
 		return (new Query(text, params)).nSolutions(n);
@@ -770,7 +777,6 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @return the first solution, if the query has one, as a (possibly empty)
 	 *         Map. If the return value is null, this means that the Query has
 	 *         no solutions.
-	 *         <p>
 	 */
 	public final Map<String, Term> oneSolution() {
 		if (open) {
@@ -796,6 +802,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @param goal
 	 *            the goal of this Query
+	 * @return binding of the first solution
 	 */
 	public static final Map<String, Term> oneSolution(Term goal) {
 		return (new Query(goal)).oneSolution();
@@ -809,6 +816,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @param text
 	 *            a Prolog source text fragment denoting a goal
+	 * @return binding of the first solution
 	 */
 	public static final Map<String, Term> oneSolution(String text) {
 		return (new Query(text)).oneSolution();
@@ -832,6 +840,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @param params
 	 *            terms to be substituted for the respective questionmarks in
 	 *            the query text
+	 * @return binding of the first solution
 	 */
 	public static final Map<String, Term> oneSolution(String text, Term[] params) {
 		return (new Query(text, params)).oneSolution();
@@ -863,6 +872,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @param goal
 	 *            the goal of this Query
+	 * @return true iff the query can be proved
 	 */
 	public static final boolean hasSolution(Term goal) {
 		return (new Query(goal)).hasSolution();
@@ -876,6 +886,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *
 	 * @param text
 	 *            the goal of this Query, as Prolog source text
+	 * @return true iff the query can be proved
 	 */
 	public static final boolean hasSolution(String text) {
 		return (new Query(text)).hasSolution();
@@ -899,6 +910,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * @param params
 	 *            terms to be substituted for the respective questionmarks in
 	 *            the query text
+	 * @return true iff the query can be proved
 	 */
 	public static final boolean hasSolution(String text, Term[] params) {
 		return (new Query(text, params)).hasSolution();

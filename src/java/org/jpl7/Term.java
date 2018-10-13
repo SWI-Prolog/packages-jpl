@@ -60,10 +60,10 @@ public abstract class Term {
 	 * returns the i-th (1+) argument of a Term;
 	 *
 	 * defined only for Compound
-	 *
+     *
+	 * @param i the index of argument to return
 	 * @return the i-th argument of a (Compound) Term
-	 * @throws JPLException
-	 *             if Term is not a Compound
+	 * @throws JPLException if Term is not a Compound
 	 */
 	public Term arg(int i) { // overridden in Compound
 		throw new JPLException("arg(int) is undefined for " + this.typeName() + " instances");
@@ -564,6 +564,9 @@ public abstract class Term {
 	}
 
 	/**
+     * Returns the JREF term for an object
+     *
+     * @param object object of interest
 	 * @return a new JRef which references object, or @(null) if object == null.
 	 * @throws JPLException
 	 *             if object is a String.
