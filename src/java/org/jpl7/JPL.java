@@ -265,8 +265,8 @@ public class JPL {
 	 *
 	 * This method must be called before making any queries.
 	 *
-	 * @param args
-	 *            Initialization parameter list
+	 * @param args Initialization parameter list
+     * @return true iff initialization was new; false if already initialized
 	 */
 	public static boolean init(String[] args) {
 		return Prolog.set_default_init_args(args) && init();
@@ -275,15 +275,18 @@ public class JPL {
 	/**
 	 * Initialises the Prolog engine using the current default initialisation
 	 * parameters, and returns 'true' (or 'false' if already initialised).
+     *
+     * @return true if initialization was new, false if already initialized
 	 */
 	public static boolean init() {
 		return Prolog.initialise();
 	}
 
 	/**
-	 * @param s
-	 * @return whether s is a simple name, i.e. which needs no quoting in source
-	 *         text
+     * Checks if a string is a simple atom, with no quoting needed
+     *
+	 * @param s string to check if it is simple name (no quoting needed)
+	 * @return whether s is a simple name, i.e. which needs no quoting in source text
 	 */
 	protected static boolean isSimpleName(String s) {
 		int len;
@@ -326,7 +329,7 @@ public class JPL {
 	// }
 
 	/**
-	 * @param object
+	 * @param object the object of interest to get the JREF
 	 * @return a new Term instance which canonically represents the given object
 	 *         reference (concrete or null)
 	 */
@@ -342,6 +345,7 @@ public class JPL {
 	 * Returns a quoted (iff necessary) form of the Atom's name, as understood
 	 * by Prolog read/1
 	 *
+     * @param name  the name to quote if needed
 	 * @return a quoted form of the Atom's name, as understood by Prolog read/1
 	 */
 	protected static String quotedName(String name) {
