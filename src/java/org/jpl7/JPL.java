@@ -357,6 +357,7 @@ public class JPL {
 	 *
 	 * @deprecated
 	 */
+	@Deprecated
 	public static void halt() {
 		Prolog.halt(0);
 	}
