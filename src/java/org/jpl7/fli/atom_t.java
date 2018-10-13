@@ -33,7 +33,7 @@ package org.jpl7.fli;
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  * 
- * @author Fred Dushin <fadushin@syr.edu>
+ * @author Fred Dushin fadushin@syr.edu
  * @version $Revision$
  */
 public class atom_t extends LongHolder {
