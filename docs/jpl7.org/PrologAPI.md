@@ -2,6 +2,24 @@ JPL - Prolog API - overview
 ===========================================
 
 
+  * [Introduction](#introduction)
+  * [JPL types (Java types, as seen by Prolog)](#jpl-types-java-types-as-seen-by-prolog)
+  * [epresentation of Java values and references within Prolog](#epresentation-of-java-values-and-references-within-prolog)
+  * [Representation of Java types within Prolog (1): <em>structured</em> notation](#representation-of-java-types-within-prolog-1-structured-notation)
+  * [Representation of Java types within Prolog (2): <em>descriptor</em> notation](#representation-of-java-types-within-prolog-2-descriptor-notation)
+  * [Representation of Java types within Prolog (3): <em>classname</em> notation](#representation-of-java-types-within-prolog-3-classname-notation)
+  * [Creating instances of Java classes](#creating-instances-of-java-classes)
+  * [Calling methods of Java objects or classes](#calling-methods-of-java-objects-or-classes)
+  * [Fetching field values of Java objects or classes](#fetching-field-values-of-java-objects-or-classes)
+  * [Setting field values of Java objects or classes](#setting-field-values-of-java-objects-or-classes)
+  * [A slightly longer example](#a-slightly-longer-example)
+  * [Exceptions thrown by Java](#exceptions-thrown-by-java)
+  * [Gotchas](#gotchas)
+     * [Calling methods with no parameters](#calling-methods-with-no-parameters)
+     * [Calling void methods](#calling-void-methods)
+  * [To do](#to-do)
+
+
 Introduction
 --------------------------------------------------------------------------------------------
 
