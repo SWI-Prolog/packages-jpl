@@ -32,7 +32,7 @@ package org.jpl7.fli;
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  * 
- * @author Paul Singleton <paul@jbgb.com>
+ * @author Paul Singleton paul@jbgb.com
  * @version $Revision$
  */
 public class Int64Holder {
