@@ -305,7 +305,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	public final long getEngine() { return engine.value; }
 
 
-    /**
+        /**
 	 * This method returns true if JPL was able to initiate a "call" of this
 	 * Query within a Prolog engine. It is designed to be used with the
 	 * nextSolution() method to retrieve one or more substitutions in the form
@@ -431,6 +431,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	/**
 	 * @deprecated use nextSolution()
 	 */
+	@Deprecated
 	public final Map<String, Term> getSolution() {
 	    return nextSolution();
 	}
