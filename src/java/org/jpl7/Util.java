@@ -142,6 +142,7 @@ public final class Util {
 	 * Throws PrologException containing error(syntax_error(_),_) if text is invalid.
 	 *
 	 * @param text A Prolog source text denoting a term
+	 * @param params parameters to be injected in each ?
 	 * @return Term a JPL Term equivalent to the given source text
 	 */
 	public static Term textParamsToTerm(String text, Term[] params) {
@@ -220,6 +221,7 @@ public final class Util {
 	/**
 	 * converts a proper list to an array of terms, else throws an exception
 	 *
+	 * @param t  a list term
 	 * @throws JPLException if the term passed is not itself a Prolog list term
 	 * @return an array of terms whose successive elements are the corresponding members of the list (if it is a list)
 	 */

@@ -12,7 +12,7 @@ import org.jpl7.JPL;
  * See the file jpl.c for the native (ANSI C) implementations of these methods.
  * Refer to your local Prolog FLI documentations for the meanings of these
  * methods, and observe the following:
- * <p>
+ *
  *
  * <menu>
  * <li>The types and signatures of the following methods are almost in 1-1
