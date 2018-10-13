@@ -84,6 +84,7 @@
     ]).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 
 /** <module> A Java interface for SWI Prolog 7.x
 
@@ -699,13 +700,14 @@ jpl_get_instance_field(array(_), Obj, FieldID, V) :-
     jGetObjectField(Obj, FieldID, V).
 
 
-%! jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs) is det
+%!  jpl_get_object_array_elements(+Array, +LoIndex, +HiIndex, -Vcs) is det
 %
-% Array should be a (zero-based) array of some object (array or non-array)  type;  LoIndex  is  an  integer,   0  =<  LoIndex  <
-%   length(Array); HiIndex is an  integer,   LoIndex-1  =< HiIndex <
-%   length(Array); at call, Vcs will be   unbound; at exit, Vcs will
-%   be  a  list   of   (references    to)   the   array's   elements
-%   [LoIndex..HiIndex] inclusive
+%   Array should be a  (zero-based)  array   of  some  object  (array or
+%   non-array)  type;  LoIndex  is  an   integer,    0   =<   LoIndex  <
+%   length(Array);  HiIndex  is  an  integer,  LoIndex-1  =<  HiIndex  <
+%   length(Array); at call, Vcs will be unbound;  at exit, Vcs will be a
+%   list of (references to)  the   array's  elements  [LoIndex..HiIndex]
+%   inclusive
 
 jpl_get_object_array_elements(Array, Lo, Hi, Vcs) :-
     (   Lo =< Hi
@@ -717,7 +719,7 @@ jpl_get_object_array_elements(Array, Lo, Hi, Vcs) :-
     ).
 
 
-%! jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs) is det.
+%!  jpl_get_primitive_array_elements(+ElementType, +Array, +LoIndex, +HiIndex, -Vcs) is det.
 %
 %   Array  should  be  a  (zero-based)  Java  array  of  (primitive)
 %   ElementType; Vcs should be unbound on entry, and on exit will be
@@ -3943,25 +3945,26 @@ prolog:error_message(java_exception(Ex)) -->
 
 user:file_search_path(jar, swi(lib)).
 
-%! add_search_path(+Var, +Value) is det.
+%!  add_search_path(+Var, +Value) is det.
 %
-%    Add value to the end of  search-path   Var.  Value is normally a
-%    directory. Does not change the environment  if Dir is already in
-%    Var.
+%   Add value to the  end  of  search-path   Var.  Value  is  normally a
+%   directory. Does not change the environment if Dir is already in Var.
 %
-%    @param Value    Path to add in OS notation.
+%   @param Value    Path to add in OS notation.
 
 add_search_path(Path, Dir) :-
     (   getenv(Path, Old)
-    ->  (   current_prolog_flag(windows, true)
-        ->  Sep = (;)
-        ;   Sep = (:)
-        ),
+    ->  search_path_separator(Sep),
         (   atomic_list_concat(Current, Sep, Old),
-        memberchk(Dir, Current)
+            memberchk(Dir, Current)
         ->  true            % already present
         ;   atomic_list_concat([Old, Sep, Dir], New),
-        setenv(Path, New)
+            (   debugging(jpl(path))
+            ->  env_var_separators(A,Z),
+                debug(jpl(path), 'Set ~w~w~w to ~p', [A,Path,Z,New])
+            ;   true
+            ),
+            setenv(Path, New)
         )
     ;   setenv(Path, Dir)
     ).
@@ -3975,6 +3978,12 @@ search_path_separator((;)) :-
     current_prolog_flag(windows, true),
     !.
 search_path_separator(:).
+
+env_var_separators(@,@) :-
+    current_prolog_flag(windows, true),
+    !.
+env_var_separators($,'').
+
 
          /*******************************
          *         LOAD THE JVM         *
@@ -4007,14 +4016,11 @@ check_java_environment :-
 check_lib(Name) :-
     check_shared_object(Name, File, EnvVar, Absolute),
     (   Absolute == (-)
-    ->  (   current_prolog_flag(windows, true)
-        ->  A = '%', Z = '%'
-        ;   A = '$', Z = ''
-        ),
+    ->  env_var_separators(A, Z),
         format(string(Msg), 'Please add directory holding ~w to ~w~w~w',
-           [ File, A, EnvVar, Z ]),
+               [ File, A, EnvVar, Z ]),
         throw(error(existence_error(library, Name),
-            context(_, Msg)))
+                    context(_, Msg)))
     ;   true
     ).
 
@@ -4077,10 +4083,7 @@ add_jpl_to_classpath :-
     ->  true
     ;   Old = '.'
     ),
-    (       current_prolog_flag(windows, true)
-    ->      Separator = ';'
-    ;       Separator = ':'
-    ),
+    search_path_separator(Separator),
     atomic_list_concat([JplJAR, Old], Separator, New),
     setenv('CLASSPATH', New).
 
@@ -4097,30 +4100,32 @@ libjpl(File) :-
     ;   File = foreign(jpl)
     ).
 
-%! add_jpl_to_ldpath(+JPL) is det.
+%!  add_jpl_to_ldpath(+JPL) is det.
 %
-%    Add the directory holding jpl.so  to   search  path  for dynamic
-%    libraries. This is needed for callback   from Java. Java appears
-%    to use its own search  and  the   new  value  of the variable is
-%    picked up correctly.
+%   Add  the  directory  holding  jpl.so  to  search  path  for  dynamic
+%   libraries. This is needed for callback   from  Java. Java appears to
+%   use its own search and the new value   of  the variable is picked up
+%   correctly.
 
 add_jpl_to_ldpath(JPL) :-
     absolute_file_name(JPL, File,
                [ file_type(executable),
+                 access(read),
                  file_errors(fail)
                ]),
     !,
     file_directory_name(File, Dir),
     prolog_to_os_filename(Dir, OsDir),
+    extend_java_library_path(OsDir),
     current_prolog_flag(shared_object_search_path, PathVar),
     add_search_path(PathVar, OsDir).
 add_jpl_to_ldpath(_).
 
-%! add_java_to_ldpath is det.
+%!  add_java_to_ldpath is det.
 %
-%    Adds the directories holding jvm.dll and java.dll to the %PATH%.
-%    This appears to work on Windows. Unfortunately most Unix systems
-%    appear to inspect the content of LD_LIBRARY_PATH only once.
+%   Adds the directories holding jvm.dll  and   java.dll  to the %PATH%.
+%   This appears to work on  Windows.   Unfortunately  most Unix systems
+%   appear to inspect the content of LD_LIBRARY_PATH only once.
 
 add_java_to_ldpath :-
     current_prolog_flag(windows, true),
@@ -4133,10 +4138,28 @@ add_java_to_ldpath :-
     ).
 add_java_to_ldpath.
 
-%! java_dirs// is det.
+%!  extend_java_library_path(+OsDir)
 %
-%    DCG that produces existing candidate directories holding
-%    Java related DLLs
+%   Add Dir (in OS notation) to   the  Java =|-Djava.library.path|= init
+%   options.
+
+extend_java_library_path(OsDir) :-
+    jpl_get_default_jvm_opts(Opts0),
+    (   select(PathOpt0, Opts0, Rest),
+        sub_atom(PathOpt0, 0, _, _, '-Djava.library.path=')
+    ->  search_path_separator(Separator),
+        atomic_list_concat([PathOpt0, Separator, OsDir], PathOpt),
+        NewOpts = [PathOpt|Rest]
+    ;   atom_concat('-Djava.library.path=', OsDir, PathOpt),
+        NewOpts = [PathOpt|Opts0]
+    ),
+    debug(jpl(path), 'Setting Java options to ~p', [NewOpts]),
+    jpl_set_default_jvm_opts(NewOpts).
+
+%!  java_dirs// is det.
+%
+%   DCG  that  produces  existing  candidate  directories  holding  Java
+%   related DLLs
 
 java_dirs -->
     % JDK directories
@@ -4210,8 +4233,8 @@ setup_jvm :-
     add_jpl_to_classpath,
     add_java_to_ldpath,
     libjpl(JPL),
-    add_jpl_to_ldpath(JPL),
     catch(load_foreign_library(JPL), E, report_java_setup_problem(E)),
+    add_jpl_to_ldpath(JPL),
     assert(jvm_ready).
 
 report_java_setup_problem(E) :-
