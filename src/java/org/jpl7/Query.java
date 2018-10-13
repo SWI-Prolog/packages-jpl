@@ -94,7 +94,7 @@ import java.util.logging.Logger;
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  *
- * @author Fred Dushin <fadushin@syr.edu>
+ * @author Fred Dushin fadushin@syr.edu
  * @version $Revision$
  */
 public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, Term>> { // was

@@ -46,7 +46,7 @@ import org.jpl7.fli.term_t;
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  *
- * @author Fred Dushin <fadushin@syr.edu>
+ * @author Fred Dushin fadushin@syr.edu
  * @version $Revision$
  */
 public class Variable extends Term {

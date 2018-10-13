@@ -44,7 +44,7 @@ package org.jpl7;
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  * 
- * @author Fred Dushin <fadushin@syr.edu>
+ * @author Fred Dushin fadushin@syr.edu
  * @version $Revision$
  */
 public final class PrologException extends JPLException {
