@@ -27,8 +27,8 @@ The objectives of JPL are to:
 ## TABLE OF CONTENTS
 
 1. Setup and Install
-    * [JPL-Under-Linux-and-Windows](JPL-Under-Linux-and-Windows).
-    * [JPL-under-Mac-OS](JPL-under-Mac-OS): how to set it up under Mac OS.
+    * [Installing JPL in Linux and Windows](INSTALL).
+    * [Installing JPL in MacOS](JPLunderMacOS): how to set it up under Mac OS.
     * [Developing-JPL](Developing-JPL): how to set-up a development install for JPL.
 2. Guides and Tutorials:
     * [Getting-Started:-An-Example-Tutorial](Getting-Started:-An-Example-Tutorial): a walkthrough how one would use JPL from Java.
