@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<!-- saved from url=(0038)https://jpl7.org/PrologApiOverview.jsp -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+	
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="JPL 7.4.0 - a bidirectional programmatic interface between SWI Prolog 7.4 and Java SE Runtime Environment">
+	<meta name="author" content="Paul Singleton">
+	<link rel="icon" href="https://jpl7.org/img/favicon.ico">
+	<link href="./Prolog API - overview_files/bootstrap.min.css" rel="stylesheet">
+	<link href="./Prolog API - overview_files/jpl7.css" rel="stylesheet">
+
+
+
+	<title>Prolog API - overview</title>
+
+	<style type="text/css">
+		a.top {
+			font-size: 50%;
+		}
+
+		code {
+			padding: 0 0 0 0;
+		}
+
+		pre.code {
+			display: table;
+			padding-right: 5px;
+		}
+	</style>
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="lib/html5shiv.min.js"></script>
+	<script src="lib/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+	<div class="container">
+		<nav role="navigation" class="navbar navbar-default navbar-fixed-top">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="navbar-toggle">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a href="https://jpl7.org/ReleaseNotes701.jsp" class="navbar-brand" style="color:blue; font-size:200%; font-weight:bold;">JPL 7.4.0</a>
+			</div>
+			<div id="navbarCollapse" class="collapse navbar-collapse">
+				<ul class="nav navbar-nav">
+					<li class="dropdown">
+						<a data-toggle="dropdown" class="dropdown-toggle" href="https://jpl7.org/PrologApiOverview.jsp#">Prolog API <b class="caret"></b></a>
+						<ul role="menu" class="dropdown-menu">
+							<li><a href="https://jpl7.org/PrologApiOverview.jsp" title="JPL - Prolog API - Overview">Overview</a></li>
+							<li><a href="https://jpl7.org/PrologApiReference.jsp">Reference</a></li>
+							<li><a href="http://www.swi-prolog.org/pldoc/doc/swi/library/jpl.pl">JPL docs at swi-prolog.org</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a data-toggle="dropdown" class="dropdown-toggle" href="https://jpl7.org/PrologApiOverview.jsp#">Java API <b class="caret"></b></a>
+						<ul role="menu" class="dropdown-menu">
+							<li><a href="https://jpl7.org/JavaApiOverview.jsp" title="JPL - Java API - Overview">Overview</a></li>
+							<li><a href="https://jpl7.org/doc/index.html" target="_blank">JavaDoc</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a data-toggle="dropdown" class="dropdown-toggle" href="https://jpl7.org/PrologApiOverview.jsp#">Release notes <b class="caret"></b></a>
+						<ul role="menu" class="dropdown-menu">
+							<li><a href="https://jpl7.org/ReleaseNotes740.jsp">7.4.0</a></li>
+							<li><a href="https://jpl7.org/ReleaseNotes701.jsp">7.0.1</a></li>
+							<li><a href="https://jpl7.org/ReleaseNotes303.jsp">3.0.3</a></li>
+							<li><a href="https://jpl7.org/ReleaseNotes302.jsp">3.0.2</a></li>
+							<li><a href="https://jpl7.org/ReleaseNotes300.jsp">3.0.0</a></li>
+							<li><a href="https://jpl7.org/ReleaseNotes202.jsp">2.0.2</a></li>
+						</ul>
+					</li>
+
+				</ul>
+			</div>
+		</nav>
+
+
+
+<h1><a class="anchor" id="top"></a>JPL - Prolog API - overview</h1>
+
+<h2>Contents</h2>
+<ul>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#introduction">Introduction</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#JPL_types_Java_types_as_seen_by">JPL types (Java types, as modelled in Prolog)</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#representation_of_Java_values...">Representation of Java values and references within Prolog</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#repn_of_Java_types_1_structured">Representation of Java types within Prolog (1): <i>structured</i> notation</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#repn_of_Java_types_2_descriptor">Representation of Java types within Prolog (2): <i>descriptor</i> notation</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#repn_of_Java_types_3_classname">Representation of Java types within Prolog (3): <i>classname</i> notation</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#creating_instances_of_Java_classes">Creating instances of Java classes</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#calling_methods_of_Java_objects_...">Calling methods of Java objects or classes</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#fetching_field_values_of_Java_objects...">Fetching field values of Java objects or classes</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#setting_field_values_of_Java_objects...">Setting field values of Java objects or classes</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#a_slightly_longer_example">A slightly longer example</a></li>
+
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#exceptions">Exceptions thrown by Java</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#gotchas">Gotchas</a></li>
+	<li><a href="https://jpl7.org/PrologApiOverview.jsp#to_do">To do</a></li>
+</ul>
+
+<h2><a class="anchor" id="introduction"></a>Introduction <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>JPL's Prolog API is an interface which allows SWI Prolog 7.x programs
+	to dynamically create and manipulate Java objects.</p>
+
+<p>Here are some significant features of the interface and its implementation:</p>
+
+<ul>
+	<li>it is completely dynamic: no
+		precompilation is required to manipulate public Java classes which can be
+		found at run time, and methods or fields of objects which can be instantiated from them</li>
+	<li>it is interoperable with the JPL 7.4 Java API
+		(which evolved from Fred Dushin's JPL 1.0.1)</li>
+	<li>it requires SWI Prolog 7.4+ and a recent Java SE Runtime Environment</li>
+	<li>it exploits the <i>Invocation API</i> of the <i>Java Native Interface</i>
+		(both are mandatory features of any compliant JVM)</li>
+	<li>it is implemented as a single SWI Prolog library module (jpl.pl),
+		a compiled ANSI C foreign library (jpl.dll for Windows), and a Java class library (jpl.jar)</li>
+	<li>wherever feasible, Java data values and object references are represented within Prolog
+		canonically and without loss of information (minor exceptions:
+		Java <em>float</em> and <em>double</em> values are both converted to
+		Prolog <em>float</em> values; Java <em>byte</em>, <em>char</em>, <em>short</em>, <em>int</em> and <em>long</em> values are all converted to
+		Prolog <em>integer</em> values; the
+		type distinctions which are lost are normally of no significance)</li>
+	<li>references within Prolog to Java objects:
+		<ul>
+			<li>are opaque handles (details follow)</li>
+			<li>are canonical - two references are equal by <code>==/2</code> if-and-only-if they refer
+				to the same object within the JVM</li>
+			<li>cooperate with SWI Prolog's garbage collection: when an object reference is garbage-collected in Prolog,
+				the JVM garbage collector is informed, so there is sound and complete overall garbage collection
+				of Java objects within the combined Prolog+Java system</li>
+		</ul>
+	</li>
+	<li>Java class methods can be called by name: JPL invisibly fetches (and caches) essential details of method invocation,
+		exploiting <i>Java Reflection</i> facilities</li>
+	<li>the Prolog API is similar to that of XPCE: the four main interface calls are
+		<code>jpl_new/3</code>, <code>jpl_call/4</code>, <code>jpl_set/3</code> and <code>jpl_get/3</code>
+		(there is no <i>jpl_free</i>, since Java's garbage collection is extended transparently into Prolog)</li>
+	<li><code>jpl_call/4</code> resolves overloaded methods automatically and dynamically, inferring the types of the call's actual parameters, and identifying the most specific of the applicable method implementations (similarly, <i>jpl_new</i> resolves overloaded constructors)</li>
+	<li>Prolog code which uses the API calls is responsible for passing suitably-typed values and references,
+		since the JNI doesn't perform complete dynamic type-checking, and nor currently does JPL
+		(although the <i>overloaded method resolution</i> mechanism could probably be adapted to do this)</li>
+	<li>Prolog code can reason about the types of Java data values, object references, fields and methods:
+		JPL supports a canonical representation of all Java types as structured terms
+		(e.g. <code>array(array(byte))</code>) and also as JVM signatures (text atoms)
+		in <em>descriptor</em> and <em>classname</em> syntax (details follow)</li>
+	<li>the Prolog and Java APIs of JPL are largely independent;
+		the Prolog API concentrates on representing all Java data values and objects within Prolog,
+		and supporting manipulation of classes and objects;
+		the Java API concentrates on representing any Prolog term within Java,
+		and supporting the calling of goals within Prolog and the retrieving of results back into Java</li>
+	<li>when called from Prolog, <em>void</em> methods return an invented <code>@(void)</code> value
+		(which is distinct from all other JPL values and references);
+		this simplifies and regularises the API (all methods return a typed value)</li>
+	<li>JPL uses <code>@/1</code> to construct representations of certain Java values;
+		if <code>@/1</code>	is defined as a prefix operator (as used by XPCE),
+		then you can write <code>@true</code>, <code>@false</code>, <code>@null</code> or <code>@void</code> in your source code;
+		otherwise (and for portability, and recommended) you should write <code>@(true)</code>, <code>@(false)</code>, <code>@(null)</code> or <code>@(void)</code>.</li> 
+</ul>
+
+<h2><a class="anchor" id="JPL_types_Java_types_as_seen_by"></a>JPL types (Java types, as seen by Prolog) <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>All Java values and object references which are passed between Prolog engines and Java VMs
+	via JPL's Prolog API are seen as instances
+	of types within this simplified JPL type system:</p>
+
+<ul style="list-style-type:none;">
+	<li>a <b><i>datum</i></b> (this jargon is introduced, out of necessity, to refer to the union of <i>values</i> and <i>references</i>)</li>
+	<li>
+		<ul style="list-style-type:none;">
+			<li>is a <b><i>value</i></b> (values are copied between Prolog and the JVM)</li>
+			<li>
+				<ul style="list-style-type:none;">
+					<li>is a <b><i>boolean</i></b></li>
+					<li>or a <b><i>char</i></b></li>
+					<li>or a <b><i>long</i></b>, <b><i>int</i></b>, <b><i>short</i></b> or <b><i>byte</i></b></li>
+					<li>or a <b><i>double</i></b> or <b><i>float</i></b></li>
+					<li>or a <b><i>string</i></b> (an instance of <i>java.lang.String</i>)</li>
+					<li>or a <b><i>void</i></b> (an artificial value returned by calls to Java void methods)</li>
+				</ul>
+			</li>
+			<li>or a <b><i>reference</i></b></li>
+			<li>
+				<ul style="list-style-type:none;">
+					<li>is <b><i>null</i></b></li>
+					<li>or an <b><i>object</i></b> (held within the JVM, and represented in Prolog by a canonical reference)</li>
+					<li>
+						<ul style="list-style-type:none;">
+							<li>is an <b><i>array</i></b></li>
+							<li>or a <b><i>class instance</i></b> (other than of <i>java.lang.String</i>)</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+</ul>
+
+<h2><a class="anchor" id="representation_of_Java_values..."></a>Representation of Java values and references within Prolog <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>Instances of JPL types are represented within Prolog as follows:</p>
+
+<ul>
+	<li><b><i>boolean</i></b> has two values, represented by <code>@(true)</code> and <code>@(false)</code></li>
+	<li><b><i>char</i></b> values are represented by corresponding Prolog <i>integers</i> in the range <b>0..65,535</b></li>
+	<li><b><i>byte</i></b> values are represented by corresponding Prolog <i>integers</i> in the range <b>-128..127</b></li>
+	<li><b><i>short</i></b> values are represented by corresponding Prolog <i>integers</i> in the range <b>-32,768..32,767</b></li>
+	<li><b><i>int</i></b> values are represented by corresponding Prolog <i>integers</i> in the range <b>-2147483648..2147483647</b></li>
+	<li><b><i>long</i></b> values are represented as Prolog <i>integers</i> in the range <b>9,223,372,036,854,775,808..9,223,372,036,854,775,807</b></li>
+	<li><b><i>double</i></b> and <b><i>float</i></b> values are represented as Prolog floats
+		(which are equivalent to Java doubles)
+		(there may be minor rounding, normalisation or loss-of-precision issues when a Java float is widened
+		to a Prolog float then narrowed back again)</li>
+	<li><b><i>string</i></b> values (immutable instances of <i>java.lang.String</i>) are represented
+		as Prolog <i>text atoms</i> (in UTF-8 encoding)</li>
+	<li><b><i>null</i></b> has only one value, represented as <code>@(null)</code></li>
+	<li><b><i>void</i></b> has only one value, represented as <code>@(void)</code></li>
+	<li><b><i>array</i></b> and <b><i>class instance</i></b> references are represented (since 7.4)
+		as <i><a href="http://www.swi-prolog.org/pldoc/man?predicate=blob/2">blob</a>s</i> of type <code>jref</code>, portrayed e.g. <code>&lt;jref&gt;(0x12345678)</code>
+		but (like stream handles) with no source syntax acceptable to <code>read/1</code>.</li>
+</ul>
+
+<h2><a class="anchor" id="repn_of_Java_types_1_structured"></a>Representation of Java types within Prolog (1): <i>structured</i> notation <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>The Prolog API allows Prolog applications to inspect, manipulate, and reason about the types of Java values,
+	references, methods etc., and this section describes how these types themselves are represented.
+	Predicates which pass these type representations include (the clue is in the name):</p>
+
+<pre class="code">jpl_class_to_type/2
+jpl_classname_to_type/2
+jpl_datum_to_type/2
+jpl_is_object_type/1
+jpl_is_type/1
+jpl_object_to_type/2
+jpl_primitive_type/1
+jpl_ref_to_type/2
+jpl_type_to_class/2
+jpl_type_to_classname/2
+</pre>
+
+<p>The pseudo-type <b><i>void</i></b> is represented by this atom:</p>
+
+<pre class="code">void
+</pre>
+
+<p>The pseudo-type <b><i>null</i></b> is represented by this atom:</p>
+
+<pre class="code">null
+</pre>
+
+<p>The primitive types are represented by these atoms:</p>
+
+<pre class="code">boolean
+char
+byte
+short
+int
+long
+float
+double
+</pre>
+
+<p><b><i>class</i></b> types are represented as <code>class(<em>package_parts</em>,<em>classname_parts</em>)</code> e.g.</p>
+
+<pre class="code">class([java,util],['Date'])
+</pre>
+
+<p><b><i>array</i></b> types are represented as <code>array(<em>type</em>)</code> e.g.</p>
+
+<pre class="code">array(boolean)
+array(class([java,lang],['String'])
+</pre>
+
+<p>This <em>structured</em> notation for Java types is a <i>term-encoding</i>, designed to be convenient for composition and decomposition by unification.</p>
+
+<h2><a class="anchor" id="repn_of_Java_types_2_descriptor"></a>Representation of Java types within Prolog (2): <i>descriptor</i> notation <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>The <i>descriptor</i> notation for Java types is one of two textual notations employed by the JVM and the Java class libraries;
+	JPL (necessarily) supports both (and supports conversion between all three representations).</p>
+
+<p>Examples of descriptor notation:</p>
+
+<ul style="list-style-type:none;">
+	<li><code>'Z'</code> denotes <b><i>boolean</i></b></li>
+	<li><code>'B'</code> denotes <b><i>byte</i></b></li>
+	<li><code>'C'</code> denotes <b><i>char</i></b></li>
+	<li><code>'S'</code> denotes <b><i>short</i></b></li>
+	<li><code>'I'</code> denotes <b><i>int</i></b></li>
+	<li><code>'J'</code> denotes <b><i>long</i></b></li>
+	<li><code>'F'</code> denotes <b><i>float</i></b></li>
+	<li><code>'D'</code> denotes <b><i>double</i></b></li>
+	<li><code>'[<i>type</i>'</code> denotes an <b><i>array</i></b> of <i>type</i></li>
+	<li><code>'Ljava/util/Date;'</code> denotes the Java class <code>java.util.Date</code></li>
+	<li><code>'(<i>argument_types</i>)<i>return_type</i>'</code> denotes the type of a method</li>
+</ul>
+
+<h2><a class="anchor" id="repn_of_Java_types_3_classname"></a>Representation of Java types within Prolog (3): <i>classname</i> notation <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>The <i>classname</i> notation for Java types is the other textual notation employed by the JVM and the Java class libraries.
+	It is a (seemingly unnecessary) variation on the <i>descriptor</i> notation, used by a few JNI routines.
+	It has the slight advantage that, in the case of simple class types only, it resembles the Java source text notation for classes.
+	This representation is supported only because certain JNI functions use it; it is used within JPL's implementation of <code>jpl_call/4</code> etc.
+	You may encounter this notation when tracing JPL activity, but otherwise you need not know about it.</p>
+
+<p>Examples of classname notation:</p>
+
+<ul style="list-style-type:none;">
+	<li><code>'java.util.Vector'</code> denotes the Java class <b><i>java.util.Vector</i></b></li>
+	<li><code>'[B'</code> denotes an <b><i>array</i></b> of <b><i>boolean</i></b></li>
+	<li><code>'[Ljava.lang.String;'</code> denotes an <b><i>array</i></b> of <b><i>string</i></b></li>
+</ul>
+
+<h2><a class="anchor" id="creating_instances_of_Java_classes"></a>Creating instances of Java classes <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>To create an instance of a Java class from within Prolog, call <code>jpl_new(+Class, +Params, -JRef)</code> with a classname,
+	a list of actual parameters for the constructor, and a variable to be bound to the new reference, e.g.</p>
+
+<pre class="code">jpl_new('javax.swing.JFrame', ['frame with dialog'], JRef)
+</pre>
+
+<p>which binds <code>JRef</code> to a new object reference, e.g.<code>&lt;jref&gt;(0x12345678)</code>.</p>
+
+<p>NB for convenience, this predicate is overloaded: <code>Class</code> can also be a class type in <i>structured</i> notation,
+	e.g. <code>array(boolean)</code>.</p>
+
+<h2><a class="anchor" id="calling_methods_of_Java_objects_..."></a>Calling methods of Java objects or classes <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>The object reference generated by the <code>jpl_new/3</code> call (above) can be passed to other JPL API predicates such as:</p>
+
+<pre class="code">jpl_call(+JRef, +Method, +Params, -Result)
+</pre>
+
+<p>e.g.</p>
+
+<pre class="code">jpl_call(JRef, setVisible, [@(true)], _)
+</pre>
+
+<p>which calls the <code>setVisible()</code> method of the object to which <code>JRef</code> refers, effectively passing it the
+	Java value <i>true.</i></p>
+
+<p>(This call should display the new <b>JFrame</b> in the top left corner of the desktop.)</p>
+
+<p>Note the anonymous variable passed as the fourth argument to <code>jpl_call/4</code>.
+	A variable in this position receives the result of the method call: either a value or a reference.</p>
+
+<p>Since <code>SetVisible()</code> is a void method, the call returns the (artificial) reference <code>@(void)</code>, which can be ignored.</p>
+
+<p>Some may prefer to code this call thus:</p>
+
+<pre class="code">jpl_call(F, setVisible, [@(true)], @(void))
+</pre>
+
+<p>which documents the programmer's understanding that this is a <i>void</i> method, and fails if it isn't.</p>
+
+<p>If the <code>JRef</code> argument represents a class, then the named static method of that class is called.</p>
+
+<h2><a class="anchor" id="fetching_field_values_of_Java_objects..."></a>Fetching field values of Java objects or classes <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>The <code>jpl_get/3</code> API predicate has the following interface:</p>
+
+<pre class="code">jpl_get(+Class_or_Object, +Field, -Datum)
+</pre>
+
+<p>and can retrieve the value of an instance field e.g.
+
+</p><pre class="code">jpl_new('java.util.GregorianCalendar', [], JRef),
+jpl_get(JRef, time, Ms)
+</pre>
+
+<p>or of a static field, e.g.</p>
+
+<pre class="code">jpl_get('java.awt.Color', pink, Pink)
+</pre>
+
+<p>which binds the Prolog variable <code>Pink</code> to a reference to the predefined <b>java.awt.Color</b> "constant"
+	which is held in the static final <b>.pink</b> field of the <b>java.awt.Color</b> class.</p>
+
+<h2><a class="anchor" id="setting_field_values_of_Java_objects..."></a>Setting field values of Java objects or classes <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>Object and class fields can be set (i.e. have values or references assigned to them) by the <code>jpl_set/3</code>
+	API procedure, which has the following interface:</p>
+
+<pre class="code">jpl_set(+Class_or_Object, +Field, +Datum)
+</pre>
+
+<p>where <b>Datum</b> must be a value or reference of a type suitable for assignment to the named field of the class or object.</p>
+
+<h2><a class="anchor" id="a_slightly_longer_example"></a>A slightly longer example <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>This code fragment</p>
+
+<pre class="code">findall(
+    Ar,
+    (   current_prolog_flag(N, V),
+        term_to_atom(V, Va),
+        jpl_new('[Ljava.lang.String;', [N,Va], Ar)
+    ),
+    Ars
+),
+jpl_new('[[Ljava.lang.String;', Ars, Ac),
+jpl_datums_to_array([name,value], Ah),
+jpl_new('javax.swing.JFrame', ['current_prolog_flag'], F),
+jpl_call(F, getContentPane, [], CP),
+jpl_new('javax.swing.JTable', [Ac,Ah], T),
+jpl_new('javax.swing.JScrollPane', [T], SP),
+jpl_call(CP, add, [SP,'Center'], _),
+jpl_call(F, setSize, [600,400], _),
+jpl_call(F, setVisible, [@(true)], _).
+</pre>
+
+<p>builds an array of arrays of strings containing the names and values of the current SWI-Prolog "flags",
+	and displays it in a JTable within a ScrollPane within a JFrame:</p>
+
+<p><img alt="screendump of current prolog flags in a JTable within a ScrollPane within a JFrame" src="./Prolog API - overview_files/screendump1.jpg" height="269" width="524"></p>
+
+<p>In addition to JPL API calls, this example calls <code>jpl_datums_to_array/2</code>,
+	a utility which converts any list of valid representations of Java values (or objects) into a new Java array,
+	whose base type is the most specialised type of which all list members are instances, and which is defined thus:</p>
+
+<pre class="code">jpl_datums_to_array(Ds, A) :-
+    ground(Ds),
+    jpl_datums_to_most_specific_common_ancestor_type(Ds, T),
+    jpl_new(array(T), Ds, A).
+</pre>
+
+<p>Having found the "most specific common ancestor type", a new array of this type is created,
+	whose elements are initialised to the successive members of the list of datums.</p>
+
+<p>This illustrates another mode of operation of <code>jpl_new/3</code>:</p>
+
+<pre class="code">jpl_new(+ArrayType, +InitialValues, -ArrayRef)
+</pre>
+
+<p>See <a href="https://jpl7.org/PrologApiReference.jsp">Prolog API - Reference</a> for fuller details of the API procedures.</p>
+
+<p>Don't overlook the possibility and advantages of writing custom Java classes to serve your Prolog applications:
+	this interface is not designed to make Java programming redundant.</p>
+
+
+
+<h2><a class="anchor" id="exceptions"></a>Exceptions thrown by Java <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>Uncaught exceptions thrown by the JVM while handling a Prolog API call
+	are mapped onto <code>error(_,_)</code> structures, e.g.</p>
+
+<pre class="code">?- catch(jpl_new('java.util.Date',[yesterday],_), E, true).
+E = error(java_exception(<jref>(0x1026D40)), 'java.lang.IllegalArgumentException').
+</jref></pre>
+
+<p>because, as the exception suggests, <b>yesterday</b> is not a valid constructor argument.</p>
+
+<p>Java exceptions are always returned as Prolog exceptions with this structure:</p>
+
+<pre class="code">error(java_exception(<i>reference_to_exception_object</i>), <i>exception_classname</i>)
+</pre>
+
+<h2><a class="anchor" id="gotchas"></a>Gotchas <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>Here are a few things to watch out for.</p>
+
+<h3>Calling methods with no parameters</h3>
+
+<p>You must pass an empty parameter list when calling Java methods which take no parameters, e.g.</p>
+
+<pre class="code">jpl_call('java.lang.System', gc, [], _)
+</pre>
+
+<p>There is (deliberately) no <code>jpl_call/3</code> convenience predicate which defaults parameters to <code>[]</code> (see below).</p>
+
+<h3>Calling void methods</h3>
+
+<p>You must accept an <code>@(void)</code> result when calling void Java methods, e.g. either</p>
+
+<pre class="code">jpl_call('java.lang.System', gc, [], @(void))
+</pre>
+
+<p>which explicitly matches the expected result, or</p>
+<pre class="code">jpl_call('java.lang.System', gc, [], _)</pre>
+<p>which uses an anonymous variable to ignore the result.</p>
+<p>There is (deliberately) no <code>jpl_call/3</code> convenience predicate which conceals the return value of <code>void</code> methods (see above).</p>
+
+<h2><a class="anchor" id="to_do"></a>To do <a class="top" href="https://jpl7.org/PrologApiOverview.jsp#top">top</a></h2>
+
+<p>Here are a few longer-term (and tricky) aims:</p>
+
+<ul>
+	<li>support non-virtual method calls (i.e. explicitly call a method of some ancestor class
+		despite there being an overriding method (i.e. of the same name etc.) in a "nearer" class).
+		I believe this is a fairly arcane Java feature, but it is needed for completeness;
+		I want to accommodate it without complicating the syntax of regular method calls.</li>
+	<li>map the JVM's <code>vprintf()</code> messages onto something in SWI-Prolog (the user_error stream?)</li>
+	<li>catch the JVM's <i>abort</i> and <i>exit</i> events,
+		and handle them appropriately (e.g. stop a Java abort from killing the SWI-Prolog process)</li>
+	<li>propagate SWI-Prolog's ABORT action into the JVM as appropriate,
+		e.g. to interrupt a pending JPL call</li>
+	<li>reduce the (extravagant) overheads of each JPL call (without compromising functionality or safety)</li>
+</ul>
+
+	</div>
+	<script src="./Prolog API - overview_files/jquery.min.js"></script>
+	<script src="./Prolog API - overview_files/bootstrap.min.js"></script>
+	<script src="./Prolog API - overview_files/ie10-viewport-bug-workaround.js"></script> <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+
+
+
+
+
+</body></html>
