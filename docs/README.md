@@ -6,7 +6,7 @@ In its current version, JPL supports the embedding of a Prolog engine within the
 
 JPL is designed in two layers, a low-level interface to the Prolog FLI and a high-level Java interface for the Java programmer who is not concerned with the details of the Prolog FLI.  The low-level interface is provided for C programmers who may wish to port their C implementations which use the FLI to Java with minimal fuss.
 
-JPL has been integrated into the full SWI-Prolog distribution starting with version 5.4.x, including binaries for MS-Windows and a Linux RPM. 
+JPL has been integrated into the full SWI-Prolog distribution starting with version 5.4.x, including binaries for MS-Windows and a Linux RPM. Check an overview of its many versions [here](VERSIONS).
 
 ### OBJECTIVES
 
@@ -22,20 +22,9 @@ The objectives of JPL are to:
 * minimum dependency deployability: as with JVMs, the Prolog+Java runtime support must depend upon nothing which cannot be taken for granted in healthy OS installations
 * minimum vulnerability deployability: the Prolog+Java runtime support must be immune to legitimate variations in its environment (PATH settings, other applications and libraries including other Prolog+Java apps, etc.)
 
-### APIs Included: Java and Prolog APIs
 
-To provide a dynamic, bidirectional, interface between SWI-Prolog and Java runtimes, JPL offers two APIs:
 
-* [Java API (Java-calls-Prolog)](JavaAPI): this interface comprises public Java classes which support:
-    * constructing Java representations of Prolog terms and queries;
-    * calling queries within SWI-Prolog engines;
-    * retrieving (as Java representations of Prolog terms) any bindings created by a call; 
-* [Prolog API (Prolog-calls-Java])](PrologAPI): this interface comprises Prolog library predicates which support:
-    * creating instances (objects) of Java classes (built-in and user-defined);
-    * calling methods of Java objects (and static methods of classes), perhaps returning values or object references
-    * getting and setting the values of fields of Java objects and classes.
-
-### TOC
+## TABLE OF CONTENTS
 
 1. Setup and Install
     * [JPL-Under-Linux-and-Windows](JPL-Under-Linux-and-Windows).
@@ -43,18 +32,23 @@ To provide a dynamic, bidirectional, interface between SWI-Prolog and Java runti
     * [Developing-JPL](Developing-JPL): how to set-up a development install for JPL.
 2. Guides and Tutorials:
     * [Getting-Started:-An-Example-Tutorial](Getting-Started:-An-Example-Tutorial): a walkthrough how one would use JPL from Java.
-3. APIs Offered:
-    * The [Java API](JavaAPI)
-    * The [Prolog API](PrologAPI)
+3. To provide a dynamic, bidirectional, interface between SWI-Prolog and Java runtimes, JPL offers two APIs:
+    * The [Java API](JavaAPI): this interface comprises public Java classes which support:
+        * constructing Java representations of Prolog terms and queries;
+        * calling queries within SWI-Prolog engines;
+        * retrieving (as Java representations of Prolog terms) any bindings created by a call; 
+    * The [Prolog API](PrologAPI): this interface comprises Prolog library predicates which support:
+        * creating instances (objects) of Java classes (built-in and user-defined);
+        * calling methods of Java objects (and static methods of classes), perhaps returning values or object references
+        * getting and setting the values of fields of Java objects and classes.
 4. Specific Information:
+    * [Version History](VERSIONS): a short overview of the various versions of JPL since its creation.
     * [Types-of-Queries:-One-shot-vs-Iterative](Types-of-Queries:-One-shot-vs-Iterative): reference of the main high-level interface offered to access Prolog from Java.
     * [Multi-Threaded-Queries](Multi-Threaded-Queries): how to use JPL with iterative queries and multi-threaded applications.
 
 
 
-
-
-### RELEVANT LINKS
+## RELEVANT LINKS
 
 * The main current JPL 7 site: <https://jpl7.org/>
   * It includes the Java API (to access Prolog from Java) and the Prolog API (to access Java from Prolog).
