@@ -72,7 +72,7 @@ within this simplified JPL type system:
         -   -   is an ***array***
             -   or a ***class instance*** (other than of *java.lang.String*)
 
-epresentation of Java values and references within Prolog
+Representation of Java values and references within Prolog
 ----------------------------------------
 
 Instances of JPL types are represented within Prolog as follows:
