@@ -45,17 +45,19 @@ The objectives of JPL are to:
     * [Version History](VERSIONS): a short overview of the various versions of JPL since its creation.
     * [Types-of-Queries:-One-shot-vs-Iterative](Types-of-Queries:-One-shot-vs-Iterative): reference of the main high-level interface offered to access Prolog from Java.
     * [Multi-Threaded-Queries](Multi-Threaded-Queries): how to use JPL with iterative queries and multi-threaded applications.
+5. Applications: projects known where JPL has been used.
 
 
 
 ## RELEVANT LINKS
 
-* The main current JPL 7 site: <https://jpl7.org/>
-  * It includes the Java API (to access Prolog from Java) and the Prolog API (to access Java from Prolog).
 * The main Github repository for JPL 7 (which this one is a fork of): <https://github.com/SWI-Prolog/packages-jpl> 
-* The documentation of SWI `library(jpl)`: <http://www.swi-prolog.org/pldoc/man?section=jpl>
-* A Wiki on JPL (including a Getting Started guide: <https://github.com/ssardina-research/packages-jpl/wiki>
-* The old JPL 3.x documentation: <http://www.swi-prolog.org/packages/jpl/>
+* Documentation:
+    * The main current JPL 7 site documentation: <https://jpl7.org/>
+    * The documentation of SWI `library(jpl)`: <http://www.swi-prolog.org/pldoc/man?section=jpl>
+    * A Wiki on JPL (including a Getting Started guide: <https://github.com/ssardina-research/packages-jpl/wiki>
+    * The old JPL 3.x documentation: <http://www.swi-prolog.org/packages/jpl/>
+* The [Java Native Interface](https://docs.oracle.com/javase/8/docs/technotes/guides/jni/) programming framework.
 
 
 
