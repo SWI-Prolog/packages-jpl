@@ -31,7 +31,7 @@ Java API - overview
 
 The ***API*** consists of the following class hierarchy:
 
-``` {.code}
+```java
 org.jpl7
  +-- JPL
  +-- JPLException
@@ -61,14 +61,14 @@ Typically, this is automatic.
  
 JPL lazily initializes the Prolog VM, if necessary, when the first query is activated, using default initialization arguments (command line options). Before initialization takes place, these default values can be read, and altered.
 
-``` {.code}
+```java
 public String[] getDefaultInitArgs();
 public void setDefaultInitArgs(String[] args);
 ```
 
 After initialization, the parameter values which were actually used can be read.
 
-``` {.code}
+```java
 public String[] getActualInitArgs();
 ```
 
@@ -76,7 +76,7 @@ This method returns `null` if initialization has not occurred, and thus it can b
 
 Explicit initialization is supported:
 
-``` {.code}
+```java
 public void init();
 public void init(String args[]);
 ```
@@ -100,7 +100,7 @@ The `Term` class is abstract, so it cannot be directly instantiated; to create a
 
 An `org.jpl7.Atom` instance represents a SWI Prolog text atom. To create an `Atom`, pass a (String) name to its constructor:
 
-``` {.code}
+```java
 Atom a1 = new Atom("aristotle");
 Atom a2 = new Atom("alexander");
 ```
@@ -113,7 +113,7 @@ The name of an atom need not be lower case: it can be any UCS string.
 
 An atom's name is retrieved with its `name()` method, e.g.
 
-``` {.code}
+```java
 a1.name()
 ```
 
@@ -123,7 +123,7 @@ See `Atom`'s [JavaDoc](http://192.168.1.49:8080/jpl7/doc/org/jpl7/Atom.html) for
 
 `org.jpl7.Variable` instances have identifying names, which must comply with conventional Prolog source text syntax.
 
-``` {.code}
+```java
 Variable v1 = new Variable("X"); // a regular variable
 
 Variable v2 = new Variable("_"); // an "anonymous" variable
@@ -137,7 +137,7 @@ They are just tokens, and do not behave like Prolog variables.
 
 A `org.jpl7.Integer` is a specialized `org.jpl7.Term` which holds a Java long value or a `java.math.BigInteger` object. This class corresponds to the Prolog *integer* type.
 
-``` {.code}
+```java
 org.jpl7.Integer i = new org.jpl7.Integer(5);
 ```
 
@@ -151,7 +151,7 @@ If `isBig()` returns true, then the value is outside the range of a Java `long`,
 
 A `org.jpl7.Float` is a specialized `org.jpl7.Term` which holds a Java `double` value. This class corresponds to the Prolog *float* type (64-bit ISO/IEC in SWI Prolog).
 
-``` {.code}
+```java
 org.jpl7.Float f = new org.jpl7.Float(3.14159265);
 ```
 
@@ -163,7 +163,7 @@ The `org.jpl7.Float` class has a `doubleValue()` accessor to obtain the `double`
 
 A `org.jpl7.Compound` is a specialized `org.jpl7.Term` which contains a name and an array of `org.jpl7.Term` arguments, and can be constructed e.g.
 
-``` {.code}
+```java
 Compound t1 = new Compound(
     "teacher_of",
     new Term[] {
@@ -175,7 +175,7 @@ Compound t1 = new Compound(
 
 Note the use of Java's *anonymous array* syntax
 
-``` {.code}
+```java
 new Term[] {..., ...}
 ```
 
@@ -185,31 +185,31 @@ In this example, the Java variable `t1` refers to a **Compound** instance, which
 
 To obtain the (String) name of a **Compound**, use the **name()** accessor method.
 
-``` {.code}
+```java
 public String name();
 ```
 
 To obtain the arity of a **Compound**, use the **arity()** accessor method.
 
-``` {.code}
+```java
 public int arity();
 ```
 
 To obtain an array of a **Compound**'s arguments, use the **args()** accessor method.
 
-``` {.code}
+```java
 public Term[] args();
 ```
 
 To obtain the *ith* argument of a compound (numbered from 1), use the **arg()** accessor method (with an **int** parameter value between 1 and Arity inclusive).
 
-``` {.code}
+```java
 public Term arg(int i);
 ```
 
 To obtain the *ith* argument of a compound (numbered from 0), use the **arg0()** accessor method (with an **int** parameter value between 0 and Arity-1 inclusive).
 
-``` {.code}
+```java
 public Term arg0(int i);
 ```
 
@@ -217,14 +217,14 @@ public Term arg0(int i);
 
 A **Query** contains a **Term**, representing a Prolog goal:
 
-``` {.code}
+```java
 Term goal = new Compound("teacher_of", new Term[] {new Atom("aristotle"), new Atom("alexander")});
 Query q = new Query(goal);
 ```
 
 The **Query** **q** in this example represents the Prolog query
 
-``` {.code}
+```java
 ?- teacher_of(aristotle, alexander).
 ```
 
@@ -234,7 +234,7 @@ The **Query** **q** in this example represents the Prolog query
 
 To ask the Prolog engine a query, one first constructs a **Query** instance, as in the above example, and then uses the **java.util.Iterator** interface, which the **Query** class implements, to obtain solutions (where a "solution" is what is known in logic programming jargon as a *substitution*, which is a collection of *bindings*, each of which relates one of the **Variables** within the **Query**'s goal to a **Term** representation of the Prolog term to which the corresponding Prolog variable was bound by the proof).
 
-``` {.code}
+```java
 public interface Iterator {
     public boolean hasNext();
     public Object next();
@@ -243,7 +243,7 @@ public interface Iterator {
 
 The `hasNext()` method can be used to determine whether a query has any (or any further) solutions. In the above example, the method call
 
-``` {.code}
+```java
 q.hasNext()
 ```
 
@@ -254,7 +254,7 @@ Where a query contains variables, on the other hand, its execution yields a sequ
 
 For example, to print all of Aristotle's pupils, i.e., all the bindings of **X** which satisfy *teaches(aristotle,X)*, one could write
 
-``` {.code}
+```java
 Query q = new Query("teaches", new Term[] {new Atom("aristotle"), new Variable("X")});
 while (q.hasNext()) {
     Map binding = q.next();
@@ -265,7 +265,7 @@ while (q.hasNext()) {
 
 or, more concisely
 
-``` {.code}
+```java
 for (Map m : new Query("teaches", new Term[] {new Atom("aristotle"), new Variable("X")})) {
     System.out.println(m.get("X"));
 }
@@ -273,7 +273,7 @@ for (Map m : new Query("teaches", new Term[] {new Atom("aristotle"), new Variabl
 
 or, using a convenience constructor which builds the term from Prolog source text
 
-``` {.code}
+```java
 for (Map m : new Query("teaches(aristotle,X)")) {
     System.out.println(m.get("X"));
 }
@@ -287,7 +287,7 @@ If a query's goal contains more than one occurrence of some (named) variable, th
 
 Often, you'll want just the first solution to a query; `org.jpl7.Query` has a method for this:
 
-``` {.code}
+```java
 public final Map<String, Term> oneSolution();
 ```
 
@@ -297,7 +297,7 @@ If the query has no solutions, this method returns `null`; otherwise, a non-null
 
 You may want all solutions to a query; `org.jpl7.Query` has a method for this:
 
-``` {.code}
+```java
 public final Map<String, Term>[] allSolutions();
 ```
 
@@ -307,7 +307,7 @@ The returned array will contain all the query's solutions, in the order they wer
 
 Sometimes an application is interested only in whether a query is provable, but not in any details of its possible solutions; `org.jpl7.Query` has a method for this common special case:
 
-``` {.code}
+```java
 public final boolean hasSolution();
 ```
 
@@ -319,13 +319,13 @@ Queries terminate automatically when `hasNext()` returns `false` (or when `next(
 
 To terminate a query before all of its solutions have been exhausted, use its `close()` method:
 
-``` {.code}
+```java
 public final void close();
 ```
 
 This method stops a query, setting it back into a state where it can be restarted. Here is an example in which the first three solutions to the query are obtained:
 
-``` {.code}
+```java
 Query query = // obtain Query somehow
 for (int i = 0; i < 3 && query.hasNext(); ++i) {
     Map<String, Term> solution = query.next();
@@ -378,7 +378,7 @@ Viewing the structure of a term or query can be useful in determining whether an
 
 To obtain the current version of JPL you are using, you may obtain a static reference to the `org.jpl7.Version` class by calling the `org.jpl7.JPL#version` static method. This will return a `org.jpl7.Version` structure, which has the following final fields:
 
-``` {.code}
+```java
 package org.jpl7;
 public class Version {
     public final int major;                // e.g. 7
@@ -390,7 +390,7 @@ public class Version {
 
 You may wish to use this class instance to obtain fine-grained information about the current JPL version, e.g.
 
-``` {.code}
+```java
 if (JPL.version().major == 7) {
 ```
 
@@ -398,7 +398,7 @@ You may also call the `version_string()` static method of the `org.jpl7.JPL` cla
 
 The version string can be written to the standard output stream by running the **main()** method of the `org.jpl7.JPL` class.
 
-``` {.code}
+```bash
 linux% java org.jpl7.JPL
 JPL 7.4.0-alpha
 ```
