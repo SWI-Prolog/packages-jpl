@@ -22,30 +22,36 @@ The objectives of JPL are to:
 * minimum dependency deployability: as with JVMs, the Prolog+Java runtime support must depend upon nothing which cannot be taken for granted in healthy OS installations
 * minimum vulnerability deployability: the Prolog+Java runtime support must be immune to legitimate variations in its environment (PATH settings, other applications and libraries including other Prolog+Java apps, etc.)
 
+### APIs Included: Java and Prolog APIs
 
-### VERSION HISTORY
+To provide a dynamic, bidirectional, interface between SWI-Prolog and Java runtimes, JPL offers two APIs:
 
-
-* Version [JPL 7.x](https://jpl7.org/) uses SWI Prolog V7 and has modernise JPL's APIs significantly.
-    * Current version []7.4.0](https://jpl7.org/ReleaseNotes740.jsp) works with SWI versions V7.4.x to V7.7.x. It has a new implemention of JRefs as blobs to address Java objects from Prolog.
-* Versions [JPL 3.x,y](http://www.swi-prolog.org/packages/jpl/) implemented many changes and worked with SWI V5.2.0 or later (it used multi-threading FLI calls not available in older versions) and Java 2 runtime.  It was tested with Microsoft Visual C/C++ 5 under Windows NT 4.0 (SP6a). 
-* Version **2.0.2** was released in March 18, 2003. It was developed by Paul Singleton and tested on Windows NT4, and was not tested on any non-Windows platform
-* The first version **1.0.0** of JPL was released in Feb 25, 1999 and was authored by Fred Dushin. It worked with Linux , under kernel 2.1.24.   
-                                         
-
-
-### JPL API: Java and Prolog
-
-JPL is a dynamic, bidirectional interface between SWI-Prolog and Java runtimes.  It offers two APIs:
-
-* **Java API (Java-calls-Prolog)**: this interface comprises public Java classes which support:
+* [Java API (Java-calls-Prolog)](JavaAPI): this interface comprises public Java classes which support:
     * constructing Java representations of Prolog terms and queries;
     * calling queries within SWI-Prolog engines;
     * retrieving (as Java representations of Prolog terms) any bindings created by a call; 
-* **Prolog API (Prolog-calls-Java)**: this interface comprises Prolog library predicates which support:
+* [Prolog API (Prolog-calls-Java])](PrologAPI): this interface comprises Prolog library predicates which support:
     * creating instances (objects) of Java classes (built-in and user-defined);
     * calling methods of Java objects (and static methods of classes), perhaps returning values or object references
     * getting and setting the values of fields of Java objects and classes.
+
+### TOC
+
+1. Setup and Install
+    * [JPL-Under-Linux-and-Windows](JPL-Under-Linux-and-Windows).
+    * [JPL-under-Mac-OS](JPL-under-Mac-OS): how to set it up under Mac OS.
+    * [Developing-JPL](Developing-JPL): how to set-up a development install for JPL.
+2. Guides and Tutorials:
+    * [Getting-Started:-An-Example-Tutorial](Getting-Started:-An-Example-Tutorial): a walkthrough how one would use JPL from Java.
+3. APIs Offered:
+    * The [Java API](JavaAPI)
+    * The [Prolog API](PrologAPI)
+4. Specific Information:
+    * [Types-of-Queries:-One-shot-vs-Iterative](Types-of-Queries:-One-shot-vs-Iterative): reference of the main high-level interface offered to access Prolog from Java.
+    * [Multi-Threaded-Queries](Multi-Threaded-Queries): how to use JPL with iterative queries and multi-threaded applications.
+
+
+
 
 
 ### RELEVANT LINKS
@@ -56,9 +62,6 @@ JPL is a dynamic, bidirectional interface between SWI-Prolog and Java runtimes. 
 * The documentation of SWI `library(jpl)`: <http://www.swi-prolog.org/pldoc/man?section=jpl>
 * A Wiki on JPL (including a Getting Started guide: <https://github.com/ssardina-research/packages-jpl/wiki>
 * The old JPL 3.x documentation: <http://www.swi-prolog.org/packages/jpl/>
-
-
-
 
 
 
