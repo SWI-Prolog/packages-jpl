@@ -59,14 +59,14 @@ link_directories(${JNI_INCLUDE_DIRS})
 set(JPLCONFIG)
 if(APPLE)
   set(JPLCONFIG jpl_config.pl)
+  set(JPLTYPE SHARED)
 endif()
 
 swipl_plugin(
-    jpl
-    SHARED jpl
+    jpl ${JPLTYPE}
     MODULE libjpl
     C_SOURCES src/c/jpl.c
-    C_LIBS ${JAVA_JVM_LIBRARY} libswipl
+    THREADED C_LIBS ${JAVA_JVM_LIBRARY} libswipl
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
 
