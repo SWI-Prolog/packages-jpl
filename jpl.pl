@@ -3979,7 +3979,7 @@ search_path_separator((;)) :-
     !.
 search_path_separator(:).
 
-env_var_separators(@,@) :-
+env_var_separators('%','%') :-
     current_prolog_flag(windows, true),
     !.
 env_var_separators($,'').
@@ -4010,7 +4010,6 @@ check_java_environment :-
     !,
     print_message(error, jpl(run(jpl_config_dylib))).
 check_java_environment :-
-    check_lib(java),
     check_lib(jvm).
 
 check_lib(Name) :-
@@ -4123,20 +4122,42 @@ add_jpl_to_ldpath(_).
 
 %!  add_java_to_ldpath is det.
 %
-%   Adds the directories holding jvm.dll  and   java.dll  to the %PATH%.
-%   This appears to work on  Windows.   Unfortunately  most Unix systems
-%   appear to inspect the content of LD_LIBRARY_PATH only once.
+%   Adds the directories holding jvm.dll to  the %PATH%. This appears to
+%   work on Windows. Unfortunately most Unix   systems appear to inspect
+%   the content of =LD_LIBRARY_PATH= (=DYLD_LIBRARY_PATH= on MacOS) only
+%   once.
 
+:- if(current_prolog_flag(windows,true)).
 add_java_to_ldpath :-
     current_prolog_flag(windows, true),
     !,
     phrase(java_dirs, Extra),
     (   Extra \== []
     ->  print_message(informational, extend_ld_path(Extra)),
-        maplist(win_add_dll_directory, Extra)
+        maplist(extend_dll_search_path, Extra)
     ;   true
     ).
+:- endif.
 add_java_to_ldpath.
+
+
+%!  extend_dll_search_path(+Dir)
+%
+%   Add Dir to search for DLL files. We use win_add_dll_directory/1, but
+%   this doesn't seem to work on Wine,  so we also add these directories
+%   to %PATH% on this platform.
+
+:- if(current_prolog_flag(windows,true)).
+extend_dll_search_path(Dir) :-
+    win_add_dll_directory(Dir),
+    (   current_prolog_flag(wine_version, _)
+    ->  getenv('PATH', Path0),
+        prolog_to_os_filename(Dir, OSDir),
+        atomic_list_concat([Path0, OSDir], ';', Path),
+        setenv('PATH', Path)
+    ;   true
+    ).
+:- endif.
 
 %!  extend_java_library_path(+OsDir)
 %
@@ -4186,11 +4207,11 @@ java_dir(_DLL, SubPath) -->
 java_dir(_, _) --> [].
 
 
-%! java_home(-Home) is semidet
+%!  java_home(-Home) is semidet
 %
-%    Find the home location of Java.
+%   Find the home location of Java.
 %
-%    @param Home    JAVA home in OS notation
+%   @param Home    JAVA home in OS notation
 
 java_home_win_key(
     jre,

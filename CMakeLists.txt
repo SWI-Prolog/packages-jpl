@@ -62,9 +62,15 @@ if(APPLE)
   set(JPLTYPE SHARED)
 endif()
 
+if(WIN32)
+  set(jpl_module jpl)
+else()
+  set(jpl_module libjpl)
+endif()
+
 swipl_plugin(
     jpl ${JPLTYPE}
-    MODULE libjpl
+    MODULE ${jpl_module}
     C_SOURCES src/c/jpl.c
     THREADED C_LIBS ${JAVA_JVM_LIBRARY} libswipl
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
