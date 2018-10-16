@@ -8,7 +8,28 @@ JPL is designed in two layers, a low-level interface to the Prolog FLI and a hig
 
 JPL has been integrated into the full [SWI-Prolog](http://www.swi-prolog.org/) distribution starting with version 5.4.x, including binaries for MS-Windows and a Linux RPM. 
 
-For more information and specific documentation, refer to this [JPL Wiki](https://github.com/ssardina-research/packages-jpl/wiki).
+**For more information and specific documentation, refer to this [JPL Wiki](https://github.com/ssardina-research/packages-jpl/wiki).**
+
+----------------------
+
+## OBJECTIVES
+
+The objectives of JPL are to:
+
+1. enable Prolog applications to exploit any Java classes, instances, methods etc. (without requiring any wrappers, metadata etc. to be set up first);
+2. enable Java applications to manipulate any Standard Prolog libraries, predicates, etc. (without requiring any wrappers, metadata etc. to be set up first); and
+3. enable hybrid Prolog+Java applications to be designed and implemented so as to take best advantage of both language systems, and to be testable, debuggable, maintainable.
+
+.. while also aim for:
+
+* minimum impact deployability: runtime support for Prolog+Java apps must be a position-independent, self-sufficient filestore tree, requiring no changes to registries, system libraries, system configuration files etc.
+* minimum dependency deployability: as with JVMs, the Prolog+Java runtime support must depend upon nothing which cannot be taken for granted in healthy OS installations
+* minimum vulnerability deployability: the Prolog+Java runtime support must be immune to legitimate variations in its environment (PATH settings, other applications and libraries including other Prolog+Java apps, etc.)
+
+## LICENSE
+
+JPL is released under the terms of the Simplified BSD License. See [LICENSE](LICENSE) file.
+
 
 
 
