@@ -69,12 +69,15 @@ else()
 endif()
 
 swipl_plugin(
-    jpl ${JPLTYPE}
+    libjpl ${JPLTYPE}
     MODULE ${jpl_module}
     C_SOURCES src/c/jpl.c
     THREADED C_LIBS ${JAVA_JVM_LIBRARY} libswipl
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
+
+add_custom_target(jpl)
+add_dependencies(jpl libjpl jpl_jar)
 
 ################
 # Testing
