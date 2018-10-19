@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(swipl-jpl)
 
 include("../cmake/PrologPackage.cmake")
+include(Install)
 
 # On MacOS we have /usr/libexec/java_home to find the appropriate
 # JAVA_HOME.  We now use `java_home` when found.  Should we limit
