@@ -87,10 +87,23 @@ test_lib(jpl
 	 NAME java_in_prolog
 	 PACKAGES plunit)
 
+# We do not need $SWIPL_BOOT_FILE as this is now in the standard
+# location for the cmake build.  Still using it though as the old
+# build still uses it and modifying all that would cause another
+# cycle to get everything in place
+
+set(swihome ../../home)
 if(JUNIT_JAR)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(swibootfile ${swihome}/boot64.prc)
+  else()
+    set(swibootfile ${swihome}/boot32.prc)
+  endif()
+
 add_test(
     NAME jpl:prolog_in_java
-    COMMAND env SWI_HOME_DIR=../../home
+    COMMAND env SWI_HOME_DIR=${swihome}
+		SWIPL_BOOT_FILE=${swibootfile}
                 TEST_JPL=../../../packages/jpl/test_jpl.pl
 	    ${Java_JAVA_EXECUTABLE}
 		 -Djava.library.path=.
