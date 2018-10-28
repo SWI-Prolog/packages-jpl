@@ -253,7 +253,7 @@ jpl_call(F, setVisible, [@(true)], _).
 
 builds an array of arrays of strings containing the names and values of the current SWI-Prolog "flags", and displays it in a JTable within a ScrollPane within a JFrame:
 
-![screendump of current prolog flags in a JTable within a ScrollPane within a JFrame](./Prolog%20API%20-%20overview_files/screendump1.jpg){width="524" height="269"}
+![screendump of current prolog flags in a JTable within a ScrollPane within a JFrame](_images/screendump.jpg){width="524" height="269"}
 
 In addition to JPL API calls, this example calls `jpl_datums_to_array/2`, a utility which converts any list of valid representations of Java values (or objects) into a new Java array, whose
 base type is the most specialised type of which all list members are instances, and which is defined thus:
