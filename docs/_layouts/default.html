@@ -10,7 +10,6 @@
 					overflow-y: auto;
 				}
 				body {
-					background-colorQ: #F0F0F0;
 					color: #000000;
 					line-height: 1.4; /* cosmetic experiment */
 					min-height: 100%; /* https://www.kirupa.com/html5/make_body_take_up_full_browser_height.htm */
@@ -147,22 +146,24 @@
 				.navbar3 > li > a:visited { /* ditto once visited */
 					color: #000000;
 				}
-				.navbar3 > li.level3 { /* some pages have internal links */
+				.navbar3 > li.level3,
+				.navbar3 > li.level4 { /* some pages have internal links */
 					display: none; /* normally not shown... */
 				}
-				.navbar3 > li.level3.shown {
+				.navbar3 > li.level3.shown,
+				.navbar3 > li.level4.shown {
 					display: block; /* ...unless given this class at page load */
 				}
-				.navbar3 > li.level3 > div { /* indented navigation sidebar item content */
-					color: #800000; /* distinguish from page links */
-					cursor: pointer; /* fake link appearance */
-					font-size: 80%;
-					padding-left: 23px; /* 3 + 10 + 10 */
-				}
+				.navbar3 > li.level3 > div,
 				.navbar3 > li.level4 > div { /* indented navigation sidebar item content */
 					color: #800000; /* distinguish from page links */
 					cursor: pointer; /* fake link appearance */
 					font-size: 80%;
+				}
+				.navbar3 > li.level3 > div { /* indented navigation sidebar item content */
+					padding-left: 23px; /* 3 + 10 + 10 */
+				}
+				.navbar3 > li.level4 > div { /* indented navigation sidebar item content */
 					padding-left: 33px; /* 3 + 10 + 10 + 10 */
 				}
 				.navbar3 > li > a:focus {
