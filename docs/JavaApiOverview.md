@@ -1,6 +1,6 @@
 # JPL -  Java API - Overview
 
-## The Class hierarchy
+## The class hierarchy
 
 The ***API*** consists of the following class hierarchy:
 
