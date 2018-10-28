@@ -89,7 +89,7 @@ An atom's name is retrieved with its `name()` method, e.g.
 a1.name()
 ```
 
-See `Atom`'s [JavaDoc](http://192.168.1.49:8080/jpl7/doc/org/jpl7/Atom.html) for details of how SWI Prolog version 7's strings and blobs (including reserved symbols) are accommodated.
+See [org.jpl7.Atom JavaDoc](http://192.168.1.49:8080/jpl7/doc/org/jpl7/Atom.html) for details of how SWI Prolog version 7's strings and blobs (including reserved symbols) are accommodated.
 
 ### Variables
 
