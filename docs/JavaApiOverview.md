@@ -1,6 +1,6 @@
 # JPL -  Java API - Overview
 
-## The Class Hierarchy
+## The Class hierarchy
 
 The ***API*** consists of the following class hierarchy:
 
@@ -27,7 +27,7 @@ Each instance of `org.jpl7.Query` contains a `Term` (denoting the goal which is 
 
 Each instance of `org.jpl7.Compound` has a java.lang.String name and an array of `Term` arguments. For compatibility with SWI-Prolog version 7's extension [Compound terms with zero arguments](http://www.swi-prolog.org/pldoc/man?section=ext-compound-zero), the argument array can be of zero length.
 
-## Initializing and Terminating Prolog
+## Initializing and terminating Prolog
 
 Typically, this is automatic.
  
@@ -59,7 +59,7 @@ JPL does not support reinitialization of a Prolog VM, but some command line opti
 
 For details about the legal parameter values, see [2.4 Command Line Options](http://www.swi-prolog.org/pldoc/man?section=cmdline) in the [SWI Prolog Reference Manual](http://www.swi-prolog.org/pldoc/doc_for?object=manual). Most users will rely on automatic initialization.
 
-## Creating Terms
+## Creating terms
 
 The `Term`-based classes in the `org.jpl7` package are a structured concrete syntax for Prolog terms: they are not references to actual terms within the Prolog engine; rather, they are a means for
 constructing queries which can be called within Prolog, and they are also a means for representing (and exploring) the results of such calls. In particular, instances of `org.jpl7.Variable` are never bound nor shared; they are merely tokens.
@@ -131,7 +131,7 @@ As with integers, take care to avoid confusion between `org.jpl7.Float` and `jav
 
 The `org.jpl7.Float` class has a `doubleValue()` accessor to obtain the `double` value of an instance, and also a `floatValue()` accessor.
 
-### Compound Terms
+### Compound terms
 
 A `org.jpl7.Compound` is a specialized `org.jpl7.Term` which contains a name and an array of `org.jpl7.Term` arguments, and can be constructed e.g.
 
@@ -185,7 +185,7 @@ To obtain the *ith* argument of a compound (numbered from 0), use the **arg0()**
 public Term arg0(int i);
 ```
 
-## Creating Queries
+## Creating queries
 
 A `Query` contains a `Term`, representing a Prolog goal:
 
@@ -261,7 +261,7 @@ If a query's goal contains no variables (i.e. it is ground), the `Query.next()`m
 
 If a query's goal contains more than one occurrence of some (named) variable, then each solution will have only one binding for that name.
 
-### Obtaining one Solution
+### Obtaining one solution
 
 Often, you'll want just the first solution to a query; `org.jpl7.Query` has a method for this:
 
@@ -271,7 +271,7 @@ public final Map<String, Term> oneSolution();
 
 If the query has no solutions, this method returns `null`; otherwise, a non-null return indicates success. If the query is ground (i.e. contains no variables), the returned map will be empty (i.e. will contain no bindings).
 
-### Obtaining all Solutions 
+### Obtaining all solutions 
 
 You may want all solutions to a query; `org.jpl7.Query` has a method for this:
 
@@ -281,7 +281,7 @@ public final Map<String, Term>[] allSolutions();
 
 The returned array will contain all the query's solutions, in the order they were obtained (as with Prolog's findall/3, duplicates are not removed). If the query has no solutions, this method returns an empty array.
 
-### Ground Queries - Discovering whether a query has any solutions
+### Ground queries
 
 Sometimes an application is interested only in whether a query is provable, but not in any details of its possible solutions; `org.jpl7.Query` has a method for this common special case:
 
@@ -291,7 +291,7 @@ public final boolean hasSolution();
 
 This method is equivalent to calling **oneSolution** and asking whether the return value is non-**null** (i.e. whether the query succeeded).
 
-### Terminating Queries - Terminating Queries
+### Terminating queries
 
 Queries terminate automatically when `hasNext()` returns `false` (or when `next()` throws an exception), and once a query has terminated, its engine is returned to the pool for reuse (by any thread).
 
@@ -320,7 +320,7 @@ See [Types of Queries: One shot vs Iterative](https://github.com/ssardina-resear
 (in [Sebastian Sardina's JPL Wiki](https://github.com/ssardina-research/packages-jpl/wiki)) for
 further details and explanation.
 
-## Multi-Threaded Queries - Queries from multi-threaded applications
+## Queries from multi-threaded applications
 
 JPL maintains a finite pool of Prolog engines, one of which is allocated to a query when it is activated (i.e. when, one way or another, a solution is requested). A query's engine is returned to the pool when it is closed (explicitly or automatically).
 
@@ -352,7 +352,7 @@ the data is the **Atom**'s name. The arguments of **Compounds** are represented 
 
 Viewing the structure of a term or query can be useful in determining whether an error lies on the Prolog or Java side of your JPL applications.
 
-## Version - Version information
+## Version information
 
 To obtain the current version of JPL you are using, you may obtain a static reference to the `org.jpl7.Version` class by calling the `org.jpl7.JPL#version` static method. This will return a `org.jpl7.Version` structure, which has the following final fields:
 
@@ -383,15 +383,15 @@ JPL 7.4.0-alpha
 
 ## Gotchas 
 
-### arg indexing
+### Arg indexing
 
 The `Term[]` args of a `Compound` are indexed (like all Java arrays) from zero, whereas in Prolog the args of a structure are conventionally numbered from one.
 
-### representing `@(null)`
+### Representing `@(null)`
 
 there is no `org.jpl7.JNull` class: instead, use `new JRef(null)` to represent `@(null)` (which itself represents Java's `null`). If you don't know what this all means, don't worry: it only affects those
 writing hybrid Java+Prolog programs which call each other nestedly.
 
-### all solutions of a Query with no solutions
+### All solutions of a Query with no solutions
 
 `Query.allSolutions()` returns an empty array of `Map<String, Term>` if the query has no solutions (in 1.x versions it inconsistently returned null).
