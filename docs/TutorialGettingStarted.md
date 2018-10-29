@@ -148,6 +148,6 @@ while ( q5.hasMoreSolutions() ){
 }
 ```
 
-**Note:** when using an iterator query, the query stays open until all solutions have been retrieved or the query is closed explicitly via the `close()` method. When open, the query is attached to a Prolog engine, and there are a finite number of them, so care must be taken in a multi-threaded application to avoid a deadlock situation. Please refer to the [Multi-Threaded-Queries](Multi-Threaded-Queries) for details.
+**Note:** when using an iterator query, the query stays open until all solutions have been retrieved or the query is closed explicitly via the `close()` method. When open, the query is attached to a Prolog engine, and there are a finite number of them, so care must be taken in a multi-threaded application to avoid a deadlock situation. Please refer to the [Multi-Threaded-Queries](TutorialMultithreaded) for details.
 
-Also, check to check all the high-level API provided to access Prolog from Java, see the entry [Types-of-Queries:-One-shot-vs-Iterative](Types-of-Queries:-One-shot-vs-Iterative).
+Also, check to check all the high-level API provided to access Prolog from Java, see the entry [Types-of-Queries:-One-shot-vs-Iterative](TutorialTypesOfQueries).
