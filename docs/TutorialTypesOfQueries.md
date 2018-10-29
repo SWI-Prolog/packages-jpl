@@ -44,4 +44,4 @@ Finally, one has to have the following two things in mind when working with iter
 1. Make sure you close the query, either by exhausting all solutions or by explicitly calling its `close()` method once you are finish with it. This is because an open query gets a hold on one of the few finite Prolog engines available, so it is good practice to release the engine as soon as possible, to avoid delays or even deadlock situations.
 2. While one can nest iterative and one-shot queries, nested open queries form a kind of stack and it is only possible to operate on the query at the top of the stack. 
 
-Please refer to the section [Multi-Threaded-Queries](Multi-Threaded-Queries) for details on both issues.
+Please refer to the section [Multi-Threaded-Queries](TutorialMultithreaded) for details on both issues.
