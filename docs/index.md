@@ -29,24 +29,24 @@ The objectives of JPL are to:
 ## Table of contents
 
 1. Setup and Install
-    * [Installing JPL in Linux and Windows](JPL-Under-Linux-and-Windows).
-    * [Installing JPL in MacOS](JPL-under-Mac-OS): how to set it up under Mac OS.
-    * [Developing JPL](DevelopingJPL): how to set-up a development install for JPL.
+    * [Installing JPL in Linux and Windows](DeploymentInstall).
+    * [Installing JPL in MacOS](DeploymentMacos): how to set it up under Mac OS.
+    * [Developing JPL](TutorialDeveloping): how to set-up a development install for JPL.
 2. Guides and Tutorials:
-    * [Getting Started: A Tutorial](GettingStartedAnExampleTutorial): a walkthrough how one would use JPL from Java.
+    * [Getting Started: A Tutorial](TutorialGettingStarted): a walkthrough how one would use JPL from Java.
 3. To provide a dynamic, bidirectional, interface between SWI-Prolog and Java runtimes, JPL offers two APIs:
-    * The [Java API](JavaAPI): this interface comprises public Java classes which support:
+    * The [Java API](JavaApi): this interface comprises public Java classes which support:
         * constructing Java representations of Prolog terms and queries;
         * calling queries within SWI-Prolog engines;
         * retrieving (as Java representations of Prolog terms) any bindings created by a call; 
-    * The [Prolog API](PrologAPI): this interface comprises Prolog library predicates which support:
+    * The [Prolog API](PrologApi): this interface comprises Prolog library predicates which support:
         * creating instances (objects) of Java classes (built-in and user-defined);
         * calling methods of Java objects (and static methods of classes), perhaps returning values or object references
         * getting and setting the values of fields of Java objects and classes.
 4. Specific Information:
-    * [Version History](VERSIONS): a short overview of the various versions of JPL since its creation.
-    * [Types of Queries: One shot vs Iterative](TypesofQueries): reference of the main high-level interface offered to access Prolog from Java.
-    * [Multi Threaded Queries](MultiThreadedQueries): how to use JPL with iterative queries and multi-threaded applications.
+    * [Version History](ReleaseNotes): a short overview of the various versions of JPL since its creation.
+    * [Types of Queries: One shot vs Iterative](TutorialTypesOfQueries): reference of the main high-level interface offered to access Prolog from Java.
+    * [Multi Threaded Queries](TutorialMultithreaded): how to use JPL with iterative queries and multi-threaded applications.
 5. Applications: projects known where JPL has been used.
 
 
