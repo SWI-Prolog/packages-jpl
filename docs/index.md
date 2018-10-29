@@ -65,4 +65,4 @@ The objectives of JPL are to:
 
 ## License
 
-JPL is released under the terms of the Simplified BSD License. See [LICENSE](https://github.com/ssardina-research/packages-jpl/blob/master/LICENSE) file.
+JPL is released under the terms of the Simplified BSD License. See [License](License) file.
