@@ -147,7 +147,7 @@ Much of the information reported here was obtained from @anionic and @JanWielema
 
 More information about this can be found in the following documentation written and recently updated by @anionic:
 
-(Queries from multi-threaded applications)[JavaApiOverview#queries-from-multi-threaded-applications]
+[Queries from multi-threaded applications](JavaApiOverview#queries-from-multi-threaded-applications)
 
 as well in this related issue at Github: https://github.com/SWI-Prolog/packages-jpl/issues/15
 
