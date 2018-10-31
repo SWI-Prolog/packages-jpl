@@ -83,10 +83,6 @@ add_dependencies(jpl libjpl jpl_jar)
 ################
 # Testing
 
-test_lib(jpl
-	 NAME java_in_prolog
-	 PACKAGES plunit)
-
 # We do not need $SWIPL_BOOT_FILE as this is now in the standard
 # location for the cmake build.  Still using it though as the old
 # build still uses it and modifying all that would cause another
@@ -109,7 +105,15 @@ add_test(
 		 -Djava.library.path=.
                  -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
                  junit.textui.TestRunner org.jpl7.test.TestJUnit)
-endif()
+
+
+test_lib(jpl
+	 NAME java_in_prolog
+	 PACKAGES plunit)
+
+else(JUNIT_JAR)
+  message("-- No junit.jar.  Dropping JPL tests.")
+endif(JUNIT_JAR)
 
 ################
 # Install examples
