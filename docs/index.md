@@ -15,20 +15,20 @@ JPL has been integrated into the full SWI-Prolog distribution starting with vers
 The objectives of JPL are to:
 
 * enable Prolog applications to exploit any Java classes, instances, methods etc. (without requiring any wrappers, metadata etc. to be set up first);
-* enable Java applications to manipulate any Standard Prolog libraries, predicates, etc. (without requiring any wrappers, metadata etc. to be set up first);
+* enable Java applications to manipulate any Standard Prolog libraries, predicates, etc. (without requiring any wrappers, metadata etc. to be set up first); and
 * enable hybrid Prolog+Java applications to be designed and implemented so as to take best advantage of both language systems, and to be testable, debuggable, maintainable.
 
-.. while also aim for:
+... while also aiming for:
 
-* minimum impact deployability: runtime support for Prolog+Java apps must be a position-independent, self-sufficient filestore tree, requiring no changes to registries, system libraries, system configuration files etc.
-* minimum dependency deployability: as with JVMs, the Prolog+Java runtime support must depend upon nothing which cannot be taken for granted in healthy OS installations
-* minimum vulnerability deployability: the Prolog+Java runtime support must be immune to legitimate variations in its environment (PATH settings, other applications and libraries including other Prolog+Java apps, etc.)
+* minimum impact deployability: runtime support for Prolog+Java apps must be a position-independent, self-sufficient filestore tree, requiring no changes to registries, system libraries, system configuration files etc;
+* minimum dependency deployability: as with JVMs, the Prolog+Java runtime support must depend upon nothing which cannot be taken for granted in healthy OS installations; and
+* minimum vulnerability deployability: the Prolog+Java runtime support must be immune to legitimate variations in its environment (PATH settings, other applications and libraries including other Prolog+Java apps, etc.).
 
 
 
 ## Table of contents
 
-1. Setup and Install
+1. Setup and Install:
     * [Installing JPL in Linux and Windows](DeploymentInstall).
     * [Installing JPL in MacOS](DeploymentMacos): how to set it up under Mac OS.
     * [Developing JPL](TutorialDeveloping): how to set-up a development install for JPL.
@@ -47,8 +47,9 @@ The objectives of JPL are to:
     * [Version History](ReleaseNotes): a short overview of the various versions of JPL since its creation.
     * [Types of Queries: One shot vs Iterative](TutorialTypesOfQueries): reference of the main high-level interface offered to access Prolog from Java.
     * [Multi Threaded Queries](TutorialMultithreaded): how to use JPL with iterative queries and multi-threaded applications.
-5. Applications: projects known where JPL has been used.
-
+5. Applications: some projects known where JPL has been used.
+    * [SARL-PROLOG-CAP](https://bitbucket.org/ssardina-research/sarl-prolog-cap): capcity for SARL agents to access SWI Prolog knowledgebases. Used for example in the [SARL Agents in City](https://bitbucket.org/joshuahansen188/sarl-agtcity-base) system.
+    
 
 
 ## Other resources
@@ -60,8 +61,6 @@ The objectives of JPL are to:
     * A Wiki on JPL (including a Getting Started guide: <https://github.com/ssardina-research/packages-jpl/wiki>
     * The old JPL 3.x documentation: <http://www.swi-prolog.org/packages/jpl/>
 * The [Java Native Interface](https://docs.oracle.com/javase/8/docs/technotes/guides/jni/) programming framework.
-
-
 
 ## License
 
