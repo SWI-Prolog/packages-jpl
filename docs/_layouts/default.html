@@ -272,6 +272,9 @@
 					document.querySelectorAll('.navbar3 > .level4.nav' + basename).forEach(function(e) {
 						e.classList.add('shown'); // show all level4 pseudo-links relevant to current page
 					});
+					if (document.location.hash !== '') { // this page was loaded by URL with a hash
+						window.scrollBy(0, -55); // headbar.height + cosmetic 5px
+					}
 				});
 				function scrollToId(id) { // two stages below are more widely supported that window.scrollTo
 					try { // in case something below throws an exception
