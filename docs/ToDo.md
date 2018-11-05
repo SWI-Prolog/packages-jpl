@@ -4,8 +4,8 @@
 
 Figure out why
 
-   `docs/License.md`
+    `docs/License.md`
   
 is not being published at
 
-  https://jpl76.org/License
+>https://jpl76.org/License
