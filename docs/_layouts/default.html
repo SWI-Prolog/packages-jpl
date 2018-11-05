@@ -273,8 +273,9 @@
 						e.classList.add('shown'); // show all level4 pseudo-links relevant to current page
 					});
 					if (document.location.hash !== '') { // this page was loaded by URL with a hash
-						alert('window.scrollBy(0, -55)');
-						window.scrollBy(0, -55); // headbar.height + cosmetic 5px
+						setTimeout(function() {
+							window.scrollBy(0, -55); // headbar.height + cosmetic 5px
+						}, 1); // empirically necessary (well documented)
 					}
 				});
 				function scrollToId(id) { // two stages below are more widely supported that window.scrollTo
