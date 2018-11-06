@@ -1,4 +1,4 @@
-# JPL - Deployment (for use)
+# Deploying for users
 
 To use JPL, three libraries need to be deployed:
 
