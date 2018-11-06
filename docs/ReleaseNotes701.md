@@ -1,4 +1,4 @@
-# JPL - Release notes - 7.0.1
+# Release notes - 7.0.1
 
 SWI Prolog V7 maintains good source level compatibility with previous major versions,
 but there are significant changes to the term model and foreign language interface (FLI),
