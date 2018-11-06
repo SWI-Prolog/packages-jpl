@@ -1,4 +1,4 @@
-# JPL - Prolog API - Overview
+# Prolog API - Overview
 
 The Prolog API comprises Prolog library predicates which support:
     * creating instances (objects) of Java classes (built-in and user-defined);
