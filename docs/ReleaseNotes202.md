@@ -1,4 +1,4 @@
-# JPL - Release notes - 2.0.2
+# Release notes - 2.0.2
 
 ## Java API: canonical representation of terms
 
