@@ -1,6 +1,5 @@
 # JPL Documentation
 
-For more information and specific documentation, refer to this [JPL Wiki](https://github.com/ssardina-research/packages-jpl/wiki).
-
+You can access JPL documentation at <https://jpl7.org>
 
 
