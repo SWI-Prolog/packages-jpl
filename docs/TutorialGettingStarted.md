@@ -1,4 +1,4 @@
-# JPL - Tutorials - Getting started
+# Tutorials - Getting started
 
 Assume we have a testing Prolog file with this content:
 ```prolog
