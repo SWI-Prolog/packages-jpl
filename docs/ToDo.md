@@ -2,7 +2,7 @@
 
 ## Documentation
 
-* Figure out why `docs/License.md` is not being published at [https://jpl7.org/License](https://jpl7.org/License).
+* Refresh docs/javadoc from each new stable Windows build, or link to a URL where they are published at swi-prolog.org
 
 ## Prolog API
 
