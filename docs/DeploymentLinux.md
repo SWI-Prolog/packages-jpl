@@ -1,4 +1,4 @@
-# JPL - Deployment - Making JPL work under Linux
+# Deploying for users - on Linux
 
 Recall that to use JPL under linux one must have the following in place:
 
