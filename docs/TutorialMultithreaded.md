@@ -1,5 +1,5 @@
 
-# Tutorials - Queries & multi-threaded Java
+# Tutorials - Multi-threaded Java
 
 In the past, JPL relied on a _single_ underlying Prolog engine that could only have _one query open_ at a time. This presented difficulties for multi-threaded programs in which the programmer had no control over when Queries are executed. While JPL made as much of the High-Level Interface thread-safe as it can, the user still had to make use of synchronization in a limited set of circumstances (namely when queries remained open for extended periods) to ensure that all calls to the High-Level Interface are thread safe.
 
