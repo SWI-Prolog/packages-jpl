@@ -279,7 +279,7 @@ This illustrates another mode of operation of `jpl_new/3`:
 jpl_new(+ArrayType, +InitialValues, -ArrayRef)
 ```
 
-See [Prolog API - Reference](https://jpl7.org/PrologApiReference.jsp) for fuller details of the API procedures.
+See [Prolog API - Reference](https://jpl7.org/PrologApiReference) for fuller details of the API procedures.
 
 Don't overlook the possibility and advantages of writing custom Java classes to serve your Prolog applications: this interface is not designed to make Java programming redundant.
 
