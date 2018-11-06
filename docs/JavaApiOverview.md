@@ -316,9 +316,7 @@ You may call `close()` on an inactive query without ill-effect, and you should *
 
 If you are using the `allSolutions()`, `hasSolution()`, `nSolutions()`, or `oneSolution()` methods, you need not worry about closing the query; it is done automatically for you.
 
-See [Types of Queries: One shot vs Iterative](https://github.com/ssardina-research/packages-jpl/wiki/Types-of-Queries:-One-shot-vs-Iterative)
-(in [Sebastian Sardina's JPL Wiki](https://github.com/ssardina-research/packages-jpl/wiki)) for
-further details and explanation.
+See [Types of Queries](TutorialTypesOfQueries.md) guide for further details and explanation on both one-shot and iterative queries that can be issued from Java.
 
 ## Queries from multi-threaded applications
 
@@ -332,9 +330,7 @@ Note that engines cannot communicate thread\_local predicates or global variable
 
 Note also that, once a thread has activated a query, it cannot pass it to another thread: solutions of a query must be retrieved by the thread which activated it.
 
-See [Multi Threaded Queries](https://github.com/ssardina-research/packages-jpl/wiki/Multi-Threaded-Queries)
-(in [Sebastian Sardina's JPL Wiki](https://github.com/ssardina-research/packages-jpl/wiki)) for
-further details and explanation.
+See [Multi Threaded Queries](TutorialMultithreaded.md) guides for further details and subtle points when potentially issuing multiple queries from various threads.
 
 ## Exceptions
 

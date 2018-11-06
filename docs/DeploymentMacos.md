@@ -1,7 +1,5 @@
 # JPL - Deployment - Making JPL work under Mac OS
 
-(notes from student The Champion in the context of my AOPD course in 2018)
-
 First of all, you may want to check [this issue](https://github.com/SWI-Prolog/packages-jpl/issues/2#event-1900141361) entry.
  
 So, there is an issue with using JPL in Mac OS due to a linking error in JPL. 
