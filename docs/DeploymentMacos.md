@@ -2,9 +2,9 @@
 
 (notes from student The Champion in the context of my AOPD course in 2018)
 
-Before check [this issue](https://github.com/SWI-Prolog/packages-jpl/issues/2#event-1900141361) entry.
+First of all, you may want to check [this issue](https://github.com/SWI-Prolog/packages-jpl/issues/2#event-1900141361) entry.
  
-There is an issue with using JPL in Mac OS due to a linking error in JPL. Here Theo describes his solution (edited with some extra info): 
+So, there is an issue with using JPL in Mac OS due to a linking error in JPL. 
 
 The problem was that SWI-Prolog come as a _relocatable_ app and the JPL library is therefore _run-path dependent_, causing the linking error when loaded without the proper run-path search paths. That is JPL does not know where SWI is.
  
@@ -18,9 +18,9 @@ So the first step is to install a not relocatable version of SWI-prolog:
 
     brew install swi-prolog
 
-This will install prolog in `/usr/local/Cellar/swi-prolog`
+This will install SWI-Prolog (here version 7.6.4) in `/usr/local/Cellar/swi-prolog/7.6.4/`
 
-As the homebrew version does _not_ come with the JPL library (an issue on the homebrew github as been opened about this), the second step is therefore to buid the library from source. Alternatively, you can download the already compiled  [libjpl.dylib]() and copy it in:
+As the homebrew version does _not_ come with the JPL library (an [issue](https://github.com/Homebrew/homebrew-core/issues/32364) on the homebrew github as been opened about this), the second step is therefore to buid the library from source. Alternatively, you can download the already compiled  [libjpl.dylib](files/libjpl.dylib) (version 7.7.19) and copy it into folder:
 
     /usr/local/Cellar/swi-prolog/7.6.4/libexec/lib/swipl-7.6.4/lib/
 
@@ -85,4 +85,7 @@ You can also do this in Eclipse:
  
 And that's it, your project will link and run properly on Mac OS ;)
 
-Thanks Theo!
+
+### Acknowledgements
+
+The above guide is a further elaboration from Sebastian Sardina to the original guide by Theo Champion in the context of my AOPD course in 2018. Thanks Theo!

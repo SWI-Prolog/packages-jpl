@@ -4,7 +4,7 @@ Recall that to use JPL under linux one must have the following in place:
 
 * C Native JPL Library `libjpl.so`, generally found at `/usr/lib/swi-prolog/lib/amd64/libjpl.so`
 * Java API Jar file `jpl.jar` in the Java `CLASSPATH`, generally accessible from `/usr/share/java/jpl.jar`.
-* Prolog source module `jpl.pl` at `$SWI_HOME_DIR/library`, generally accessible from `/usr/lib/swi-prolog/library/jpl.pl`
+* Prolog API as an SWI source module `jpl.pl` at `$SWI_HOME_DIR/library`, generally accessible from `/usr/lib/swi-prolog/library/jpl.pl`
 
 JPL is **generally distributed with official Linux**. For example, in Ubuntu-based systems, JPL is provided via package `swi-prolog-java`. That package includes the C library `libjpl.so`, the Java API `jpl.jar`, the Prolog module `jpl.pl` as well as all documentation associated.
 
