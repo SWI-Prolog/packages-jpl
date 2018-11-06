@@ -32,15 +32,15 @@ This page includes _documentation_ on how to install and setup JPL, the APIs off
 
 If you are only wanting to *use* JPL in your application (mostly in your Java application), you may then need to read how to **deploy JPL** in your system in oder to be able to use it. Check the guides for deployment on the various platforms: [Linux](DeploymentLinux.md), [Windows](DeploymentWindows.md) or [MacOS](DeploymentMacos.md). 
 
-To provide a dynamic, bidirectional, interface between SWI-Prolog and Java runtimes, JPL offers two APIs: a [Java API](JavaApi.md) to access Prolog from Java and a [Prolog API](PrologApi.md). Corresponding JavaDoc and Reference manual are also provided for both APIs.
+To provide a dynamic, bidirectional, interface between SWI-Prolog and Java runtimes, **JPL offers two APIs**: a [Java API](JavaApi.md) to access Prolog from Java and a [Prolog API](PrologApi.md). Corresponding JavaDoc and Reference manual are also provided for both APIs.
 
-There are also some useful tutorials for those wanting to use JPL, including a [getting started](TutorialGettingStarted.md) guide, a discussion on the [two types of Prolog queries](TutorialTypesOfQueries.md) offered from Java and the subletites to consider when your application can potentially issue [multi-threaded queries](TutorialMultithreaded.md) (i.e., multiple queries at the same time in different threads).
-
-
-If you want to develop JPL further or want to implement some modification, you will need to carry an full installation from scratch, including an install/compile of SWI source. Please refer to the [Developing JPL](TutorialDeveloping) guide.
+There are also some useful **tutorials** for those wanting to use JPL, including a [getting started](TutorialGettingStarted.md) guide, a discussion on the [two types of Prolog queries](TutorialTypesOfQueries.md) offered from Java and the subletites to consider when your application can potentially issue [multi-threaded queries](TutorialMultithreaded.md) (i.e., multiple queries at the same time in different threads).
 
 
-This page also contains a short overview of the various [release versions]((ReleaseNotes) of JPL as well as release notes for the main releases.
+If you want to **develop JPL** further or want to implement some modification, you will need to carry an full installation from scratch, including an install/compile of SWI source. Please refer to the [Developing JPL](TutorialDeveloping) guide.
+
+
+This page also contains a short overview of the various [release versions](ReleaseNotes) of JPL as well as release notes for the main releases.
 
 
 
