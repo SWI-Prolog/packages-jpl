@@ -1,4 +1,4 @@
-# JPL - Release notes - 7.4.0
+# Release notes - 7.4.0
 
 JPL 7.4 was developed for inclusion in the stable SWI Prolog release series 7.4.x
 (and is included in development releases 7.5.x).
