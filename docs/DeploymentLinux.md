@@ -1,3 +1,5 @@
+# JPL - Deployment - Making JPL work under Linux
+
 Recall that to use JPL under linux one must have the following in place:
 
 * C Native JPL Library `libjpl.so`, generally found at `/usr/lib/swi-prolog/lib/amd64/libjpl.so`
