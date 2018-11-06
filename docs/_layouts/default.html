@@ -51,14 +51,28 @@
 					background-color: #E0E0FF; /* same as tailbar */
 					border-top: 1px solid #808080;
 					border-bottom: 1px solid #808080;
+					color: #000080; /* dark blue */
 					height: 48px; /* body.padding-top - (1 + 1) border */
 					margin: 0 auto 0 auto; /* horiz centred */
 					max-width: 998px; /* lie within mainbar border */
 				}
-				.headbar2 > span { /* banner text */
-					color: #000080; /* dark blue */
-					font-size: 230%;
-					margin-left: 5px; /* same as content in mainbar */
+				.headbar2 > div.banner {
+					display: table;
+					float: left;
+					font-size: 300%;
+					line-height: 1em;
+					padding: 0 20px 0 10px; /* LH matches content in mainbar */
+				}
+				.headbar2 > div.strapline {
+					font-size: 85%;
+					font-style: italic;
+					line-height: 1em;
+					padding: 2px 0 0 0;
+				}
+				.headbar2 > div.breadcrumb { /* banner text */
+					font-size: 200%;
+					line-height: 1em;
+					padding-left: 5px; /* cosmetic */
 				}
 				.headbar2 > div.icon { /* menu burger icon */
 					display: none; /* shown only below 800px viewport width */
@@ -104,7 +118,7 @@
 					left: 0;
 					position: fixed; /* does not scroll with content */
 					right: 0;
-					top: 52px; /* 2px below headbar */
+					top: 0;
 					visibility: hidden; /* don't mask mainbar links; https://blog.lysender.com/2014/09/css-elements-covered-by-a-container-div-not-clickable */
 				}
 				.navbar2 { /* invisible frame-of-reference for .navbar3 */
@@ -113,9 +127,10 @@
 				}
 				.navbar3 { /* navigation sidebar */
 					background: #F0F0FF; /* mask mainbar in narrow viewports */
-					border: 1px solid #808080;
+					border-bottom: 1px solid #808080;
+					border-left: 1px solid #808080;
 					float: right; /* to RH edge of navbar2 */
-					margin: 0 3px 0 0; /* override ul defaults */
+					margin: 1px 1px 0 0; /* override ul defaults; within 1px border */
 					padding: 0 0 0 0; /* override ul defaults */
 					visibility: visible; /* only this navbar part is visible, to avoid masking mainbar links beneath */
 					width: 198px; /* 200 - (1 + 1) border; matches mainbar padding */
@@ -123,6 +138,7 @@
 				@media all and (max-width: 800px) {
 					.navbar3 {
 						border: 1px solid #808080;
+						margin-top: 49px; /* 1px below borderless headbar */
 					}
 					.navbar3.closed {
 						display: none; /* normally shown */
@@ -135,12 +151,12 @@
 					display: block; /* enable top & bottom padding, maximise clickable area */
 					line-height: 1em; /* experiment */
 					margin: 0 0 0 0; /* override (any?) defaults */
-					padding: 3px 0 3px 3px;
+					padding: 3px 0 3px 5px;
 					text-decoration: none; /* suppress default */
 				}
 				.navbar3 > li.level2 > a { /* indented navigation sidebar item content */
 					font-size: 90%;
-					padding-left: 13px; /* 3 + 10 */
+					padding-left: 15px; /* 5 + 10 */
 				}
 				.navbar3 > li > a, /* level 1 & 2 links */
 				.navbar3 > li > a:visited { /* ditto once visited */
@@ -161,10 +177,10 @@
 					font-size: 80%;
 				}
 				.navbar3 > li.level3 > div { /* indented navigation sidebar item content */
-					padding-left: 23px; /* 3 + 10 + 10 */
+					padding-left: 25px; /* 5 + 10 + 10 */
 				}
 				.navbar3 > li.level4 > div { /* indented navigation sidebar item content */
-					padding-left: 33px; /* 3 + 10 + 10 + 10 */
+					padding-left: 35px; /* 5 + 10 + 10 + 10 */
 				}
 				.navbar3 > li > a:focus {
 					outline: 1px solid #FFC0C0; /* thinner focus outline looks better against (nearly) black background */
@@ -292,12 +308,21 @@
 			</div>
 			<div class="headbar1">
 				<div class="headbar2">
-					<span>{{page.title}}</span>
+					<div class="banner">
+						JPL
+					</div>
 					<div class="icon">
 						<div class="bar"></div>
 						<div class="bar"></div>
 						<div class="bar"></div>
 						<div class="legend">menu</div>
+					</div>
+					<div class="strapline">
+						an API between SWI-Prolog and the Java Virtual Machine -
+						<a href="https://github.com/SWI-Prolog/packages-jpl/">hosted on GitHub</a>
+					</div>
+					<div class="breadcrumb">
+						Release Notes - 7.5.0
 					</div>
 				</div>
 			</div>
