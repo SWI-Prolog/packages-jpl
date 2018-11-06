@@ -330,7 +330,7 @@ Note that engines cannot communicate thread\_local predicates or global variable
 
 Note also that, once a thread has activated a query, it cannot pass it to another thread: solutions of a query must be retrieved by the thread which activated it.
 
-See [Multi Threaded Queries](TutorialMultithreaded.md) guides for further details and subtle points when potentially issuing multiple queries from various threads.
+See [Multi Threaded Queries](TutorialMultithreaded.md) guide for further details and subtle issues when potentially issuing multiple queries from various threads.
 
 ## Exceptions
 
