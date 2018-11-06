@@ -1,4 +1,4 @@
-# JPL - Deployment - Making JPL work under Mac OS
+#  Deploying for users - on MacOS
 
 First of all, you may want to check [this issue](https://github.com/SWI-Prolog/packages-jpl/issues/2#event-1900141361) entry.
  
