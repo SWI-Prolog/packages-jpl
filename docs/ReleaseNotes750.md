@@ -1,4 +1,4 @@
-# JPL - Release Notes - 7.5.0
+# Release Notes - 7.5.0
 
 - Implementation of Iterator interface in `Query` to match Java Iterator standard.
     - Pointer to next solution is advanced only via `next()` and `nextSolution()`, but not on `hasNext()` or `hasMoreSolutions()`.
