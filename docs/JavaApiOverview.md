@@ -1,5 +1,11 @@
 # JPL -  Java API - Overview
 
+The Java API comprises public Java classes which support:
+    * constructing Java representations of Prolog terms and queries;
+    * calling queries within SWI-Prolog engines; and
+    * retrieving (as Java representations of Prolog terms) any bindings created by a call.
+
+
 ## The class hierarchy
 
 The ***API*** consists of the following class hierarchy:
