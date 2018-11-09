@@ -124,27 +124,21 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * This constructor creates a Query whose goal is the specified Term. The
-	 * Query is initially closed. <b>NB</b> Creating an instance of the Query
+	 * Main constructor of a Query from the specified Term.
+     *
+     * The Query is initially closed. <b>NB</b> Creating an instance of the Query
 	 * class does not result in a call to a Prolog engine. <b>NB</b> The goal
 	 * can be a Compound or an Atom (Atom extends Compound), but cannot be an
 	 * instance of jpl.Float, jpl.Integer or jpl.Variable.
 	 *
-	 * @param t
-	 *            the goal of this Query
+	 * @param t the goal of this Query; must be Atom or Compound
+     * @throws JPLException  if term provided is not of right sort Atom or Compound
 	 */
-	public Query(Term t) { // formerly insisted (confusingly) on a Compound (or
-							// Atom)
-        LOGGER.setLevel(levelLog);
+	public Query(Term t) {
+        LOGGER.setLevel(levelLog);  // Set the logging level for this query
 
-        this.goal_ = Query1(t);
-	}
-
-	private Term Query1(Term t) {
-		if (t instanceof Atom) {
-			return t;
-		} else if (t instanceof Compound) {
-			return t;
+		if ((t instanceof Atom) || (t instanceof Compound)) {
+            this.goal_ = t;
 		} else if (t instanceof Float) {
 			throw new JPLException("a Query's goal must be an Atom or Compound (not a Float)");
 		} else if (t instanceof Integer) {
@@ -156,12 +150,25 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		}
 	}
 
-	/**
+    /**
+     * This constructor builds a Query from the given Prolog source text, "as is".
+     * Throws PrologException containing error(syntax_error(_),_) if text is invalid.
+     *
+     * @param text the complete Prolog source text of this Query
+     * @throws PrologException containing error(syntax_error(_),_) if text is invalid as a term.
+     * @throws JPLException  if term provided is not of right sort Atom or Compound
+     */
+    public Query(String text) {
+        this(Util.textToTerm(text));
+    }
+
+
+    /**
 	 * If text denotes an atom, this constructor is shorthand for
-	 * new Query(new Compound(name,args)), but if
-	 * text denotes a term containing N query (?) symbols and there are N args,
-	 * each query is replaced by its corresponding arg to provide the new
-	 * Query's goal.
+	 * new Query(new Compound(name,args)).
+	 *
+	 * If text denotes a term containing N placehholder symbols ? and there are N args,
+	 * each ? is replaced by its corresponding arg to provide the new Query's goal.
 	 *
 	 * @param text
 	 *            the name of the principal functor of this Query's goal
@@ -169,15 +176,28 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *            the arguments of this Query's goal
 	 */
 	public Query(String text, Term[] args) {
-		this(Query1(text, args));
+		this(buildQueryTerm(text, args));
 	}
 
-	// convenience case for a single arg
+	// Just a convenience  shortcut case for a single arg; will build a monadic query "text(arg)"
 	public Query(String text, Term arg) {
-		this(Query1(text, new Term[] { arg }));
+		this(text, new Term[] { arg });
 	}
 
-	private static Term Query1(String text, Term[] args) {
+
+    /**
+     * Builds a Term representing a query
+     *
+     * If text denotes an atom, it builds a Term of the form text(args)
+     * If text denotes a compound term containing N placehholder symbols ?, then args
+     * will be injected sequentially (has to be same number of ? as args)
+     *
+     * @param text
+     *            the name of the principal functor of this Query's goal
+     * @param args
+     *            the arguments of this Query's goal
+     */
+	private static Term buildQueryTerm(String text, Term[] args) {
 		Term t = Util.textToTerm(text);
 		if (t instanceof Atom) {
 			return new Compound(text, args);
@@ -186,16 +206,12 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		}
 	}
 
-	/**
-	 * This constructor builds a Query from the given Prolog source text. Throws
-	 * PrologException containing error(syntax_error(_),_) if text is invalid.
-	 *
-	 * @param text
-	 *            the Prolog source text of this Query
-	 */
-	public Query(String text) {
-		this(Util.textToTerm(text));
-	}
+
+
+
+
+
+
 
 	/**
      * This method is required by Iterator interface
