@@ -1,4 +1,4 @@
-# JPL - Deployment - Making JPL work under Windows
+# Deploying for users - on Windows
 
 Tested successfully in Windows 7 with SWI 7.6.4.
 

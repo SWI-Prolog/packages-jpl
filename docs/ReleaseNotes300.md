@@ -1,4 +1,4 @@
-# JPL - Release notes - 3.0.0
+# Release notes - 3.0.0
 
 This release is a work-in-progress, and is being made available only to a few enthusiasts who don't mind the likelihood that the API will change before 3.x becomes stable.
 

@@ -1,4 +1,4 @@
-# JPL - Release Notes - 3.0.2
+# Release Notes - 3.0.2
 
 ## Changes within the distribution
 

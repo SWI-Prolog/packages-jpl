@@ -1,4 +1,4 @@
-# JPL - Tutorials - Developing JPL
+# Tutorials - Developing JPL
 
 Say you want to develop JPL further, to extend it or address some bug.
 

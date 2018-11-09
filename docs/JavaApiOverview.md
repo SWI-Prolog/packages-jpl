@@ -1,4 +1,4 @@
-# JPL -  Java API - Overview
+# Java API - Overview
 
 The Java API comprises public Java classes which support:
     * constructing Java representations of Prolog terms and queries;

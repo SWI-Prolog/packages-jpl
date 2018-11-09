@@ -1,4 +1,4 @@
-# JPL - Tutorials - One-shot vs iterative queries
+# Tutorials - Types of queries
 
 The high-level Java API to interact with SWI Prolog can be divided into two classes.
 
