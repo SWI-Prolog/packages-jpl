@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.12)
 project(swipl-jpl)
 
 include("../cmake/PrologPackage.cmake")
-include(Install)
 
 # On MacOS we have /usr/libexec/java_home to find the appropriate
 # JAVA_HOME.  We now use `java_home` when found.  Should we limit
@@ -60,60 +59,34 @@ link_directories(${JNI_INCLUDE_DIRS})
 set(JPLCONFIG)
 if(APPLE)
   set(JPLCONFIG jpl_config.pl)
-  set(JPLTYPE SHARED)
-endif()
-
-if(WIN32)
-  set(jpl_module jpl)
-else()
-  set(jpl_module libjpl)
 endif()
 
 swipl_plugin(
-    libjpl ${JPLTYPE}
-    MODULE ${jpl_module}
+    jpl
+    SHARED jpl
+    MODULE libjpl
     C_SOURCES src/c/jpl.c
-    THREADED C_LIBS ${JAVA_JVM_LIBRARY} libswipl
+    C_LIBS ${JAVA_JVM_LIBRARY} libswipl
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
 
-add_custom_target(jpl)
-add_dependencies(jpl libjpl jpl_jar)
-
 ################
 # Testing
-
-# We do not need $SWIPL_BOOT_FILE as this is now in the standard
-# location for the cmake build.  Still using it though as the old
-# build still uses it and modifying all that would cause another
-# cycle to get everything in place
-
-set(swihome ../../home)
-if(JUNIT_JAR)
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(swibootfile ${swihome}/boot64.prc)
-  else()
-    set(swibootfile ${swihome}/boot32.prc)
-  endif()
-
-add_test(
-    NAME jpl:prolog_in_java
-    COMMAND env SWI_HOME_DIR=${swihome}
-		SWIPL_BOOT_FILE=${swibootfile}
-                TEST_JPL=../../../packages/jpl/test_jpl.pl
-	    ${Java_JAVA_EXECUTABLE}
-		 -Djava.library.path=.
-                 -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
-                 junit.textui.TestRunner org.jpl7.test.TestJUnit)
-
 
 test_lib(jpl
 	 NAME java_in_prolog
 	 PACKAGES plunit)
 
-else(JUNIT_JAR)
-  message("-- No junit.jar.  Dropping JPL tests.")
-endif(JUNIT_JAR)
+if(JUNIT_JAR)
+add_test(
+    NAME jpl:prolog_in_java
+    COMMAND env SWI_HOME_DIR=../../home
+                TEST_JPL=../../../packages/jpl/test_jpl.pl
+	    ${Java_JAVA_EXECUTABLE}
+		 -Djava.library.path=.
+                 -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
+                 junit.textui.TestRunner org.jpl7.test.TestJUnit)
+endif()
 
 ################
 # Install examples
