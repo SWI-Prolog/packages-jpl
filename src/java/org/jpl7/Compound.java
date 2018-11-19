@@ -289,13 +289,7 @@ public class Compound extends Term {
 	 * @return string representation of an Compound
 	 */
 	public String toString() {
-		if (JPL.isSimpleName(name)) {
-			return name + (args.length > 0 ? "(" + Term.toString(args) + ")" : "");
-		} else {
-			return "'" + name + "'" + (args.length > 0 ? "(" + Term.toString(args) + ")" : "");
-		}
-
-//		return name + (args.length > 0 ? "(" + Term.toString(args) + ")" : "");
+		return JPL.quotedName(name) + (args.length > 0 ? "(" + Term.toString(args) + ")" : "");
 	}
 
 	/**

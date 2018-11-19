@@ -1,45 +1,38 @@
-# JPL 7.4+ - Java - SWI Prolog Interface
+# JPL - Java <-> SWI Prolog Interface
 
-JPL is a "library using the SWI-Prolog foreign interface and the Java jni interface providing a _bidirectional interface between Java and Prolog_ that can be used to embed Prolog in Java _as well_ as for embedding Java in Prolog. In both setups it provides a reentrant bidirectional interface."
+JPL is a set of Java classes and C functions providing a **bidirectional interface between Java and Prolog**.  JPL uses the Java Native Interface (JNI) to connect to a Prolog engine through the Prolog Foreign Language Interface (FLI).  JPL is not a pure Java implementation of Prolog; it makes extensive use of native implementations of Prolog on supported platforms.
 
-As far as I can tell, JPL has been developed originally by Paul Singleton and maintained by him and Jan Wielemaker (and possibly others?).
+In its current version, JPL supports the _embedding of a Prolog engine within the Java VM_ as well as the _embedding of a Java VM within Prolog_, so that, for example, one could take advantage of the rich class structure of the Java environment from within Prolog.
 
-JPL has been integrated into the full SWI-Prolog distribution starting with version 5.4.x, including binaries for MS-Windows and a Linux RPM. 
+JPL is designed in two layers, a low-level interface to the Prolog FLI and a high-level Java interface for the Java programmer who is not concerned with the details of the Prolog FLI.  The low-level interface is provided for C programmers who may wish to port their C implementations which use the FLI to Java with minimal fuss. The current version of JPL only works with [SWI-Prolog](http://www.swi-prolog.org/).
 
-There was an initial [JPL 3.x](http://www.swi-prolog.org/packages/jpl/), now discontinued, which then evolved into the current [JPL 7.4](https://jpl7.org/). 
+JPL has been integrated into the full [SWI-Prolog](http://www.swi-prolog.org/) distribution starting with version 5.4.x and is included in the binary packages provided by swi-prolog.org.  Binary packages provided by 3rd parties may differ, not providing JPL or providing it as a separate package.
 
-The **objectives of JPL** are to:
+## Further documentation
 
-* enable Prolog applications to exploit any Java classes, instances, methods etc. (without requiring any wrappers, metadata etc. to be set up first);
-* enable Java applications to manipulate any Standard Prolog libraries, predicates, etc. (without requiring any wrappers, metadata etc. to be set up first);
-* enable hybrid Prolog+Java applications to be designed and implemented so as to take best advantage of both language systems, and to be testable, debuggable, maintainable.
+- Overview documentation is maintained at this **[JPL Wiki](https://github.com/ssardina-research/packages-jpl/wiki).**
+- The Prolog API reference is provided from the **[SWI-Prolog manual](http://www.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/jpl.html%27%29)**
 
-To learn about JPL refer to the main [JPL 7 site])(https://jpl7.org/), which includes the Java API (to access Prolog from Java) and the Prolog API (to access Java from Prolog), and our [Wiki](https://github.com/ssardina-research/packages-jpl/wiki) with some useful information and guides on how to use (and understand) JPL.
+----------------------
 
+## OBJECTIVES
 
-## Why this fork then?
+The objectives of JPL are to:
 
-I have forked the main [JPL Github repo](https://github.com/SWI-Prolog/packages-jpl) mainly for two reasons:
+1. enable Prolog applications to exploit any Java classes, instances, methods etc. (without requiring any wrappers, metadata etc. to be set up first);
+2. enable Java applications to manipulate any Standard Prolog libraries, predicates, etc. (without requiring any wrappers, metadata etc. to be set up first); and
+3. enable hybrid Prolog+Java applications to be designed and implemented so as to take best advantage of both language systems, and to be testable, debuggable, maintainable.
 
-1. Fix this issue [#9](<https://github.com/SWI-Prolog/packages-jpl/issues/9>) that preclude Java to perform queries on specific SWI modules.
-  * This issue has been resoled and merged into the master branch of JPL in pull request [#10](https://github.com/SWI-Prolog/packages-jpl/pull/10) and hopefully will be available in SWI 7.7.X release.
-2. Expose JPL repo as a Maven repo, so it can be obtained automatically as a dependency via [JitPack](https://jitpack.io/).
+.. while also aim for:
 
-More generaly, I am using SWI+JPL to provide Prolog knowledgebase management to [SARL agent systems](http://www.sarl.io/). To do so, I have developed a SARL Capacity and Skill [SARL-PROLOG-CAP](https://bitbucket.org/ssardina-research/sarl-prolog-cap) that SARL agents can use to access SWI Prolog knowledgbases.  
+* minimum impact deployability: runtime support for Prolog+Java apps must be a position-independent, self-sufficient filestore tree, requiring no changes to registries, system libraries, system configuration files etc.
+* minimum dependency deployability: as with JVMs, the Prolog+Java runtime support must depend upon nothing which cannot be taken for granted in healthy OS installations
+* minimum vulnerability deployability: the Prolog+Java runtime support must be immune to legitimate variations in its environment (PATH settings, other applications and libraries including other Prolog+Java apps, etc.)
 
-One example of such use is the SARL Agent System to play the [2017 Multi-Agent Agents in City game](https://multiagentcontest.org/2017/). A base sytem, showcasing how to use SWI Prolog via JPL, can be obtained in [this repo](https://bitbucket.org/ssardina-research/sarl-agtcity-base). 
+## LICENSE
 
-## Important Links
-
-* Thie repo as a Maven artiact in Jitpack: <https://jitpack.io/#ssardina-research/packages-jpl>
-* The main current JPL 7 site: <https://jpl7.org/)
-  * It includes the Java API (to access Prolog from Java) and the Prolog API (to access Java from Prolog).
-* The main Github repository for JPL 7 (which this one is a fork of): <https://github.com/SWI-Prolog/packages-jpl> 
-* The documentation of SWI `library(jpl)`: <http://www.swi-prolog.org/pldoc/man?section=jpl>
-* [Our Wiki](https://github.com/ssardina-research/packages-jpl/wiki) with some useful information and guides.
-* The old JPL 3.x documentation: <http://www.swi-prolog.org/packages/jpl/>
+JPL is released under the terms of the Simplified BSD License. See [LICENSE](LICENSE) file.
 
 
-## Contact
 
-Sebastian Sardina - ssardina@gmail.com (for this fork)
+
