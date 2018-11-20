@@ -304,6 +304,28 @@ error(java_exception(reference_to_exception_object), exception_classname)
 
 Here are a few things to watch out for.
 
+### Naming static nested classes
+
+Although, in Java source code, static nested classes are named with the *dot* notation, e.g.
+
+```java
+java.awt.geom.Path2D.Float
+```
+
+the JVM's Java Native Interface (JNI), which JPL uses, requires a special notation, hence
+
+```prolog
+jpl_new('java.awt.geom.Path2D$Float', [], P).
+```
+
+which you may have noticed in the name of the corresponding class file:
+
+```
+java/awt/geom/Path2D$Float.class
+```
+
+Unfortunately it is far from trivial to support the Java naming in JPL.  Thanks go to Timo Baumann and Sebastian Godelet for their input on this issue.
+
 ### Calling parameterless methods
 
 You must pass an empty parameter list when calling Java methods which take no parameters, e.g.
