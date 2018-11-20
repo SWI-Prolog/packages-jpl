@@ -39,13 +39,23 @@
 					}
 				}
 				.mainbar > h1 { /* embedded in headbar; not shown in mainbar */
-						display: none;
+					display: none;
+				}
+				@media print {
+					.mainbar > h1 {
+						display: block; /* show this instead of (per-page) headbar */
+					}
 				}
 				.headbar1 { /* IE11 needs this separate fixed top-aligned frame-of-reference for headbar2 */
 					left: 0; /* full width from here (IE8+) */
 					position: fixed; /* doesn't scroll with content */
 					right: 0; /* ...to here (IE8+) */
 					top: 0; /* at very top of viewport */
+				}
+				@media print {
+					.headbar1 {
+						display:  none;
+					}
 				}
 				.headbar2 { /* limited width, centred */
 					background-color: #E0E0FF; /* same as tailbar */
