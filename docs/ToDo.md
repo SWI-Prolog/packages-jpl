@@ -8,6 +8,14 @@
 
 * Export `jpl_java_lib_version/1` (for consistency with `jpl_c_lib_version/1` and `jpl_pl_lib_version/1`).
 
+* Export
+
+    ```prolog
+    jpl_c_lib_path/1
+    jpl_java_lib_path/1
+    jpl_pl_lib_path/1
+    ```
+
 * Find out whether C code can discover the identity of a JVM *before* initialising it, so JPL can pass vendor-specific or version-specific options when initialising it.
 
 ## Java API
