@@ -332,6 +332,18 @@ which uses an anonymous variable to ignore the result.
 
 There is (deliberately) no `jpl_call/3` convenience predicate which conceals the return value of `void` methods (see above).
 
+### Exiting the JVM
+
+Note that
+
+```prolog
+jpl_call('java.lang.System', exit, [0], _)
+```
+
+will terminate the SWI-Prolog process (into which the JVM library has been dynamically loaded)
+*without* calling any `at_halt/1` or `PL_at_halt()` hooks, or performing system cleanup actions.
+Beware also of calling Java classes which might call `java.lang.System#exit()`.
+
 ## To do
 
 Here are a few longer-term (and tricky) aims:
