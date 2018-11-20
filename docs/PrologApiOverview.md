@@ -326,6 +326,46 @@ java/awt/geom/Path2D$Float.class
 
 Unfortunately it is far from trivial to support the Java naming in JPL.  Thanks go to Timo Baumann and Sebastian Godelet for their input on this issue.
 
+### Enums are static nested classes
+
+Given
+
+```java
+public class Foo {
+    public enum Bar {
+        UP, DOWN
+    }
+    public static String legend(Bar x) {
+        switch(x) {
+            case UP:
+                return "upwards";
+            case DOWN:
+                return "downwards";
+            default:
+                return "?";
+        }
+    }
+}
+```
+
+we can do
+
+```prolog
+1 ?- jpl_get('Foo$Bar', 'UP', X).
+X = @('J#00000000000056425292').
+```
+
+or
+
+```prolog
+1 ?- jpl_get('Foo$Bar', 'UP', X), jpl_call('Foo', legend, [X], S).
+X = @('J#00000000000056425292'),
+S = upwards.
+```
+
+where X is bound to the nominated enum constant (actually an object reference),
+then passed as an arg to legend/1
+
 ### Calling parameterless methods
 
 You must pass an empty parameter list when calling Java methods which take no parameters, e.g.
