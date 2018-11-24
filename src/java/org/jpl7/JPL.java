@@ -1,9 +1,7 @@
 package org.jpl7;
 
 import java.io.File;
-import java.util.Map;
 
-//import com.sun.deploy.util.StringUtils;
 import org.jpl7.fli.Prolog;
 
 /**
@@ -294,12 +292,8 @@ public class JPL {
 		int len;
 		char c;
 		if (s == null) {
-			throw new java.lang.NullPointerException(); // JPL won't call it
-            // to handle exceptions coming from Prolog of this form:
-            // error(existence_error(procedure, ':'(jpl, '/'(test, 0))), context(':'(system, '/'('$c_call_prolog', 0)), _4))
-//        } else if (StringUtils.trimWhitespace(s).equals(":") || (s.equals("/"))) {
-//		    return true
-        } else if ((len = s.length()) == 0) {
+			throw new java.lang.NullPointerException(); // JPL won't call it  this is way
+		} else if ((len = s.length()) == 0) {
 			return false;
 		} else if ((c = s.charAt(0)) < 'a' || c > 'z') {
 			return false;

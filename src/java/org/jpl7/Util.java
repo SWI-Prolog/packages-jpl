@@ -116,9 +116,9 @@ public final class Util {
 	 * Converts a Prolog source text to a corresponding JPL Term (in which each Variable has the appropriate name from
 	 * the source text). Throws PrologException containing error(syntax_error(_),_) if text is invalid.
 	 *
-	 * @param text
-	 *            A Prolog source text denoting a term
+	 * @param text A Prolog source text denoting a term
 	 * @return Term a JPL Term equivalent to the given source text
+	 * @throws PrologException containing error(syntax_error(_),_) if text is invalid as a term.
 	 */
 	public static Term textToTerm(String text) {
 		// it might be better to use PL_chars_to_term()
