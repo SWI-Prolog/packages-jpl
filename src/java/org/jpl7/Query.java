@@ -94,7 +94,7 @@ import java.util.logging.Logger;
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  *
- * @author Fred Dushin <fadushin@syr.edu>
+ * @author Fred Dushin fadushin@syr.edu
  * @version $Revision$
  */
 public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, Term>> { // was
@@ -124,21 +124,28 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * Main constructor of a Query from the specified Term.
-     *
-     * The Query is initially closed. <b>NB</b> Creating an instance of the Query
+	 * Returns the context module for this Query
+	 *
+	 * @return a String representing the context in which the goal will be run
+	 */
+	public final String getContext() { return contextModule; }
+
+
+
+	/**
+	 * This constructor creates a Query whose goal is the specified Term. The
+	 * Query is initially closed. <b>NB</b> Creating an instance of the Query
 	 * class does not result in a call to a Prolog engine. <b>NB</b> The goal
 	 * can be a Compound or an Atom (Atom extends Compound), but cannot be an
 	 * instance of jpl.Float, jpl.Integer or jpl.Variable.
 	 *
 	 * @param t the goal of this Query; must be Atom or Compound
-     * @throws JPLException  if term provided is not of right sort Atom or Compound
+         * @throws JPLException  if term provided is not of right sort Atom or Compound
 	 */
 	public Query(Term t) {
-        LOGGER.setLevel(levelLog);  // Set the logging level for this query
-
+	        LOGGER.setLevel(levelLog);  // Set the logging level for this query
 		if ((t instanceof Atom) || (t instanceof Compound)) {
-            this.goal_ = t;
+            		this.goal_ = t;
 		} else if (t instanceof Float) {
 			throw new JPLException("a Query's goal must be an Atom or Compound (not a Float)");
 		} else if (t instanceof Integer) {
@@ -214,7 +221,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 
 
 	/**
-     * This method is required by Iterator interface
+         * This method is required by Iterator interface
 	 * a Query is its own Iterator
 	 *
 	 * @see java.lang.Iterable#iterator()
@@ -234,8 +241,8 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-     * This method is required by Iterator interface
-     * It is a wrapper for {@link #nextSolution()}
+         * This method is required by Iterator interface
+         * It is a wrapper for {@link #nextSolution()}
 	 *
 	 * @see java.util.Iterator#next()
 	 */
@@ -292,7 +299,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 									// else undefined
 	private qid_t qid = null; // id of current Prolog query iff open, else null
 
-    private Boolean hasNextSolution = null; // is there a next solution? null means "we do not know yet, haven't fetch"
+        private Boolean hasNextSolution = null; // is there a next solution? null means "we do not know yet, haven't fetch"
 
 
 	/**
@@ -305,6 +312,14 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
+	* Returns the engine attached to this query
+	*
+	* @return a long number representing the id of the SWI Prolog engine used in this query
+	*/
+	public final long getEngine() { return engine.value; }
+
+
+        /**
 	 * This method returns true if JPL was able to initiate a "call" of this
 	 * Query within a Prolog engine. It is designed to be used with the
 	 * nextSolution() method to retrieve one or more substitutions in the form
@@ -322,32 +337,30 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 */
 	public final boolean hasMoreSolutions() {
 		if (hasNextSolution == null) {
-            if (!open) open();
-            hasNextSolution = fetchNextSolution();
-        }
-        return hasNextSolution;
+	            if (!open) open();
+	            hasNextSolution = fetchNextSolution();
+	        }
+	        return hasNextSolution;
 	}
 
-
-
-        /**
-         * This method returns true if JPL was able to initiate a "call" of this
-         * Query within the Prolog engine. It is designed to be used with the
-         * getSolution() and close() methods to retrieve one or more substitutions
-         * in the form of Maps.
-         *
-         * <pre>
-         * Query q = // obtain Query reference
-         * Map soln;
-         * q.open();
-         * while ((soln = q.getSolution()) != null) {
-         *      // process solution...
-         * }
-         * </pre>
-         * <p>
-         * If this method is called on an already-open Query, or if the query cannot
-         * be set up for whatever reason, then a JPLException will be thrown.
-         */
+	/**
+	 * This method returns true if JPL was able to initiate a "call" of this
+	 * Query within the Prolog engine. It is designed to be used with the
+	 * getSolution() and close() methods to retrieve one or more substitutions
+	 * in the form of Maps.
+	 *
+	 * <pre>
+	 * Query q = // obtain Query reference
+	 * Map soln;
+	 * q.open();
+	 * while ((soln = q.getSolution()) != null) {
+	 *      // process solution...
+	 * }
+	 * </pre>
+	 * <p>
+	 * If this method is called on an already-open Query, or if the query cannot
+	 * be set up for whatever reason, then a JPLException will be thrown.
+	 */
 	public final void open() {
 		if (open) {
 			throw new JPLException("Query is already open");
@@ -471,11 +484,11 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 * </pre>
 	 *
 	 * Programmers should be careful to call this method after checking that
-     * there is indeed a solution, via method hasMoreSolutions().
+	 * there is indeed a solution, via method hasMoreSolutions().
 	 *
-     *  @return A Map representing a substitution of the next solution.
-     *  @throws JPLException if Query is not open.
-     *  @throws NoSuchElementException if there are no more new solutions.
+	 *  @return A Map representing a substitution of the next solution.
+	 *  @throws JPLException if Query is not open.
+	 *  @throws NoSuchElementException if there are no more new solutions.
 	 */
 	public final Map<String, Term> nextSolution() {
         if (hasMoreSolutions()) {

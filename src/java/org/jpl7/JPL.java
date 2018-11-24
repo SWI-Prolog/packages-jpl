@@ -292,8 +292,7 @@ public class JPL {
 		int len;
 		char c;
 		if (s == null) {
-			throw new java.lang.NullPointerException(); // JPL won't call it
-														// this way
+			throw new java.lang.NullPointerException(); // JPL won't call it this way
 		} else if ((len = s.length()) == 0) {
 			return false;
 		} else if ((c = s.charAt(0)) < 'a' || c > 'z') {

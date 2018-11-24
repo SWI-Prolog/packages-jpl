@@ -62,7 +62,7 @@ import org.jpl7.JPL;
  * POSSIBILITY OF SUCH DAMAGE.
  * <hr>
  *
- * @author Fred Dushin <fadushin@syr.edu>
+ * @author Fred Dushin fadushin@syr.edu
  * @version $Revision$
  */
 public final class Prolog {
