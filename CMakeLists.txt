@@ -39,8 +39,15 @@ if(NOT JAVA_HOME)
   endif()
 endif()
 
-find_package(JNI)
+# JNI is part of the Android NDK
+if(NOT ANDROID)
+  find_package(JNI)
+else()
+  set(JNI_FOUND ON)
+endif(NOT ANDROID)
+
 find_package(Java COMPONENTS Development)
+
 if(JNI_FOUND AND Java_FOUND)
 include(JUnit)
 
