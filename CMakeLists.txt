@@ -39,9 +39,14 @@ if(NOT JAVA_HOME)
   endif()
 endif()
 
+if(NOT ANDROID)
 find_package(JNI)
+endif(NOT ANDROID)
+
 find_package(Java COMPONENTS Development)
-if(JNI_FOUND AND Java_FOUND)
+
+if((JNI_FOUND AND Java_FOUND) OR
+   (ANDROID   AND Java_FOUND))
 include(JUnit)
 
 add_subdirectory(src/java)
@@ -138,4 +143,4 @@ pkg_doc(
 	SOURCE jpl.pl jpldoc.tex
     DEPENDS jpl)
 
-endif(JNI_FOUND AND Java_FOUND)
+endif((JNI_FOUND AND Java_FOUND) OR (ANDROID AND Java_FOUND))
