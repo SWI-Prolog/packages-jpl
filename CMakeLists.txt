@@ -116,7 +116,8 @@ add_test(
 
 test_lib(jpl
 	 NAME java_in_prolog
-	 PACKAGES plunit)
+	 PACKAGES plunit
+    TEST_FILES_REGEX "jpltest\\.jar$")
 
 else(JUNIT_JAR)
   message("-- No junit.jar.  Dropping JPL tests.")
