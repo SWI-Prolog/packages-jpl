@@ -116,8 +116,12 @@ add_test(
 
 test_lib(jpl
 	 NAME java_in_prolog
-	 PACKAGES plunit
-    TEST_FILES_REGEX "jpltest\\.jar$")
+	 PACKAGES plunit)
+
+if(INSTALL_TESTS)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/java/jpltest.jar
+	  DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/java)
+endif()
 
 else(JUNIT_JAR)
   message("-- No junit.jar.  Dropping JPL tests.")
