@@ -4079,11 +4079,10 @@ add_jpl_to_classpath :-
                ], JplJAR),
     !,
     (   getenv('CLASSPATH', Old)
-    ->  true
-    ;   Old = '.'
+    ->  search_path_separator(Separator),
+        atomic_list_concat([JplJAR, Old], Separator, New)
+    ;   New = JplJAR
     ),
-    search_path_separator(Separator),
-    atomic_list_concat([JplJAR, Old], Separator, New),
     setenv('CLASSPATH', New).
 
 
