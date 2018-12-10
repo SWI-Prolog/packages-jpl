@@ -3944,6 +3944,16 @@ prolog:error_message(java_exception(Ex)) -->
 :- dynamic   user:file_search_path/2.
 
 user:file_search_path(jar, swi(lib)).
+user:file_search_path(classpath, Dir) :-
+    classpath(Dir).
+
+classpath(Dir) :-
+    getenv('CLASSPATH', Path),
+    (   current_prolog_flag(windows, true)
+    ->  atomic_list_concat(Dirs, (;), Path)
+    ;   atomic_list_concat(Dirs, :, Path)
+    ),
+    member(Dir, Dirs).
 
 %!  add_search_path(+Var, +Value) is det.
 %
@@ -4071,12 +4081,25 @@ library_search_path(Path, EnvVar) :-
 
 %!  add_jpl_to_classpath
 %
-%   Add jpl.jar to =CLASSPATH= to facilitate callbacks
+%   Add jpl.jar to =CLASSPATH= to facilitate  callbacks. If `jpl.jar` is
+%   already in CLASSPATH, do nothing. Note that   this may result in the
+%   user picking up a different version   of `jpl.jar`. We'll assume the
+%   user is right in this case.
+%
+%   @tbd Should we warn if both `classpath`   and  `jar` return a result
+%   that is different? What is different?   According  to same_file/2 or
+%   content?
 
 add_jpl_to_classpath :-
-    absolute_file_name(jar('jpl.jar'),
-               [ access(read)
-               ], JplJAR),
+    absolute_file_name(classpath('jpl.jar'), _JplJAR,
+                       [ access(read),
+                         file_errors(fail)
+                       ]),
+    !.
+add_jpl_to_classpath :-
+    absolute_file_name(jar('jpl.jar'), JplJAR,
+                       [ access(read)
+                       ]),
     !,
     (   getenv('CLASSPATH', Old)
     ->  search_path_separator(Separator),
