@@ -3944,16 +3944,14 @@ prolog:error_message(java_exception(Ex)) -->
 :- dynamic   user:file_search_path/2.
 
 user:file_search_path(jar, swi(lib)).
-user:file_search_path(classpath, Dir) :-
-    classpath(Dir).
 
-classpath(Dir) :-
-    getenv('CLASSPATH', Path),
+classpath(DirOrJar) :-
+    getenv('CLASSPATH', ClassPath),
     (   current_prolog_flag(windows, true)
-    ->  atomic_list_concat(Dirs, (;), Path)
-    ;   atomic_list_concat(Dirs, :, Path)
+    ->  atomic_list_concat(Elems, (;), ClassPath)
+    ;   atomic_list_concat(Elems, :, ClassPath)
     ),
-    member(Dir, Dirs).
+    member(DirOrJar, Elems).
 
 %!  add_search_path(+Var, +Value) is det.
 %
@@ -4091,10 +4089,13 @@ library_search_path(Path, EnvVar) :-
 %   content?
 
 add_jpl_to_classpath :-
-    absolute_file_name(classpath('jpl.jar'), _JplJAR,
-                       [ access(read),
-                         file_errors(fail)
-                       ]),
+    classpath(Jar),
+    file_base_name(Jar, 'jpl.jar'),
+    !.
+add_jpl_to_classpath :-
+    classpath(Dir),
+    directory_file_path(Dir, 'jpl.jar', File),
+    access_file(File, read),
     !.
 add_jpl_to_classpath :-
     absolute_file_name(jar('jpl.jar'), JplJAR,
