@@ -84,6 +84,17 @@ swipl_plugin(
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
 
+# Debian policies do not want  RPATH/RUNPATH.   This  clears the RUNPATH
+# pointing at the Java installation from   libjpl.so. Probably we should
+# do so for all package generation builds, but we would like to keep the
+# RUNPATH pointing at libswipl.so
+if(CMAKE_BUILD_TYPE STREQUAL "DEB" AND SWIPL_INSTALL_IN_LIB)
+  set_target_properties(
+      plugin_${jpl_module} PROPERTIES
+	  INSTALL_RPATH ""
+	  INSTALL_RPATH_USE_LINK_PATH FALSE)
+endif()
+
 add_custom_target(jpl)
 add_dependencies(jpl libjpl jpl_jar)
 
