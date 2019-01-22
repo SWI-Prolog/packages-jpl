@@ -108,11 +108,7 @@ add_dependencies(jpl libjpl jpl_jar)
 
 set(swihome ../../home)
 if(JUNIT_JAR)
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(swibootfile ${swihome}/boot64.prc)
-  else()
-    set(swibootfile ${swihome}/boot32.prc)
-  endif()
+  set(swibootfile ${swihome}/boot.prc)
 
 add_test(
     NAME jpl:prolog_in_java
