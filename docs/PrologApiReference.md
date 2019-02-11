@@ -7,9 +7,9 @@
 Create a new Java object.
 
 *X* can be:
-* an atomic classname, e.g. `'java.lang.String'` (or `'Ljava.lang.String;'`)
+* an atomic classname, e.g. `'java.util.Date'`
 * a suitable type, i.e. any `class(_,_)`, `array(_)` or primitive type (e.g. `byte`) but not `null` or `void
-* an atomic descriptor, e.g. `'[I'`
+* an atomic descriptor, e.g. `'[I'` or `'[Ljava.lang.String;'`
 * a class object, i.e. an object whose type is `class([java,lang],['Class'])`
 
 *Args* is typically a list of datums (values or jrefs) to be passed to the appropriate constructor.
