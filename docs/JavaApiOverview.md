@@ -383,9 +383,18 @@ linux% java org.jpl7.JPL
 JPL 7.4.0-alpha
 ```
 
-## Gotchas 
+## Gotchas
 
-### Arg indexing
+### Variables are named
+
+Instances of `org.jpl7.Variable` have names, and bindings are retrieved by name, e.g.
+
+```
+Map m = org.jpl7.Query.oneSolution("statistics(heap, X)");
+long heapsize = m.get("X");
+```
+
+### Argument numbering
 
 The `Term[]` args of a `Compound` are indexed (like all Java arrays) from zero, whereas in Prolog the args of a structure are conventionally numbered from one.
 
