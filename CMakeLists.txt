@@ -147,6 +147,7 @@ prepend(EXJAVA examples/java ${EXJAVA})
 
 swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
 swipl_examples(DIRECTORIES ${EXJAVA} SUBDIR java)
+swipl_examples(FILES examples/java/env.sh SUBDIR java)
 
 ################
 # Documentation
