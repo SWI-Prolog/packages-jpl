@@ -58,17 +58,34 @@ fi
 # Setup the environment
 ################################################################
 
-eval `$PL -dump-runtime-variables`
+eval `$PL --dump-runtime-variables`
 
 PLLIBDIR="$PLBASE/lib/$PLARCH"
 if [ -z "$JPLJAR" ]; then
-  JPLJAR="$PLBASE/lib/jpl.jar"
+  if [ -f "$PLBASE/lib/jpl.jar" ]; then
+    JPLJAR="$PLBASE/lib/jpl.jar"
+  elif [ -f "$PLBASE/../packages/jpl/src/java/jpl.jar" ]; then
+    JPLJAR="$PLBASE/../packages/jpl/src/java/jpl.jar"
+  else
+    echo "ERROR: Cannot find jpl.jar (PLBASE=$PLBASE)"
+    exit 1
+  fi
+fi
+
+JPL_LIBRARY_PATH="$PLLIBDIR"
+if [ ! -f "$PLLIBDIR/libjpl.$PLSOEXT" ]; then
+  if [ -f "$PLBASE/../packages/jpl/libjpl.$PLSOEXT" ]; then
+    JPL_LIBRARY_PATH="$PLLIBDIR:$PLBASE/../packages/jpl"
+  else
+    echo "ERROR: Cannot find libjpl.$PLSOEXT"
+    exit 1
+  fi
 fi
 
 if [ -z "$LD_LIBRARY_PATH" ]; then
-   LD_LIBRARY_PATH="$PLLIBDIR";
+   LD_LIBRARY_PATH="$JPL_LIBRARY_PATH";
 else
-   LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$PLLIBDIR"
+   LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$JPL_LIBRARY_PATH"
 fi
 
 if [ -z "$CLASSPATH" ]; then
@@ -77,6 +94,8 @@ else
    CLASSPATH=".:$JPLJAR:$CLASSPATH"
 fi
 
+echo CLASSPATH=$CLASSPATH
+echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH CLASSPATH
 
 ################################################################
@@ -114,7 +133,7 @@ run()
     echo "JPL demo: $1"
     echo ""
 
-    java -Djava.library.path=$PLLIBDIR $*
+    java -Djava.library.path=$JPL_LIBRARY_PATH $*
   fi
 }
 
