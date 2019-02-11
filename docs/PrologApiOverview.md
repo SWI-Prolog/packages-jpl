@@ -1,9 +1,9 @@
 # Prolog API - Overview
 
 The Prolog API comprises Prolog library predicates which support:
-    * creating instances (objects) of Java classes (built-in and user-defined);
-    * calling methods of Java objects (and static methods of classes), perhaps returning values or object references; and
-    * getting and setting the values of fields of Java objects and classes.
+* creating instances (objects) of Java classes (built-in and user-defined);
+* calling methods of Java objects (and static methods of classes), perhaps returning values or object references; and
+* getting and setting the values of fields of Java objects and classes.
 
 
 ## Introduction
