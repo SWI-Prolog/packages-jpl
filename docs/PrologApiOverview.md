@@ -326,6 +326,22 @@ java/awt/geom/Path2D$Float.class
 
 Unfortunately it is far from trivial to support the Java naming in JPL.  Thanks go to Timo Baumann and Sebastian Godelet for their input on this issue.
 
+### Instantiating a non-static member class
+
+If you need to create an instance of a non-static member class, you must explicitly pass (a reference to) an instance of its parent class as an additional (first) argument of any of its constructors. Java source syntax hides this, but reflection shows that every constructor (implicit or explicit) has this extra argument.
+
+```java
+public class Parent {
+    public class Child {
+    }
+}
+```
+
+```prolog
+jpl_new('Parent', [], P),
+jpl_new('Parent$Child', [P], C).
+```
+
 ### Enums are static nested classes
 
 Given
