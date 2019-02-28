@@ -40,12 +40,14 @@ public class TestJUnit extends TestCase {
 		if (syntax.equals("traditional")) {
 			JPL.setTraditional();
 			Prolog.set_default_init_args(new String[] {
-				"libswipl.dll", "-x", startup, "-f", "none",
+//					"libswipl.dll", "-x", startup, "-f", "none",
+				"libswipl.dll", "-f", "none",
 				"-g", "true", "--traditional", "-q",
 				"--home="+home, "--nosignals" });
 		} else {
 			Prolog.set_default_init_args(new String[] {
-				"libswipl.dll", "-x", startup, "-f", "none",
+//					"libswipl.dll", "-x", startup, "-f", "none",
+					"libswipl.dll", "-f", "none",
 				"-g", "true", "-q",
 				"--home="+home, "--nosignals" });
 		}
