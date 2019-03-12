@@ -68,6 +68,9 @@ set(JPLCONFIG)
 if(APPLE)
   set(JPLCONFIG jpl_config.pl)
   set(JPLTYPE SHARED)
+  set(JPLEXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
+else()
+  set(JPLEXT ${CMAKE_SHARED_MODULE_SUFFIX})
 endif()
 
 if(WIN32)
@@ -83,6 +86,11 @@ swipl_plugin(
     THREADED C_LIBS ${JAVA_JVM_LIBRARY} libswipl
     C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
     PL_LIBS jpl.pl ${JPLCONFIG})
+
+if(JNIDIR)
+ilink(${CMAKE_INSTALL_PREFIX}/${SWIPL_INSTALL_ARCH_LIB}/${jpl_module}${JPLEXT}
+      ${JNIDIR}/${jpl_module}${JPLEXT})
+endif()
 
 # Debian policies do not want  RPATH/RUNPATH.   This  clears the RUNPATH
 # pointing at the Java installation from   libjpl.so. Probably we should
