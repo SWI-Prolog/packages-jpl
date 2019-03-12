@@ -88,6 +88,7 @@ swipl_plugin(
     PL_LIBS jpl.pl ${JPLCONFIG})
 
 if(JNIDIR)
+install(DIRECTORY DESTINATION ${JNIDIR})
 ilink(${CMAKE_INSTALL_PREFIX}/${SWIPL_INSTALL_ARCH_LIB}/${jpl_module}${JPLEXT}
       ${JNIDIR}/${jpl_module}${JPLEXT})
 endif()
