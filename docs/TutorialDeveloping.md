@@ -15,7 +15,7 @@ The first thing to understand is that JPL has three parts:
 Both the Java and Prolog sources will make use of the C JNI code.
 
 
-## Setting up JPL for development
+## Setting up SWI-Prolog for JPL for development
 
 The second thing to understand is that JPL is just a package on the overall SWI Prolog system. So, to compile the whole JPL, one needs to core SWI system as the JPL C component (`libswipl.so`) links against the core SWI library (e.g., `libswipl.so`).
 
@@ -85,7 +85,27 @@ git push -u ssardina proposal  // push new branch to remote ssardina and start t
 Now you have a local branch `proposal` tracking a remote branch in `ssardina` for it.
 
 
-**NOTE:** If you are only expecting to change the Java API, then you can just work with the `packages-jpl` distribution in isolation. This will compile just the Java classes and produce a corresponding JAR file for use. However, in this case you would have to have an SWI system installed system-wide and make sure your application uses your updated JPL JAR file and not the system installed one.
+**NOTE:** If you are _only_ expecting to change the Java API, then you can just work with the `packages-jpl` distribution in isolation. This will compile just the Java classes and produce a corresponding JAR file for use. However, in this case you would have to have an SWI system installed system-wide and make sure your application uses your updated JPL JAR file and not the system installed one.
+
+## Set-up variables for developing JPL
+
+When you develop JPL (e.g., change the Java API) you need to make sure your development set-up is using the correct SWI Prolog system, so that the right `libswipl.so` and `libjpl.so` are used when Java is calling SWI. For example, if you are using IntelliJ to develop the Java component of JPL.
+
+Basically, one needs to set-up the environment variables `SWI_HOME_DIR` and `LD_LIBRARY_PATH` to wherever the SWI-Prolog to be used is located, as well as `LD_PRELOAD`:
+
+    LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/
+    SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/
+    LD_PRELOAD=libswipl.so
+
+In IntelliJ, for example, this is done by modifying the Template in "Run/Debug Configuration" to include the environment variables needed ( `LD_PRELOAD`, `SWI_HOME_DIR`, and `LD_LIBRARY_PATH`). See this [post](https://intellij-support.jetbrains.com/hc/en-us/community/posts/205820189-How-to-set-default-environment-variables-)
+
+For instance, modify the JUnit template by just enter this string in "Environment variables":
+        
+            LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/;SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/;LD_PRELOAD=libswipl.so
+
+Finally, you can create a new Run from the template, it will already inherit the environment variables.
+* The main test class is `org.jpl7.test.TestJUnit` which is a bag of tests.
+* There are also standalone tests in `org.jpl7.test.standalone.*`
 
 
 ## Unit testing output
