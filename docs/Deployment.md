@@ -15,11 +15,3 @@ To use JPL, three libraries need to be deployed:
 Depending on your OS (Linux, Windows, MacOS), refer to the specific instruction details.
 
 If you are interested to modify or develop JPL further, then you need a complete SWI+JPL setup from scratch. See the "Developing JPL" tutorial guide in this documentation.
-
-## Oracle Java JDK vs OpenJDK
-
-The current guide/documentation has been produced using the [Oracle Java](https://www.oracle.com/java/) SE 8.
-
-However, [others have reported using it](https://github.com/ssardina-research/packages-jpl/issues/23) successfully with OpenJDK, which can be downloaded from [AdaptOpenJDK](https://adoptopenjdk.net/).  Then, select the **OpenJ9** as JVM (using the Hotspot may yield a fatal error).
-
-You can read a comparison between Oracle JDK and OpenJDK [here](https://www.baeldung.com/oracle-jdk-vs-openjdk).
