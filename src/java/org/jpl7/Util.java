@@ -178,6 +178,37 @@ public final class Util {
 		}
 		return list;
 	}
+	
+	/**
+	 * Converts an array of integers, doubles and strings to a corresponding JPL list
+	 *
+	 * @param a
+	 *            An array of parsable string values
+	 * @return Term a JPL list corresponding to the given string array
+	 */
+	public static Term mixedArrayToList(String[] a) {
+		Term list = JPL.LIST_NIL; 
+		for (int i = a.length - 1; i >= 0; i--) {
+			try
+			{
+				list = new Compound(JPL.LIST_PAIR, 
+						new Term[] { new org.jpl7.Integer(Integer.parseInt(a[i])), list });
+			}
+			catch(NumberFormatException ignored0)
+			{
+			    try
+			    {
+			    	list = new Compound(JPL.LIST_PAIR, 
+							new Term[] { new org.jpl7.Float(Double.parseDouble(a[i])), list });
+			    }
+				catch(NumberFormatException ignored1)
+				{
+					list = new Compound(JPL.LIST_PAIR, new Term[] { new Atom(a[i]), list });
+				}
+			}
+		}
+		return list;
+	}
 
 	/**
 	 * Converts an array of arrays of int to a corresponding JPL list of lists
