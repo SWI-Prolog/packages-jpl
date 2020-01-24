@@ -8,7 +8,10 @@ Recall that to use JPL under linux one must have the following in place:
 
 JPL is **generally distributed with official Linux**. For example, in Ubuntu-based systems, JPL is provided via package `swi-prolog-java`. That package includes the C library `libjpl.so`, the Java API `jpl.jar`, the Prolog module `jpl.pl` as well as all documentation associated.
 
-However, the **official packages are often out-of-date**. For Debian-based systems (Debian, Ubuntu, Mint, ...) you can get the latest stable and development versions via [this PPAs](http://www.swi-prolog.org/build/PPA.txt).
+However, the **official packages are often out-of-date**. For Debian-based systems (Debian, Ubuntu, Mint, ...) you can get the latest stable and development versions via [this PPAs](http://www.swi-prolog.org/build/PPA.txt) provided directly by SWI-Prolog.
+
+To use JPL, use either SWI stable version 7.6.4 (available in standard Linux repos) or compile and install 8.1.x from SWI-devel repo. 
+* **Note:** The official stable SWI 8.0.x versions (as of Jan 2020) have issues with the `libswipl.so/dll/dylib` library and makes JPL crash; see [issue](https://github.com/ssardina-research/packages-jpl/issues/21). It has been fixed in the git repo but will only show up with versions 8.1.x.
 
 Finally, to be **able to use JPL** you may need to make sure that:
 
