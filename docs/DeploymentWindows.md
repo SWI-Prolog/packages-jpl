@@ -9,7 +9,14 @@ Tested successfully in Windows 7 with SWI 7.6.4.
         * `%SWI_HOME_DIR%\lib\jpl.jar`
 * No changes to `CLASSPATH` are needed.
 
-### Troubleshooting
+## Reported problems
+
+Problems have been reported using latest versions of JDK beyond version 8: check [here](https://github.com/SWI-Prolog/packages-jpl/issues/34).
+
+
+---------------------
+
+## Troubleshooting
 
 If the example programs don't run successfully, look carefully at any error messages; they typically indicate where the problem lies.  Then check the installation instruction s and prerequisites carefully. 
   
