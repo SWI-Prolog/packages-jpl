@@ -10,8 +10,8 @@ JPL has been integrated into the full [SWI-Prolog](http://www.swi-prolog.org/) d
 
 ## Further documentation
 
-- Overview documentation is maintained at this **[JPL Wiki](https://github.com/ssardina-research/packages-jpl/wiki).**
-- The Prolog API reference is provided from the **[SWI-Prolog manual](http://www.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/jpl.html%27%29)**
+- Overview documentation is maintained at this [**JPL Web Page**](https://jpl7.org/), which subsumes the Wiki in this repo.
+- The Prolog API reference is provided from the [**SWI-Prolog manual**](http://www.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/jpl.html%27%29).
 
 ----------------------
 
