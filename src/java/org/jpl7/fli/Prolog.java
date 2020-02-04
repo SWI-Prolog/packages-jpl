@@ -74,13 +74,14 @@ public final class Prolog {
 	public static final int VARIABLE = 1; // PL_VARIABLE
 	public static final int ATOM = 2; // PL_ATOM
 	public static final int INTEGER = 3; // PL_INTEGER
-	public static final int FLOAT = 4; // PL_FLOAT
-	public static final int STRING = 5; // PL_STRING
-	public static final int COMPOUND = 6; // PL_TERM
+	public static final int RATIONAL = 4; // PL_INTEGER
+	public static final int FLOAT = 5; // PL_FLOAT
+	public static final int STRING = 6; // PL_STRING
+	public static final int COMPOUND = 7; // PL_TERM
 
-	public static final int LIST_NIL = 7; // PL_NIL
-	public static final int LIST_PAIR = 9; // PL_LIST_PAIR
-	public static final int BLOB = 8; // PL_BLOB
+	public static final int LIST_NIL = 8; // PL_NIL
+	public static final int LIST_PAIR = 10; // PL_LIST_PAIR
+	public static final int BLOB = 9; // PL_BLOB
 	public static final int DICT = 44; // PL_DICT
 
 	public static final int JBOOLEAN = 101;
@@ -102,8 +103,9 @@ public final class Prolog {
 	public static final int CVT_STRING = 0x0002;
 	public static final int CVT_LIST = 0x0004;
 	public static final int CVT_INTEGER = 0x0008;
-	public static final int CVT_FLOAT = 0x0010;
-	public static final int CVT_VARIABLE = 0x0020;
+	public static final int CVT_RATIONAL = 0x0010;
+	public static final int CVT_FLOAT = 0x0020;
+	public static final int CVT_VARIABLE = 0x0040;
 	public static final int CVT_NUMBER = (CVT_INTEGER | CVT_FLOAT);
 	public static final int CVT_ATOMIC = (CVT_NUMBER | CVT_ATOM | CVT_STRING);
 	public static final int CVT_ALL = 0x00ff;
