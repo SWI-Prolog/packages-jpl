@@ -4123,14 +4123,19 @@ add_jpl_to_classpath :-
 
 %!  libjpl(-Spec) is det.
 %
-%   Return the spec for loading the   JPL shared object. This shared
-%   object must be called libjpl.so as the Java System.loadLibrary()
+%   Return the spec for  loading  the   JPL  shared  object. This shared
+%   object must be called  libjpl.so   as  the Java System.loadLibrary()
 %   call used by jpl.jar adds the lib* prefix.
+%
+%   In Windows we should __not__  use   foreign(jpl)  as this eventually
+%   calls LoadLibrary() with an absolute path, disabling the Windows DLL
+%   search process for the dependent `jvm.dll`   and possibly other Java
+%   dll dependencies.
 
 libjpl(File) :-
     (   current_prolog_flag(unix, true)
     ->  File = foreign(libjpl)
-    ;   File = foreign(jpl)
+    ;   File = jpl                                    % Windows
     ).
 
 %!  add_jpl_to_ldpath(+JPL) is det.
