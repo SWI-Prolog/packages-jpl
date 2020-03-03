@@ -4250,14 +4250,20 @@ java_dir(_, _) --> [].
 %
 %   Find the home location of Java.
 %
-%   @param Home    JAVA home in OS notation
+%   @arg Home    JAVA home in OS notation
 
 java_home_win_key(
-    jre,
-    'HKEY_LOCAL_MACHINE/Software/JavaSoft/Java Runtime Environment').
+    jdk,
+    'HKEY_LOCAL_MACHINE/Software/JavaSoft/JDK'). % new style
 java_home_win_key(
     jdk,
     'HKEY_LOCAL_MACHINE/Software/JavaSoft/Java Development Kit').
+java_home_win_key(
+    jre,
+    'HKEY_LOCAL_MACHINE/Software/JavaSoft/JRE').
+java_home_win_key(
+    jre,
+    'HKEY_LOCAL_MACHINE/Software/JavaSoft/Java Runtime Environment').
 
 java_home(Home) :-
     getenv('JAVA_HOME', Home),
