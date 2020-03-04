@@ -4135,7 +4135,7 @@ add_jpl_to_classpath :-
 libjpl(File) :-
     (   current_prolog_flag(unix, true)
     ->  File = foreign(libjpl)
-    ;   File = jpl                                    % Windows
+    ;   File = foreign(jpl)                                    % Windows
     ).
 
 %!  add_jpl_to_ldpath(+JPL) is det.
