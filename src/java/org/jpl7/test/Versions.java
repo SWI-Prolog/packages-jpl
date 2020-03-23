@@ -27,11 +27,13 @@ public class Versions {
 		String[] defaultInitArgsNew1;
 		if (argv.length == 1 && argv[0].equals("traditional")) {
 			defaultInitArgsNew1 = new String[] {
-				"swipl", "-g", "true", "--nosignals",
+				"swipl", "-g", "true", "--no-signals",
+				"-f", "none", "--no-packs",
 				"--traditional" };
 		} else {
 			defaultInitArgsNew1 = new String[] {
-				"swipl", "-g", "true", "--nosignals" };
+				"swipl", "-g", "true", "--no-signals",
+				"-f", "none", "--no-packs" };
 		}
 		org.jpl7.JPL.setDefaultInitArgs(defaultInitArgsNew1);
 

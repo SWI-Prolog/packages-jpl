@@ -43,13 +43,13 @@ public class TestJUnit extends TestCase {
 //					"libswipl.dll", "-x", startup, "-f", "none",
 				"libswipl.dll", "-f", "none",
 				"-g", "true", "--traditional", "-q",
-				"--home="+home, "--nosignals" });
+				"--home="+home, "--no-signals", "--no-packs" });
 		} else {
 			Prolog.set_default_init_args(new String[] {
 //					"libswipl.dll", "-x", startup, "-f", "none",
 					"libswipl.dll", "-f", "none",
 				"-g", "true", "-q",
-				"--home="+home, "--nosignals" });
+				"--home="+home, "--no-signals", "--no-packs" });
 		}
 		assertTrue((new Query("consult", new Term[] { new Atom(test_jpl) })).hasSolution());
 		assertTrue((new Query("use_module(library(jpl))")).hasSolution());
