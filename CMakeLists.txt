@@ -136,7 +136,8 @@ test_lib(jpl
 
 if(INSTALL_TESTS)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/java/jpltest.jar
-	  DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/java)
+	  DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/java
+	  COMPONENT Tests)
 endif()
 
 else(JUNIT_JAR)
