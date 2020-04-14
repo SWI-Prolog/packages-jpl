@@ -14,7 +14,9 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import java.lang.reflect.Array;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -55,15 +57,36 @@ public class TestJUnit4 {
 		System.out.println("\t os.name = " + System.getProperty("os.name"));
 		System.out.println("\t os.arch = " + System.getProperty("os.arch"));
 		System.out.println("\t os.version = " + System.getProperty("os.version"));
+
 		System.out.println();
+        report_actual_init_args();
+        System.out.println();
+
 	}
 
-	/**
+    private static void report_actual_init_args() {
+        String[] args = org.jpl7.fli.Prolog.get_default_init_args();
+        String which;
+        String s = "";
+        if (args == null) {
+            args = org.jpl7.fli.Prolog.get_actual_init_args();
+            which = "actual";
+        } else {
+            which = "default";
+        }
+        for (int i = 0; i < args.length; i++) {
+            s = s + args[i] + " ";
+        }
+        System.out.println(String.format("\t %s_init_args = %s", which, s));
+    }
+
+    /**
 	 * This is done at the class loading, before any test is run
 	 */
 	@BeforeClass
 	public static void setUp() {
-		if (syntax.equals("traditional")) {
+
+        if (syntax.equals("traditional")) {
 			JPL.setTraditional();
 			Prolog.set_default_init_args(new String[] {
 //					"libswipl.dll", "-x", startup, "-f", "none",
@@ -81,6 +104,12 @@ public class TestJUnit4 {
 		assertTrue((new Query("use_module(library(jpl))")).hasSolution());
 
 		reportConfiguration();
+
+		// These two lines are from old testing set the second one does not work and makes it all fail
+        // Leave it here as example on how to use those native functions
+//        Prolog.set_default_init_args(
+//                new String[] { "libpl.dll", "-f", "none", "-g", "set_prolog_flag(debug_on_error,false)", "-q" });
+//        System.out.println("tag = " + Prolog.object_to_tag(new Query("hello")));
 
     }
 
@@ -108,18 +137,55 @@ public class TestJUnit4 {
         }
     }
 
+
+
+
     // the tests; all public void test*()
 
-//	public void testInfo() {
-//		Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-//		System.out.println("version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
-//		System.out.println("syntax = " + Query.oneSolution("jpl:jpl_pl_syntax(Syntax)").get("Syntax"));
-//		System.out.println("jpl.jar = " + JPL.version_string() + " " + JPL.jarPath());
-//		System.out.println("jpl.dll = " + Prolog.get_c_lib_version());
-//		System.out.println("jpl.pl = " + Query.oneSolution("jpl:jpl_pl_lib_version(V)").get("V").name() + " "
-//				+ Query.oneSolution("module_property(jpl, file(F))").get("F").name());
-//		System.out.println("home = " + Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
-//	}
+    /**
+     * TEST DISABLED!
+     *
+     * This test is meant to abort a query that is taking too long but Query.abort() does not exists!
+     */
+//    @Test
+    public void testSlowGoal() {
+        final Query q = new Query("sleep(10)"); // 10 successive sleep(1)
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    System.out.println("q.hasSolution() ... ");
+                    System.out.println(q.hasSolution() ? "finished" : "failed");
+                } catch (Exception e) {
+                    System.out.println("q.hasSolution() threw " + e);
+                }
+            }
+        });
+        t.start(); // call the query in a separate thread
+        System.out.println("pausing for 2 secs...");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            ;
+        } // wait a coupla seconds for it to get started
+        // (new Query("set_prolog_flag(abort_with_exception,
+        // true)")).hasSolution();
+        System.err.println("calling q.abort()...");
+//        q.abort();
+        System.err.println();
+    }
+
+
+    @Test
+	public void testInfo() {
+		Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
+		System.out.println("\t version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
+		System.out.println("\t syntax = " + Query.oneSolution("jpl:jpl_pl_syntax(Syntax)").get("Syntax"));
+		System.out.println("\t jpl.jar = " + JPL.version_string() + " " + JPL.jarPath());
+		System.out.println("\t jpl.dll = " + Prolog.get_c_lib_version());
+		System.out.println("\t jpl.pl = " + Query.oneSolution("jpl:jpl_pl_lib_version(V)").get("V").name() + " "
+				+ Query.oneSolution("module_property(jpl, file(F))").get("F").name());
+		System.out.println("\t home = " + Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
+	}
 
     @Test
     public void testEmptyParentheses() {
@@ -387,6 +453,51 @@ public class TestJUnit4 {
     }
 
     @Test
+    public void testFreeVariable1() {
+        Query q = new Query("append([X],[_,_],[_,_,_])");
+        Map<String, Term> sol = q.oneSolution();
+
+        assertEquals("Variable X must remain free after query",
+                    sol.get("X").typeName(), "Variable");
+    }
+
+    /**
+     * TEST DISABLED!!
+     *
+     * Gives error:
+     * java.lang.AssertionError: Variable X must be bound to Y
+     * Expected :Y
+     * Actual   :_142
+     */
+//    @Test
+    public void testFreeVariable2() {
+        Variable VarX = new Variable("X");
+        Variable VarY = new Variable("Y");
+
+//        Query q = new Query("append([X],[_,_],[_,_,_])");
+        Query q = new Query(new Compound("=", new Term[] { VarX, VarY }));
+
+        Map<String, Term> sol = q.oneSolution();
+
+        assertEquals("Variable X must be bound to Y", VarY, sol.get("X"));
+    }
+
+
+
+    private static void test10o() {
+        System.err.println("test10o:");
+        Term l2b = Util.termArrayToList(new Term[] { new Variable("A"), new Variable("B"), new Variable("C"),
+                new Variable("D"), new Variable("E") });
+        Query q9b = new Query(new Compound("append", new Term[] { new Variable("Xs"), new Variable("Ys"), l2b }));
+        Map<String, Term>[] s9bs = q9b.allSolutions();
+        for (int i = 0; i < s9bs.length; i++) {
+            System.err.println("  append(Xs,Ys,[A,B,C,D,E]) -> " + Util.toString(s9bs[i]));
+        }
+        System.err.println();
+    }
+
+
+    @Test
     public void testVariableBinding2() {
         Term lhs = new Compound("p", new Term[]{new Variable("X"), new Variable("X")});
         Term rhs = new Compound("p", new Term[]{new Atom("a"), new Atom("b")});
@@ -456,6 +567,48 @@ public class TestJUnit4 {
         String goal = "append(Xs,Ys,[a,b,c,d,e])";
         assertTrue(goal + " has 6 solutions", Query.allSolutions(goal).length == 6);
     }
+
+    @Test
+    public void testArrayToList3() {
+        final String[] expectedSolutions = { "a", "b", "c", "d", "e"};
+
+        Term l2 = Util.termArrayToList(
+                new Term[] { new Atom("a"), new Atom("b"), new Atom("c"), new Atom("d"), new Atom("e") });
+        Query query = new Query(new Compound("member", new Term[] { new Variable("X"), l2 }));
+
+        Map<String, Term>[] sol = query.allSolutions();
+        for (int i = 0; i < sol.length; i++) {
+            assertEquals(expectedSolutions[i], sol[i].get("X").toString());
+        }
+    }
+
+    @Test
+    public void testArrayToList4() {
+        final String[] expectedSolutionsX = { "[]", "[a]", "[a, b]", "[a, b, c]"};
+        final String[] expectedSolutionsY = { "[a, b, c]", "[b, c]", "[c]", "[]"};
+
+        Term l2 = Util.termArrayToList(
+                new Term[] { new Atom("a"), new Atom("b"), new Atom("c") });
+        Query query = new Query(new Compound("append", new Term[] { new Variable("X"), new Variable("Y"), l2 }));
+
+        Map<String, Term>[] sol = query.allSolutions();
+        for (int i = 0; i < sol.length; i++) {
+
+            String ListX = Arrays.toString(Util.atomListToStringArray(sol[i].get("X")));
+            String ListY = Arrays.toString(Util.atomListToStringArray(sol[i].get("Y")));
+
+
+            assertEquals("Bad X in append(X, Y, [a, b, c])", expectedSolutionsX[i], ListX);
+            assertEquals("Bad Y in append(X, Y, [a, b, c])", expectedSolutionsY[i], ListY);
+
+        }
+    }
+
+
+
+
+
+
 
     @Test
     public void testLength1() {

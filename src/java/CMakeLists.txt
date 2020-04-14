@@ -50,8 +50,7 @@ set(TEST org/jpl7/test/Family.java
 	org/jpl7/test/ShadowB.java
 	org/jpl7/test/SyntaxError.java
 	org/jpl7/test/Test.java
-	org/jpl7/test/TestJUnit4.java
-	org/jpl7/test/TestOLD.java)
+	org/jpl7/test/TestJUnit4.java)
 
 option(JAVA_COMPATIBILITY
        "Make jpl.jar compatible with older Java versions"
