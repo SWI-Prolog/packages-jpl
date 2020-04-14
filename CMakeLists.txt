@@ -49,7 +49,7 @@ endif(NOT ANDROID)
 find_package(Java COMPONENTS Development)
 
 if(JNI_FOUND AND Java_FOUND)
-include(JUnit)
+    include(JUnit)  # load module defined in cmake/JUnit.cmake
 
 add_subdirectory(src/java)
 
@@ -88,9 +88,9 @@ swipl_plugin(
     PL_LIBS jpl.pl ${JPLCONFIG})
 
 if(JNIDIR)
-install(DIRECTORY DESTINATION ${JNIDIR})
-ilink(${CMAKE_INSTALL_PREFIX}/${SWIPL_INSTALL_ARCH_LIB}/${jpl_module}${JPLEXT}
-      ${JNIDIR}/${jpl_module}${JPLEXT})
+    install(DIRECTORY DESTINATION ${JNIDIR})
+    ilink(${CMAKE_INSTALL_PREFIX}/${SWIPL_INSTALL_ARCH_LIB}/${jpl_module}${JPLEXT}
+          ${JNIDIR}/${jpl_module}${JPLEXT})
 endif()
 
 # Debian policies do not want  RPATH/RUNPATH.   This  clears the RUNPATH
@@ -117,31 +117,32 @@ add_dependencies(jpl libjpl jpl_jar)
 
 set(swihome ../../home)
 if(JUNIT_JAR)
-  set(swibootfile ${swihome}/boot.prc)
+    set(swibootfile ${swihome}/boot.prc)
 
-add_test(
-    NAME jpl:prolog_in_java
-    COMMAND env SWI_HOME_DIR=${swihome}
-		SWIPL_BOOT_FILE=${swibootfile}
-                TEST_JPL=../../../packages/jpl/test_jpl.pl
-	    ${Java_JAVA_EXECUTABLE}
-		 -Djava.library.path=.
-                 -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
-                 junit.textui.TestRunner org.jpl7.test.TestJUnit)
+    # Add testing pack on Java code calling Prolog (class org.jpl7.test.TestJUnit4)
+    add_test(
+        NAME jpl:prolog_in_java
+        COMMAND env SWI_HOME_DIR=${swihome}
+            SWIPL_BOOT_FILE=${swibootfile}
+                    TEST_JPL=../../../packages/jpl/test_jpl.pl
+            ${Java_JAVA_EXECUTABLE}
+             -Djava.library.path=.
+                     -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
+                     org.jpl7.test.TestJUnit4)
 
 
-test_lib(jpl
-	 NAME java_in_prolog
-	 PACKAGES plunit)
+    # Add testing pack on Prolog code calling Java
+    test_lib(jpl
+         NAME java_in_prolog
+         PACKAGES plunit)
 
-if(INSTALL_TESTS)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/java/jpltest.jar
-	  DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/java
-	  COMPONENT Tests)
-endif()
-
+    if(INSTALL_TESTS)
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/java/jpltest.jar
+          DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/java
+          COMPONENT Tests)
+    endif()
 else(JUNIT_JAR)
-  message("-- No junit.jar.  Dropping JPL tests.")
+  message("-- No junit.jar. Make sure junit.jar points to junit4.jar  Dropping JPL tests.")
 endif(JUNIT_JAR)
 
 ################
