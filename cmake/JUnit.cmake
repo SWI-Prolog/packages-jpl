@@ -14,12 +14,12 @@
 
 find_file(JUNIT_JAR
     NAMES
-        junit.jar
+        junit4.jar
     PATHS
         ${JAVA_LIB_INSTALL_DIR}
         /usr/share/java
-	/opt/local/share/java
-	/usr/local/share/java
+	    /opt/local/share/java
+	    /usr/local/share/java
 )
 MARK_AS_ADVANCED(JUNIT_JAR)
 
@@ -54,6 +54,7 @@ function(add_junit_test TARGET_NAME)
 
     endforeach(ARG)
 
+    # this may be obsolete or not corret for the new JUnit4 version (rather than 3.8)
     add_custom_target(${TARGET_NAME}
         COMMAND
             mkdir -p "${REPORTS_DIR}"

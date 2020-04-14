@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 project(swipl-jpl-jar)
 
 find_package(Java COMPONENTS Development)
-include(UseJava)
-include(JUnit)
+include(UseJava)    # https://cmake.org/cmake/help/latest/module/UseJava.html
+include(JUnit)      # Looks for junit.jar but not junit4.jar (make a symbolic link)
+#message("junit JAR is at ${JUNIT_JAR}")
 
 set(CLS	org/jpl7/Atom.java
 	org/jpl7/Compound.java
@@ -49,7 +50,7 @@ set(TEST org/jpl7/test/Family.java
 	org/jpl7/test/ShadowB.java
 	org/jpl7/test/SyntaxError.java
 	org/jpl7/test/Test.java
-	org/jpl7/test/TestJUnit.java
+	org/jpl7/test/TestJUnit4.java
 	org/jpl7/test/TestOLD.java)
 
 option(JAVA_COMPATIBILITY
