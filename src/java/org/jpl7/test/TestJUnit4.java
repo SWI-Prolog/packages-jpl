@@ -35,28 +35,6 @@ public class TestJUnit4 {
 		org.junit.runner.JUnitCore.main("org.jpl7.test.TestJUnit4");
     }
 
-
-//	public static junit.framework.Test suite() {
-//		if (syntax.equals("traditional")) {
-//			JPL.setTraditional();
-//			Prolog.set_default_init_args(new String[] {
-////					"libswipl.dll", "-x", startup, "-f", "none",
-//				"libswipl.dll", "-f", "none",
-//				"-g", "true", "--traditional", "-q",
-//				"--home="+home, "--no-signals", "--no-packs" });
-//		} else {
-//			Prolog.set_default_init_args(new String[] {
-////					"libswipl.dll", "-x", startup, "-f", "none",
-//					"libswipl.dll", "-f", "none",
-//				"-g", "true", "-q",
-//				"--home="+home, "--no-signals", "--no-packs" });
-//		}
-//		assertTrue((new Query("consult", new Term[] { new Atom(test_jpl) })).hasSolution());
-//		assertTrue((new Query("use_module(library(jpl))")).hasSolution());
-//		return new TestSuite(TestJUnit4.class);
-//	}
-
-
 	private static void reportConfiguration() {
 		System.out.println("JPL testing under the following configuration:");
 		Query.hasSolution("use_module(library(jpl))"); // only because we call e.g. jpl_pl_syntax/1 below
