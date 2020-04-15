@@ -11,19 +11,23 @@ import java.util.concurrent.TimeUnit;
 
 import org.jpl7.Query;
 
-import junit.framework.TestCase;
+// JUNIT v4
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * 
  * @author rick
  */
-public class JPLTest extends TestCase {
+public class JPLTest {
 	// private static final Logger logger =
 	// Logger.getLogger(JPLTest.class.getName());
 	private CountDownLatch latch;
 
-	public JPLTest(String testName) {
-		super(testName);
+	public static void main(String argv[]) {
+		org.junit.runner.JUnitCore.main("org.jpl7.test.JPLTest");
 	}
 
 	protected void setUp() throws Exception {
@@ -43,6 +47,7 @@ public class JPLTest extends TestCase {
 		 */
 	}
 
+		@Test
 	public void testThreadedAdds() {
 		latch = new CountDownLatch(4);
 		final AddWithThreads[] addTasks = { new AddWithThreads("a", latch), new AddWithThreads("b", latch),
