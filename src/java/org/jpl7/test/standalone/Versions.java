@@ -1,4 +1,4 @@
-package org.jpl7.test;
+package org.jpl7.test.standalone;
 
 import java.net.URL;
 import java.util.Map;

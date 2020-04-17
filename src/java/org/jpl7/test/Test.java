@@ -4,8 +4,13 @@ import org.jpl7.Compound;
 import org.jpl7.Query;
 import org.jpl7.Term;
 
-// This class contains members which support those tests which are performed from Prolog.
-// See also TestJUnit
+
+/**
+ * This class contains members which support those tests which are performed from Prolog in test_jpl.pl file.
+ *
+ * test_jpl.pl is used by the java_in_prolog CMAKE test
+ *
+ */
 public class Test {
 	public Test() {
 	}

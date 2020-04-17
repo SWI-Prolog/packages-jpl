@@ -1,11 +1,14 @@
-package org.jpl7.test.standalone;
+package org.jpl7.test.junit;
 
 import org.jpl7.*;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.jpl7.Integer;
+import org.jpl7.fli.Prolog;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -14,27 +17,52 @@ import org.junit.runner.Description;
 
 import static org.junit.Assert.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// In case we want to use advanced loggers in the future
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 public class GetSolution {
-//    final Logger logger = LoggerFactory.getLogger(GetSolution.class);
+    public static final String startup =
+            (System.getenv("SWIPL_BOOT_FILE") == null ? "../../src/swipl.prc"
+                    : System.getenv("SWIPL_BOOT_FILE"));
+    public static final String test_jpl =
+            (System.getenv("TEST_JPL") == null ? "test_jpl.pl"
+                    : System.getenv("TEST_JPL"));
+    public static final String syntax =
+            (System.getenv("SWIPL_SYNTAX") == null ? "modern"
+                    : System.getenv("SWIPL_SYNTAX"));
+    public static final String home =
+            (System.getenv("SWI_HOME_DIR") == null ? "../.."
+                    : System.getenv("SWI_HOME_DIR"));
 
 	public static void main(String argv[]) {
     }
 
-    @Before
-    public void setUp() {
-        // JPL.setTraditional();
-        //
-//		Query.hasSolution("use_module(library(jpl))"); // only because we call e.g. jpl_pl_syntax/1 below
-//		Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-//		System.out.println("swipl.version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
-//		System.out.println("swipl.syntax = " + Query.oneSolution("jpl_pl_syntax(Syntax)").get("Syntax"));
-//		System.out.println("swipl.home = " + Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
-//		System.out.println("jpl.jar = " + JPL.version_string());
-//		System.out.println("jpl.dll = " + org.jpl7.fli.Prolog.get_c_lib_version());
-//		System.out.println("jpl.pl = " + Query.oneSolution("jpl_pl_lib_version(V)").get("V").name());
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // TESTING CONFIGURATION
+    ///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * This is done at the class loading, before any test is run
+     */
+    @BeforeClass
+    public static void setUp() {
+        if (syntax.equals("traditional")) {
+            JPL.setTraditional();
+            Prolog.set_default_init_args(new String[] {
+//					"libswipl.dll", "-x", startup, "-f", "none",
+                    "libswipl.dll", "-f", "none",
+                    "-g", "true", "--traditional", "-q",
+                    "--home="+home, "--no-signals", "--no-packs" });
+        } else {
+            Prolog.set_default_init_args(new String[] {
+//					"libswipl.dll", "-x", startup, "-f", "none",
+                    "libswipl.dll", "-f", "none",
+                    "-g", "true", "-q",
+                    "--home="+home, "--no-signals", "--no-packs" });
+        }
     }
 
     @Rule
@@ -45,6 +73,17 @@ public class GetSolution {
             System.out.println("Starting test: " + description.getMethodName());
         }
     };
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // SUPPORTING CODE
+    ///////////////////////////////////////////////////////////////////////////////
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // TESTS
+    ///////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testGetSolution1() {
@@ -165,5 +204,62 @@ public class GetSolution {
         }
 
     }
+
+
+
+
+    @Test
+    public void testStaticQueryAllSolutions1() {
+        String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
+        assertTrue("Query.allSolutions(" + goal + ") returns 10 solutions", Query.allSolutions(goal).length == 10);
+    }
+
+    @Test
+    public void testStaticQueryHasSolution1() {
+        String goal = "memberchk(13, [?,?,?])";
+        Term[] params = new Term[]{new Integer(12), new Integer(13), new Integer(14)};
+        assertTrue(Query.hasSolution(goal, params));
+    }
+
+    @Test
+    public void testStaticQueryHasSolution2() {
+        String goal = "memberchk(23, [?,?,?])";
+        Term[] params = new Term[]{new Integer(12), new Integer(13), new Integer(14)};
+        assertFalse(Query.hasSolution(goal, params));
+    }
+
+    @Test
+    public void testDontTellMeMode1() {
+        final Query q = new Query("setof(_M,current_module(_M),_Ms),length(_Ms,N)");
+        JPL.setDTMMode(true);
+        assertTrue(
+                "in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for just one variable",
+                q.oneSolution().keySet().size() == 1);
+    }
+
+    @Test
+    public void testDontTellMeMode2() {
+        final Query q = new Query("setof(_M,current_module(_M),_Ms),length(_Ms,N)");
+        JPL.setDTMMode(false);
+        assertTrue(
+                "not in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for three variables",
+                q.oneSolution().keySet().size() == 3);
+    }
+
+    @Test
+    public void testMap1() {
+        Map<String, Term> h = Query.oneSolution("p(a,b) = p(X,Y)");
+        assertTrue(h.get("X").name().equals("a"));
+        assertTrue(h.get("Y").name().equals("b"));
+    }
+
+    @Test
+    public void testMap2() {
+        Map<String, Term>[] hs = Query.allSolutions("p(a,b) = p(X,Y)");
+        assertTrue(hs.length == 1);
+        assertTrue(hs[0].get("X").name().equals("a"));
+        assertTrue(hs[0].get("Y").name().equals("b"));
+    }
+
 
 }

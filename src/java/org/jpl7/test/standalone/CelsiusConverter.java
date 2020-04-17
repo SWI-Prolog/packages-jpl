@@ -1,4 +1,4 @@
-package org.jpl7.test;
+package org.jpl7.test.standalone;
 
 /**
  * CelsiusConverter.java is a 1.4 application that 

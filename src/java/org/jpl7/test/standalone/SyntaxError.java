@@ -1,4 +1,4 @@
-package org.jpl7.test;
+package org.jpl7.test.standalone;
 
 import org.jpl7.Query;
 

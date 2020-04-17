@@ -1,36 +1,63 @@
-package org.jpl7.test.standalone;
+package org.jpl7.test.junit;
 
 import org.jpl7.*;
 import org.jpl7.Integer;
+import org.jpl7.fli.Prolog;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import java.util.Map;
-import java.util.NoSuchElementException;
-
 import static org.junit.Assert.*;
 
 
 public class JRef {
-	public static void main(String argv[]) {
+    public static final String startup =
+            (System.getenv("SWIPL_BOOT_FILE") == null ? "../../src/swipl.prc"
+                    : System.getenv("SWIPL_BOOT_FILE"));
+    public static final String test_jpl =
+            (System.getenv("TEST_JPL") == null ? "test_jpl.pl"
+                    : System.getenv("TEST_JPL"));
+    public static final String syntax =
+            (System.getenv("SWIPL_SYNTAX") == null ? "modern"
+                    : System.getenv("SWIPL_SYNTAX"));
+    public static final String home =
+            (System.getenv("SWI_HOME_DIR") == null ? "../.."
+                    : System.getenv("SWI_HOME_DIR"));
+
+    public static void main(String argv[]) {
     }
 
-    @Before
-    public void setUp() {
-        // JPL.setTraditional();
-        //
-//		Query.hasSolution("use_module(library(jpl))"); // only because we call e.g. jpl_pl_syntax/1 below
-//		Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-//		System.out.println("swipl.version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
-//		System.out.println("swipl.syntax = " + Query.oneSolution("jpl_pl_syntax(Syntax)").get("Syntax"));
-//		System.out.println("swipl.home = " + Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
-//		System.out.println("jpl.jar = " + JPL.version_string());
-//		System.out.println("jpl.dll = " + org.jpl7.fli.Prolog.get_c_lib_version());
-//		System.out.println("jpl.pl = " + Query.oneSolution("jpl_pl_lib_version(V)").get("V").name());
+    ///////////////////////////////////////////////////////////////////////////////
+    // TESTING CONFIGURATION
+    ///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * This is done at the class loading, before any test is run
+     */
+    @BeforeClass
+    public static void setUp() {
+        if (syntax.equals("traditional")) {
+            JPL.setTraditional();
+            Prolog.set_default_init_args(new String[] {
+//					"libswipl.dll", "-x", startup, "-f", "none",
+                    "libswipl.dll", "-f", "none",
+                    "-g", "true", "--traditional", "-q",
+                    "--home="+home, "--no-signals", "--no-packs" });
+        } else {
+            Prolog.set_default_init_args(new String[] {
+//					"libswipl.dll", "-x", startup, "-f", "none",
+                    "libswipl.dll", "-f", "none",
+                    "-g", "true", "-q",
+                    "--home="+home, "--no-signals", "--no-packs" });
+        }
+
+        assertTrue((new Query("consult", new Term[] { new Atom(test_jpl) })).hasSolution());
+        assertTrue((new Query("ensure_loaded(library(jpl))")).hasSolution());
+
     }
 
     @Rule
@@ -45,6 +72,15 @@ public class JRef {
 
 
 
+    ///////////////////////////////////////////////////////////////////////////////
+    // SUPPORTING CODE
+    ///////////////////////////////////////////////////////////////////////////////
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // TESTS
+    ///////////////////////////////////////////////////////////////////////////////
 
 
     @Test

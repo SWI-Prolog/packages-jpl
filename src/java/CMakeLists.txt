@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(swipl-jpl-jar)
 
 find_package(Java COMPONENTS Development)
-include(UseJava)    # https://cmake.org/cmake/help/latest/module/UseJava.html
-include(JUnit)      # Looks for junit.jar but not junit4.jar (make a symbolic link)
-#message("junit JAR is at ${JUNIT_JAR}")
+include(UseJava)
+include(JUnit)
 
 set(CLS	org/jpl7/Atom.java
 	org/jpl7/Compound.java
@@ -38,19 +37,39 @@ set(FLI	org/jpl7/fli/atom_t.java
 	org/jpl7/fli/StringHolder.java
 	org/jpl7/fli/term_t.java)
 
-set(TEST org/jpl7/test/Family.java
-	org/jpl7/test/FetchBigTree.java
-	org/jpl7/test/FetchLongList.java
-	org/jpl7/test/Ga2.java
-	org/jpl7/test/Ga.java
-	org/jpl7/test/Garbo.java
-	org/jpl7/test/Masstest.java
-	org/jpl7/test/MaxObjects.java
-	org/jpl7/test/ShadowA.java
-	org/jpl7/test/ShadowB.java
-	org/jpl7/test/SyntaxError.java
-	org/jpl7/test/Test.java
-	org/jpl7/test/TestJUnit4.java)
+set(TEST
+    org/jpl7/test/standalone/SyntaxError.java
+    org/jpl7/test/standalone/Masstest.java
+    org/jpl7/test/standalone/Garbo.java
+    org/jpl7/test/standalone/FetchBigTree.java
+    org/jpl7/test/standalone/Versions.java
+    org/jpl7/test/standalone/CelsiusConverter.java
+    org/jpl7/test/standalone/Ga.java
+    org/jpl7/test/standalone/Ga2.java
+    org/jpl7/test/standalone/FetchLongList.java
+    org/jpl7/test/standalone/Family.java
+    ##
+    org/jpl7/test/junit/Tests.java
+    org/jpl7/test/junit/GetSolution.java
+    org/jpl7/test/junit/QueryBuilder.java
+    org/jpl7/test/junit/Variables.java
+    org/jpl7/test/junit/MutualRecursion.java
+    org/jpl7/test/junit/AtomTest.java
+    org/jpl7/test/junit/Unicode.java
+    org/jpl7/test/junit/ReportPrologFlags.java
+    org/jpl7/test/junit/JRef.java
+    org/jpl7/test/junit/DataManagement.java
+    org/jpl7/test/junit/TypesTest.java
+    org/jpl7/test/junit/ListTest.java
+    org/jpl7/test/junit/IntegerTest.java
+    org/jpl7/test/junit/StringTest.java
+    org/jpl7/test/junit/ModuleTest.java
+    ##
+    org/jpl7/test/JPLTestSuiteRunner.java
+    org/jpl7/test/JPLTestSuite.java
+    org/jpl7/test/ShadowA.java
+    org/jpl7/test/ShadowB.java
+    org/jpl7/test/Test.java)
 
 option(JAVA_COMPATIBILITY
        "Make jpl.jar compatible with older Java versions"

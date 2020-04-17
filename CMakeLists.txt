@@ -119,7 +119,7 @@ set(swihome ../../home)
 if(JUNIT_JAR)
     set(swibootfile ${swihome}/boot.prc)
 
-    # Add testing pack on Java code calling Prolog (class org.jpl7.test.TestJUnit4)
+    # Add testing pack on Java code calling Prolog (class org.jpl7.test.junit.TestJUnit4)
     add_test(
         NAME jpl:prolog_in_java
         COMMAND env SWI_HOME_DIR=${swihome}
@@ -128,7 +128,7 @@ if(JUNIT_JAR)
             ${Java_JAVA_EXECUTABLE}
              -Djava.library.path=.
                      -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
-                     org.jpl7.test.TestJUnit4)
+                     org.jpl7.test.junit.Tests)
 
 
     # Add testing pack on Prolog code calling Java

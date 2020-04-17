@@ -1,4 +1,4 @@
-package org.jpl7.test;
+package org.jpl7.test.standalone;
 
 public class Garbo {
 	public static int created = 0;

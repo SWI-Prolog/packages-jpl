@@ -1,7 +1,5 @@
-package org.jpl7.test.standalone;
+package org.jpl7.test.junit;
 
-import org.jpl7.Atom;
-import org.jpl7.JPLException;
 import org.jpl7.Query;
 import org.jpl7.Term;
 import org.junit.Before;
@@ -12,9 +10,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import java.util.Map;
-import java.util.NoSuchElementException;
-
-import static org.junit.Assert.*;
 
 public class ReportPrologFlags {
 //    final Logger logger = LoggerFactory.getLogger(GetSolution.class);
