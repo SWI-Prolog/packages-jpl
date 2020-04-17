@@ -1,9 +1,11 @@
 #!/bin/sh
+##########################################################
+# This assumes JPL is compiled inside the whole SWI
+# system inside package/jpl AND
+# that the JPL Jar has been been produced
+##########################################################
 
-SWI_HOME_DIR=../../build/home/
-SWIPL_BOOT_FILE=../../build/home/boot.prc
-TEST_JPL=test_jpl.pl
-
+JPL_JAR=out/artifacts/jpl_jar/jpl.jar
 
 if [ ! -z "$LD_PRELOAD" ]; then
   export LD_PRELOAD="$JAVA_PRELOAD $LD_PRELOAD"
@@ -20,5 +22,5 @@ fi
   SWIPL_BOOT_FILE=../../build/home/boot.prc \
   LD_LIBRARY_PATH=../../build/home/lib:$LD_LIBRARY_PATH \
   TEST_JPL=test_jpl.pl \
-  CLASSPATH=$JUNIT:out/artifacts/jpl_jar/jpl.jar \
+  CLASSPATH=$JUNIT:$JPL_JAR \
   java org.jpl7.test.junit.Tests
