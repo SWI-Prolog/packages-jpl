@@ -3,7 +3,7 @@ project(swipl-jpl-jar)
 
 find_package(Java COMPONENTS Development)
 include(UseJava)
-include(JUnit)
+include(JUnit) # junit4.jar
 
 set(CLS	org/jpl7/Atom.java
 	org/jpl7/Compound.java

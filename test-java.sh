@@ -1,24 +1,9 @@
 #!/bin/sh
 
-# set variables for Prolog
-. ../swipl.sh < /dev/null
+SWI_HOME_DIR=../../build/home/
+SWIPL_BOOT_FILE=../../build/home/boot.prc
+TEST_JPL=test_jpl.pl
 
-findexe()
-{ oldifs="$IFS"
-  IFS=:
-  for d in $PATH; do
-    if [ -x $d/$1 ]; then
-       IFS="$oldifs"
-       return 0
-    fi
-  done
-  IFS="$oldifs"
-  return 1
-}
-
-if [ ! -z "$LD_LIBRARY_PATH" ]; then
-  LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
-fi
 
 if [ ! -z "$LD_PRELOAD" ]; then
   export LD_PRELOAD="$JAVA_PRELOAD $LD_PRELOAD"
@@ -26,19 +11,14 @@ else
   export LD_PRELOAD="$JAVA_PRELOAD"
 fi
 
-if [ -z "$JUNIT" -a -r /usr/share/java/junit.jar ]; then
-  JUNIT=/usr/share/java/junit.jar
+if [ -z "$JUNIT" -a -r /usr/share/java/junit4.jar ]; then
+  JUNIT=/usr/share/java/junit4.jar
 fi
 
-if [ -z "$JAVA" ]; then
-  JAVA=java
-fi
 
-if findexe java && [ -r $JUNIT ]; then
-  export CLASSPATH=$JUNIT:jpl.jar:jpltest.jar
-
-  $JAVA junit.textui.TestRunner org.jpl7.test.TestJUnit
-else
-  echo "Warning: cannot find java or junit.jar; skipping tests"
-  echo "Warning: that embed SWI-Prolog in Java"
-fi
+/usr/bin/env SWI_HOME_DIR=../../build/home/ \
+  SWIPL_BOOT_FILE=../../build/home/boot.prc \
+  LD_LIBRARY_PATH=../../build/home/lib:$LD_LIBRARY_PATH \
+  TEST_JPL=test_jpl.pl \
+  CLASSPATH=$JUNIT:out/artifacts/jpl_jar/jpl.jar \
+  java org.jpl7.test.junit.Tests
