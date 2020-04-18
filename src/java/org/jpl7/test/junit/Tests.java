@@ -69,7 +69,7 @@ public class Tests extends JPLTest {
         assertTrue(msg, java_lib_version.equals(c_lib_version));
     }
 
-    @Test
+//    @Test
     public void testSameLibVersions2() {
         String java_lib_version = JPL.version_string();
 
