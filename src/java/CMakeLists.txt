@@ -56,7 +56,7 @@ set(TEST
     org/jpl7/test/junit/MutualRecursion.java
     org/jpl7/test/junit/AtomTest.java
     org/jpl7/test/junit/Unicode.java
-    org/jpl7/test/junit/ReportPrologFlags.java
+    org/jpl7/test/junit/ReportPrologInfo.java
     org/jpl7/test/junit/JRef.java
     org/jpl7/test/junit/DataManagement.java
     org/jpl7/test/junit/TypesTest.java

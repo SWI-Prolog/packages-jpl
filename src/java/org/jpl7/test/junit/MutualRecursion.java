@@ -4,56 +4,46 @@ import org.jpl7.Atom;
 import org.jpl7.Integer;
 import org.jpl7.Query;
 import org.jpl7.Term;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.*;
 
 
-public class MutualRecursion {
-    public static final String startup =
-            (System.getenv("SWIPL_BOOT_FILE") == null ? "../../src/swipl.prc"
-            : System.getenv("SWIPL_BOOT_FILE"));
-    public static final String test_jpl =
-            (System.getenv("TEST_JPL") == null ? "test_jpl.pl"
-            : System.getenv("TEST_JPL"));
-    public static final String syntax =
-            (System.getenv("SWIPL_SYNTAX") == null ? "modern"
-            : System.getenv("SWIPL_SYNTAX"));
-    public static final String home =
-            (System.getenv("SWI_HOME_DIR") == null ? "../.."
-            : System.getenv("SWI_HOME_DIR"));
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class MutualRecursion extends JPLTest {
 
+    public static void main(String argv[]) {
+        // To be able to call it from CLI without IDE (e.g., by CMAKE)
+        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.MutualRecursion");
 
-
-	public static void main(String argv[]) {
+        // should work from static class but gives error
+//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTING CONFIGURATION
-    ///////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * This is done at the class loading, before any test is run
+     */
     @BeforeClass
     public static void setUp() {
-        // JPL.setTraditional();
+        setUpClass();
 
-        // Consult this file to have access to jpl_test_fac/2
-        assertTrue((new Query("consult", new Term[] { new Atom(test_jpl) })).hasSolution());
+        consultTestFile();
+//        useJPLmodule();     // consult the jpl.pl module
     }
+
 
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
-//            logger.info("{} being run...", description.getMethodName());
-
-            System.out.println("Starting test: " + description.getMethodName());
+            reportTest(description);
         }
     };
+
 
 
 
@@ -66,6 +56,8 @@ public class MutualRecursion {
         // jpl:jpl_test_fac(+integer,-integer);
         // indirectly supports
         // testMutualRecursion
+        consultTestFile();
+
         if (n == 1) {
             return 1;
         } else if (n > 1) {
@@ -82,30 +74,27 @@ public class MutualRecursion {
     // TESTS
     ///////////////////////////////////////////////////////////////////////////////
 
-
-
-
-    private void testMutualRecursion(int n, long f) { // f is the expected
-        // result for fac(n)
+    private void testMutualRecursion(int n, long f) {
+        // f is the expected result for call fac(n) which uses Prolog
         try {
-            assertEquals("mutual recursive Java<->Prolog factorial: fac(" + n + ") = " + f, fac(n), f);
+            assertEquals(String.format("Mutual recursive Java<->Prolog factorial: fac(%d) = %d", n, f), f, fac(n));
         } catch (Exception e) {
-            fail("fac(" + n + ") threw " + e);
+            fail(String.format("fac(%d) threw %s", n, e));
         }
     }
 
     @Test
-    public void testMutualRecursion1() {
+    public void testMutualRecursion01() {
         testMutualRecursion(1, 1);
     }
 
     @Test
-    public void testMutualRecursion2() {
+    public void testMutualRecursion02() {
         testMutualRecursion(2, 2);
     }
 
     @Test
-    public void testMutualRecursion3() {
+    public void testMutualRecursion03() {
         testMutualRecursion(3, 6);
     }
 

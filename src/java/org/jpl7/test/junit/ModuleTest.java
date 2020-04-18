@@ -16,54 +16,35 @@ import org.junit.runner.Description;
 import static org.junit.Assert.*;
 
 
-public class ModuleTest {
-    public static final String startup = (System.getenv("SWIPL_BOOT_FILE") == null ? "../../src/swipl.prc"
-            : System.getenv("SWIPL_BOOT_FILE"));
-    public static final String test_jpl = (System.getenv("TEST_JPL") == null ? "test_jpl.pl"
-            : System.getenv("TEST_JPL"));
-    public static final String syntax = (System.getenv("SWIPL_SYNTAX") == null ? "modern"
-            : System.getenv("SWIPL_SYNTAX"));
-    public static final String home = (System.getenv("SWI_HOME_DIR") == null ? "../.."
-            : System.getenv("SWI_HOME_DIR"));
+public class ModuleTest extends JPLTest {
 
+    public static void main(String argv[]) {
+        // To be able to call it from CLI without IDE (e.g., by CMAKE)
+        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.ModuleTest");
 
-
-	public static void main(String argv[]) {
+        // should work from static class but gives error
+//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
     }
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTING CONFIGURATION
-    ///////////////////////////////////////////////////////////////////////////////
 
     /**
      * This is done at the class loading, before any test is run
      */
     @BeforeClass
     public static void setUp() {
-        if (syntax.equals("traditional")) {
-            JPL.setTraditional();
-            Prolog.set_default_init_args(new String[] {
-//					"libswipl.dll", "-x", startup, "-f", "none",
-                    "libswipl.dll", "-f", "none",
-                    "-g", "true", "--traditional", "-q",
-                    "--home="+home, "--no-signals", "--no-packs" });
-        } else {
-            Prolog.set_default_init_args(new String[] {
-//					"libswipl.dll", "-x", startup, "-f", "none",
-                    "libswipl.dll", "-f", "none",
-                    "-g", "true", "-q",
-                    "--home="+home, "--no-signals", "--no-packs" });
-        }
+        setUpClass();
+
+        useJPLmodule();     // consult the jpl.pl module
     }
+
 
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
-//            logger.info("{} being run...", description.getMethodName());
-
-            System.out.println("Starting test: " + description.getMethodName());
+            reportTest(description);
         }
     };
+
+
 
 
 

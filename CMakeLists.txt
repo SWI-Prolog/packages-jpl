@@ -118,17 +118,28 @@ add_dependencies(jpl libjpl jpl_jar)
 set(swihome ../../home)
 if(JUNIT_JAR)
     set(swibootfile ${swihome}/boot.prc)
+    set(testdir ${PROJECT_SOURCE_DIR}/../../packages/jpl/src/java/org/jpl7/test)
+    set(testfile ${testdir}/test_jpl.pl)
+
+    #message(${CMAKE_CURRENT_SOURCE_DIR}) # <project>/packages/jpl
+    #message(${PROJECT_SOURCE_DIR})  # <project>/packages/jpl
+    #message(${PROJECT_BINARY_DIR})  # build/packages/jpl
+
 
     # Add testing pack on Java code calling Prolog (class org.jpl7.test.junit.TestJUnit4)
     add_test(
         NAME jpl:prolog_in_java
         COMMAND env SWI_HOME_DIR=${swihome}
             SWIPL_BOOT_FILE=${swibootfile}
-                    TEST_JPL=../../../packages/jpl/test_jpl.pl
+            TEST_FILE=${testfile}
+            TEST_DIR=${testdir}
             ${Java_JAVA_EXECUTABLE}
              -Djava.library.path=.
                      -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
-                     org.jpl7.test.junit.Tests)
+                     org.jpl7.test.JPLTestSuiteRunner)
+
+
+
 
 
     # Add testing pack on Prolog code calling Java

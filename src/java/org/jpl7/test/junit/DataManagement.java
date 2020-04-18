@@ -13,39 +13,34 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class DataManagement {
-    public static final String startup = (System.getenv("SWIPL_BOOT_FILE") == null ? "../../src/swipl.prc"
-            : System.getenv("SWIPL_BOOT_FILE"));
-    public static final String test_jpl = (System.getenv("TEST_JPL") == null ? "test_jpl.pl"
-            : System.getenv("TEST_JPL"));
-    public static final String syntax = (System.getenv("SWIPL_SYNTAX") == null ? "modern"
-            : System.getenv("SWIPL_SYNTAX"));
-    public static final String home = (System.getenv("SWI_HOME_DIR") == null ? "../.."
-            : System.getenv("SWI_HOME_DIR"));
-
+public class DataManagement extends JPLTest {
 
     public static void main(String argv[]) {
+        // To be able to call it from CLI without IDE (e.g., by CMAKE)
+        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.DataManagement");
+
+        // should work from static class but gives error
+//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
     }
 
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTING CONFIGURATION
-    ///////////////////////////////////////////////////////////////////////////////
+    /**
+     * This is done at the class loading, before any test is run
+     */
     @BeforeClass
     public static void setUp() {
-	    assertTrue("quoted_name.pl should loaded for this test",
-                Query.hasSolution("consult('src/java/org/jpl7/test/junit/quoted_name.pl')"));
+
+        setUpClass();
+        Query.hasSolution(String.format("consult('%s/quoted_name.pl')", test_dir)); // only because we call e.g. jpl_pl_syntax/1 below
     }
+
 
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
-//            logger.info("{} being run...", description.getMethodName());
-
-            System.out.println("Starting test: " + description.getMethodName());
+            reportTest(description);
         }
     };
+
 
     ///////////////////////////////////////////////////////////////////////////////
     // SUPPORTING CODE
@@ -93,7 +88,7 @@ public class DataManagement {
 
     private Term quotedQuery(String name) {
         return new Compound(":", new Term[]{
-                new Atom("jpl"),
+                new Atom("moduleTest"),
                 new Compound("quoted_name", new Term[]{
                         new Atom(name),
                         new Variable("S")

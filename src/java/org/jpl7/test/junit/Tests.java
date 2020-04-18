@@ -23,122 +23,32 @@ import java.util.NoSuchElementException;
 import static org.junit.Assert.*;
 
 // This class defines all the tests which are run from Java.
-public class Tests {
-    public static final String syntax = (
-            System.getenv("SWIPL_SYNTAX") == null ? "modern"
-            : System.getenv("SWIPL_SYNTAX"));
-    public static final String startup =
-            (System.getenv("SWIPL_BOOT_FILE") == null ? "../../src/swipl.prc"
-            : System.getenv("SWIPL_BOOT_FILE"));
-    public static final String test_jpl =
-            (System.getenv("TEST_JPL") == null ? "test_jpl.pl"
-            : System.getenv("TEST_JPL"));
-    public static final String home =
-            (System.getenv("SWI_HOME_DIR") == null ? "../.."
-            : System.getenv("SWI_HOME_DIR"));
-
-
+public class Tests extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
         org.junit.runner.JUnitCore.main("org.jpl7.test.junit.Tests");
+
+        // should work from static class but gives error
+//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
     }
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTING CONFIGURATION
-    ///////////////////////////////////////////////////////////////////////////////
 
     /**
-	 * This is done at the class loading, before any test is run
-	 */
-	@BeforeClass
-	public static void setUp() {
-
-        if (syntax.equals("traditional")) {
-			JPL.setTraditional();
-			Prolog.set_default_init_args(new String[] {
-//					"libswipl.dll", "-x", startup, "-f", "none",
-					"libswipl.dll", "-f", "none",
-					"-g", "true", "--traditional", "-q",
-					"--home="+home, "--no-signals", "--no-packs" });
-		} else {
-			Prolog.set_default_init_args(new String[] {
-//					"libswipl.dll", "-x", startup, "-f", "none",
-					"libswipl.dll", "-f", "none",
-					"-g", "true", "-q",
-					"--home="+home, "--no-signals", "--no-packs" });
-		}
-		assertTrue((new Query("consult", new Term[] { new Atom(test_jpl) })).hasSolution());
-		assertTrue((new Query("ensure_loaded(library(jpl))")).hasSolution());
-
-		reportConfiguration();
-
-		// These two lines are from old testing set the second one does not work and makes it all fail
-        // Leave it here as example on how to use those native functions
-//        Prolog.set_default_init_args(
-//                new String[] { "libpl.dll", "-f", "none", "-g", "set_prolog_flag(debug_on_error,false)", "-q" });
-//        System.out.println("tag = " + Prolog.object_to_tag(new Query("hello")));
-
+     * This is done at the class loading, before any test is run
+     */
+    @BeforeClass
+    public static void setUp() {
+        setUpClass();
     }
 
-    private static void reportConfiguration() {
-        System.out.println("JPL testing under the following configuration:");
-
-        Query.hasSolution("use_module(library(jpl))"); // only because we call e.g. jpl_pl_syntax/1 below
-        System.out.println("Module library(jpl) loaded");
-
-        Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-        System.out.println("\t swipl.version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
-
-        System.out.println("\t swipl.syntax = " +
-                Query.oneSolution("jpl_pl_syntax(Syntax)").get("Syntax"));
-        System.out.println("\t swipl.home = " +
-                Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
-        System.out.println("\t jpl.jar = " + JPL.version_string());
-        System.out.println("\t jpl.dll = " + org.jpl7.fli.Prolog.get_c_lib_version());
-        System.out.println("\t jpl.pl = " + Query.oneSolution("jpl_pl_lib_version(V)").get("V").name());
-
-
-        System.out.println("\t java.version = " + System.getProperty("java.version"));
-        System.out.println("\t java_lib_version = " + JPL.version_string());
-        System.out.println("\t c_lib_version = " + org.jpl7.fli.Prolog.get_c_lib_version());
-        System.out.println("\t pl_lib_version = " +
-                new Query(new Compound("jpl_pl_lib_version", new Term[] { new Variable("V") }))
-                        .oneSolution().get("V"));
-        System.out.println("\t os.name = " + System.getProperty("os.name"));
-        System.out.println("\t os.arch = " + System.getProperty("os.arch"));
-        System.out.println("\t os.version = " + System.getProperty("os.version"));
-
-        System.out.println();
-        report_actual_init_args();
-        System.out.println();
-
-    }
-
-    private static void report_actual_init_args() {
-        String[] args = org.jpl7.fli.Prolog.get_default_init_args();
-        String which;
-        String s = "";
-        if (args == null) {
-            args = org.jpl7.fli.Prolog.get_actual_init_args();
-            which = "actual";
-        } else {
-            which = "default";
-        }
-        for (int i = 0; i < args.length; i++) {
-            s = s + args[i] + " ";
-        }
-        System.out.println(String.format("\t %s_init_args = %s", which, s));
-    }
 
     @Rule
-	public TestRule watcher = new TestWatcher() {
-		protected void starting(Description description) {
-//            logger.info("{} being run...", description.getMethodName());
-			System.out.println("Starting test: " + description.getMethodName());
-		}
-	};
+    public TestRule watcher = new TestWatcher() {
+        protected void starting(Description description) {
+            reportTest(description);
+        }
+    };
+
 
     ///////////////////////////////////////////////////////////////////////////////
     // SUPPORTING CODE
@@ -149,6 +59,26 @@ public class Tests {
     ///////////////////////////////////////////////////////////////////////////////
     // TESTS
     ///////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void testSameLibVersions1() {
+        String java_lib_version = JPL.version_string();
+        String c_lib_version = Prolog.get_c_lib_version();
+
+        String msg = String.format("java_lib_version(%s) is same as c_lib_version(%s)",  java_lib_version, c_lib_version);
+        assertTrue(msg, java_lib_version.equals(c_lib_version));
+    }
+
+    @Test
+    public void testSameLibVersions2() {
+        String java_lib_version = JPL.version_string();
+
+        useJPLmodule();
+        String pl_lib_version = Query.oneSolution("jpl_pl_lib_version(V)").get("V").name();
+
+        String msg = String.format("java_lib_version(%s) is same as pl_lib_version(%s)", java_lib_version, pl_lib_version);
+        assertTrue(msg, java_lib_version.equals(pl_lib_version));
+    }
 
 
     // the tests; all public void test*()
@@ -187,19 +117,6 @@ public class Tests {
 
 
     @Test
-	public void testInfo() {
-		Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-		System.out.println("\t version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
-		System.out.println("\t syntax = " + Query.oneSolution("jpl:jpl_pl_syntax(Syntax)").get("Syntax"));
-		System.out.println("\t jpl.jar = " + JPL.version_string() + " " + JPL.jarPath());
-		System.out.println("\t jpl.dll = " + Prolog.get_c_lib_version());
-		System.out.println("\t jpl.pl = " + Query.oneSolution("jpl:jpl_pl_lib_version(V)").get("V").name() + " "
-				+ Query.oneSolution("module_property(jpl, file(F))").get("F").name());
-		System.out.println("\t home = " + Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
-	}
-
-
-    @Test
     public void testSyntaxSet1() {
         if (syntax.equals("traditional")) {
             try {
@@ -228,21 +145,6 @@ public class Tests {
         assertTrue((new Query("assert(diagnose_declaration(_,_,_,[not,a,real,error]))")).hasSolution());
     }
 
-    @Test
-    public void testSameLibVersions1() {
-        String java_lib_version = JPL.version_string();
-        String c_lib_version = Prolog.get_c_lib_version();
-        assertTrue("java_lib_version(" + java_lib_version + ") is same as c_lib_version(" + c_lib_version + ")",
-                java_lib_version.equals(c_lib_version));
-    }
-
-    @Test
-    public void testSameLibVersions2() {
-        String java_lib_version = JPL.version_string();
-        String pl_lib_version = Query.oneSolution("jpl_pl_lib_version(V)").get("V").name();
-        assertTrue("java_lib_version(" + java_lib_version + ") is same as pl_lib_version(" + pl_lib_version + ")",
-                java_lib_version.equals(pl_lib_version));
-    }
 
 
 

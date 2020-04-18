@@ -14,6 +14,8 @@ public class JPLTestSuiteRunner {
             failure.getException().printStackTrace();
         }
 
-        System.out.println("Test successful? " + result.wasSuccessful());
+        System.out.println("********* Test successful? " + result.wasSuccessful());
     }
 }
+
+
