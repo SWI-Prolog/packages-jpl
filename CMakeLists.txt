@@ -141,20 +141,6 @@ if(JUNIT_JAR)
                      -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
                      org.jpl7.test.JPLTestSuiteRunner)
 
-    # Add testing pack on Java code calling Prolog (class org.jpl7.test.junit.TestJUnit4)
-    add_test(
-        NAME jpl:prolog_in_java_2
-        COMMAND env
-            CLASSPATH=src/java/jpl.jar
-            SWI_HOME_DIR=${swihome}
-            SWIPL_BOOT_FILE=${swibootfile}
-            TEST_FILE=${testfile}
-            TEST_DIR=${testdir}
-            ${Java_JAVA_EXECUTABLE}
-             -Djava.library.path=.
-                     -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
-                     org.jpl7.test.junit.ReportPrologInfo)
-
 
 
 
