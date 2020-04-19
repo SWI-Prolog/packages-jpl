@@ -12,15 +12,29 @@
 #   using the specified class path.
 #
 
-find_file(JUNIT_JAR
-    NAMES
-        junit4.jar
-    PATHS
-        ${JAVA_LIB_INSTALL_DIR}
-        /usr/share/java
-	    /opt/local/share/java
-	    /usr/local/share/java
-)
+# search for the JAR providing JUNIT versin 4
+# Unfortunately GLOB ? means exactly one, so cannot use it to make the - optional!
+## GLOB EXPRESSION: https://facelessuser.github.io/wcmatch/glob/
+file(GLOB JUNIT_JAR
+                ${JAVA_LIB_INSTALL_DIR}/junit4.jar
+                ${JAVA_LIB_INSTALL_DIR}/junit-4*.jar
+                /usr/share/java/junit4.jar
+                /usr/share/java/junit-4*.jar
+                /opt/local/share/java/junit4.jar
+                /opt/local/share/java/junit-4*.jar
+                /usr/local/share/java/junit4.jar
+                /usr/local/share/java/junit-4*.jar)
+
+#find_file(JUNIT_JAR2
+#    NAMES
+#        junit.jar
+#        junit4.jar
+#    PATHS
+#        ${JAVA_LIB_INSTALL_DIR}
+#        /usr/share/java
+#	    /opt/local/share/java
+#	    /usr/local/share/java
+#)
 MARK_AS_ADVANCED(JUNIT_JAR)
 
 function(add_junit_test TARGET_NAME)
