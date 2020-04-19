@@ -23,7 +23,9 @@ file(GLOB JUNIT_JAR
                 /opt/local/share/java/junit4.jar
                 /opt/local/share/java/junit-4*.jar
                 /usr/local/share/java/junit4.jar
-                /usr/local/share/java/junit-4*.jar)
+                /usr/local/share/java/junit-4*.jar
+                /opt/local/share/java/junit.jar     # Macport
+                )
 
 #find_file(JUNIT_JAR2
 #    NAMES
