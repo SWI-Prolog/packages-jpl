@@ -12,6 +12,8 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import java.util.Arrays;
+
 abstract class JPLTest {
     public static final String home =
             (System.getenv("SWI_HOME_DIR") == null ? "../../build/home/"
@@ -19,6 +21,7 @@ abstract class JPLTest {
     public static final String startup  =
             (System.getenv("SWIPL_BOOT_FILE") == null ? String.format("%s/boot.prc", home)
                     : System.getenv("SWIPL_BOOT_FILE"));
+    public static final String swi_exec = String.format("%s/../src/swipl", home);
     public static final String syntax =
             (System.getenv("SWIPL_SYNTAX") == null ? "modern"
                     : System.getenv("SWIPL_SYNTAX"));
@@ -31,23 +34,18 @@ abstract class JPLTest {
                     : System.getenv("REPORT") == "true");
 
 
-
-
     protected static void setUpClass() {
         if (syntax.equals("traditional")) {
             JPL.setTraditional();
-            Prolog.set_default_init_args(new String[] {
-//					"libswipl.dll", "-x", startup, "-f", "none",
-                    "libswipl.dll", "-f", "none",
-                    "-g", "true", "--traditional", "-q",
-                    "--home="+home, "--no-signals", "--no-packs" });
-        } else {
-            Prolog.set_default_init_args(new String[] {
-//					"libswipl.dll", "-x", startup, "-f", "none",
-                    "libswipl.dll", "-f", "none",
-                    "-g", "true", "-q",
-                    "--home="+home, "--no-signals", "--no-packs" });
         }
+        // Generate calls in Java of this form:
+        //  ./../home/../src/swipl -x ../../home/boot.prc -f ../../home/swipl.rc -g true -q --home=../../home --no-signals --no-packs
+        String[] init_swi_config = new String[] {
+//					"libswipl.dll", "-x", startup, "-f", "none",    // libswipl.dll will not update search paths for libraries
+                swi_exec, "-x", startup, "-f", "../../home/swipl.rc",
+                "-g", "true", "-q",
+                "--home="+home, "--no-signals", "--no-packs" };
+        Prolog.set_default_init_args(init_swi_config);
     }
 
     // This is how the test is reported

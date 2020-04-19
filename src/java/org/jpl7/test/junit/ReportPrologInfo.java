@@ -58,11 +58,10 @@ public class ReportPrologInfo extends JPLTest {
 
     @Test
     public void reportConfiguration() {
-        System.out.println("JPL testing under the following configuration:");
+        System.out.println("\t JPL testing under the following configuration:");
 
 //        Query.hasSolution("use_module(library(jpl))"); // only because we call e.g. jpl_pl_syntax/1 below
-//        useJPLmodule();
-        System.out.println("Module library(jpl) loaded");
+        useJPLmodule();
 
         Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
         System.out.println("\t swipl.version = " +
