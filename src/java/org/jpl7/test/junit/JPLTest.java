@@ -21,7 +21,14 @@ abstract class JPLTest {
     public static final String startup  =
             (System.getenv("SWIPL_BOOT_FILE") == null ? String.format("%s/boot.prc", home)
                     : System.getenv("SWIPL_BOOT_FILE"));
-    public static final String swi_exec = String.format("%s/../src/swipl", home);
+
+    //    public static final String swi_exec = String.format("%s/../src/swipl", home);
+    // Somehow Windows requires libswipl.dll (https://github.com/SWI-Prolog/packages-jpl/issues/32)
+    //  but if we use that in Linux, then swipl.rc does not load the search paths correctly
+    public static final String swi_exec =
+            System.getProperty("os.name").contains("Windows") ? "libswipl.dll"
+                    : String.format("%s/../src/swipl", home);
+
     public static final String syntax =
             (System.getenv("SWIPL_SYNTAX") == null ? "modern"
                     : System.getenv("SWIPL_SYNTAX"));
@@ -35,18 +42,18 @@ abstract class JPLTest {
 
 
     protected static void setUpClass() {
+        System.out.println(System.getProperty("os.name"));
         if (syntax.equals("traditional")) {
             JPL.setTraditional();
         }
-        // Generate calls in Java of this form:
-        //  ./../home/../src/swipl -x ../../home/boot.prc -f ../../home/swipl.rc -g true -q --home=../../home --no-signals --no-packs
-        String[] init_swi_config = new String[] {
-//					"libswipl.dll", "-x", startup, "-f", "none",    // libswipl.dll will not update search paths for libraries
-                swi_exec, "-x", startup, "-f", "../../home/swipl.rc",
-                "-g", "true", "-q",
-                "--home="+home, "--no-signals", "--no-packs" };
-        Prolog.set_default_init_args(init_swi_config);
+
+        // This is how the SWI engine will be configured/set-up
+        String init_swi_config =
+                String.format("%s -x %s -F swipl --home=%s -f none -g true -q --no-signals --no-packs",
+                        swi_exec, startup, home);
+        Prolog.set_default_init_args(init_swi_config.split("\\s+"));
     }
+
 
     // This is how the test is reported
     protected void reportTest(Description description, String msg) {

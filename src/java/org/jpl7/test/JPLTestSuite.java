@@ -18,7 +18,6 @@ import org.junit.runners.Suite;
         org.jpl7.test.junit.ModuleTest.class, // yields error when loading files.so modules
         org.jpl7.test.junit.MutualRecursion.class,    // yields error when loading files.so modules
         org.jpl7.test.junit.QueryBuilder.class,
-        org.jpl7.test.junit.RationalTest.class,
         org.jpl7.test.junit.ReportPrologInfo.class,
         org.jpl7.test.junit.StringTest.class,
         org.jpl7.test.junit.TypesTest.class,
