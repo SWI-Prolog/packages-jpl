@@ -191,6 +191,30 @@ To obtain the *ith* argument of a compound (numbered from 0), use the **arg0()**
 public Term arg0(int i);
 ```
 
+#### Lists as compound terms
+
+Lists are, as usual in Prolog, just compound terms with function `[|]` and two arguments: the _head_ element and the _tail_ list. For example:
+
+```prolog
+?- A = [1,2,3,4], A =.. [X|Y].
+A = [1, 2, 3, 4],
+X = '[|]',
+Y = [1, [2, 3, 4]].
+````
+
+We can build list compound terms in two ways. First, by using `Util.termArrayToList`:
+
+```java
+Term list = Util.termArrayToList(new Term[] 
+        { new Integer(1), new Variable("B"), new Atom("c") });
+```        
+
+The second way is by just using a String:
+
+
+
+
+
 ## Creating queries
 
 A `Query` contains a `Term`, representing a Prolog goal:
