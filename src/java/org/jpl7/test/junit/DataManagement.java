@@ -30,7 +30,7 @@ public class DataManagement extends JPLTest {
     public static void setUp() {
 
         setUpClass();
-        Query.hasSolution(String.format("consult('%s/quoted_name.pl')", test_dir)); // only because we call e.g. jpl_pl_syntax/1 below
+        Query.hasSolution(String.format("consult('%s/test_quoted_module.pl')", test_dir)); // only because we call e.g. jpl_pl_syntax/1 below
     }
 
 

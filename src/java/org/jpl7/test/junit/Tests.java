@@ -162,16 +162,11 @@ public class Tests extends JPLTest {
     }
 
 
-
-
-    // public void testMaxInteger1() {
-    // assertEquals(Query.oneSolution("current_prolog_flag(max_integer,I)").get("I").longValue(),
-    // java.lang.Long.MAX_VALUE); // i.e. 9223372036854775807L
-    // }
-
-    // public void testSingleton1() {
-    // assertTrue(Query.hasSolution("style_check(-singleton),consult('test_singleton.pl')"));
-    // }
+    @Test
+    public void testSingleton1() {
+        assertTrue(Query.hasSolution(
+                String.format("style_check(-singleton), consult('%s/test_singleton.pl')", test_dir)));
+    }
 
 	@Test
     public void testStaticQueryInvalidSourceText2() {

@@ -35,7 +35,7 @@ abstract class JPLTest {
     public static final String test_dir =
             (System.getenv("TEST_DIR") == null ? "src/java/org/jpl7/test"
                     : System.getenv("TEST_DIR"));
-    public static final String test_jpl = String.format("%s/test_jpl.pl", test_dir);
+    public static final String test_jpl = String.format("test_jpl.pl", test_dir);
     public static final boolean report =
             (System.getenv("REPORT") == null ? true
                     : System.getenv("REPORT") == "true");
