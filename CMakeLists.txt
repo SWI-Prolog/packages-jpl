@@ -138,7 +138,7 @@ if(JUNIT_JAR)
              -Djava.library.path=.
                      -classpath ${JUNIT_JAR}:${HAMCREST}:src/java/jpl.jar:src/java/jpltest.jar
                      org.jpl7.test.JPLTestSuiteRunner)
-g
+
 
     # Add testing pack on Prolog code calling Java
     test_lib(jpl
