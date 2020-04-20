@@ -138,7 +138,7 @@ if(JUNIT_JAR)
             TEST_DIR=${testdir}
             ${Java_JAVA_EXECUTABLE}
              -Djava.library.path=.
-                     -classpath ${JUNIT_JAR}:src/java/jpl.jar:src/java/jpltest.jar
+                     -classpath ${JUNIT_JAR}:${HAMCREST}:src/java/jpl.jar:src/java/jpltest.jar
                      org.jpl7.test.JPLTestSuiteRunner)
 
 

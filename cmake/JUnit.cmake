@@ -20,24 +20,23 @@ file(GLOB JUNIT_JAR
                 ${JAVA_LIB_INSTALL_DIR}/junit-4*.jar
                 /usr/share/java/junit4.jar
                 /usr/share/java/junit-4*.jar
+                /opt/local/share/java/junit.jar     # Macport
                 /opt/local/share/java/junit4.jar
                 /opt/local/share/java/junit-4*.jar
                 /usr/local/share/java/junit4.jar
-                /usr/local/share/java/junit-4*.jar
-                /opt/local/share/java/junit.jar     # Macport
-                )
-
-#find_file(JUNIT_JAR2
-#    NAMES
-#        junit.jar
-#        junit4.jar
-#    PATHS
-#        ${JAVA_LIB_INSTALL_DIR}
-#        /usr/share/java
-#	    /opt/local/share/java
-#	    /usr/local/share/java
-#)
+                /usr/local/share/java/junit-4*.jar)
 MARK_AS_ADVANCED(JUNIT_JAR)
+find_file(HAMCREST
+    NAMES
+        hamcrest-core.jar
+    PATHS
+        ${JAVA_LIB_INSTALL_DIR}
+        /usr/share/java
+	    /opt/local/share/java
+	    /usr/local/share/java
+	    /opt/local/share/java/)
+MARK_AS_ADVANCED(HAMCREST)
+
 
 function(add_junit_test TARGET_NAME)
 
