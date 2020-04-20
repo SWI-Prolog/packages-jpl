@@ -31,8 +31,6 @@ public class JRef extends JPLTest {
     public static void setUp() {
         setUpClass();
 
-        //  Query q_load_test_jpl = new Query("consult", new Term[] { new Atom(test_jpl) }))
-
         consultTestFile();  // load the test_jpl.pl file
         useJPLmodule();     // consult the jpl.pl module
 

@@ -30,17 +30,20 @@ abstract class JPLTest {
     public static final String syntax =
             (System.getenv("SWIPL_SYNTAX") == null ? "modern"
                     : System.getenv("SWIPL_SYNTAX"));
-    public static final String test_dir =
-            (System.getenv("TEST_DIR") == null ? "src/java/org/jpl7/test"
-                    : System.getenv("TEST_DIR"));
-    public static final String test_jpl = String.format("test_jpl.pl", test_dir);
+    public static final String source_dir =
+            System.getenv("SOURCE_DIR") == null ? "." : System.getenv("SOURCE_DIR");
+    public static final String test_dir = String.format("%s/src/java/org/jpl7/test", source_dir);
+
+    // test_jpl is the main testing file for jpl, used also for java_in_prolog
+    //  it is in the original source tree (not in the build), but ../../packages/jpl = current dir so it works
+    //      both for CMAKE and for development in packags/jpl (e.g., IntelliJ)
+    public static final String test_jpl = String.format("%s/test_jpl.pl", source_dir);
     public static final boolean report =
             (System.getenv("REPORT") == null ? true
                     : System.getenv("REPORT") == "true");
 
 
     protected static void setUpClass() {
-        System.out.println(System.getProperty("os.name"));
         if (syntax.equals("traditional")) {
             JPL.setTraditional();
         }
