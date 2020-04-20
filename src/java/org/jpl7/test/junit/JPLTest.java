@@ -47,6 +47,7 @@ abstract class JPLTest {
             JPL.setTraditional();
         }
 
+        // CLI options for SWI: https://www.swi-prolog.org/pldoc/man?section=cmdline
         // This is how the SWI engine will be configured/set-up
         String init_swi_config =
                 String.format("%s -x %s -F swipl --home=%s -f none -g true -q --no-signals --no-packs",
