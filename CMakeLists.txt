@@ -119,8 +119,7 @@ set(swihome ../../home)
 #set(swihome ${PROJECT_BINARY_DIR}/../../home)
 if(JUNIT_JAR)
     set(swibootfile ${swihome}/boot.prc)
-    set(testdir ${PROJECT_SOURCE_DIR}/../../packages/jpl/src/java/org/jpl7/test)
-    set(testfile ${testdir}/test_jpl.pl)
+    set(testdir ${PROJECT_SOURCE_DIR}/src/java/org/jpl7/test)
 
     #message(${CMAKE_CURRENT_SOURCE_DIR}) # <project>/packages/jpl
     #message(${PROJECT_SOURCE_DIR})  # <project>/packages/jpl
@@ -134,15 +133,12 @@ if(JUNIT_JAR)
             CLASSPATH=src/java/jpl.jar
             SWI_HOME_DIR=${swihome}
             SWIPL_BOOT_FILE=${swibootfile}
-            TEST_FILE=${testfile}
             TEST_DIR=${testdir}
             ${Java_JAVA_EXECUTABLE}
              -Djava.library.path=.
                      -classpath ${JUNIT_JAR}:${HAMCREST}:src/java/jpl.jar:src/java/jpltest.jar
                      org.jpl7.test.JPLTestSuiteRunner)
-
-
-
+g
 
     # Add testing pack on Prolog code calling Java
     test_lib(jpl
