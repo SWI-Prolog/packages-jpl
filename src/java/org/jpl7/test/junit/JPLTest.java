@@ -25,9 +25,7 @@ abstract class JPLTest {
     //    public static final String swi_exec = String.format("%s/../src/swipl", home);
     // Somehow Windows requires libswipl.dll (https://github.com/SWI-Prolog/packages-jpl/issues/32)
     //  but if we use that in Linux, then swipl.rc does not load the search paths correctly
-    public static final String swi_exec =
-            System.getProperty("os.name").contains("Windows") ? "libswipl.dll"
-                    : String.format("%s/../src/swipl", home);
+    public static final String swi_exec = String.format("%s/../src/swipl", home);
 
     public static final String syntax =
             (System.getenv("SWIPL_SYNTAX") == null ? "modern"
@@ -49,6 +47,9 @@ abstract class JPLTest {
 
         // CLI options for SWI: https://www.swi-prolog.org/pldoc/man?section=cmdline
         // This is how the SWI engine will be configured/set-up
+        //  See this issue on how this line came up: https://github.com/SWI-Prolog/packages-jpl/issues/32
+        //  swi_exec is not anymore "libswipl.dll" which was a "flag" to avoid setting up the search paths for
+        //      the .so libraries in swipl.rc: now it sets up those paths always
         String init_swi_config =
                 String.format("%s -x %s -F swipl --home=%s -f none -g true -q --no-signals --no-packs",
                         swi_exec, startup, home);
