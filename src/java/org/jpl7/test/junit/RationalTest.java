@@ -111,9 +111,7 @@ public class RationalTest extends JPLTest {
 
 
     @Test
-    public void rational_from_Prolog() {
-        final int[] expectedSolutions = {1, 2, 3, 4, 5};
-
+    public void rational_from_String_simple() {
         Rational rat = new Rational("1r4");
 
         Query q = new Query("X is ?", rat);
@@ -122,9 +120,8 @@ public class RationalTest extends JPLTest {
     }
 
 
-
     @Test
-    public void rational_from_Prolog_reduced() {
+    public void rational_from_String_reduced() {
         final int[] expectedSolutions = {1, 2, 3, 4, 5};
 
         Rational rat = new Rational("2r8");
@@ -132,6 +129,44 @@ public class RationalTest extends JPLTest {
         Query q = new Query("X is ?", rat);
         Map<String, Term> s = q.nextSolution();
         assertEquals("1r4", s.get("X").toString());
+    }
+
+    @Test
+    public void rational_from_String_wrong_format1() {
+        final String[] wrongRationals = {"121", "22r", "r33", "ss", "-12r", "r-21"};
+        final String expectedError = "incorrect format for rational number";
+
+        for (String r : wrongRationals) {
+            try {
+                Rational rat = new Rational(r);
+            } catch (JPLException e) {
+                if (e.getMessage().contains(expectedError)) {
+                    // OK: an appropriate exception was thrown
+                } else {
+                    String msg = String.format("did not catch expected error '%s', received: %s ", expectedError, e.toString());
+                    fail(msg);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void rational_from_String_wrong_format2() {
+        final String[] wrongRationals = {"23r0", "-22r0"};
+        final String expectedError = "denominator of rational cannot be 0";
+
+        for (String r : wrongRationals) {
+            try {
+                Rational rat = new Rational(r);
+            } catch (JPLException e) {
+                if (e.getMessage().contains("denominator of rational cannot be 0")) {
+                    // OK: an appropriate exception was thrown
+                } else {
+                    String msg = String.format("did not catch expected error '%s', received: %s ", expectedError, e.toString());
+                    fail(msg);
+                }
+            }
+        }
     }
 
 
@@ -146,5 +181,8 @@ public class RationalTest extends JPLTest {
         Map<String, Term> s = q.nextSolution();
         assertEquals("3r8", s.get("X").toString());
     }
+
+
+
 
 }

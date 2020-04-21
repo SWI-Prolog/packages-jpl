@@ -4,6 +4,7 @@ import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Integer is a specialised Term representing a Prolog integer value; if the value fits, it is held in a long field,
@@ -62,7 +63,7 @@ public class Rational extends Term {
 	 */
 	public Rational(long numerator, long denominator) {
 		if (denominator == 0) {
-			throw new JPLException("cannot represent value as a long");
+			throw new JPLException("denominator of rational cannot be 0");
 		} else {
 			// reduce fraction
 			long g = gcd(numerator, denominator);
@@ -90,8 +91,32 @@ public class Rational extends Term {
 	 *            The rational numbre in format NrM
 	 */
 	public Rational(String rat) {
-		this(Long.parseLong(rat.split("r", -2)[0]),
-				Long.parseLong(rat.split("r", -2)[1]));
+		if (Pattern.compile("-?\\d+r\\d+").matcher(rat).matches()) {
+			long numerator = Long.parseLong(rat.split("r", -2)[0]);
+			long denominator = Long.parseLong(rat.split("r", -2)[1]);
+
+			if (denominator == 0) {
+				throw new JPLException("denominator of rational cannot be 0");
+			} else {
+				// reduce fraction
+				long g = gcd(numerator, denominator);
+
+				long num = numerator / g;
+				long dem = denominator / g;
+
+				// needed only for negative numbers
+				if (dem < 0) {
+					this.denominator = -dem;
+					this.numerator = -num;
+				} else {
+					this.denominator = dem;
+					this.numerator = num;
+				}
+			}
+			this.rat = String.format("%sr%s", numerator, denominator);
+		} else {
+			throw new JPLException("incorrect format for rational number; should be of the form NrM.");
+		}
 	}
 
 	// return gcd(|m|, |n|)
