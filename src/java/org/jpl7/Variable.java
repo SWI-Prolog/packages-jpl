@@ -58,9 +58,9 @@ public class Variable extends Term {
 	protected transient int index; // only used by (redundant?)
 
 	/**
-	 * the name of this Variable
+	 * the name of this Variable (may be changed)
 	 */
-	public final String name;
+	public  String name;
 
 	/**
 	 * defined between Query.open() and Query.get2()
@@ -118,11 +118,20 @@ public class Variable extends Term {
 	}
 
 	/**
-	 * If this Variable instance is not an anonymous or (in dont-tell-me mode) a
-	 * dont-tell-me variable, and its binding is not already in the
-	 * varnames_to_Terms Map, put the result of converting the term_t to which
-	 * this variable has been unified to a Term in the Map, keyed on this
-	 * Variable's name.
+	 * This can be used to get the current solution binding of the Variable instance.
+	 * So we are calling when the goal is in a solution
+	 *
+	 * This mtehod returns nothing but modifies the argument mappings, by filling
+	 * them with the current solution binding of the Variable instance.
+	 *
+	 * If Variable instance is anonymous or a dont-tell-me variable, then do nothing
+	 *
+	 * Otherwise, if the Variable instance is not already in the varnames_to_Terms Map,
+	 * put the result of converting the term_t to which this variable has been unified
+	 * (in the current solution) to a Term in the Map, keyed on this Variable's name.
+	 *
+	 * In binding the Variable instance to the Term (in the current solution), such Term
+	 * may also refer to free variables, whose maps are stores in vars_to_Vars
 	 *
 	 * @param varnames_to_Terms
 	 *            A Map of bindings from variable names to JPL Terms.
@@ -174,6 +183,11 @@ public class Variable extends Term {
 	public final String name() {
 		return this.name;
 	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 
 	/**
 	 * To put a Variable, we must check whether a (non-anonymous) variable with

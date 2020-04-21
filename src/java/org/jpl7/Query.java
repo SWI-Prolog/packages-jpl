@@ -319,7 +319,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	public final long getEngine() { return engine.value; }
 
 
-        /**
+	/**
 	 * This method returns true if JPL was able to initiate a "call" of this
 	 * Query within a Prolog engine. It is designed to be used with the
 	 * nextSolution() method to retrieve one or more substitutions in the form
@@ -333,6 +333,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	 *     // process solution...
 	 * }
 	 * </pre>
+	 *
 	 * @return true if the Prolog query succeeds; otherwise false.
 	 */
 	public final boolean hasMoreSolutions() {
@@ -453,12 +454,17 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	    return nextSolution();
 	}
 
+	/**
+	 * Used to be used only by Utils.textToTerm but code has been integrated there already
+	 * @return
+	 */
+	@Deprecated
 	public final Map<String, Term> getSubstWithNameVars() {
 		// oughta check: thread has query's engine
 		if (!open) {
 			throw new JPLException("Query is not open");
 		} else if (fetchNextSolution()) {
-			return get2WithNameVars();
+			return getSolutionWithVarNames();
 		} else {
 			return null;
 		}
@@ -504,28 +510,86 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		} else {
 			Map<String, Term> substitution = new HashMap<String, Term>();
 			// TODO: getSubsts is in Term class, should it be there? Otherwise, where else?
+			// Fill substitution with the bindings representing the current solution
 			Term.getSubsts(substitution, new HashMap<term_t, Variable>(), goal_.args());
 
 			return substitution;
 		}
 	}
 
-	// assumes that Query's last arg is a Variable which will be bound to
-	// [Name=Var,..]
-	private final Map<String, Term> get2WithNameVars() {
+	/**
+	 * Deprecated. Used to be used only in the context of Util.textToTerm() but a better solution has been
+	 * implemented there and hence does not require this difficult method
+	 *
+	 * This is called with query
+	 * 	atom_to_term(Atom, Term, Bindings) https://www.swi-prolog.org/pldoc/doc_for?object=atom_to_term/3
+	 *
+	 * and we aim to return the Term version of Atom but with the name of the variables inside, not thir anonymous _
+	 * references. To do so we extract the names from Bindings and we plugged them into the Term
+	 *
+	 *  So, we assume the last argument of the current querry is a Binding list of the form [Name=Var,..], that is a
+	 *  list containing variable names to actual Prolog variable references, like ['S'=_4518, 'P'=_4520].
+	 *
+	 *  E.g., atom_to_term('hello(a, X, Y)', T, B)
+	 *  	T = hello(a, _1, _2)
+	 *  	B = [ 'X' = _1, 'Y' = _2]
+	 *
+	 * The whole point is to return a JPL Term but having NAMED variables, that is
+	 * 		returning the Compound Term hello(a, X, Y) where X and Y are JPL Variables (with names "X" and "Y")
+	 *
+	 *
+	 * @return a Term with the variables with names
+	 */
+	@Deprecated
+	public final Map<String, Term> getSolutionWithVarNames() {
 		if (!open) {
 			throw new JPLException("Query is not open");
 		} else {
+			// We will operate on the solution of query of the form atom_to_term('hello(a, X, Y)', T, B)
+			//	The query has been executed and a solution is there, B and T have bindings
+			// 		T will be the atom converted into a term, in our case the term hello(a, _1, _2)
+			//		B will map the name of the variables (as atoms) to the Prolog Vars _ thus providing access to
+			//			the Prolog _ variables via the names in the query (X and Y here)
+			//		In our example 	T = hello(1, _1, _2) and
+			//						B = ['X' = _1, 'Y' = _2]
+			//
+			//
+
+			// FIRST, retrieve the binding of B as a JPL Term (a Compound list) and name (a String)
+			//		BindingVarTerm = the JPL Variable instance of the binding variable "B" in the atom_to_term/3 query
+			//		BindingVarName = the name "B" as a String
 			Term[] args = goal_.args(); // for slight convenience below
-			Term argNV = args[args.length - 1]; // the Query's last arg
-			String nameNV = ((Variable) argNV).name; // its name
-			// get [Name=Var,..] from the last arg
-			Map<String, Term> varnames_to_Terms1 = new HashMap<String, Term>();
-			Map<term_t, Variable> vars_to_Vars1 = new HashMap<term_t, Variable>();
-			args[args.length - 1].getSubst(varnames_to_Terms1, vars_to_Vars1);
+			Term BindingVarTerm = args[args.length - 1]; // the Query's last arg: a variable binding list; type Variable
+			String BindingVarName = ((Variable) BindingVarTerm).name; // its textual name ("Bindings" in example)
+
+			Term TermVar = args[args.length - 2]; // the Query's last arg: a variable binding list; type Variable
+			String TermVarName = ((Variable) TermVar).name; // its textual name ("Bindings" in example)
+
+			// SECOND, we store what B was bound to as JPL Compound list instance BindingVarValue
+			//	If B was bound to ['X' = _1, 'Y' = _2] in the current solution
+			// 		then BindingVarValue will be the JPL Compound instance storing that value of B
+			//			BindingVarValue will be a LIST
+			//			'X', 'Y' will be JPL Atoms
+			//			_1, _2 will be JPL Variables
+			//
+			// 	(Note: the second argument vars_to_Vars1 will contain the map between the variables and Prolg term
+			//		representation, but will NOT be used.)
+			//
+			//	Notation: 	vars = refers to the Prolog term for variables (term_t type)
+			//				Vars = refers to JPL Variable type (a subclass of Term)
+			//				varnames = refers to the textual name of the variable (e.g., "X")
+			Map<String, Term> varNames_to_Terms1 = new HashMap<String, Term>();
+			Map<term_t, Variable> aux_vars_to_Vars1 = new HashMap<term_t, Variable>();
+			BindingVarTerm.getSubst(varNames_to_Terms1, aux_vars_to_Vars1);
+			Term BindingVarValue = varNames_to_Terms1.get(BindingVarName); // The binding as a JPL Compound list
+
+
+			// THIRD, build the mapping we will return
+			// Associate the Prolog term for the _ vars to a new JPL Variable with the name as per B
+			//		For example Prolog term_t@930 instance representing JPL Variable _1 will map to Variable@933 for "X"
+			//		So here we do the link from _ vars to named Variables
 			Map<String, Term> varnames_to_Terms2 = new HashMap<String, Term>();
-			Term nvs = varnames_to_Terms1.get(nameNV);
-			Map<term_t, Variable> vars_to_Vars2 = Util.namevarsToMap(nvs);
+			Map<term_t, Variable> vars_to_Vars2 = Util.namevarsToMap(BindingVarValue);
 			for (int i = 0; i < args.length - 1; ++i) {
 				args[i].getSubst(varnames_to_Terms2, vars_to_Vars2);
 			}
