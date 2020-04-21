@@ -74,7 +74,7 @@ public final class Prolog {
 	public static final int VARIABLE = 1; // PL_VARIABLE
 	public static final int ATOM = 2; // PL_ATOM
 	public static final int INTEGER = 3; // PL_INTEGER
-	public static final int RATIONAL = 4; // PL_INTEGER
+	public static final int RATIONAL = 4; // PL_RATIONAL
 	public static final int FLOAT = 5; // PL_FLOAT
 	public static final int STRING = 6; // PL_STRING
 	public static final int COMPOUND = 7; // PL_TERM
@@ -106,7 +106,7 @@ public final class Prolog {
 	public static final int CVT_RATIONAL = 0x0010;
 	public static final int CVT_FLOAT = 0x0020;
 	public static final int CVT_VARIABLE = 0x0040;
-	public static final int CVT_NUMBER = (CVT_INTEGER | CVT_FLOAT);
+	public static final int CVT_NUMBER = (CVT_INTEGER | CVT_FLOAT | CVT_RATIONAL);
 	public static final int CVT_ATOMIC = (CVT_NUMBER | CVT_ATOM | CVT_STRING);
 	public static final int CVT_ALL = 0x00ff;
 	public static final int BUF_DISCARDABLE = 0x0000;
@@ -147,6 +147,8 @@ public final class Prolog {
 
 	public static native boolean get_integer_big(term_t t, StringHolder s);
 
+	public static native boolean get_rational(term_t t, StringHolder s);
+
 	public static native boolean get_float(term_t t, DoubleHolder d);
 
 	public static native boolean get_name_arity(term_t t, StringHolder name, IntHolder arity);
@@ -170,6 +172,8 @@ public final class Prolog {
 	public static native void put_integer(term_t t, long i);
 
 	public static native void put_integer_big(term_t t, String i);
+
+	public static native void put_rational(term_t t, String r);
 
 	public static native void put_float(term_t t, double f);
 
