@@ -21,6 +21,7 @@ org.jpl7
  |    +-- Compound
  |    +-- Float
  |    +-- Integer
+ |    +-- Rational
  |    +-- Variable
  |    +-- JRef
  +-- Util
@@ -95,7 +96,7 @@ An atom's name is retrieved with its `name()` method, e.g.
 a1.name()
 ```
 
-See [org.jpl7.Atom JavaDoc](http://192.168.1.49:8080/jpl7/doc/org/jpl7/Atom.html) for details of how SWI Prolog version 7's strings and blobs (including reserved symbols) are accommodated.
+See [org.jpl7.Atom JavaDoc](https://jpl7.org/javadoc/org/jpl7/Atom.html) for details of how SWI Prolog version 7's strings and blobs (including reserved symbols) are accommodated.
 
 ### Variables
 
@@ -113,7 +114,7 @@ They are just tokens, and do not behave like Prolog variables.
 
 ### Integers
 
-A `org.jpl7.Integer` is a specialized `org.jpl7.Term` which holds a Java long value or a `java.math.BigInteger` object. This class corresponds to the Prolog *integer* type.
+A `org.jpl7.Integer` is a specialized `org.jpl7.Term` which holds a Java long value or a `java.math.BigInteger` object. This class corresponds to the Prolog *integer* [arithmethic type](https://www.swi-prolog.org/pldoc/man?section=artypes).
 
 ```java
 org.jpl7.Integer i = new org.jpl7.Integer(5);
@@ -125,9 +126,27 @@ The `org.jpl7.Integer` class has an `intValue()` accessor to obtain the `int` va
 
 If `isBig()` returns true, then the value is outside the range of a Java `long`, and is retrieved by `bigValue()`.
 
+### Rational
+
+A `org.jpl7.Rational` is a specialized `org.jpl7.Term` which holds two Java long values for numerator and denominator. This class corresponds to the Prolog [*rational* arithmetic type](https://www.swi-prolog.org/pldoc/man?section=rational).
+
+```java
+org.jpl7.Integer i = new org.jpl7.Rational(5, 2);
+```
+
+or from a String with the `<number>r<number` format:
+
+```java
+org.jpl7.Integer i = new org.jpl7.Rational("5r2");
+```
+
+The `org.jpl7.Rational` class has an `floatValue()` and `doubleValue()` methods, as well as `intValue()` that will perform Integer division (thus dropping the decimal part). It also provides getters ``getNumerator()`` and ``getDenominator()``.
+
+
+
 ### Floats
 
-A `org.jpl7.Float` is a specialized `org.jpl7.Term` which holds a Java `double` value. This class corresponds to the Prolog *float* type (64-bit ISO/IEC in SWI Prolog).
+A `org.jpl7.Float` is a specialized `org.jpl7.Term` which holds a Java `double` value. This class corresponds to the Prolog *float* [arithmethic type](https://www.swi-prolog.org/pldoc/man?section=artypes) (64-bit ISO/IEC in SWI Prolog).
 
 ```java
 org.jpl7.Float f = new org.jpl7.Float(3.14159265);
