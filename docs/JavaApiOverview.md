@@ -12,6 +12,10 @@ The ***API*** consists of the following class hierarchy:
 
 ```java
 org.jpl7
+ +-- fli
+ |    +-- Prolog
+ |    +-- engine_t
+ |    +-- ... <other support classes for fli>
  +-- JPL
  +-- JPLException
  |    +-- PrologException
@@ -28,36 +32,57 @@ org.jpl7
  +-- Version
 ```
 
-`org.jpl7.Term` is an abstract class: only its subclasses can be instantiated.
+Configuration, initialization and inspection for JPL framework:
 
-Each instance of `org.jpl7.Query` contains a `Term` (denoting the goal which is to be proven), and much more besides.
+* `org.jpl7.fli` is the package for all the foreign language interface classes; those classes that use C Native library `libc.so` that links Java with the underlying SWI engine.
+    * `org.jpl7.Prolog` only of constants (static finals) and static _native_ methods. The constants and methods defined herein are in (almost) strict 1-1 correspondence with the functions in the Prolog FLI by the same name (except without the `PL_`, `SQ_`, etc. prefixes).
+    * `org.jpl7.engine_t` holds a reference to a Prolog engine.    
+* `org.jpl7.JPL` contains _static_ methods which allow _(i)_ inspection and alteration of the "default" initialisation arguments; _(ii)_ explicit initialisation; _(iii)_ discovery of whether the Prolog engine is already initialised, and if so, with what arguments. 
 
-Each instance of `org.jpl7.Compound` has a java.lang.String name and an array of `Term` arguments. For compatibility with SWI-Prolog version 7's extension [Compound terms with zero arguments](http://www.swi-prolog.org/pldoc/man?section=ext-compound-zero), the argument array can be of zero length.
+Using JPL for embeeding Prolog into Java, and vice-versa:
+
+* `org.jpl7.Term` is an abstract class accounting for the several type of Prolog terms: only its subclasses can be instantiated.
+    * Each instance of `org.jpl7.Compound` has a `java.lang.String` name and an array of `Term` arguments. For compatibility with SWI-Prolog version 7's extension [Compound terms with zero arguments](http://www.swi-prolog.org/pldoc/man?section=ext-compound-zero), the argument array can be of zero length.
+    * `org.jpl7.Term.JRef` is a has a (non-null, non-String) Object field, representing JPL 7.4's Prolog references to Java objects, e.g. `<jref>(0x01D8000)`. It is used to pass Java objects to Prolog from which Prolog can use the object (e.g., call methods on it), and obtain references to Java objects from Prolog.
+* `org.jpl7.Query` contains actual Prolog goals as a `Term`, and has various methods to run those goals and obtain results.
+* `org.jpl7.Util` provides various utilities, mostly related to management of Terms.
+
 
 ## Initializing and terminating Prolog
 
 Typically, this is automatic.
  
-JPL lazily initializes the Prolog VM, if necessary, when the first query is activated, using default initialization arguments (command line options). Before initialization takes place, these default values can be read, and altered.
+JPL lazily initializes the Prolog VM, if necessary, when the first query is activated, using default initialization arguments (command line options). Before initialization takes place, these default values can be read, and altered via the following two static methods in `org.jpl7.JPL`: 
 
 ```java
+// in org.jpl7.JPL
 public String[] getDefaultInitArgs();
 public void setDefaultInitArgs(String[] args);
 ```
+which effectively use the following native methods in `org.jpl7.JPL.Prolog`: 
 
-After initialization, the parameter values which were actually used can be read.
+```java
+// org.jpl7.JPL.Prolog
+public static native String[] get_default_init_args();
+public static native boolean set_default_init_args(String argv[]);
+```
+
+After initialization, the parameter values which were actually used can be read with the following method in in `org.jpl7.JPL`:
 
 ```java
 public String[] getActualInitArgs();
 ```
 
+which is effectively a call to native method ```Prolog.get_actual_init_args()```.
+
+
 This method returns `null` if initialization has not occurred, and thus it can be used as a test. This allows Java library classes to employ JPL without placing any burden of initialization upon the applications which use them. It can also ensure that the Prolog VM is initialized only if and when it is needed.
 
-Explicit initialization is supported:
+Explicit initialization is supported (in `org.jpl7.JPL`):
 
 ```java
-public void init();
-public void init(String args[]);
+public void init();     // call to Prolog.initialise()
+public void init(String args[]);    // configure and init()!
 ```
 
 Java code which requires a Prolog VM to be initialized in a particular way can check whether initialization has already occurred: if not, it can specify parameters and force it to be attempted; if so, it can retrieve and check the initialisation parameters actually used, to determine whether the initialization meets its requirements.

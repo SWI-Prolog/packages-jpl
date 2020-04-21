@@ -56,7 +56,10 @@ abstract class JPLTest {
         String init_swi_config =
                 String.format("%s -x %s -F swipl --home=%s -f none -g true -q --no-signals --no-packs",
                         swi_exec, startup, home);
-        Prolog.set_default_init_args(init_swi_config.split("\\s+"));
+
+        // Configure the SWI engine before starting - both statements are equivalent
+        JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));
+//        Prolog.set_default_init_args(init_swi_config.split("\\s+"));
     }
 
 
