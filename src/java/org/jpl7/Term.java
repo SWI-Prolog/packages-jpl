@@ -139,7 +139,8 @@ public abstract class Term {
 	}
 
 	/**
-	 * This method computes a substitution from a Term. The bindings Map stores Terms, keyed by names of Variables.
+	 * This method computes a substitution from a Term (the current object).
+	 * The bindings Map varnames_to_Terms maps names of Variables to Terms.
 	 * Thus, a substitution is as it is in mathematical logic, a sequence of the form \sigma = {t_0/x_0, ..., t_n/x_n}.
 	 * Once the substitution is computed, the substitution should satisfy
 	 *
@@ -149,8 +150,8 @@ public abstract class Term {
 	 * query.
 	 * <p>
 	 *
-	 * A second Map, vars, is required; this table holds the Variables that occur (thus far) in the unified term. The
-	 * Variable instances in this table are guaranteed to be unique and are keyed on Strings which are Prolog internal
+	 * A second Map, vars_to_Vars, is required: this table holds the Variables that occur (thus far) in the unified term.
+	 * 	The Variable instances in this table are guaranteed to be unique and are keyed on Strings which are Prolog internal
 	 * representations of the variables.
 	 *
 	 * @param varnames_to_Terms
@@ -237,7 +238,15 @@ public abstract class Term {
 					return new org.jpl7.Integer(-3); // arbitrary
 				}
 			}
-		case Prolog.FLOAT: // 4
+		case Prolog.RATIONAL: // 4
+			hString = new StringHolder();
+			if (Prolog.get_rational(term, hString)) {
+				// System.out.println("bigint = " + hString.value);
+				return new org.jpl7.Rational(hString.value);
+			} else {
+				return new org.jpl7.Integer(-3); // arbitrary
+			}
+		case Prolog.FLOAT: // 5
 			DoubleHolder hFloatValue = new DoubleHolder();
 			Prolog.get_float(term, hFloatValue); // assume it succeeds...
 			return new org.jpl7.Float(hFloatValue.value);
@@ -550,6 +559,9 @@ public abstract class Term {
 		throw new JPLException("name() is undefined for " + this.typeName());
 	}
 
+	public void setName(String name) {
+		throw new JPLException("name() is undefined for " + this.typeName());
+	}
 	/**
 	 * The Object which this org.jpl7.JRef refers to, iff this Term is a JRef or just JPL.JNULL.
 	 *

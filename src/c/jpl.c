@@ -136,6 +136,7 @@ refactoring (trivial):
 #define JNI_XPUT_ATOM 13
 #define JNI_XPUT_JVALUEP 14
 #define JNI_XPUT_JVALUE 15
+#define JNI_XPUT_RATIONAL 15
 
 /* JNI "hashed refs" constants */
 
@@ -3891,6 +3892,29 @@ Java_org_jpl7_fli_Prolog_get_1integer_1big(
 
 /*
  * Class:     org_jpl7_fli_Prolog
+ * Method:    get_rational
+ * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/StringHolder;)Z
+ */
+JNIEXPORT jboolean JNICALL
+Java_org_jpl7_fli_Prolog_get_1rational(
+        JNIEnv *env, jclass jProlog, jobject jterm,
+        jobject jrational_holder /* we trust this is a StringHolder */
+)
+{ term_t  term;
+    char *  rational;
+    jstring jrational;
+
+    return (jpl_ensure_pvm_init(env) &&
+            jrational_holder != NULL &&
+            getTermValue(env, jterm, &term) &&
+            PL_get_chars(term, &rational, CVT_RATIONAL) &&
+            (jrational = (*env)->NewStringUTF(env, rational)) &&
+            setStringValue(env, jrational_holder, jrational) );
+}
+
+
+/*
+ * Class:     org_jpl7_fli_Prolog
  * Method:    get_name_arity
  * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/StringHolder;Lorg/jpl7/fli/IntHolder;)Z
  */
@@ -4227,6 +4251,26 @@ Java_org_jpl7_fli_Prolog_put_1integer_1big(JNIEnv *env, jclass jProlog,
   { return FALSE;
   }
 }
+
+/*
+ * Class:     org_jpl7_fli_Prolog
+ * Method:    put_rational
+ * Signature: (Lorg/jpl7/fli/term_t;Ljava/lang/String;)V
+ */
+JNIEXPORT jboolean JNICALL
+Java_org_jpl7_fli_Prolog_put_1rational(JNIEnv *env, jclass jProlog,
+                                           jobject jterm, jstring jvalue)
+{ term_t term;
+
+  if ( jpl_ensure_pvm_init(env) &&
+       getTermValue(env, jterm, &term))
+  { return PL_chars_to_term((char *)(*env)->GetStringUTFChars(env, jvalue, 0),
+                            term);
+  } else
+  { return FALSE;
+  }
+}
+
 
 /*
  * Class:     org_jpl7_fli_Prolog
