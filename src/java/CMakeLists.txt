@@ -9,6 +9,7 @@ set(CLS	org/jpl7/Atom.java
 	org/jpl7/Compound.java
 	org/jpl7/Float.java
 	org/jpl7/Integer.java
+	org/jpl7/Rational.java
 	org/jpl7/JRef.java
 	org/jpl7/JPLException.java
 	org/jpl7/JPL.java
@@ -52,6 +53,7 @@ set(TEST
     org/jpl7/test/junit/Tests.java
     org/jpl7/test/junit/GetSolution.java
     org/jpl7/test/junit/QueryBuilder.java
+    org/jpl7/test/junit/RationalTest.java
     org/jpl7/test/junit/Variables.java
     org/jpl7/test/junit/MutualRecursion.java
     org/jpl7/test/junit/AtomTest.java
