@@ -193,7 +193,7 @@ public Term arg0(int i);
 
 #### Lists as compound terms
 
-Lists are, as usual in Prolog, just compound terms with function `[|]` and two arguments: the _head_ element and the _tail_ list. For example:
+As usual in Prolog, lists are just compound terms with function `[|]` and two arguments: the _head_ element and the _tail_ list. For example:
 
 ```prolog
 ?- A = [1,2,3,4], A =.. [X|Y].
@@ -202,14 +202,18 @@ X = '[|]',
 Y = [1, [2, 3, 4]].
 ````
 
-We can build list compound terms in two ways. First, by using `Util.termArrayToList`:
+We can build list compound terms in two ways. First, by converting an Array of terms (`Term[]`) into a Compound (list) term using utility `Util.termArrayToList`:
 
 ```java
 Term list = Util.termArrayToList(new Term[] 
         { new Integer(1), new Variable("B"), new Atom("c") });
 ```        
 
-The second way is by just using a String:
+The second way is by converting a String representing a list into a term via `Util.textToTerm`:
+
+```java
+Term list = Util.textToTerm("[1, B, c]");
+```
 
 
 
