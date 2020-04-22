@@ -105,6 +105,67 @@ public abstract class Term {
 		throw new JPLException("atomType() is undefined for " + this.typeName());
 	}
 
+
+	/**
+	 * Converts a Prolog source text to a corresponding JPL Term (in which each Variable has the appropriate name from
+	 * the source text).
+	 *
+	 * @param text A Prolog source text denoting a term
+	 * @return Term a JPL Term equivalent to the given source text
+	 * @throws PrologException containing error(syntax_error(_),_) if text is invalid as a term.
+	 */
+	public static Term textToTerm(String text) {
+
+		/**
+		 *  atom_to_term/3 will build a term from a string, and will extract all variables in a list
+		 *  https://www.swi-prolog.org/pldoc/doc_for?object=atom_to_term/3
+		 *
+		 * ?- atom_to_term('mother(maria, S, P)', X, Y).
+		 * 				X = mother(maria, _4518, _4520),
+		 * 				Y = ['S'=_4518, 'P'=_4520].
+		 *
+		 * 	But we want to return the Term mother(maria, S, P) where S and P are Variable Terms referring
+		 * 	to _4518 and _4520
+		 */
+
+		// it might be better to use PL_chars_to_term()
+		Query q = new Query(new Compound("atom_to_term",
+				new Term[] { new Atom(text), new Variable("T"), new Variable("NVdict") }));
+		q.open();
+
+		// quer is open, check if there is a solution
+		if (q.hasMoreSolutions()) {
+			// cannot use  this bc it gives anonymous vars, we lose the names
+			// If we use this we will get T mmapped to Term mother(maria, _1, _2) but we want mother(maria, X, Y)
+			Map<String, Term> s = q.nextSolution();
+
+			// New way of doing it (April 2020)
+			//		The term bounded to variable T above has the atom query as a proper Term but
+			//			the variables mentioned have anonymous names _1 and _2, instead of X and Y
+			//		However, the mapping between those _ variables and the actual textual names X and Y have been
+			//			bound in variable NVdict as a list of 'X' = _1, 'X' = _2, etc...
+			//		So, we navigate NVdict and we change the name of each Variable _ to be its textual name!
+			//		Since the Term bound to T will use exactl the Variables _1, _2, etc, by changing their names
+			//			the term T will now use Variables X, Y, etc as wanted!
+			//Term T = s.get("T");
+			Term[] VarsMapList = Util.listToTermArray(s.get("NVdict"));	// this is a Compound list of mappings
+			for (Term map : VarsMapList) { // map represents 'X' = _1
+				String VarName = map.arg(1).name();		// extract the symbolic name
+				Variable Var = (Variable) map.arg(2);					// extract Variable object
+				Var.setName(VarName);
+			}
+
+			// Old way of doing it (before April 2020) - extremely involved!
+			//Map<String, Term> s = q.getSolutionWithVarNames();
+
+			q.close();
+			return (Term) s.get("T");
+		} else {
+			return null;
+		}
+	}
+
+
 	/**
 	 * the value (as a java.math.BigInteger) of an Integer, whether or not it is big
 	 *
@@ -499,6 +560,16 @@ public abstract class Term {
 	 */
 	public boolean isListPair() { // overridden in Compound
 		return false;
+	}
+
+
+	/**
+	 * Tests whether this Term is a list (empty or list pair)
+	 *
+	 * @return whether this Term is a list, empty or list pair
+	 */
+	public boolean isList() { // overridden in Compound
+		return (isListNil() || isListPair());
 	}
 
 	/**
