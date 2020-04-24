@@ -23,6 +23,14 @@ The _objectives_ of JPL are to:
 * minimum dependency deployability: as with JVMs, the Prolog+Java runtime support must depend upon nothing which cannot be taken for granted in healthy OS installations; and
 * minimum vulnerability deployability: the Prolog+Java runtime support must be immune to legitimate variations in its environment (PATH settings, other applications and libraries including other Prolog+Java apps, etc.).
 
+### Historical perspective
+
+JPL was originally dreamed to be independent of Prolog implementation, mapping only the classic Prolog term model to and from Java, and its Java-side implementation deliberately resisted adoption of post Java 1.4 features (some nice, but none irresistible), thereby maintaining compatibility with (now very) old JVMs which some deployment environments might be stuck with.
+
+Innovations in SWI Prolog 7 prompted a JPL overhaul (from 3.0.3 to 7.0.1) which changed the public API and warranted a rebrand (as "JPL7", in a nod to SWIPL7).
+
+(Summary taken from discussion in [this issue](https://github.com/SWI-Prolog/packages-jpl/issues/46).)
+
 
 ## About this page
 
