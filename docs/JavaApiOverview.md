@@ -98,7 +98,7 @@ constructing queries which can be called within Prolog, and they are also a mean
 
 `Term` instances are never changed by any activity within the Prolog engine: indeed; it doesn't know of their existence.
 
-The `Term` class is abstract, so it cannot be directly instantiated; to create a Term, create an instance of one of its subclasses.
+The `Term` class is abstract, so it cannot be directly instantiated; to create a Term, create an instance of one of its subclasses, which are the ones accounting for the various [data types in SWI-Prolog](https://www.swi-prolog.org/datatypes.html).
 
 ### Atoms 
 
@@ -235,30 +235,59 @@ To obtain the *ith* argument of a compound (numbered from 0), use the **arg0()**
 public Term arg0(int i);
 ```
 
-#### Lists as compound terms
+### Lists 
 
-As usual in Prolog, lists are just compound terms with function `[|]` and two arguments: the _head_ element and the _tail_ list. For example:
+In SWI-Prolog a list is either:
 
-```prolog
-?- A = [1,2,3,4], A =.. [X|Y].
-A = [1, 2, 3, 4],
-X = '[|]',
-Y = [1, [2, 3, 4]].
-````
+* An empty list `[]`. In JPL, the empty list is the constant `JPL.LIST_NIL` and is a final object of class `Atom`. (Observe on the SWI side, from SWI-Prolog 7+, the empty list is not an atom but a reserved word.)
+* A `Compound` term with functor `[|]` and two arguments where the second one is itself a list. On the Prolog side:
 
-We can build list compound terms in two ways. First, by converting an Array of terms (`Term[]`) into a Compound (list) term using utility `Util.termArrayToList`:
+        ?- A = [1,2,3,4], A =.. [X|Y].
+        A = [1, 2, 3, 4],
+        X = '[|]',
+        Y = [1, [2, 3, 4]].
 
-```java
-Term list = Util.termArrayToList(new Term[] 
-        { new Integer(1), new Variable("B"), new Atom("c") });
-```        
+While one can build non-empty lists by creating  `Compound` terms, it can become really cumbersome, as the second argument always has to be another lits.
 
-The second way is by converting a String representing a list into a term via `Util.textToTerm`:
-
-```java
-Term list = Util.textToTerm("[1, B, c]");
+So, class `Term` provides several _static_ methods to conveniently build non-empty lists, namely:
+ 
+```java 
+public static Term textToTerm(String text)
+public static Term termArrayToList(Term[] terms) 
+public static Term stringArrayToList(String[] a)
+public static Term intArrayToList(int[] a) 
+public static Term intArrayArrayToList(int[][] a)
 ```
 
+Method `textToTerm(String text)` can actually build _any_ term form its String representation, including list terms:
+
+```java
+Term list = Util.textToTerm("[1, B, [p(g), g(1)], c]");
+```
+
+A second tool is `termArrayToList(Term[])`, which builds a list from an Array of Terms (`Term[]`) (the corresponding functors `[|]` are added automatically). For example:
+
+```java
+Term list = Term.termArrayToList(new Term[]     // list [1, B, hello]
+        { new Integer(1), new Variable("B"), new Atom("hello") });
+```        
+
+Finally, one can build specific data-type lists using:
+* `stringArrayToList(String[] a)`: builds a list of atoms from an Array of Strings;
+* `intArrayToList(int[] a)`: builds a list of integers;
+* `intArrayArrayToList(int[][] a)`: builds a list of lists of integers.
+
+On the other direction, the following methods in `Term` class transform a list Term into another Java type:
+
+```java
+public static String toString(Term t)       
+public static Term[] listToTermArray(Term t) 
+public static String[] atomListToStringArray(Term t)          	
+```
+
+When it comes to non-empty, compound, list terms, the behavior of `toString()` will depend on boolean `JPL.LIST_TOSTRING_TEXTUAL`:
+* If True, lists will be represented as String in the usual Prolog textual representation `[e1, e2, e3, ...., en]`. Note a space wil be added after each comma always.
+* If False, lists will be represented in infix notation with the list pair functor `[|]`, e.g.,  `[|](1, [|](2, [|](3, '[]')))` for list `[1, 2, 3]`.
 
 
 
@@ -348,6 +377,14 @@ public final Map<String, Term> oneSolution();
 ```
 
 If the query has no solutions, this method returns `null`; otherwise, a non-null return indicates success. If the query is ground (i.e. contains no variables), the returned map will be empty (i.e. will contain no bindings).
+
+If the query is non-ground (i.e., it includes variables), then  bindings are retrieved by name, e.g.:
+
+```
+Map m = org.jpl7.Query.oneSolution("statistics(heap, X)");
+long heapsize = m.get("X");
+```
+
 
 ### Obtaining all solutions 
 
@@ -456,15 +493,6 @@ JPL 7.4.0-alpha
 ```
 
 ## Gotchas
-
-### Variables are named
-
-Instances of `org.jpl7.Variable` have names, and bindings are retrieved by name, e.g.
-
-```
-Map m = org.jpl7.Query.oneSolution("statistics(heap, X)");
-long heapsize = m.get("X");
-```
 
 ### Argument numbering
 
