@@ -227,6 +227,10 @@ public class Compound extends Term {
 
 	/**
 	 * whether this Term denotes (syntax-specifically) a list cell
+	 * see this does not check the shape of the second argument to check if it is a list
+	 *
+	 * So a list pair may not be a list itself and hence isList() will return false
+	 * as the second argument many not be a list
 	 *
 	 * @return whether this Term denotes (syntax-specifically) a list cell
 	 */
@@ -281,16 +285,38 @@ public class Compound extends Term {
 	}
 
 
-
 	/**
-	 * a prefix functional representation of a Compound of the form name(arg1,...), where 'name' is quoted iff necessary
-	 * (to be valid Prolog soutce text) and each argument is represented according to its toString() method.
+	 *
+	 * a prefix functional representation of a Compound of the form name(arg1,...),
+	 * where 'name' is quoted iff necessary
+	 * (to be valid Prolog source text) and each argument is represented according to its
+	 * toString() method.
+	 *
+	 * Lists are represented depending on JPL.LIST_TOSTRING_TEXTUAL
 	 *
 	 * @return string representation of an Compound
 	 */
 	public String toString() {
-		return JPL.quotedName(name) + (args.length > 0 ? "(" + Term.toString(args) + ")" : "");
+		if (isListPair() && JPL.LIST_TOSTRING_TEXTUAL) { // output nice Prolog [.,.,.,.,] format, not prefix format
+			String head_str = arg(1).toString();	// must be at least 1 arg in compound
+			String tail_str;
+			if (arg(2).isListNil()) {
+				return String.format("[%s]", head_str);
+			}  else {
+				tail_str = arg(2).toString();
+				StringBuilder builder = new StringBuilder(tail_str);
+				if (arg(2).isListPair()) {
+					builder.deleteCharAt(builder.length()-1);	// remove closing ]
+					builder.deleteCharAt(0);	// remove opening [
+				}
+				return String.format("[%s, %s]", head_str, builder.toString());
+			}
+		}	// just return lists in pre-fix as '[|]'(head, '[|]'(head, '[|]'(head, .....)
+		return JPL.quotedName(name) +
+					(args.length > 0 ? "(" + Term.toString(args) + ")" : "");
 	}
+
+
 
 	/**
 	 * the type of this term, as jpl.fli.Prolog.COMPOUND

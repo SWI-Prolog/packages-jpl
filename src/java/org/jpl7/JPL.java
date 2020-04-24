@@ -76,6 +76,8 @@ public class JPL {
 	public static String LIST_PAIR = LIST_PAIR_MODERN; // default unless/until
 														// setTraditional() is
 														// called successfully
+	// whether we want lists to be printed in pre-fix '[|]'(head, tails) or textual [....] format
+	public static boolean LIST_TOSTRING_TEXTUAL = true;
 
 	private static String nativeLibraryName = "jpl";
 	private static String nativeLibraryDir = null;
