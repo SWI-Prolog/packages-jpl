@@ -3,7 +3,8 @@
 To use JPL under Linux one must have the following in place (here showing the locations under Linux Mint distribution under packages `swi-prolog-nox` and `swi-prolog-java`):
 
 * A SWIPL install containing the core SWI system, which includes:
-   * A SWIPL home directory (`SWI_HOME_DIR`), located at `/usr/lib/swi-prolog/` and containing the whole SWIPL core system, including a booting `.prc` file (`$SWI_HOME_DIR/boot64.prc`)
+   * A SWIPL home directory (`SWI_HOME_DIR`), located at `/usr/lib/swi-prolog/` and containing the whole SWIPL core system, including a booting `.prc` file (`$SWI_HOME_DIR/boot64.prc`).
+       * The "home" of SWIPL can be queried via [`current_prolog_flag(home, H)`](https://www.swi-prolog.org/pldoc/man?predicate=current_prolog_flag/2)
    * The C Native core SWIPL library `/usr/lib/libswipl.so`.
    * The set of C Native SWIPL libraries for each package (files `.so`), located in `/usr/lib/swi-prolog/lib/amd64/`
 * The JPL package, which includes:
@@ -11,6 +12,7 @@ To use JPL under Linux one must have the following in place (here showing the lo
    * The Java API JAR file `jpl.jar` in `$SWI_HOME_DIR/lib/jpl.jar`.
    * The Prolog API as an SWIPL source module `jpl.pl` at `$SWI_HOME_DIR/library`.
    
+## Which SWIPL version to (not) use?
   
 JPL is **generally distributed with official Linux**. For example, in Ubuntu-based systems, JPL is provided via package `swi-prolog-java`. That package includes the C library `libjpl.so`, the Java API `jpl.jar`, the Prolog module `jpl.pl` as well as all associated documentation.
 
@@ -18,6 +20,8 @@ However, the **official packages are often out-of-date**. For Debian-based syste
 
 Use either SWIPL stable version 7.6.4 (available in standard Linux repos) or compile & install 8.1.x from [SWI-devel repo](https://github.com/SWI-Prolog/swipl-devel) using CMAKE.
    * **Note:** The official stable SWI 8.0.x versions (as of Jan 2020) have issues with the `libswipl.so/dll/dylib` library and makes JPL crash; see [issue](https://github.com/ssardina-research/packages-jpl/issues/21). It has been fixed in the git repo but will only show up with versions 8.1.x.
+   
+## Configuring environment variables
 
 When embeeding SWIPL into a Java, one needs to "tell" the Java application all the above modules using environment variables. To use the **Linux distribution install** of SWIPL+JPL so that the application can find the native C libraries (for SWIPL core, JPL, and all potential SWIPL modules the application may use) as well as the Java JPL API to access Prolog from Java:
 
@@ -25,7 +29,7 @@ When embeeding SWIPL into a Java, one needs to "tell" the Java application all t
       LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/amd64/     # to find all .so, including libjpl.so
       LD_PRELOAD=/usr/lib/libswipl.so  # see below for explanation
 
-If you want, you can set-up `SWI_HOME=/usr/lib/swi-prolog/` but it is not necessary as the booting script will set-up this automatically.
+If you want, you can set-up `SWI_HOME=/usr/lib/swi-prolog/` but it is not necessary as the booting script will set-up this automatically. Notice that library `libswipl.so` will be found automatically in this case as it is in the standard system-wide library dir `/usr/lib`.
 
 Alternatively, if you have **compiled and installed** an SWIPL system, say, under directory `/usr/local/swipl-git/`, then the SWIPL home will be `/usr/local/swipl-git/lib/swipl/`, the executable binary will be `/usr/local/swipl-git/lib/swipl/bin/x86_64-linux/swipl` and the environment variables should be set-up as follows:
 
@@ -33,7 +37,10 @@ Alternatively, if you have **compiled and installed** an SWIPL system, say, unde
       LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/     # to find all .so, including libjpl.so
       LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so  # see below for explanation
 
-To set-up and install JPL from scratch to develop it further, please refer to the [Developing JPL](Developing-JPL) guide.
+
+## Looking to develop/extend/fix JPL further?
+
+There is a bit more one need to do to set-up SWIPL & JPL to develop it further. To set-up and install JPL from scratch to develop it further, please refer to the [Developing JPL](Developing-JPL) guide.
 
 
 ## Troubleshooting
@@ -45,3 +52,7 @@ The [libray preloading](https://blog.cryptomilk.org/2014/07/21/what-is-preloadin
       ERROR: /usr/lib/swi-prolog/library/process.pl:53:
          /usr/lib/swi-prolog/library/process.pl:53: Initialization goal raised exception:
          '$open_shared_object'/3: /usr/lib/swi-prolog/lib/amd64/process.so: undefined symbol: Sfilefunctions
+
+###  [FATAL ERROR: Could not find system resources].
+
+It is not finding the correct `libswipl.so`. 
