@@ -29,6 +29,11 @@ When embeeding SWIPL into a Java, one needs to "tell" the Java application all t
       LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/amd64/     # to find all .so, including libjpl.so
       LD_PRELOAD=/usr/lib/libswipl.so  # see below for explanation
 
+or in one line (for IDE Run configurations, for example):
+
+    CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar;LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/amd64/;LD_PRELOAD=/usr/lib/libswipl.so
+
+
 If you want, you can set-up `SWI_HOME=/usr/lib/swi-prolog/` but it is not necessary as the booting script will set-up this automatically. Notice that library `libswipl.so` will be found automatically in this case as it is in the standard system-wide library dir `/usr/lib`.
 
 Alternatively, if you have **compiled and installed** an SWIPL system, say, under directory `/usr/local/swipl-git/`, then the SWIPL home will be `/usr/local/swipl-git/lib/swipl/`, the executable binary will be `/usr/local/swipl-git/lib/swipl/bin/x86_64-linux/swipl` and the environment variables should be set-up as follows:
@@ -37,6 +42,9 @@ Alternatively, if you have **compiled and installed** an SWIPL system, say, unde
       LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/     # to find all .so, including libjpl.so
       LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so  # see below for explanation
 
+or in one line (for IDE Run configurations, for example):
+
+    CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar;LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/;LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so
 
 ## Looking to develop/extend/fix JPL further?
 
