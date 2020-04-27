@@ -72,7 +72,7 @@ for (int i = 0; i < 3 && query.hasMoreSolutions(); ++i) {
      // process solution...
  }
  while (query1.hasMoreSolutions()) { // finish processing query1
-     Map<String, Term> solution = query2.nextSolution();
+     Map<String, Term> solution = query1.nextSolution();
      // process solution...
  }
 ```
@@ -149,6 +149,6 @@ More information about this can be found in the following documentation written 
 
 [Queries from multi-threaded applications](https://jpl7.org/JavaApiOverview#queries-from-multi-threaded-applications)
 
-as well in this related issue at Github: https://github.com/SWI-Prolog/packages-jpl/issues/15
+as well in this related [issue #15](https://github.com/SWI-Prolog/packages-jpl/issues/15) at Github: 
 
 

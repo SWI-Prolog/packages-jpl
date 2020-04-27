@@ -178,3 +178,55 @@ Total Test time (real) =   0.35 sec
 [ssardina@Thinkpad-X1 build]$ 
 ```
 
+
+## Using non-installed development tree of SWIPL & JPL in Java application
+
+Suppose you are developing JPL as above, in this case at `/home/ssardina/git/soft/prolog/swipl-devel.git`
+
+However, you have a Java application X  besides JPL itself and want to test that application under the current SWIPL+JPL development. There are several things that need to be set-up for your application to correctly access the SWIPL+JPL under development. 
+
+First, we need to **setup various environment variables** so that the correct SWIPL+JPL is initialized and used:
+
+	SWI_HOME_DIR=/home/ssardina/git/soft/prolog/swipl-devel.git/build/home
+	SWI_EXEC_FILE=/home/ssardina/git/soft/prolog/swipl-devel.git/build/src/swipl
+	SWIPL_BOOT_FILE=/home/ssardina/git/soft/prolog/swipl-devel.git/build/home/boot.prc
+	LD_LIBRARY_PATH=/home/ssardina/git/soft/prolog/swipl-devel.git/build/packages/jpl
+	LD_PRELOAD=/home/ssardina/git/soft/prolog/swipl-devel.git/build/src/libswipl.so
+	CLASSPATH=/home/ssardina/git/soft/prolog/swipl-devel.git/packages/jpl/out/artifacts/jpl_jar/
+
+The `CLASSPATH` needs to point to the `jpl.jar` file that needs to be us used in case `jpl.pl` requires it (to access JAVA from Prolog).
+
+In one line (to copy into the usual Run-configuration of IDE):
+
+	LD_LIBRARY_PATH=/home/ssardina/git/soft/prolog/swipl-devel.git/build/packages/jpl;SWI_HOME_DIR=/home/ssardina/git/soft/prolog/swipl-devel.git/build/home;SWIPL_BOOT_FILE=/home/ssardina/git/soft/prolog/swipl-devel.git/build/home/boot.prc;CLASSPATH=/home/ssardina/git/soft/prolog/swipl-devel.git/packages/jpl/out/artifacts/jpl_jar/;LD_PRELOAD=/home/ssardina/git/soft/prolog/swipl-devel.git/build/src/libswipl.so;SWI_EXEC_FILE=/home/ssardina/git/soft/prolog/swipl-devel.git/build/src/swipl
+
+
+Second, we need to tell our applicatoin X development to use the development JPL Java, and NOT any other `jpl.jar`  that may be in the system (e.g., due to a distribution installation). In our example, under IntelliJ, we define a library `jpl` in the project of the application pointing to directory:
+
+	/home/ssardina/git/soft/prolog/swipl-devel.git/packages/jpl/out/production/jpl
+
+where all the classes for the currente devel JPL are located (if we are using IntelliJ). Then provded that library to use for your application/module for compilation and runtime.
+
+Third, and finally, you need to explicitly initialize the SWIPL JPL engine in your Java application to with the right home, executable, and most importantly `-F swipl` so that the initialization file `swipl.rc` in charge of setting up all the search paths:
+
+```java
+String init_swi_config =
+	String.format("%s -x %s -F swipl --home=%s -g true -q",
+		System.getenv("SWI_EXEC_FILE"), 	# irrelevant for Windows
+		System.getenv("SWIPL_BOOT_FILE"), 	
+		System.getenv("SWI_HOME_DIR"));
+JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));	# initialize SWIPL engine
+JPL.init()
+```
+
+Because SWIPL tries to "guess" the location of the binary and boot file, in most cases, it also suffies to do:
+
+```java
+String init_swi_config =
+	String.format("dummy --home=%s -g true -q",
+		System.getenv("SWI_HOME_DIR"));
+JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));	# initialize SWIPL engine
+```
+
+
+

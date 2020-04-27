@@ -23,32 +23,43 @@ Use either SWIPL stable version 7.6.4 (available in standard Linux repos) or com
    
 ## Configuring environment variables
 
-When embeeding SWIPL into a Java, one needs to "tell" the Java application all the above modules using environment variables. To use the **Linux distribution install** of SWIPL+JPL so that the application can find the native C libraries (for SWIPL core, JPL, and all potential SWIPL modules the application may use) as well as the Java JPL API to access Prolog from Java:
+When embeeding SWIPL into a Java, one may needs to "tell" the Java application the right information, via environment variables, so that SWIPL is initialized properly and can find all resources.
 
-      CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar
+In general, if the Java application will use the default executable of the system (i.e., the one that runs when executing `swipl`), then you only need to set-up `CLASSPATH` to include `jpl.jar` and possibly `LD_PRELOAD` to point to your active SWIPL `libswipl.so` library to avoid run-time errors. The executable has a pointer to the right information to initialize; see [here](https://www.swi-prolog.org/FAQ/FindResources.html).
+
+However, if your Java application will use an SWIPL & JPL version that is _not_ the exectuable default.
+
+### Using stable distribution versions of SWIPL
+
+If the **Linux distribution install** of SWIPL & JPL is not the executable default but the one to be used, set-up the following environment variables:
+
+      SWI_HOME_DIR=/usr/lib/swi-prolog/   # if default binary not pointing to this version
       LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/amd64/     # to find all .so, including libjpl.so
+      CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar
       LD_PRELOAD=/usr/lib/libswipl.so  # see below for explanation
 
 or in one line (for IDE Run configurations, for example):
 
-    CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar;LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/amd64/;LD_PRELOAD=/usr/lib/libswipl.so
+    CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar;LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/amd64/;LD_PRELOAD=/usr/lib/libswipl.so;SWI_HOME_DIR=/usr/lib/swi-prolog/
 
+Notice that, in this case, library `libswipl.so` will be found automatically, as it is located in the standard system-wide library dir `/usr/lib`.
 
-If you want, you can set-up `SWI_HOME=/usr/lib/swi-prolog/` but it is not necessary as the booting script will set-up this automatically. Notice that library `libswipl.so` will be found automatically in this case as it is in the standard system-wide library dir `/usr/lib`.
+### Using locally compiled and installed version of SWIPL
 
 Alternatively, if you have **compiled and installed** an SWIPL system, say, under directory `/usr/local/swipl-git/`, then the SWIPL home will be `/usr/local/swipl-git/lib/swipl/`, the executable binary will be `/usr/local/swipl-git/lib/swipl/bin/x86_64-linux/swipl` and the environment variables should be set-up as follows:
 
-      CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar
+      SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/  # if binary exec not pointing to this SWIPL
       LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/     # to find all .so, including libjpl.so
+      CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar
       LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so  # see below for explanation
 
 or in one line (for IDE Run configurations, for example):
 
-    CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar;LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/;LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so
+    CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar;LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/;LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so;SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/
 
-## Looking to develop/extend/fix JPL further?
+## Using the development tree of SWI+JPL that is yet not installed?
 
-There is a bit more one need to do to set-up SWIPL & JPL to develop it further. To set-up and install JPL from scratch to develop it further, please refer to the [Developing JPL](Developing-JPL) guide.
+If you want to run your application against a development tree of SWIPL & JPL that is not yet installed, then refer to [Developing JPL](TutorialDeveloping.md) guide.
 
 
 ## Troubleshooting
