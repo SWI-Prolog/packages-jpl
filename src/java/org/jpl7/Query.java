@@ -436,7 +436,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 				Term exception_term = Term.getTerm(new HashMap<term_t, Variable>(), exception_term_t);
 				close();
 				throw new PrologException(exception_term);
-			} else {
+			} else {	// no more solution, close the query
 				close();
 				return false;
 			}

@@ -30,7 +30,7 @@ public class DataManagement extends JPLTest {
     public static void setUp() {
 
         setUpClass();
-        Query.hasSolution(String.format("consult('%s/test_quoted_module.pl')", test_dir)); // only because we call e.g. jpl_pl_syntax/1 below
+        Query.hasSolution(String.format("consult('%s/test_quoted_module.pl')", test_dir)); // .pl file to be used
     }
 
 
@@ -62,7 +62,7 @@ public class DataManagement extends JPLTest {
         name = "existence_error(procedure, '/'(pepe, 1))";
 //        name = "'/'(pepe, 1)";
         name = "'$c_call_prolog'";
-        t = Util.textToTerm(name);
+        t = Term.textToTerm(name);
         assertEquals("matching text-term", name, t.toString());
     }
 
@@ -166,7 +166,7 @@ public class DataManagement extends JPLTest {
     public void testUtilListToTermArray1() {
         String goal = "T = [a,b,c]";
         Term list = Query.oneSolution(goal).get("T");
-        Term[] array = Util.listToTermArray(list);
+        Term[] array = Term.listToTermArray(list);
         assertTrue(array[2].isAtom() && array[2].name().equals("c"));
     }
 
@@ -174,7 +174,7 @@ public class DataManagement extends JPLTest {
     public void testTermToTermArray1() {
         String goal = "T = [a,b,c]";
         Term list = Query.oneSolution(goal).get("T");
-        Term[] array = list.toTermArray();
+        Term[] array = list.listToTermArray();
         assertTrue(array[2].isAtom() && array[2].name().equals("c"));
     }
 
@@ -183,7 +183,7 @@ public class DataManagement extends JPLTest {
     @Test
     public void testTextToTerm1() {
         String text = "fred(B,p(A))";
-        Term t = Util.textToTerm(text);
+        Term t = Term.textToTerm(text);
         assertTrue("Util.textToTerm() converts \"fred(B,p(A))\" to a corresponding Term",
                 t.hasFunctor("fred", 2) && t.arg(1).isVariable() && t.arg(1).name().equals("B")
                         && t.arg(2).hasFunctor("p", 1) && t.arg(2).arg(1).isVariable()
@@ -196,9 +196,9 @@ public class DataManagement extends JPLTest {
     public void testTextToTerm2() {
         String text1 = "fred(?,2,?)";
         String text2 = "[first(x,y),A]";
-        Term plist = Util.textToTerm(text2);
-        Term[] ps = plist.toTermArray();
-        Term t = Util.textToTerm(text1).putParams(ps);
+        Term plist = Term.textToTerm(text2);
+        Term[] ps = plist.listToTermArray();
+        Term t = Term.textToTerm(text1).putParams(ps);
         assertTrue("fred(?,2,?) .putParams( [first(x,y),A] )",
                 t.hasFunctor("fred", 3) && t.arg(1).hasFunctor("first", 2) && t.arg(1).arg(1).hasFunctor("x", 0)
                         && t.arg(1).arg(2).hasFunctor("y", 0) && t.arg(2).hasFunctor(2, 0) && t.arg(3).isVariable()

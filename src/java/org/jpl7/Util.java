@@ -46,13 +46,11 @@ public final class Util {
 	 * @param terms
 	 *            An array of Term
 	 * @return Term a list of the array elements
+	 * @deprecated Use org.jpl7.Term.termArrayToList(Term[] terms)
 	 */
+	@Deprecated
 	public static Term termArrayToList(Term[] terms) {
-		Term list = JPL.LIST_NIL; // was new Atom("[]")
-		for (int i = terms.length - 1; i >= 0; --i) {
-			list = new Compound(JPL.LIST_PAIR, new Term[] { terms[i], list });
-		}
-		return list;
+		return Term.termArrayToList(terms);
 	}
 
 	/**
@@ -62,7 +60,7 @@ public final class Util {
 	 *            A Map from variable names to Terms.
 	 * @return String A String representation of the variable bindings
 	 */
-	public static String toString(Map<String, Term> varnames_to_Terms) {
+	public static String subsToString(Map<String, Term> varnames_to_Terms) {
 		if (varnames_to_Terms == null) {
 			return "[no solution]";
 		} else {
@@ -74,6 +72,14 @@ public final class Util {
 			}
 			return s;
 		}
+	}
+
+	/**
+	 * @deprecated Use org.jpl7.Term.subsToString(Map<String, Term>)
+	 */
+	@Deprecated
+	public static String toString(Map<String, Term> varnames_to_Terms) {
+		return subsToString(varnames_to_Terms);
 	}
 
 	/**
@@ -94,31 +100,25 @@ public final class Util {
 				// the cast to Variable is necessary to access the (protected)
 				// .term_ field
 				vars_to_Vars.put(((Variable) nvs.arg(1).arg(2)).term_, new Variable(nvs.arg(1).arg(1).name())); // map
-																												// the
-																												// Prolog
-																												// variable
-																												// to
-																												// a
-																												// new,
-																												// named
-																												// Variable
+				// the
+				// Prolog
+				// variable
+				// to
+				// a
+				// new,
+				// named
+				// Variable
 				nvs = nvs.arg(2); // advance to next list cell
 			}
 			// maybe oughta check that nvs is [] ?
 			return vars_to_Vars;
 		} catch (java.lang.ClassCastException e) { // nvs is not of the expected
-													// structure
+			// structure
 			return null;
 		}
 	}
 
 	/**
-	 * Converts a Prolog source text to a corresponding JPL Term (in which each Variable has the appropriate name from
-	 * the source text).
-	 *
-	 * @param text A Prolog source text denoting a term
-	 * @return Term a JPL Term equivalent to the given source text
-	 * @throws PrologException containing error(syntax_error(_),_) if text is invalid as a term.
 	 * @deprecated Use org.jpl7.Term.textToTerm(String text)
 	 */
 	@Deprecated
@@ -142,84 +142,54 @@ public final class Util {
 	}
 
 	/**
-	 * Converts an array of String to a corresponding JPL list
-	 *
-	 * @param a
-	 *            An array of String objects
-	 * @return Term a JPL list corresponding to the given String array
+	 * @deprecated Use org.jpl7.Term.stringArrayToList(String[] a)
 	 */
+	@Deprecated
 	public static Term stringArrayToList(String[] a) {
-		Term list = JPL.LIST_NIL;
-		for (int i = a.length - 1; i >= 0; i--) {
-			list = new Compound(JPL.LIST_PAIR, new Term[] { new Atom(a[i]), list });
-		}
-		return list;
+		return Term.stringArrayToList(a);
 	}
 
 	/**
-	 * Converts an array of int to a corresponding JPL list
-	 *
-	 * @param a
-	 *            An array of int values
-	 * @return Term a JPL list corresponding to the given int array
+	 * @deprecated Use org.jpl7.Term.intArrayToList(int[] a)
 	 */
+	@Deprecated
 	public static Term intArrayToList(int[] a) {
-		Term list = JPL.LIST_NIL; // was new Atom("[]");
-		for (int i = a.length - 1; i >= 0; i--) {
-			list = new Compound(JPL.LIST_PAIR, new Term[] { new org.jpl7.Integer(a[i]), list });
-		}
-		return list;
+		return Term.intArrayToList(a);
 	}
 
 	/**
-	 * Converts an array of arrays of int to a corresponding JPL list of lists
-	 *
-	 * @param a
-	 *            An array of arrays of int values
-	 * @return Term a JPL list of lists corresponding to the given int array of arrays
+	 * @deprecated Use org.jpl7.Term.intArrayArrayToList(int[][] a)
 	 */
+	@Deprecated
 	public static Term intArrayArrayToList(int[][] a) {
-		Term list = JPL.LIST_NIL; // was new Atom("[]");
-		for (int i = a.length - 1; i >= 0; i--) {
-			list = new Compound(JPL.LIST_PAIR, new Term[] { intArrayToList(a[i]), list });
-		}
-		return list;
+		return Term.intArrayArrayToList(a);
 	}
 
 	/**
-	 * whether the Term represents a proper list
-	 *
-	 * @param term the term to check if it is a list
-	 * @return whether the Term represents a proper list
+	 * @deprecated Use {@link Term#isList(Term)}
 	 */
 	public static final boolean isList(Term term) {
-		return listToLength(term) >= 0;
+		return Term.isList(term);
 	}
+
 
 	/**
 	 * @param term any Term
 	 * @return the length of the proper list which the Term represents, else -1
+	 * @deprecated Use {@link Term#listLength(Term)}
 	 */
+	@Deprecated
 	public static int listToLength(Term term) {
-		int length = 0;
-		Term head = term;
-		while (head.isListPair()) {
-			length++;
-			head = head.arg(2);
-		}
-		return (head.isListNil() ? length : -1);
+		return Term.listLength(term);
 	}
 
 	/**
-	 * converts a proper list to an array of terms, else throws an exception
-	 *
-	 * @param t  a list term
-	 * @throws JPLException if the term passed is not itself a Prolog list term
-	 * @return an array of terms whose successive elements are the corresponding members of the list (if it is a list)
+	 * @deprecated Use {@link Term#listToTermArray(Term)}
 	 */
+	@Deprecated
 	public static Term[] listToTermArray(Term t) {
 		try {
-			int len = Util.listToLength(t); // exception if not a list
+			int len = Term.listLength(t); // exception if not a list
 			Term[] ts = new Term[len];
 			for (int i = 0; i < len; i++) {
 				ts[i] = t.arg(1);
@@ -231,8 +201,12 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * @deprecated Use {@link Term#atomListToStringArray(Term)}
+	 */
+	@Deprecated
 	public static String[] atomListToStringArray(Term t) {
-		int n = listToLength(t);
+		int n = Term.listLength(t);
 		String[] a;
 		if (n < 0) {
 			return null;
