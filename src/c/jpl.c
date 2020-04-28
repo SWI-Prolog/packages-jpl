@@ -55,9 +55,9 @@ refactoring (trivial):
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* update this to distinguish releases of this C library: */
-#define JPL_C_LIB_VERSION        "7.4.0-alpha"
+#define JPL_C_LIB_VERSION        "7.6.0-alpha"
 #define JPL_C_LIB_VERSION_MAJOR  7
-#define JPL_C_LIB_VERSION_MINOR  4
+#define JPL_C_LIB_VERSION_MINOR  6
 #define JPL_C_LIB_VERSION_PATCH  0
 #define JPL_C_LIB_VERSION_STATUS "alpha"
 

@@ -1218,7 +1218,7 @@ jpl_z5s_to_most_specific_z5(Zs, Z) :-
 %
 %  ==
 %  ?- jpl_pl_lib_version(V).
-%  V = '7.4.0-alpha'.
+%  V = '7.6.0-alpha'.
 %  ==
 
 jpl_pl_lib_version(VersionString) :-
@@ -1240,7 +1240,7 @@ jpl_pl_lib_version(VersionString) :-
 %  Status = alpha.
 %  ==
 
-jpl_pl_lib_version(7, 4, 0, alpha).  % jref as blob
+jpl_pl_lib_version(7, 6, 0, alpha).  % jref as blob
 
 %! jpl_c_lib_version(-Version)
 %

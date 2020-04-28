@@ -15,8 +15,8 @@
 ## Versions up to 7.4
 
 - Complete overhawl from version 3.x
-- Check release notes for [7.4.0](https://jpl7.org/ReleaseNotes740.jsp).
-- Check release notes for [7.0.1](https://jpl7.org/ReleaseNotes701.jsp).
+- Check release notes for [7.4.0](ReleaseNotes740).
+- Check release notes for [7.0.1](ReleaseNotes701).
 
 
 
