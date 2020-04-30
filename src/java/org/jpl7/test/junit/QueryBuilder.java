@@ -55,7 +55,7 @@ public class QueryBuilder extends JPLTest {
 
     @Test
     public void testTerm1() {
-        Term args = Util.textToTerm("[1,2,3,4,5]");
+        Term args = Term.textToTerm("[1,2,3,4,5]");
         Term t = new Compound("member", new Term[] { new Integer(1), args } );
         Query q = new Query(t);
         assertTrue("Query should have succeded, but it did not!", q.hasSolution());
@@ -99,7 +99,7 @@ public class QueryBuilder extends JPLTest {
 
     @Test
     public void testString3() {
-        Term[] args = new Term[] { new Integer(1), Util.textToTerm("[1,2,3,4,5]") };
+        Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
 
         Query q = new Query("member(?, ?)", args);
         assertTrue("Query should have succeded, but it did not!", q.hasSolution());
@@ -107,7 +107,7 @@ public class QueryBuilder extends JPLTest {
 
     @Test
     public void testString4() {
-        Term[] args = new Term[] { new Integer(1), Util.textToTerm("[1,2,3,4,5]") };
+        Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
 
         Query q = new Query("member", args);
         assertTrue("Query should have succeded, but it did not!", q.hasSolution());
@@ -154,7 +154,7 @@ public class QueryBuilder extends JPLTest {
     // Error in number of placeholder matching arguments (too many terms)
     @Test
     public void testStringErr3() {
-        Term[] args = new Term[] { new Integer(1), Util.textToTerm("[1,2,3,4,5]") };
+        Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
 
         try {
             Query q = new Query("member(?, ?, ?)", args);
@@ -170,7 +170,7 @@ public class QueryBuilder extends JPLTest {
     // Error in number of placeholder matching arguments (too many terms)
     @Test
     public void testStringErr4() {
-        Term[] args = new Term[] { new Integer(1), Util.textToTerm("[1,2,3,4,5]") };
+        Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
 
         try {
             Query q = new Query("member(?)", args);
