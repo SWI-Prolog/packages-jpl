@@ -89,9 +89,12 @@ else()
   set(CMAKE_JAVA_COMPILE_FLAGS)
 endif()
 
+
 add_jar(jpl_jar
 	SOURCES ${CLS} ${FLI}
-	OUTPUT_NAME jpl)
+	OUTPUT_NAME jpl
+	MANIFEST META-INF/MANIFEST.MF
+	VERSION ${JPL_VERSION}) # VERSION creates jar with the -<version>jar format and a symblic to it.
 
 if(JUNIT_JAR)
 add_jar(jpltest

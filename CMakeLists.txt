@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(swipl-jpl)
 
+set(JPL_VERSION 7.6.0)
 
 #message(${CMAKE_CURRENT_SOURCE_DIR}) # <project>/packages/jpl
 #message(${PROJECT_SOURCE_DIR})  # <project>/packages/jpl
