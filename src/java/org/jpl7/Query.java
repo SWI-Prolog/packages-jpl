@@ -166,7 +166,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
      * @throws JPLException  if term provided is not of right sort Atom or Compound
      */
     public Query(String text) {
-        this(Util.textToTerm(text));
+        this(Term.textToTerm(text));
     }
 
 
@@ -205,7 +205,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
      *            the arguments of this Query's goal
      */
 	private static Term buildQueryTerm(String text, Term[] args) {
-		Term t = Util.textToTerm(text);
+		Term t = Term.textToTerm(text);
 		if (t instanceof Atom) {
 			return new Compound(text, args);
 		} else {
@@ -456,7 +456,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 
 	/**
 	 * Used to be used only by Utils.textToTerm but code has been integrated there already
-	 * @return
+	 * @return a substituion from variable names to terms
 	 */
 	@Deprecated
 	public final Map<String, Term> getSubstWithNameVars() {
@@ -563,7 +563,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			String BindingVarName = ((Variable) BindingVarTerm).name; // its textual name ("Bindings" in example)
 
 			Term TermVar = args[args.length - 2]; // the Query's last arg: a variable binding list; type Variable
-			String TermVarName = ((Variable) TermVar).name; // its textual name ("Bindings" in example)
+//			String TermVarName = ((Variable) TermVar).name; // its textual name ("Bindings" in example)
 
 			// SECOND, we store what B was bound to as JPL Compound list instance BindingVarValue
 			//	If B was bound to ['X' = _1, 'Y' = _2] in the current solution
