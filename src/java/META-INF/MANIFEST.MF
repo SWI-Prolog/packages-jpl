@@ -1,0 +1,4 @@
+Name: org.jpl7
+Implementation-Title: JPL
+Implementation-Version: 7.6.0
+Implementation-Vendor: SWI-Prolog
