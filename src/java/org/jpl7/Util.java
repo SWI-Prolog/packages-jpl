@@ -168,6 +168,7 @@ public final class Util {
 	/**
 	 * @deprecated Use {@link Term#isList(Term)}
 	 */
+	@Deprecated
 	public static final boolean isList(Term term) {
 		return Term.isList(term);
 	}
