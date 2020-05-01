@@ -75,7 +75,7 @@ public final class Util {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.Term.subsToString(Map<String, Term>)
+	 * @deprecated Use org.jpl7.Util.subsToString(Map<String, Term>)
 	 */
 	@Deprecated
 	public static String toString(Map<String, Term> varnames_to_Terms) {

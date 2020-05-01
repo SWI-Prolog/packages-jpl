@@ -178,7 +178,7 @@ public class Test {
 		Term Y = solutions[0].get("Y");
 		if (X != Y) {
 			System.out.println(t7 + " failed:");
-			System.out.println(Util.toString(solutions[0]));
+			System.out.println(Util.subsToString(solutions[0]));
 			System.out.println("\tThe variables to which X and Y are bound in the first solution should be identical.");
 			// System.exit(1);
 		}
@@ -186,13 +186,13 @@ public class Test {
 		Y = solutions[1].get("Y");
 		if (X == Y) {
 			System.out.println(t7 + " failed:");
-			System.out.println(Util.toString(solutions[1]));
+			System.out.println(Util.subsToString(solutions[1]));
 			System.out.println("\tThe variables to which X and Y are bound in the second solution should be distinct.");
 			// System.exit(1);
 		}
 		if (X.equals(Y)) {
 			System.out.println(t7 + " failed:");
-			System.out.println(Util.toString(solutions[1]));
+			System.out.println(Util.subsToString(solutions[1]));
 			System.out.println("\tThe variables to which X and Y are bound in the second solution should not be \"equal\".");
 			// System.exit(1);
 		}
@@ -215,7 +215,7 @@ public class Test {
 	}
 
 	// corresponds with Prolog List: [a-a,a-b]
-	static Term test_9_solution = Util.termArrayToList(new Term[] { new Compound("-", new Term[] { a, a }), new Compound("-", new Term[] { a, b }) });
+	static Term test_9_solution = Term.termArrayToList(new Term[] { new Compound("-", new Term[] { a, a }), new Compound("-", new Term[] { a, b }) });
 
 	static void test_9() {
 		System.out.print("test 9...");
