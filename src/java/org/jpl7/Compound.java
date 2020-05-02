@@ -1,6 +1,8 @@
 package org.jpl7;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
@@ -159,13 +161,24 @@ public class Compound extends Term {
 	 * Two Compounds are equal if they are identical (same object) or their names and arities are equal and their
 	 * respective arguments are equal.
 	 *
-	 * @param obj
+	 * @param o
 	 *            the Object to compare (not necessarily another Compound)
 	 * @return true if the Object satisfies the above condition
 	 */
-	public final boolean equals(Object obj) {
-		return (this == obj || (obj instanceof Compound && name.equals(((Compound) obj).name)
-				&& Term.terms_equals(args, ((Compound) obj).args)));
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Compound compound = (Compound) o;
+		return Arrays.equals(args, compound.args) &&
+				name.equals(compound.name);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Objects.hash(name);
+		result = 31 * result + Arrays.hashCode(args);
+		return result;
 	}
 
 	/**

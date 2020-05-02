@@ -1,6 +1,7 @@
 package org.jpl7;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -789,29 +790,6 @@ public abstract class Term {
 									Term[] args) {
 		for (int i = 0; i < args.length; ++i) {
 			args[i].getSubst(varnames_to_Terms, vars_to_Vars);
-		}
-	}
-
-	/**
-	 * This method is used (by Compound.equals) to determine whether two Term arrays are pairwise equal, where two
-	 * Terms are equal if they satisfy the equals predicate (defined differently in each Term subclass).
-	 *
-	 * @param t1
-	 *            an array of Terms
-	 * @param t2
-	 *            another array of Terms
-	 * @return whether corresponding Terms in the (same-length) arrays are pairwise equal
-	 */
-	protected static boolean terms_equals(Term[] t1, Term[] t2) {
-		if (t1.length != t2.length) {
-			return false;
-		} else {
-			for (int i = 0; i < t1.length; ++i) {
-				if (!t1[i].equals(t2[i])) {
-					return false;
-				}
-			}
-			return true;
 		}
 	}
 

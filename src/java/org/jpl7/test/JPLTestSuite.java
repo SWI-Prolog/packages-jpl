@@ -24,7 +24,8 @@ import org.junit.runners.Suite;
         org.jpl7.test.junit.TypesTest.class,
         org.jpl7.test.junit.Unicode.class,
         org.jpl7.test.junit.Variables.class,
-        org.jpl7.test.junit.Tests.class,  
+        org.jpl7.test.junit.Tests.class,
+        org.jpl7.test.junit.Test_Equals.class,
 })
 
 public class JPLTestSuite {

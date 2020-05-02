@@ -1,6 +1,7 @@
 package org.jpl7;
 
 import java.util.Map;
+import java.util.Objects;
 
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
@@ -111,8 +112,18 @@ public class Atom extends Term {
 	 *            the Object to compare (not necessarily another Atom)
 	 * @return true if the Object satisfies the above condition
 	 */
-	public final boolean equals(Object obj) {
-		return (this == obj || obj instanceof Atom && name.equals(((Atom) obj).name) && type.equals(((Atom) obj).type));
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Atom atom = (Atom) o;
+		return name.equals(atom.name) &&
+				type.equals(atom.type);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, type);
 	}
 
 	/**
