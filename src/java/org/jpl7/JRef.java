@@ -120,7 +120,7 @@ public class JRef extends Term {
 	 */
 	@Deprecated
 	public Object ref() {
-		return object;
+		return this.object();
 	}
 
 	/**

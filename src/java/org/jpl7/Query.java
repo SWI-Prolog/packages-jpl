@@ -425,7 +425,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
      * @return whether a new solutions was found or there are no more solutions
      * @throws PrologException with the term of the error from Prolog (e.g., syntax error in query or non existence of predicates)
      */
-	private final boolean fetchNextSolution() { // try to get the next solution; if none,
+	private boolean fetchNextSolution() { // try to get the next solution; if none,
 									// close the query;
 		if (Prolog.next_solution(qid)) {
 			return true;
@@ -504,7 +504,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
             throw new NoSuchElementException("Query has already yielded all solutions");
 	}
 
-	private final Map<String, Term> getCurrentSolutionBindings() {
+	private Map<String, Term> getCurrentSolutionBindings() {
 		if (!open) {
 			throw new JPLException("Query is not open, cannot retrive solution bindings.");
 		} else {

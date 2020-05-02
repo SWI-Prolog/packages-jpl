@@ -1,4 +1,4 @@
-package Time;
+package time;
 
 import org.jpl7.Atom;
 import org.jpl7.Compound;

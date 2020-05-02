@@ -1,4 +1,4 @@
-package FamilyMT;
+package familyMT;
 
 import java.util.Map;
 

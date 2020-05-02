@@ -1,4 +1,4 @@
-package Test3;
+package test3;
 
 import java.util.Iterator;
 import java.util.Map;

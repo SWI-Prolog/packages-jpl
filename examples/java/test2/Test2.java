@@ -1,4 +1,4 @@
-package Test2;
+package test2;
 
 import org.jpl7.Compound;
 import org.jpl7.Query;

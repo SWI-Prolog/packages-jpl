@@ -1,4 +1,4 @@
-package Zahed;
+package zahed;
 
 import java.util.Map;
 

@@ -65,6 +65,7 @@ import org.jpl7.JPL;
  * @author Fred Dushin fadushin@syr.edu
  * @version $Revision$
  */
+@SuppressWarnings("UnusedReturnValue")
 public final class Prolog {
 	static {
 		JPL.loadNativeLibrary();

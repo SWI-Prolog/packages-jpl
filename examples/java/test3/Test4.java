@@ -1,4 +1,4 @@
-package Test3;
+package test3;
 
 import java.util.Arrays;
 import java.util.Iterator;

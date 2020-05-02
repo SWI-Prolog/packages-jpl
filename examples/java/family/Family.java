@@ -1,4 +1,4 @@
-package Family;
+package family;
 
 import java.util.Map;
 

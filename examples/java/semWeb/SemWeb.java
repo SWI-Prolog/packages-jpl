@@ -1,4 +1,4 @@
-package SemWeb;
+package semWeb;
 
 import java.util.Map;
 

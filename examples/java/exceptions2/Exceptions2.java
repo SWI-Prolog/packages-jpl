@@ -1,4 +1,4 @@
-package Exceptions2;
+package exceptions2;
 
 import org.jpl7.PrologException;
 import org.jpl7.Query;

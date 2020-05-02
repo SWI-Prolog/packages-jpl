@@ -1,4 +1,4 @@
-package TestGC;
+package testGC;
 
 import org.jpl7.Atom;
 import org.jpl7.Query;

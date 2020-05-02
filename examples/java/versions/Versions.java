@@ -1,4 +1,4 @@
-package Versions;
+package versions;
 
 import org.jpl7.JPL;
 import org.jpl7.Query;
