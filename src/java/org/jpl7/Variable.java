@@ -2,6 +2,7 @@ package org.jpl7;
 
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
@@ -58,9 +59,14 @@ public class Variable extends Term {
 	protected transient int index; // only used by (redundant?)
 
 	/**
-	 * the name of this Variable (may be changed)
+	 * the name of this Variable (may be changed as of April 2020)
 	 */
 	public  String name;
+
+	/**
+	 * Unique ID of a Variable - vars should be <> despite having same name
+	 */
+	protected long id;
 
 	/**
 	 * defined between Query.open() and Query.get2()
@@ -72,6 +78,7 @@ public class Variable extends Term {
 	 *
 	 */
 	public Variable() {
+		this.id = n;	// store id as current n
 		this.name = "_" + Long.toString(n++); // e.g. _0, _1 etc.
 	}
 
@@ -89,6 +96,7 @@ public class Variable extends Term {
 			throw new JPLException("name cannot be empty String");
 		} else {
 			this.name = name;
+			this.id = n++;
 		}
 	}
 
@@ -106,15 +114,24 @@ public class Variable extends Term {
 	};
 
 	/**
-	 * A Variable is equal to another if their names are the same and they are
-	 * not anonymous.
+	 * A Variable is equal to another if their names and id are the same, just the name is not enough!
 	 *
-	 * @param obj
+	 * @param o
 	 *            The Object to compare.
 	 * @return true if the Object is a Variable and the above condition apply.
 	 */
-	public final boolean equals(Object obj) {
-		return obj instanceof Variable && !this.name.equals("_") && this.name.equals(((Variable) obj).name);
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			Variable variable = (Variable) o;
+			return id == variable.id && name.equals(variable.name);
+		}
+
+	// just use the id which is unique for each object
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
 	}
 
 	/**
