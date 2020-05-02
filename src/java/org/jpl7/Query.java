@@ -678,10 +678,9 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			}
 
 			// Second, convert the list into an array of Mappings (0 solutions -> Map[0])
-//			@SuppressWarnings("unchecked")
-			return l.toArray((Map<String, Term>[]) new HashMap[0]); // https://codeahoy.com/java/How-To-Convery-ArrayList-To-Array/
-
-
+			@SuppressWarnings("unchecked")	//https://stackoverflow.com/questions/1129795/what-is-suppresswarnings-unchecked-in-java
+			Map<String, Term>[] t = (Map<String, Term>[]) new HashMap[0];
+			return l.toArray(t); // https://codeahoy.com/java/How-To-Convery-ArrayList-To-Array/
 		}
 	}
 
@@ -786,7 +785,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			for (long i = 0; i++ < n && hasMoreSolutions();) {
 				l.add(next());
 			}
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings("unchecked")	// https://stackoverflow.com/questions/1129795/what-is-suppresswarnings-unchecked-in-java
 			Map<String, Term> t[] = (Map<String, Term>[]) new HashMap[0];
 			return l.toArray(t);
 		}
