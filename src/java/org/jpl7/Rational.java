@@ -4,6 +4,7 @@ import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -49,17 +50,22 @@ import java.util.regex.Pattern;
 public class Rational extends Term {
 
 	/**
-	 * the Integer's immutable long value, iff small enough
+	 * the numerator and denominator in canonical form:
+	 * 		gcd(numerator, denominator =  1 (not reducable)
+	 * 		denominator > 1
+	 *
+	 * 	rat is a String of the form "NrM"
 	 */
 	protected final long numerator;
 	protected final long denominator;
-	protected final String rat;
-
-
 
 	/**
-	 * @param numerator
-	 *            This Integer's intended (long) value
+	 * Creates a rational in canonical form
+	 *
+	 * @param numerator		a long integer
+	 * @param denominator	a long integer
+	 *
+	 * @return a rational number in canonical form
 	 */
 	public Rational(long numerator, long denominator) {
 		if (denominator == 0) {
@@ -82,13 +88,12 @@ public class Rational extends Term {
 		}
 		if (denominator == 1) {
 			throw new JPLException("the denominator is 1 so it should be an Integer.");
-		} else
-			this.rat = String.format("%sr%s", numerator, denominator);
+		}
 	}
 
 	/**
-	 * @param rat
-	 *            The rational numbre in format NrM
+	 * @param rat   The rational number in format NrM
+	 * @return a rational number in canonical form
 	 */
 	public Rational(String rat) {
 		if (Pattern.compile("-?\\d+r\\d+").matcher(rat).matches()) {
@@ -112,8 +117,10 @@ public class Rational extends Term {
 					this.denominator = dem;
 					this.numerator = num;
 				}
+				if (denominator == 1) {
+					throw new JPLException("the denominator is 1 so it should be an Integer.");
+				}
 			}
-			this.rat = String.format("%sr%s", numerator, denominator);
 		} else {
 			throw new JPLException("incorrect format for rational number; should be of the form NrM.");
 		}
@@ -132,25 +139,30 @@ public class Rational extends Term {
 	}
 
 	/**
-	 * two Integer instances are equal if their values are equal
+	 * Two Rationals instances are equal if their numerator and denominator match
+	 * (remember Rationals are stored in canonical form)
 	 *
-	 * @param obj
+	 * @param o
 	 *            The Object to compare (not necessarily an Integer)
 	 * @return true if the Object satisfies the above condition
 	 */
-	public final boolean equals(Object obj) {
-		if (this == obj) { // the very same Integer
-			return true; // necessarily equal
-		} else if (obj instanceof Rational) {
-			Rational that = (Rational) obj;
-			if (this.numerator == that.numerator && this.denominator == that.denominator) {
-				return true;
-			} else
-				return false;
-		} else {
-			return false;
-		}
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Rational rational = (Rational) o;
+		return numerator == rational.numerator &&
+				denominator == rational.denominator;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(numerator, denominator);
+	}
+
+
+
+
 
 	public final long getNumerator() {
 		return numerator;

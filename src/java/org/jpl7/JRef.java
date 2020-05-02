@@ -1,6 +1,7 @@
 package org.jpl7;
 
 import java.util.Map;
+import java.util.Objects;
 
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
@@ -72,8 +73,17 @@ public class JRef extends Term {
 	 *
 	 * @return true if the Object satisfies the above condition
 	 */
-	public final boolean equals(Object obj) {
-		return this == obj || (obj instanceof JRef && ((JRef) obj).object == this.object);
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		JRef jRef = (JRef) o;
+		return object == jRef.object;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(object);
 	}
 
 	public boolean hasFunctor(String name, int arity) {

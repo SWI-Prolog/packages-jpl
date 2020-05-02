@@ -1,5 +1,7 @@
 package org.jpl7.fli;
 
+import java.util.Objects;
+
 /**
  * A Long Holder merely holds a long value.
  * 
@@ -38,7 +40,16 @@ package org.jpl7.fli;
 public class LongHolder {
 	public long value = 0L;
 
-	public boolean equals(LongHolder lh) {
-		return lh.value == this.value;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		LongHolder that = (LongHolder) o;
+		return value == that.value;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(value);
 	}
 }

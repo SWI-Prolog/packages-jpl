@@ -2,6 +2,7 @@ package org.jpl7;
 
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
@@ -53,12 +54,12 @@ public class Integer extends Term {
 	/**
 	 * the Integer's immutable long value, iff small enough
 	 */
-	protected final long value;
+	protected final long value;		// 0 by convention if bigValue not null
 
 	/**
 	 * the Integer's immutable BigInteger value, iff too big for a long, else null
 	 */
-	protected final BigInteger bigValue;
+	protected final BigInteger bigValue;	// if not null, then value = 0 by convention
 
 	/**
 	 * @param value
@@ -77,13 +78,12 @@ public class Integer extends Term {
 		if (value == null) {
 			throw new NullPointerException();
 		} else if (value.compareTo(BIG_MIN_LONG) >= 0 && value.compareTo(BIG_MAX_LONG) <= 0) {
-			// i.e. BIG_MIN_LONG =< value =< BIG_MAX_LONG
-			this.bigValue = null; // value nevertheless fits in a long
+			// value nevertheless fits in a long, i.e. BIG_MIN_LONG =< value =< BIG_MAX_LONG
+			this.bigValue = null;
 			this.value = value.longValue();
 		} else {
 			this.bigValue = value;
-			this.value = 0; // undefined, but 0 by convention, iff bigValue !=
-							// null
+			this.value = 0; // undefined, but 0 by convention, iff bigValue != null
 		}
 	}
 
@@ -123,30 +123,31 @@ public class Integer extends Term {
 	/**
 	 * two Integer instances are equal if their values are equal
 	 *
-	 * @param obj
+	 * @param o
 	 *            The Object to compare (not necessarily an Integer)
 	 * @return true if the Object satisfies the above condition
 	 */
-	public final boolean equals(Object obj) {
-		if (this == obj) { // the very same Integer
-			return true; // necessarily equal
-		} else if (obj instanceof Integer) {
-			Integer that = (Integer) obj;
-			if (this.bigValue == null && that.bigValue == null) { // both are
-																	// long
-				return this.value == that.value;
-			} else if (this.bigValue != null && that.bigValue != null) { // both
-																			// are
-																			// big
-				return this.bigValue.equals(that.bigValue);
-			} else {
-				return false; // one is long, one is big; both are canonical (by
-								// design), hence cannot represent the same
-								// value
-			}
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Integer that = (Integer) o;
+		if (this.bigValue == null && that.bigValue == null) { // both are long
+			return this.value == that.value;
+		} else if (this.bigValue != null && that.bigValue != null) { // both are big
+			return this.bigValue.equals(that.bigValue);
 		} else {
-			return false;
+			return false; // one is long, one is big; both are canonical (by
+			// design), hence cannot represent the same value
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		if (this.bigValue == null ) {
+			return Objects.hash(value);
+		} else
+			return Objects.hash(bigValue);
 	}
 
 	/**

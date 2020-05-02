@@ -1,6 +1,7 @@
 package org.jpl7;
 
 import java.util.Map;
+import java.util.Objects;
 
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
@@ -85,12 +86,21 @@ public class Float extends Term {
 	 * Two Floats are equal if they are the same object, or their values are
 	 * equal
 	 *
-	 * @param obj
+	 * @param o
 	 *            The Object to compare
 	 * @return true if the Object satisfies the above condition
 	 */
-	public final boolean equals(Object obj) {
-		return this == obj || (obj instanceof Float && value == ((Float) obj).value);
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null) return false;
+		return (o instanceof Float || o instanceof Integer) &&
+				(((Term) o).doubleValue() == value);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(value);
 	}
 
 	/**

@@ -135,31 +135,42 @@ public abstract class Term {
 		 *  atom_to_term/3 will build a term from a string, and will extract all variables in a list
 		 *  https://www.swi-prolog.org/pldoc/doc_for?object=atom_to_term/3
 		 *
-		 * ?- atom_to_term('mother(maria, S, P)', X, Y).
-		 * 				X = mother(maria, _4518, _4520),
-		 * 				Y = ['S'=_4518, 'P'=_4520].
+		 * ?- atom_to_term('mother(maria, S, P)', T, NVdict).
+		 * 				T = mother(maria, _4518, _4520),
+		 * 				NVdict = ['S'=_4518, 'P'=_4520].
 		 *
 		 * 	But we want to return the Term mother(maria, S, P) where S and P are Variable Terms referring
 		 * 	to _4518 and _4520
+		 *
+		 * 	To do so, we rename the name of term Variable  _4518 to 'S' and of _4520 to 'P"
 		 */
 
 		// it might be better to use PL_chars_to_term()
-		Query q = new Query(new Compound("atom_to_term",
-				new Term[] { new Atom(text), new Variable("T"), new Variable("NVdict") }));
+		//	like; Prolog.put_atom_chars(term, name)
+		Query q = new Query(new Compound("atom_to_term",	// build atom_to_term(text, T, NVdict)
+				new Term[] {
+						new Atom(text),
+						new Variable("T"),
+						new Variable("NVdict") }));
 
-		q.open();
+		q.open();	// redundant because q.hasMoreSolutions() will open it if needed, but leave it for completness
 		if (q.hasMoreSolutions()) {
-			Map<String, Term> s = q.nextSolution();
+			Map<String, Term> s = q.nextSolution();	// issue query atom_to_term(text, T, NVdict)
 
-			// New way of doing it (April 2020)
-			//		The term bounded to variable T above has the atom query as a proper Term but
-			//			the variables mentioned have anonymous names _1 and _2, instead of X and Y
-			//		However, the mapping between those _ variables and the actual textual names X and Y have been
-			//			bound in variable NVdict as a list of 'X' = _1, 'X' = _2, etc...
-			//		So, we navigate NVdict and we change the name of each Variable _ to be its textual name!
-			//		Since the Term bound to T will use exactl the Variables _1, _2, etc, by changing their names
-			//			the term T will now use Variables X, Y, etc as wanted!
-			//Term T = s.get("T");
+			/*	New way of building a Term from a String (April 2020)
+
+					Query atom_to_term/3 will bound variable T above as a proper Term but with anonymous
+						variables with names _1 and _2, instead of X and Y.
+						For example, T = mother(maria, _4518, _4520)
+
+					However, the mapping between those _ variables and the actual textual names X and Y have been
+						"stored" in variable NVdict as a list ['X' = _1, 'X' = _2, ...]
+
+					So, we navigate NVdict and change the name of each anonymous Variable _ to be its textual name!
+
+					Since the Term bound to T will use exactly the Variables _1, _2, etc, by changing their names
+						the term T will now use Variables X, Y, etc as wanted!
+			*/
 			Term[] VarsMapList = Term.listToTermArray(s.get("NVdict"));	// this is a Compound list of mappings
 			for (Term map : VarsMapList) { // map represents 'X' = _1
 				String VarName = map.arg(1).name();		// extract the symbolic name of the variable
