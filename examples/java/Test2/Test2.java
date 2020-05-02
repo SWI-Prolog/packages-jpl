@@ -1,3 +1,5 @@
+package Test2;
+
 import org.jpl7.Compound;
 import org.jpl7.Query;
 import org.jpl7.Term;

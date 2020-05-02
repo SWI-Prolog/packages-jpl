@@ -1,9 +1,6 @@
 package org.jpl7.test.junit;
 
-import org.jpl7.Integer;
 import org.jpl7.*;
-import org.jpl7.fli.Prolog;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -152,11 +149,12 @@ public class AtomTest extends JPLTest {
     @Test
     public void testAtomEquality2() {
         Atom a = new Atom("a");
-        assertTrue("two references to an Atom are equal by .equals()", a.equals(a));
+        //noinspection EqualsWithItself
+        assertEquals("two references to an Atom are equal by .equals()", a, a);
     }
 
     public void testAtomEquality3() {
-        assertTrue("two distinct, same-named Atoms are equal by .equals()", (new Atom("a")).equals(new Atom("a")));
+        assertEquals("two distinct, same-named Atoms are equal by .equals()", new Atom("a"), new Atom("a"));
     }
 
 

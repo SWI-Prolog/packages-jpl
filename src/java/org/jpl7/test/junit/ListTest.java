@@ -90,10 +90,10 @@ public class ListTest extends JPLTest {
         x = Query.oneSolution("X = []").get("X");
         assertTrue("term should be empty list", x.isListNil());
         assertTrue("Util.isList on empty list", Term.isList(x));
-        assertTrue("term is not a ListPair", !x.isListPair());
+        assertFalse("term is not a ListPair", x.isListPair());
 
         x = Query.oneSolution("X = [1, 2, 3]").get("X");
-        assertTrue("term should NOT be empty list", !x.isListNil());
+        assertFalse("term should NOT be empty list", x.isListNil());
         assertTrue("Util.isList on non-empty list", Term.isList(x));
         assertTrue("term is not a ListPair", x.isListPair());
     }
@@ -126,13 +126,13 @@ public class ListTest extends JPLTest {
         assertTrue("term is a pair list (even though second arg is not a list)", t.isListPair());
 
 
-        assertTrue("empty list term is not a list pair", !JPL.LIST_NIL.isListPair());
+        assertFalse("empty list term is not a list pair", JPL.LIST_NIL.isListPair());
 
         t = new Compound(JPL.LIST_PAIR, terms_integers);
-        assertTrue("term is not a pair list, has more than two arguments", !t.isListPair());
+        assertFalse("term is not a pair list, has more than two arguments", t.isListPair());
 
         t = new Compound("hello", terms_integers);
-        assertTrue("term is not a pair list, not JPL.PAIR_LIST functor", !t.isListPair());
+        assertFalse("term is not a pair list, not JPL.PAIR_LIST functor", t.isListPair());
 
     }
 
@@ -169,7 +169,7 @@ public class ListTest extends JPLTest {
         Query q = new Query(new Compound("append",
                 new Term[]{new Variable("Xs"), new Variable("Ys"), l}));
 
-        assertTrue("append(Xs,Ys,[a,b,c,d,e]) has 6 solutions", q.allSolutions().length == 6);
+        assertEquals("append(Xs,Ys,[a,b,c,d,e]) has 6 solutions", 6, q.allSolutions().length);
     }
 
 
@@ -216,7 +216,7 @@ public class ListTest extends JPLTest {
     @Test
     public void testStringToList() {
         String goal = "append(Xs,Ys,[a,b,c,d,e])";
-        assertTrue(goal + " has 6 solutions", Query.allSolutions(goal).length == 6);
+        assertEquals(goal + " has 6 solutions", 6, Query.allSolutions(goal).length);
     }
 
 
@@ -238,7 +238,7 @@ public class ListTest extends JPLTest {
     public void testGenerate1() { // we chickened out of verifying each solution
         // :-)
         String goal = "append(Xs,Ys,[_,_,_,_,_])";
-        assertTrue(goal + " has 6 solutions", Query.allSolutions(goal).length == 6);
+        assertEquals(goal + " has 6 solutions", 6, Query.allSolutions(goal).length);
     }
 
 

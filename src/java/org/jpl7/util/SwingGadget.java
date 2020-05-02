@@ -42,7 +42,7 @@ public class SwingGadget extends JFrame {
 
 		try {
 			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 		}
 
 		getContentPane().add(pane, BorderLayout.CENTER);

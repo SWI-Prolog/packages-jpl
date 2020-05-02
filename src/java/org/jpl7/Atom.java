@@ -108,7 +108,7 @@ public class Atom extends Term {
 	/**
 	 * Two Atoms are equal if they are identical (same object) or their respective names and blobTypes are equal
 	 *
-	 * @param obj
+	 * @param o
 	 *            the Object to compare (not necessarily another Atom)
 	 * @return true if the Object satisfies the above condition
 	 */

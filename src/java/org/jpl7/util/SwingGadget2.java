@@ -23,7 +23,7 @@ public class SwingGadget2 extends JFrame {
 		super(caption); // call the JFrame contructor
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 		}
 		pane = new JPanel();
 		getContentPane().add(pane, BorderLayout.CENTER);

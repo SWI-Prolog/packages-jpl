@@ -2,8 +2,6 @@ package org.jpl7.test.junit;
 
 import org.jpl7.*;
 import org.jpl7.Integer;
-import org.jpl7.fli.Prolog;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,7 +55,7 @@ public class IntegerTest extends JPLTest {
     public void testIntegerFromByte1() {
         byte b = (byte) 127; // -128..127
         Integer i = new Integer(b);
-        assertTrue(i.intValue() == b);
+        assertEquals(i.intValue(), b);
     }
 
     @Test
@@ -65,7 +63,7 @@ public class IntegerTest extends JPLTest {
         char c = (char) 64; // 0..65535
         // System.out.println("c = " + c);
         Integer i = new Integer(c);
-        assertTrue(i.intValue() == c);
+        assertEquals(i.intValue(), c);
     }
 
     @Test
@@ -96,7 +94,7 @@ public class IntegerTest extends JPLTest {
         // System.out.println("X.bigValue() = " + x.bigValue().toString());
         // System.out.println("b.bigValue() = " + b.toString());
         assertTrue("X is a big integer", x.isBigInteger());
-        assertTrue("X's big value is 51**51", x.bigValue().equals(b));
+        assertEquals("X's big value is 51**51", x.bigValue(), b);
     }
 
     @Test
@@ -107,7 +105,7 @@ public class IntegerTest extends JPLTest {
         Term x = Query.oneSolution(g).get("X");
         assertTrue("X is an org.jpl7.Integer", x.isInteger());
         assertTrue("X is a big org.jpl7.Integer", x.isBigInteger());
-        assertTrue("X's value is as expected", x.bigValue().equals(b));
+        assertEquals("X's value is as expected", x.bigValue(), b);
     }
 
 

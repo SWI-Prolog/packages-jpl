@@ -207,24 +207,6 @@ public final class Util {
 	 */
 	@Deprecated
 	public static String[] atomListToStringArray(Term t) {
-		int n = Term.listLength(t);
-		String[] a;
-		if (n < 0) {
-			return null;
-		} else {
-			a = new String[n];
-		}
-		int i = 0;
-		Term head = t;
-		while (head.isListPair()) {
-			Term x = head.arg(1);
-			if (x.isAtom()) {
-				a[i++] = x.name();
-			} else {
-				return null;
-			}
-			head = head.arg(2);
-		}
-		return (head.isListNil() ? a : null);
+		return Term.atomListToStringArray(t);
 	}
 }

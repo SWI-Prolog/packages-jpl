@@ -3,7 +3,6 @@ package org.jpl7.test.junit;
 import org.jpl7.JPL;
 import org.jpl7.Query;
 import org.jpl7.Term;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;

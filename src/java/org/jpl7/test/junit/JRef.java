@@ -2,8 +2,6 @@ package org.jpl7.test.junit;
 
 import org.jpl7.*;
 import org.jpl7.Integer;
-import org.jpl7.fli.Prolog;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,31 +31,6 @@ public class JRef extends JPLTest {
 
         consultTestFile();  // load the test_jpl.pl file
         useJPLmodule();     // consult the jpl.pl module
-
-
-        // The above two give error when basically doing this:
-//                 Query q = new Query("use_foreign_library(foreign(files), install_files)");
-//                q.hasSolution();
-        /**
-         * We get many errors when loading the files above
-         *
-         * The only way to make it work is to have libjpl.so and files.so in
-         * build/home/lib, which does not exist in cmake local devel!
-         *
-         *  1- create symb links in build/home/lib/libjpl.so to ../../packages/jpl/libjpl.so
-         *  2- create symb links in build/home/lib/files.so to ../../packages/clib/files.o
-         *
-         *  Somehow then those files will be loaded. Even if I put ../../packages/*** in the
-         *  LD_LIBRARY_PATH, the test won't find them!
-         *
-         *  We also need to search the main SWI lib  in ../../build/src/ or
-         *
-         *  LD_LIBRARY_PATH=../../build/packages/jpl:../../build/src/
-         *  SWI_HOME_DIR=../../build/home
-         *  SWIPL_BOOT_FILE=../../build/home/boot.prc;
-         *  LD_PRELOAD=libswipl.so
-         */
-
     }
 
 
@@ -104,7 +77,7 @@ public class JRef extends JPLTest {
     public void testJRef3() {
         StringBuffer sb = new StringBuffer();
         Query.oneSolution("jpl_call(?,append,['xyz'],_)", new Term[] { JPL.newJRef(sb) });
-        assertTrue(sb.toString().equals("xyz"));
+        assertEquals("xyz", sb.toString());
     }
 
     @Test
@@ -117,7 +90,7 @@ public class JRef extends JPLTest {
     public void testJRef5() {
         String token = "foobar345";
         Term a = Query.oneSolution("jpl_new('java.lang.StringBuffer',[?],A)", new Term[] { new Atom(token) }).get("A");
-        assertTrue(((java.lang.StringBuffer) (a.object())).toString().equals(token));
+        assertEquals(((StringBuffer) (a.object())).toString(), token);
     }
 
 

@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.jpl7.Integer;
-import org.jpl7.fli.Prolog;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +61,7 @@ public class GetSolution extends JPLTest {
         Query q = new Query("fail");
         q.open();
         if (q.hasMoreSolutions()) q.nextSolution();
-        assertTrue("A query has exhausted all solutions but it is still open", !q.isOpen());
+        assertFalse("A query has exhausted all solutions but it is still open", q.isOpen());
     }
 
     @Test
@@ -128,55 +126,11 @@ public class GetSolution extends JPLTest {
                 sb.append(((Atom) soln.get("C")).name());
             }
         }
-        assertTrue(!q.isOpen()); // q will have been closed by solution exhaustion
+        assertFalse(q.isOpen()); // q will have been closed by solution exhaustion
         assertEquals("rolo", sb.toString());
     }
 
 
-    @Test
-    public void iterativeSol1() {
-        final int[] expectedSolutions = { 1, 2, 3, 4, 5};
-
-        Query q = new Query("between(1,5,N)");
-        Map<String,Term> sol;
-        int solutionIndex;
-
-        solutionIndex = 0;
-        while (q.hasMoreSolutions()) {
-            sol = q.nextSolution();
-
-            assertEquals(expectedSolutions[solutionIndex], sol.get("N").intValue());
-            solutionIndex++;
-        }
-
-        assertFalse("There should not be more solutions for the query", q.hasSolution());
-        assertFalse("Query should be closed due to sol exhaustion", q.isOpen());
-
-        q.reset();
-        assertFalse("Query is still close after reset", q.isOpen());
-        assertTrue("Query again should have solutions after reset", q.hasSolution());
-
-        solutionIndex = 0;
-        while (q.hasMoreSolutions()) {
-            sol = q.nextSolution();
-
-            assertEquals(expectedSolutions[solutionIndex], sol.get("N").intValue());
-            solutionIndex++;
-        }
-        assertFalse("There should not be more solutions for the query", q.hasSolution());
-        assertFalse("Query should be closed due to sol exhaustion", q.isOpen());
-
-        try {
-            sol = q.next();
-            fail("Query has been exhausted, there should be no solutions left");
-
-        } catch (NoSuchElementException e) {
-            // all good, this is what we expect as there are no more solutions
-        } catch (Exception e) {
-            fail("Wrong exception type: "  + e);
-        }
-
-    }
 
 
 
@@ -184,7 +138,7 @@ public class GetSolution extends JPLTest {
     @Test
     public void testStaticQueryAllSolutions1() {
         String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
-        assertTrue("Query.allSolutions(" + goal + ") returns 10 solutions", Query.allSolutions(goal).length == 10);
+        assertEquals("Query.allSolutions(" + goal + ") returns 10 solutions", 10, Query.allSolutions(goal).length);
     }
 
     @Test
@@ -205,33 +159,29 @@ public class GetSolution extends JPLTest {
     public void testDontTellMeMode1() {
         final Query q = new Query("setof(_M,current_module(_M),_Ms),length(_Ms,N)");
         JPL.setDTMMode(true);
-        assertTrue(
-                "in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for just one variable",
-                q.oneSolution().keySet().size() == 1);
+        assertEquals("in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for just one variable", 1, q.oneSolution().keySet().size());
     }
 
     @Test
     public void testDontTellMeMode2() {
         final Query q = new Query("setof(_M,current_module(_M),_Ms),length(_Ms,N)");
         JPL.setDTMMode(false);
-        assertTrue(
-                "not in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for three variables",
-                q.oneSolution().keySet().size() == 3);
+        assertEquals("not in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for three variables", 3, q.oneSolution().keySet().size());
     }
 
     @Test
     public void testMap1() {
         Map<String, Term> h = Query.oneSolution("p(a,b) = p(X,Y)");
-        assertTrue(h.get("X").name().equals("a"));
-        assertTrue(h.get("Y").name().equals("b"));
+        assertEquals("a", h.get("X").name());
+        assertEquals("b", h.get("Y").name());
     }
 
     @Test
     public void testMap2() {
         Map<String, Term>[] hs = Query.allSolutions("p(a,b) = p(X,Y)");
-        assertTrue(hs.length == 1);
-        assertTrue(hs[0].get("X").name().equals("a"));
-        assertTrue(hs[0].get("Y").name().equals("b"));
+        assertEquals(1, hs.length);
+        assertEquals("a", hs[0].get("X").name());
+        assertEquals("b", hs[0].get("Y").name());
     }
 
 

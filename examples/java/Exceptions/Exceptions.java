@@ -1,3 +1,5 @@
+package Exceptions;
+
 import org.jpl7.Query;
 
 public class Exceptions {

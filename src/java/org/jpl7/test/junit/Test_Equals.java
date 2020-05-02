@@ -12,7 +12,6 @@ import org.junit.runner.Description;
 
 import java.math.BigInteger;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -72,7 +71,7 @@ public class Test_Equals extends JPLTest {
     public void test_atom_equal1() {
         Atom a = new Atom("fred");
         Atom b = new Atom("fred");
-        assertTrue("atoms should be equal", a.equals(b));
+        assertEquals("atoms should be equal", a, b);
     }
 
 
@@ -80,21 +79,21 @@ public class Test_Equals extends JPLTest {
     public void test_atom_equal2() {
         Atom a = new Atom("age(john)");
         Atom b = new Atom("age(john)");
-        assertTrue("atoms should be equal", a.equals(b));
+        assertEquals("atoms should be equal", a, b);
     }
 
     @Test
     public void test_atom_equal3() {
         Atom a = new Atom("fred");
         Atom b = new Atom("alice");
-        assertFalse("atoms should not be equal", a.equals(b));
+        assertNotEquals("atoms should not be equal", a, b);
     }
 
     @Test
     public void test_atom_equal4() {
         Atom a = new Atom("age(john)");
         Atom b = new Atom("age(mary)");
-        assertFalse("atoms should not be equal", a.equals(b));
+        assertNotEquals("atoms should not be equal", a, b);
     }
 
     @Test
@@ -105,7 +104,7 @@ public class Test_Equals extends JPLTest {
         Set<Atom> atomBoxes = new HashSet<>();
         atomBoxes.add(a);
 
-        assertFalse("should not be equal - different types", a.equals(b));
+        assertNotEquals("should not be equal - different types", a, b);
     }
 
 
@@ -153,11 +152,11 @@ public class Test_Equals extends JPLTest {
         Term t2 = Term.textToTerm("mother(rosana, lucia)");
         Term t3 = Term.textToTerm("mother(rosana, marcos)");
 
-        assertFalse("objects t1 and t2  are not the same", t1 == t2);
-        assertTrue("objects t1 and t2 are equal", t1.equals(t2));
+        assertNotSame("objects t1 and t2  are not the same", t1, t2);
+        assertEquals("objects t1 and t2 are equal", t1, t2);
 
 
-        assertFalse("objects t1 and t3 are not equal", t1.equals(t3));
+        assertNotEquals("objects t1 and t3 are not equal", t1, t3);
     }
 
     @Test
@@ -190,7 +189,7 @@ public class Test_Equals extends JPLTest {
         assertNotEquals("Bindings should be different (despite same var name)",
                 s1.toString(), s2.toString());
 
-        assertFalse("variables are indeed not equal despite = names", v1.equals(v2));
+        assertNotEquals("variables are indeed not equal despite = names", v1, v2);
     }
 
     @Test
@@ -228,15 +227,15 @@ public class Test_Equals extends JPLTest {
         Term i2 = new Integer(1212);
         Term i3 = new Integer(212);
 
-        assertTrue("should be = integers", i1.equals(i2));
-        assertFalse("should be <> integers", i1.equals(i3));
+        assertEquals("should be = integers", i1, i2);
+        assertNotEquals("should be <> integers", i1, i3);
 
         // BIG INTEGERS
         Term bi1 = new Integer(BigInteger.valueOf(java.lang.Long.MIN_VALUE));
         Term bi2 = new Integer(BigInteger.valueOf(java.lang.Long.MIN_VALUE));
 
-        assertTrue("should be = integers", i1.equals(i2));
-        assertFalse("should be <> integers", i1.equals(i3));
+        assertEquals("should be = integers", i1, i2);
+        assertNotEquals("should be <> integers", i1, i3);
 
 
         // RATIONALS
@@ -246,11 +245,11 @@ public class Test_Equals extends JPLTest {
 
         Term r4 = new Rational("21r30");
 
-        assertTrue("should be = rationals", r1.equals(r2));
-        assertTrue("should be = rationals", r1.equals(r3));
-        assertTrue("should be = rationals", r2.equals(r3));
+        assertEquals("should be = rationals", r1, r2);
+        assertEquals("should be = rationals", r1, r3);
+        assertEquals("should be = rationals", r2, r3);
 
-        assertFalse("should be <> rationals", r1.equals(r4));
+        assertNotEquals("should be <> rationals", r1, r4);
 
 
         // FLOATS
@@ -258,12 +257,12 @@ public class Test_Equals extends JPLTest {
         Term f2 = new Float(1212.23);
         Term f3 = new Float(212);
 
-        assertTrue("should be = floats", f1.equals(f2));
-        assertFalse("should be <> float", f1.equals(f3));
+        assertEquals("should be = floats", f1, f2);
+        assertNotEquals("should be <> float", f1, f3);
 
-        assertTrue("should be = float and integer", f3.equals(i3));
-        assertFalse("should be <> float and integer", f3.equals(i2));
-        assertFalse("should be <> float and rational", f3.equals(r2));
+        assertEquals("should be = float and integer", f3, i3);
+        assertNotEquals("should be <> float and integer", f3, i2);
+        assertNotEquals("should be <> float and rational", f3, r2);
 
     }
 

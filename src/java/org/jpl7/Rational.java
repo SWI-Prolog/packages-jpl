@@ -65,7 +65,6 @@ public class Rational extends Term {
 	 * @param numerator		a long integer
 	 * @param denominator	a long integer
 	 *
-	 * @return a rational number in canonical form
 	 */
 	public Rational(long numerator, long denominator) {
 		if (denominator == 0) {
@@ -92,8 +91,9 @@ public class Rational extends Term {
 	}
 
 	/**
+	 * 	Creates a rational in canonical form
+	 *
 	 * @param rat   The rational number in format NrM
-	 * @return a rational number in canonical form
 	 */
 	public Rational(String rat) {
 		if (Pattern.compile("-?\\d+r\\d+").matcher(rat).matches()) {

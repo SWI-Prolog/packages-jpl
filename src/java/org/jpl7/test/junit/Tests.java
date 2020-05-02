@@ -14,11 +14,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import java.lang.reflect.Array;
-import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
 
@@ -66,7 +62,7 @@ public class Tests extends JPLTest {
         String c_lib_version = Prolog.get_c_lib_version();
 
         String msg = String.format("java_lib_version(%s) is same as c_lib_version(%s)",  java_lib_version, c_lib_version);
-        assertTrue(msg, java_lib_version.equals(c_lib_version));
+        assertEquals(msg, java_lib_version, c_lib_version);
     }
 
 //    @Test
@@ -77,7 +73,7 @@ public class Tests extends JPLTest {
         String pl_lib_version = Query.oneSolution("jpl_pl_lib_version(V)").get("V").name();
 
         String msg = String.format("java_lib_version(%s) is same as pl_lib_version(%s)", java_lib_version, pl_lib_version);
-        assertTrue(msg, java_lib_version.equals(pl_lib_version));
+        assertEquals(msg, java_lib_version, pl_lib_version);
     }
 
 
@@ -105,7 +101,7 @@ public class Tests extends JPLTest {
         System.out.println("pausing for 2 secs...");
         try {
             Thread.sleep(2000);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
             ;
         } // wait a coupla seconds for it to get started
         // (new Query("set_prolog_flag(abort_with_exception,
@@ -208,31 +204,28 @@ public class Tests extends JPLTest {
     public void testStaticQueryNSolutions1() {
         String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
         int n = 5;
-        assertTrue("Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions",
-                Query.nSolutions(goal, n).length == n);
+        assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions", Query.nSolutions(goal, n).length, n);
     }
 
 	@Test
     public void testStaticQueryNSolutions2() {
         String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
         int n = 0;
-        assertTrue("Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions",
-                Query.nSolutions(goal, n).length == n);
+        assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions", Query.nSolutions(goal, n).length, n);
     }
 
 	@Test
     public void testStaticQueryNSolutions3() {
         String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
         int n = 20;
-        assertTrue("Query.nSolutions(" + goal + ", " + n + ") returns 10 solutions",
-                Query.nSolutions(goal, n).length == 10);
+        assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns 10 solutions", 10, Query.nSolutions(goal, n).length);
     }
 
 
 
 	@Test
     public void testBerhhard1() {
-        assertTrue(Query.allSolutions("consult(library('lists'))").length == 1);
+        assertEquals(1, Query.allSolutions("consult(library('lists'))").length);
     }
 
 	@Test
@@ -254,44 +247,15 @@ public class Tests extends JPLTest {
     public void testForeignFrame1() {
         int ls1 = Query.oneSolution("statistics(localused,LS)").get("LS").intValue();
         int ls2 = Query.oneSolution("statistics(localused,LS)").get("LS").intValue();
-        assertTrue("local stack size unchanged after query", ls1 == ls2);
+        assertEquals("local stack size unchanged after query", ls1, ls2);
     }
 
-	@Test
-    public void testOpenGetClose1() {
-        StringBuffer sb = new StringBuffer();
-        Query q = new Query("atom_chars(prolog, Cs), member(C, Cs)");
-        Map<String, Term> soln;
-        q.open();
-        while (q.hasMoreSolutions()) {
-            sb.append(((Atom) q.nextSolution().get("C")).name());
-        }
-        q.close();
-        assertEquals("prolog", sb.toString());
-    }
 
-	@Test
-    public void testOpenGetClose2() {
-        Query q = new Query("dummy"); // we're not going to open this...
-        try {
-            q.nextSolution(); // should throw exception (query not open)
-            fail("nextSolution() succeeds on unopened Query"); // shouldn't get
-            // to here
-        } catch (JPLException e) { // expected exception class
-            if (e.getMessage().contains("existence_error")) {
-                // OK: an appropriate exception was thrown
-            } else {
-                fail("jpl.Query#nextSolution() threw wrong JPLException: " + e);
-            }
-        } catch (Exception e) {
-            fail("jpl.Query#nextSolution() threw wrong exception class: " + e);
-        }
-    }
 
 	@Test
     public void testOpen1() {
         Query q = new Query("dummy");
-        assertTrue("a newly created query is not open", !q.isOpen());
+        assertFalse("a newly created query is not open", q.isOpen());
     }
 
 	@Test

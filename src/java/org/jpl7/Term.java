@@ -1,7 +1,6 @@
 package org.jpl7;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -122,7 +121,7 @@ public abstract class Term {
 	}
 
 	/**
-	 * Converts a Prolog source text to a corresponding JPL Term
+	 * Converts a Prolog source text (as a String) to a corresponding JPL Term
 	 * (in which each Variable has the appropriate name from the source text).
 	 *
 	 * @param text A Prolog source text denoting a term
@@ -130,8 +129,8 @@ public abstract class Term {
 	 * @throws PrologException containing error(syntax_error(_),_) if text is invalid as a term.
 	 */
 	public static Term textToTerm(String text) {
-
-		/**
+		/*
+		 *
 		 *  atom_to_term/3 will build a term from a string, and will extract all variables in a list
 		 *  https://www.swi-prolog.org/pldoc/doc_for?object=atom_to_term/3
 		 *
@@ -143,7 +142,7 @@ public abstract class Term {
 		 * 	to _4518 and _4520
 		 *
 		 * 	To do so, we rename the name of term Variable  _4518 to 'S' and of _4520 to 'P"
-		 */
+		*/
 
 		// it might be better to use PL_chars_to_term()
 		//	like; Prolog.put_atom_chars(term, name)

@@ -1,8 +1,6 @@
 package org.jpl7.test.junit;
 
 import org.jpl7.*;
-import org.jpl7.fli.Prolog;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;

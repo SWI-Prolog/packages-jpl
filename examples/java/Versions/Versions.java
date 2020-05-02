@@ -1,6 +1,7 @@
+package Versions;
+
 import org.jpl7.JPL;
 import org.jpl7.Query;
-import org.jpl7.Term;
 import org.jpl7.fli.Prolog;
 
 public class Versions {

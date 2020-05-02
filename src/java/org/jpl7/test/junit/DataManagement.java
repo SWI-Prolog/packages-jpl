@@ -1,7 +1,6 @@
 package org.jpl7.test.junit;
 
 import org.jpl7.*;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,10 +58,12 @@ public class DataManagement extends JPLTest {
         Term t;
 
 //        name = "org.jpl7.PrologException: PrologException: error(existence_error(procedure, '/'(pepe, 1)), context(':'(system, '/'('$c_call_prolog', 0)), _0))";
-        name = "existence_error(procedure, '/'(pepe, 1))";
-//        name = "'/'(pepe, 1)";
+
+        //name = "existence_error(procedure, '/'(pepe, 1))";
+        //name = "'/'(pepe, 1)";
         name = "'$c_call_prolog'";
         t = Term.textToTerm(name);
+        assert t != null;
         assertEquals("matching text-term", name, t.toString());
     }
 
@@ -113,6 +114,7 @@ public class DataManagement extends JPLTest {
 //            t = quotedQuery(tests[solutionIndex]);
             sol = new Query(String.format("quoted_name(%s,S)", tests[solutionIndex])).oneSolution();
 
+            //noinspection ConstantConditions
             System.out.println("\t The solution for S is: " + sol.get("S").toString());
             assertEquals(expectedSolutions[solutionIndex], sol.get("S").toString());
         }
@@ -126,7 +128,7 @@ public class DataManagement extends JPLTest {
         // modern syntax in SWI
         // Prolog 7.x
         assertTrue("T is not bound to an atom", t.isAtom());
-        assertTrue("the atom's name is not \"a\"", t.name().equals("a"));
+        assertEquals("the atom's name is not \"a\"", "a", t.name());
     }
 
 
@@ -137,16 +139,16 @@ public class DataManagement extends JPLTest {
         Term t = new Compound("foo", new Term[]{});
         assertTrue(t.isCompound());
         assertFalse(t.isAtom());
-        assertTrue(t.name().equals("foo"));
-        assertTrue(t.arity() == 0);
+        assertEquals("foo", t.name());
+        assertEquals(0, t.arity());
     }
 
     @Test
     public void testCompoundZeroArity2() {
         Term t = Query.oneSolution("T = foo()").get("T");
         // System.out.println("type = " + t.typeName());
-        assertTrue(t.name().equals("foo"));
-        assertTrue(t.arity() == 0);
+        assertEquals("foo", t.name());
+        assertEquals(0, t.arity());
     }
 
     // public void testCompoundZeroArity3() {
@@ -190,7 +192,8 @@ public class DataManagement extends JPLTest {
         String text1 = "fred(?,2,?)";
         String text2 = "[first(x,y),A]";
         Term plist = Term.textToTerm(text2);
-        Term[] ps = plist.listToTermArray();
+        @SuppressWarnings("ConstantConditions") Term[] ps = plist.listToTermArray();
+        //noinspection ConstantConditions
         Term t = Term.textToTerm(text1).putParams(ps);
         assertTrue("fred(?,2,?) .putParams( [first(x,y),A] )",
                 t.hasFunctor("fred", 3) && t.arg(1).hasFunctor("first", 2) && t.arg(1).arg(1).hasFunctor("x", 0)

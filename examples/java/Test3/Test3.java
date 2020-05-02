@@ -1,15 +1,10 @@
+package Test3;
+
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jpl7.Atom;
-import org.jpl7.Compound;
-import org.jpl7.JPLException;
-import org.jpl7.PrologException;
 import org.jpl7.Query;
 import org.jpl7.Term;
-import org.jpl7.Util;
-import org.jpl7.Variable;
-import org.junit.Test;
 
 public class Test3 {
 	public static void main(String argv[]) {

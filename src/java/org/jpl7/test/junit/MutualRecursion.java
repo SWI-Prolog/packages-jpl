@@ -1,6 +1,5 @@
 package org.jpl7.test.junit;
 
-import org.jpl7.Atom;
 import org.jpl7.Integer;
 import org.jpl7.Query;
 import org.jpl7.Term;

@@ -1,11 +1,8 @@
 package org.jpl7.test.junit;
 
 import org.jpl7.Atom;
-import org.jpl7.JPL;
 import org.jpl7.Query;
 import org.jpl7.Term;
-import org.jpl7.fli.Prolog;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,7 +11,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 
 public class StringTest extends JPLTest {

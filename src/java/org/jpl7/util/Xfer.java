@@ -23,7 +23,7 @@ public class Xfer extends Thread {
 			}
 			in.close();
 			out.close();
-		} catch (IOException e) {
+		} catch (IOException ignored) {
 		}
 	}
 }

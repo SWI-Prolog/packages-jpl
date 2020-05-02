@@ -1,18 +1,9 @@
 package org.jpl7.test.junit;
 
 
-import org.jpl7.Atom;
 import org.jpl7.JPL;
 import org.jpl7.Query;
-import org.jpl7.Term;
-import org.jpl7.fli.Prolog;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-
-import java.util.Arrays;
 
 abstract class JPLTest {
     public static final String home =
@@ -64,17 +55,12 @@ abstract class JPLTest {
 
 
     // This is how the test is reported
-    protected void reportTest(Description description, String msg) {
-            if (report) {
-                System.out.println(String.format("Starting test: %s (%s)",
-                        description.getMethodName(),
-                        description.getTestClass().getSimpleName()));
-            }
-    };
-
-    // This is how the test is reported
     protected void reportTest(Description description) {
-        reportTest(description, "");
+        if (report) {
+            System.out.println(String.format("Starting test: %s (%s)",
+                    description.getMethodName(),
+                    description.getTestClass().getSimpleName()));
+        }
     };
 
     protected static void consultTestFile() {

@@ -1,8 +1,6 @@
 package org.jpl7.test.junit;
 
-import org.jpl7.Integer;
 import org.jpl7.*;
-import org.jpl7.fli.Prolog;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,10 +8,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
 
