@@ -163,8 +163,8 @@ set(EXPL jpl_colour_choose_demo.pl jpl_jlist_demo.pl jpl_table_demo.pl
          jpl_text_entry_demo.pl jpl_versions_demo.pl)
 prepend(EXPL examples/prolog ${EXPL})
 
-set(EXJAVA Exceptions Exceptions2 Family FamilyMT Test Test2 Time
-	   Versions Zahed SemWeb)
+set(EXJAVA exceptions exceptions2 family familyMT test test2 time
+	   versions zahed semWeb)
 prepend(EXJAVA examples/java ${EXJAVA})
 
 swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
