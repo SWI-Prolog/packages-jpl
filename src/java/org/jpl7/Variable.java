@@ -64,7 +64,7 @@ public class Variable extends Term {
 	public  String name;
 
 	/**
-	 * Unique ID of a Variable - vars should be <> despite having same name
+	 * Unique ID of a Variable - vars should be different despite having same name
 	 */
 	protected long id;
 

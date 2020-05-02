@@ -115,8 +115,7 @@ public class JRef extends Term {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.JRef.object()
-	 * @see org.jpl7.JRef#object()
+	 * @deprecated {@link  JRef#object()}
 	 */
 	@Deprecated
 	public Object ref() {

@@ -1036,7 +1036,7 @@ public abstract class Term {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.Term.listToTermArray(Term[] terms)
+	 * @deprecated Use {@link Term#listToTermArray()}
 	 */
 	@Deprecated
 	public final Term[] toTermArray() {

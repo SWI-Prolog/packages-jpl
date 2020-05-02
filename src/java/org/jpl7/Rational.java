@@ -51,8 +51,8 @@ public class Rational extends Term {
 
 	/**
 	 * the numerator and denominator in canonical form:
-	 * 		gcd(numerator, denominator =  1 (not reducable)
-	 * 		denominator > 1
+	 * 		gcd(numerator, denominator =  1 (not reducible)
+	 * 		denominator greater than 1
 	 *
 	 * 	rat is a String of the form "NrM"
 	 */

@@ -46,7 +46,7 @@ public final class Util {
 	 * @param terms
 	 *            An array of Term
 	 * @return Term a list of the array elements
-	 * @deprecated Use org.jpl7.Term.termArrayToList(Term[] terms)
+	 * @deprecated Use {@link Term#termArrayToList(Term[] terms)}
 	 */
 	@Deprecated
 	public static Term termArrayToList(Term[] terms) {
@@ -75,7 +75,7 @@ public final class Util {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.Util.subsToString(Map<String, Term>)
+	 * @deprecated Use {@link Util#subsToString(Map)}
 	 */
 	@Deprecated
 	public static String toString(Map<String, Term> varnames_to_Terms) {
@@ -119,7 +119,7 @@ public final class Util {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.Term.textToTerm(String text)
+	 * @deprecated Use {@link Term#textToTerm(String text)}
 	 */
 	@Deprecated
 	public static Term textToTerm(String text) {
@@ -142,7 +142,7 @@ public final class Util {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.Term.stringArrayToList(String[] a)
+	 * @deprecated Use {@link Term#stringArrayToList(String[] a)}
 	 */
 	@Deprecated
 	public static Term stringArrayToList(String[] a) {
@@ -150,7 +150,7 @@ public final class Util {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.Term.intArrayToList(int[] a)
+	 * @deprecated Use {@link Term#intArrayToList(int[] a)}
 	 */
 	@Deprecated
 	public static Term intArrayToList(int[] a) {
@@ -158,7 +158,7 @@ public final class Util {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.Term.intArrayArrayToList(int[][] a)
+	 * @deprecated Use {@link Term#intArrayArrayToList(int[][] a)}
 	 */
 	@Deprecated
 	public static Term intArrayArrayToList(int[][] a) {
@@ -166,6 +166,10 @@ public final class Util {
 	}
 
 	/**
+	 *
+	 * @param term a term
+	 * @return if term is a proper list
+	 *
 	 * @deprecated Use {@link Term#isList(Term)}
 	 */
 	@Deprecated
@@ -185,6 +189,11 @@ public final class Util {
 	}
 
 	/**
+	 * Builds a Java array of Terms from a a list of terms (as a Compound)
+	 *
+	 * @param t a compound term that is a list
+	 * @return an array of terms, one per element in the list
+	 *
 	 * @deprecated Use {@link Term#listToTermArray(Term)}
 	 */
 	@Deprecated
@@ -203,6 +212,9 @@ public final class Util {
 	}
 
 	/**
+	 * @param t a compound term that is a list of atoms
+	 * @return a String array representing the list of atoms
+	 *
 	 * @deprecated Use {@link Term#atomListToStringArray(Term)}
 	 */
 	@Deprecated
