@@ -17,11 +17,11 @@ import static org.junit.Assert.*;
 //https://objectcomputing.com/resources/publications/sett/august-2007-migrating-from-junit-3-to-junit-4-nothing-but-good-news
 
 // This class defines all the tests which are run from Java.
-public class Variables extends JPLTest {
+public class Test_Variables extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.Variables");
+        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.Test_Variables");
 
         // should work from static class but gives error
 //        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package

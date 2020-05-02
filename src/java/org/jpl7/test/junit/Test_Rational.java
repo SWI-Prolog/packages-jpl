@@ -13,11 +13,11 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class RationalTest extends JPLTest {
+public class Test_Rational extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.RationalTest");
+        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.Test_Rational");
 
         // should work from static class but gives error
 //        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package

@@ -51,21 +51,22 @@ set(TEST
     org/jpl7/test/standalone/Family.java
     ##
     org/jpl7/test/junit/Tests.java
-    org/jpl7/test/junit/GetSolution.java
-    org/jpl7/test/junit/QueryBuilder.java
-    org/jpl7/test/junit/RationalTest.java
-    org/jpl7/test/junit/Variables.java
-    org/jpl7/test/junit/MutualRecursion.java
-    org/jpl7/test/junit/AtomTest.java
-    org/jpl7/test/junit/Unicode.java
-    org/jpl7/test/junit/ReportPrologInfo.java
-    org/jpl7/test/junit/JRef.java
-    org/jpl7/test/junit/DataManagement.java
-    org/jpl7/test/junit/TypesTest.java
-    org/jpl7/test/junit/ListTest.java
-    org/jpl7/test/junit/IntegerTest.java
-    org/jpl7/test/junit/StringTest.java
-    org/jpl7/test/junit/ModuleTest.java
+    org/jpl7/test/junit/Test_GetSolution.java
+    org/jpl7/test/junit/Test_QueryBuilder.java
+    org/jpl7/test/junit/Test_Equals.java
+    org/jpl7/test/junit/Test_Rational.java
+    org/jpl7/test/junit/Test_Variables.java
+    org/jpl7/test/junit/Test_MutualRecursion.java
+    org/jpl7/test/junit/Test_Atom.java
+    org/jpl7/test/junit/Test_Unicode.java
+    org/jpl7/test/junit/Test_Report.java
+    org/jpl7/test/junit/Test_JRef.java
+    org/jpl7/test/junit/Test_Data.java
+    org/jpl7/test/junit/Test_Types.java
+    org/jpl7/test/junit/Test_List.java
+    org/jpl7/test/junit/Test_Integer.java
+    org/jpl7/test/junit/Test_String.java
+    org/jpl7/test/junit/Test_Module.java
     ##
     org/jpl7/test/JPLTestSuiteRunner.java
     org/jpl7/test/JPLTestSuite.java

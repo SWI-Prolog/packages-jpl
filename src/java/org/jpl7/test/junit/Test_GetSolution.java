@@ -19,11 +19,11 @@ import static org.junit.Assert.*;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-public class GetSolution extends JPLTest {
+public class Test_GetSolution extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.GetSolution");
+        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.Test_GetSolution");
 
         // should work from static class but gives error
 //        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package

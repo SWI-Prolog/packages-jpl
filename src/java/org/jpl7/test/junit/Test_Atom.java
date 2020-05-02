@@ -11,11 +11,11 @@ import org.junit.runner.Description;
 import static org.junit.Assert.*;
 
 
-public class AtomTest extends JPLTest {
+public class Test_Atom extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.AtomTest");
+        org.junit.runner.JUnitCore.main("org.jpl7.test.junit.Test_Atom");
 
         // should work from static class but gives error
 //        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
