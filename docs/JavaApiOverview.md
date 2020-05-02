@@ -290,6 +290,36 @@ When it comes to non-empty, compound, list terms, the behavior of `toString()` w
 * If False, lists will be represented in infix notation with the list pair functor `[|]`, e.g.,  `[|](1, [|](2, [|](3, '[]')))` for list `[1, 2, 3]`.
 
 
+### Java objects  
+
+From JPL 7.4,  Java's objects are not represented with Compound terms anymore, but with Blobs ([see here](https://jpl7.org/ReleaseNotes740)).
+
+A JVM object is either a `Compound`, `Atom`, or `JRef`:
+
+* Java `null` is represented as a  Compound term `@(null)` and a constant `JPL.JNULL` is defined for that structure. 
+* Java Strings are represented in Prolog by text atoms, so they should be treated as `Atom` instances.
+* Any other JVM objects is a `JRef` term which stores the object in question. 
+
+The important thing is that all three cases can be passed to Prolog, so Prolog can have access to the reference to the JVM object.
+
+
+To **create a JPL terms for JVM object**:
+
+* `JPL.newJRef(object)` yields `JPL.JNULL` (if the object is `null`) or a `JRef` (if the object is not `null` or a String).
+* `JRef(object)` constructor.  
+ 
+ 
+To **retrive the actual JVM object** encoded in a JPL term, we can use `Term.object()`:
+
+ 1. If it is indeed a term `JPL.JNULL`, then Java `null` is returned.
+ 2. If it is a reference to a JVM non-null object, that is the term is an instnce of `JRef` , then the actual object being represented is returned.
+ 3. Otherwise, the term does not represent an object and an eception is given.
+  
+ If you don't know what this all means, don't worry: it only affects those writing hybrid Java+Prolog programs which call each other nestedly.
+
+
+To check if a term is a JVM `null`, we can use `Term.isNull()`, which succeeds only if it is equal to the Compound `@(null)` term represented by `JPL.JNULL`.
+
 
 
 ## Creating queries
@@ -498,10 +528,6 @@ JPL 7.4.0-alpha
 
 The `Term[]` args of a `Compound` are indexed (like all Java arrays) from zero, whereas in Prolog the args of a structure are conventionally numbered from one.
 
-### Representing `@(null)`
-
-there is no `org.jpl7.JNull` class: instead, use `new JRef(null)` to represent `@(null)` (which itself represents Java's `null`). If you don't know what this all means, don't worry: it only affects those
-writing hybrid Java+Prolog programs which call each other nestedly.
 
 ### All solutions of a Query with no solutions
 

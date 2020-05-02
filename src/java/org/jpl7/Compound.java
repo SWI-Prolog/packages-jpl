@@ -203,9 +203,10 @@ public class Compound extends Term {
 	 *
 	 * @return whether this Term is a 'jnull' structure, i.e. @(null)
 	 */
-	public boolean isJNull() {
-		return hasFunctor("@", 1) && arg(1).isAtomOfNameType("null", "text");
-	}
+    public boolean isJNull() {
+		return equals(JPL.JNULL);
+//		return hasFunctor("@", 1) && arg(1).isAtomOfNameType("null", "text");
+    }
 
 	/**
 	 * whether this Term is a 'jboolean' structure denoting Java's true, i.e. @(true)

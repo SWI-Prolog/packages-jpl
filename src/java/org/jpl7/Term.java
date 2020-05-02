@@ -174,7 +174,7 @@ public abstract class Term {
 			// just did q.nextSolution() and there may be more
 			q.close();
 
-			return (Term) s.get("T");
+			return s.get("T");
 		} else {
 			q.close();	// redundant as q.hasMoreSolutions() would have closed it, but ....
 			return null;
@@ -270,7 +270,7 @@ public abstract class Term {
 		switch (Prolog.term_type(term)) {
 			case Prolog.VARIABLE: // 1
 				for (Iterator<term_t> i = vars_to_Vars.keySet().iterator(); i.hasNext();) {
-					term_t varX = (term_t) i.next(); // a previously seen Prolog
+					term_t varX = i.next(); // a previously seen Prolog
 					// variable
 					if (Prolog.compare(varX, term) == 0) { // identical Prolog
 						// variables?
@@ -566,10 +566,10 @@ public abstract class Term {
 	 * @throws JPLException if this Term is not a JRef or not NULL term
 	 */
 	public Object object() { // overridden in JRef
-		if (this == JPL.JNULL)
+		if (this == JPL.JNULL)	// address comparison: exactly JPL.JNULL object
 			return null;
 		else
-			throw new JPLException("this term is not a JRef");
+			throw new JPLException("term is neither a JRef nor a Compound representing @(null)");
 	}
 
 	/**
@@ -583,13 +583,7 @@ public abstract class Term {
 	 */
 	@Deprecated
 	public static final Term objectToJRef(Object object) {
-		if (object == null) {
-			return JPL.JNULL;
-		} else if (object instanceof String) {
-			throw new JPLException("a JRef cannot have a String value (Strings are represented by text atoms)");
-		} else {
-			return new JRef(object);
-		}
+		return JPL.newJRef(object);
 	}
 
 	// ==================================================================/
@@ -734,11 +728,11 @@ public abstract class Term {
 
 	/**
 	 * @return the Object which this JRef references
-	 * @deprecated Use {@link JRef#object()}
+	 * @deprecated Use {@link Term#object()}
 	 */
 	@Deprecated
 	public Object jrefToObject() { // overridden in Compound and JRef
-		throw new JPLException("term is neither a JRef nor a Compound representing @(null)");
+		return this.object();
 	}
 
 	// ==================================================================/

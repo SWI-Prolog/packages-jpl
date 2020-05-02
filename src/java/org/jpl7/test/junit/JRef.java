@@ -130,20 +130,21 @@ public class JRef extends JPLTest {
     }
 
 
-    @Test
+    @Test(expected = JPLException.class)
     public void testRef7() {
         Term badJRef = new Compound("hello", new Term[] { new Atom("foobar") }); // term hello(foobar)
+
         try {
             badJRef.object(); // should throw exception
             fail("@(foobar).object() should thrown JPLException"); // shouldn't get to here
         } catch (JPLException e) { // expected exception class
-            if (e.getMessage().endsWith("term is not a JRef")) {
-                // OK: an appropriate exception was thrown
-            } else {
-                fail("hello(foobar).object() threw wrong JPLException: " + e);
-            }
-        } catch (Exception e) {
-            fail("hello(foobar).object() threw wrong exception class: " + e);
+            // From JUNIT 4.5 would be good to use assertThat
+            // check http://junit.sourceforge.net/doc/ReleaseNotes4.4.html for assertTahat
+//            assertThat(e.getMessage(), is("term is neither a JRef nor a Compound representing @(null)"));
+
+
+            assertEquals("Exception text does not match", "term is neither a JRef nor a Compound representing @(null)", e.getMessage());
+            throw e;    // All good, keep throwing it so that the @Test directive catches it
         }
     }
 

@@ -81,14 +81,6 @@ public class JRef extends Term {
 						// name is the blob itself
 	}
 
-	/**
-	 * @deprecated Use org.jpl7.JRef.object()
-	 * @see org.jpl7.JRef#object()
-	 */
-	@Deprecated
-	public Object jrefToObject() {
-		return object;
-	}
 
 	/**
 	 * Returns the actual object the JREF stands for
