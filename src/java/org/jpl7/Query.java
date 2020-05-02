@@ -518,8 +518,8 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 	}
 
 	/**
-	 * Deprecated. Used to be used only in the context of Util.textToTerm() but a better solution has been
-	 * implemented there and hence does not require this difficult method
+	 * Deprecated. Used to be used only in the context of Term.textToTerm() but a better solution has been
+	 * implemented there and hence does not require this difficult method anymore. Left it for reference.
 	 *
 	 * This is called with query
 	 * 	atom_to_term(Atom, Term, Bindings) https://www.swi-prolog.org/pldoc/doc_for?object=atom_to_term/3

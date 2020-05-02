@@ -138,7 +138,7 @@ public final class Util {
 	 * @return Term a JPL Term equivalent to the given source text
 	 */
 	public static Term textParamsToTerm(String text, Term[] params) {
-		return Util.textToTerm(text).putParams(params);
+		return Term.textToTerm(text).putParams(params);
 	}
 
 	/**

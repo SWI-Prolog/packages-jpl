@@ -116,13 +116,6 @@ public class DataManagement extends JPLTest {
             System.out.println("\t The solution for S is: " + sol.get("S").toString());
             assertEquals(expectedSolutions[solutionIndex], sol.get("S").toString());
         }
-
-
-
-//        String name2 = ((Atom) sol.get("S")).name();
-
-//        t = Util.textToTerm(String.format("jpl:(quoted_name(%s, S))", name));
-
     }
 
 
@@ -184,7 +177,7 @@ public class DataManagement extends JPLTest {
     public void testTextToTerm1() {
         String text = "fred(B,p(A))";
         Term t = Term.textToTerm(text);
-        assertTrue("Util.textToTerm() converts \"fred(B,p(A))\" to a corresponding Term",
+        assertTrue("Term.textToTerm() converts \"fred(B,p(A))\" to a corresponding Term",
                 t.hasFunctor("fred", 2) && t.arg(1).isVariable() && t.arg(1).name().equals("B")
                         && t.arg(2).hasFunctor("p", 1) && t.arg(2).arg(1).isVariable()
                         && t.arg(2).arg(1).name().equals("A"));

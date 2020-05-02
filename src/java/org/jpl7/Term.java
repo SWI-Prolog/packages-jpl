@@ -659,7 +659,7 @@ public abstract class Term {
 
 	// TODO: is this used at all? Can we remove it?
 	protected Term putParams(Term plist) { // was public
-		Term[] ps = plist.toTermArray();
+		Term[] ps = plist.listToTermArray();
 		return putParams(ps);
 	}
 
@@ -1037,7 +1037,7 @@ public abstract class Term {
 	}
 
 	/**
-	 * @deprecated Use org.jpl7.Term.termArrayToList(Term[] terms)
+	 * @deprecated Use org.jpl7.Term.listToTermArray(Term[] terms)
 	 */
 	@Deprecated
 	public final Term[] toTermArray() {

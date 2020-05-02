@@ -20,7 +20,7 @@ import org.jpl7.fli.term_t;
  * Alternatively, construct the Term from Prolog source syntax:
  *
  * <pre>
- * Util.textToTerm(&quot;f(a)&quot;)
+ * Term.textToTerm(&quot;f(a)&quot;)
  * </pre>
  *
  * The <i>arity</i> of a Compound is the quantity of its arguments. Once constructed, neither the name nor the arity of
