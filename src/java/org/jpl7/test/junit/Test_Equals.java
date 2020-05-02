@@ -1,8 +1,6 @@
 package org.jpl7.test.junit;
 
-import org.jpl7.Atom;
-import org.jpl7.Compound;
-import org.jpl7.Term;
+import org.jpl7.*;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,6 +9,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -173,5 +172,36 @@ public class Test_Equals extends JPLTest {
 
     }
 
+
+
+
+
+    @Test
+    public void test_variable_equal1() {
+        Variable v1 = new Variable("X");
+        Variable v2 = new Variable("X");
+
+        Term s1 = new Query("? = 5", v1).oneSolution().get("X");
+        Term s2 = new Query("? = 15", v2).oneSolution().get("X");
+
+        assertNotEquals("Bindings should be different (despite same var name)",
+                s1.toString(), s2.toString());
+
+        assertFalse("variables are indeed not equal despite = names", v1.equals(v2));
+    }
+
+
+    @Test
+    public void test_variable_equal2() {
+        Term q1 = Term.textToTerm("X = 5");
+        Term q2 = Term.textToTerm("X = 15");
+
+        Variable v1 = (Variable) q1.arg(1);
+        Variable v2 = (Variable) q2.arg(1);
+
+        assertEquals("name of var is X", "X", v1.name());
+
+        assertNotEquals("should be different variables, despite = names", v1.equals(v2));
+    }
 
 }

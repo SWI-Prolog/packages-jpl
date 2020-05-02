@@ -1,10 +1,8 @@
 package org.jpl7.test;
 
 
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
+import org.jpl7.test.junit.Test_QueryBuilder;
 import org.junit.runner.RunWith;
-import org.junit.runner.notification.Failure;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
@@ -17,7 +15,7 @@ import org.junit.runners.Suite;
         org.jpl7.test.junit.JRef.class,
         org.jpl7.test.junit.ModuleTest.class,
         org.jpl7.test.junit.MutualRecursion.class,
-        org.jpl7.test.junit.QueryBuilder.class,
+        Test_QueryBuilder.class,
         org.jpl7.test.junit.RationalTest.class,
         org.jpl7.test.junit.ReportPrologInfo.class,
         org.jpl7.test.junit.StringTest.class,

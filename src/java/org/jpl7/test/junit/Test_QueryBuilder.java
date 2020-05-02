@@ -14,7 +14,7 @@ import org.junit.runner.Description;
 
 import static org.junit.Assert.*;
 
-public class QueryBuilder extends JPLTest {
+public class Test_QueryBuilder extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
