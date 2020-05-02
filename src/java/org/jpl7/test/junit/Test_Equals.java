@@ -1,6 +1,8 @@
 package org.jpl7.test.junit;
 
 import org.jpl7.*;
+import org.jpl7.Float;
+import org.jpl7.Integer;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -8,6 +10,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -190,7 +193,6 @@ public class Test_Equals extends JPLTest {
         assertFalse("variables are indeed not equal despite = names", v1.equals(v2));
     }
 
-
     @Test
     public void test_variable_equal2() {
         Term q1 = Term.textToTerm("X = 5");
@@ -203,5 +205,72 @@ public class Test_Equals extends JPLTest {
 
         assertNotEquals("should be different variables, despite = names", v1.equals(v2));
     }
+
+
+    @Test
+    public void test_variable_hash1() {
+        Term v1 = new Variable("X");
+        Term v2 = new Variable("X");
+        Term v3 = new Variable();
+
+        Set<Term> boxes = new HashSet<>();
+        boxes.add(v1);
+
+        assertFalse("v2 should not be contained in set (<> hash)", boxes.contains(v2));
+        assertFalse("v3 should not be contained in set (<> hash)", boxes.contains(v3));
+    }
+
+
+    @Test
+    public void test_numbers_equal() {
+        // INTEGERS
+        Term i1 = new Integer(1212);
+        Term i2 = new Integer(1212);
+        Term i3 = new Integer(212);
+
+        assertTrue("should be = integers", i1.equals(i2));
+        assertFalse("should be <> integers", i1.equals(i3));
+
+        // BIG INTEGERS
+        Term bi1 = new Integer(BigInteger.valueOf(java.lang.Long.MIN_VALUE));
+        Term bi2 = new Integer(BigInteger.valueOf(java.lang.Long.MIN_VALUE));
+
+        assertTrue("should be = integers", i1.equals(i2));
+        assertFalse("should be <> integers", i1.equals(i3));
+
+
+        // RATIONALS
+        Term r1 = new Rational(2, 3);
+        Term r2 = new Rational(20, 30);
+        Term r3 = new Rational("20r30");
+
+        Term r4 = new Rational("21r30");
+
+        assertTrue("should be = rationals", r1.equals(r2));
+        assertTrue("should be = rationals", r1.equals(r3));
+        assertTrue("should be = rationals", r2.equals(r3));
+
+        assertFalse("should be <> rationals", r1.equals(r4));
+
+
+        // FLOATS
+        Term f1 = new Float(1212.23);
+        Term f2 = new Float(1212.23);
+        Term f3 = new Float(212);
+
+        assertTrue("should be = floats", f1.equals(f2));
+        assertFalse("should be <> float", f1.equals(f3));
+
+        assertTrue("should be = float and integer", f3.equals(i3));
+        assertFalse("should be <> float and integer", f3.equals(i2));
+        assertFalse("should be <> float and rational", f3.equals(r2));
+
+    }
+
+
+
+
+
+
 
 }
