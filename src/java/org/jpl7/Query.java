@@ -671,23 +671,17 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 		if (open) {
 			throw new JPLException("Query is already open");
 		} else { // get a vector of solutions, then turn it into an array
-			// Vector<Map<String, Term>> v = new Vector<Map<String, Term>>();
-			// while (hasMoreSolutions()) {
-			// v.addElement(nextSolution());
-			// }
-			// @SuppressWarnings("unchecked")
-			// Map<String, Term> solutions[] = (Map<String, Term>[]) new
-			// HashMap[v.size()]; // 0 solutions -> Map[0]
-			// v.copyInto(solutions);
-			// return solutions;
-			// get a List of solutions:
+			// First, collect all solutions in a (dynamic) list of substitution mappings
 			List<Map<String, Term>> l = new ArrayList<Map<String, Term>>();
 			while (hasNext()) {
 				l.add(next());
 			}
-			@SuppressWarnings("unchecked")
-			Map<String, Term> t[] = (Map<String, Term>[]) new HashMap[0];
-			return l.toArray(t);
+
+			// Second, convert the list into an array of Mappings (0 solutions -> Map[0])
+//			@SuppressWarnings("unchecked")
+			return l.toArray((Map<String, Term>[]) new HashMap[0]); // https://codeahoy.com/java/How-To-Convery-ArrayList-To-Array/
+
+
 		}
 	}
 

@@ -177,7 +177,7 @@ public class Rational extends Term {
 	 * @return the int value of this Rational
 	 */
 	public final int intValue() {
-		return (int) Math.round(numerator / denominator);
+		return Math.round(numerator / denominator);
 	}
 
 		/**
@@ -186,7 +186,7 @@ public class Rational extends Term {
 	 * @return the value of this org.jpl7.Rational as a long
 	 */
 	public final long longValue() {
-			return (long) numerator / denominator;
+			return (numerator / denominator);
 	}
 
 	/**

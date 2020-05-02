@@ -5,7 +5,7 @@ import org.jpl7.fli.Prolog;
 
 public class Versions {
 	public static void main(String argv[]) {
-		String pVersion = ((Term) (new Query("jpl_pl_lib_version(V)")).oneSolution().get("V")).name();
+		String pVersion = new Query("jpl_pl_lib_version(V)").oneSolution().get("V").name();
 		String jVersion = JPL.version_string();
 		String cVersion = Prolog.get_c_lib_version();
 		System.out.println("prolog library version; " + pVersion);

@@ -62,7 +62,7 @@ public class Versions {
 
 		Query q1 = new Query("current_prolog_flag", new Term[] { new Atom("home"), new Variable("Home") });
 		Map<String, Term> h1 = q1.oneSolution();
-		Term home = (Term) h1.get("Home");
+		Term home = h1.get("Home");
 		// System.out.println("Home = " + home.debugString());
 		System.out.println("Home = " + home.toString());
 
@@ -73,7 +73,7 @@ public class Versions {
 			System.out.println("org.jpl7.JPL not found");
 		}
 
-		String prologVersion = ((Term) (new Query("jpl_pl_lib_version(V)")).oneSolution().get("V")).name();
+		String prologVersion = new Query("jpl_pl_lib_version(V)").oneSolution().get("V").name();
 		System.out.println(" prolog library version: " + prologVersion);
 		String javaVersion = org.jpl7.JPL.version_string();
 		System.out.println("   java library version: " + javaVersion);

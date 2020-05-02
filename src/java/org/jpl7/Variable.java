@@ -208,7 +208,7 @@ public class Variable extends Term {
 	protected final void put(Map<String, term_t> varnames_to_vars, term_t term) {
 		term_t var;
 		// if this var is anonymous or as yet unseen, put a new Prolog variable
-		if (this.name.equals("_") || (var = (term_t) varnames_to_vars.get(this.name)) == null) {
+		if (this.name.equals("_") || (var = varnames_to_vars.get(this.name)) == null) {
 			this.term_ = term;
 			this.index = varnames_to_vars.size(); // i.e. first var in is #0
 													// etc.

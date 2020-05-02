@@ -8,7 +8,7 @@ public class FetchBigTree {
 		// Prolog.set_default_init_args(new String[] { "libpl.dll", "-f",
 		// "D:/pcm/bin/pcm.ini", "-g", "pcm_2000" });
 		(new Query("consult('jpl/test/test.pl')")).oneSolution();
-		Term t = (Term) ((new Query("p(18,T)")).oneSolution().get("T"));
+		Term t = new Query("p(18,T)").oneSolution().get("T");
 		int i = 1;
 		while (t.hasFunctor("a", 2)) {
 			t = t.arg(2);
