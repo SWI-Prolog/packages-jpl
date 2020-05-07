@@ -63,10 +63,6 @@ public class Variable extends Term {
 	 */
 	public  String name;
 
-	/**
-	 * Unique ID of a Variable - vars should be different despite having same name
-	 */
-	protected long id;
 
 	/**
 	 * defined between Query.open() and Query.get2()
@@ -78,7 +74,6 @@ public class Variable extends Term {
 	 *
 	 */
 	public Variable() {
-		this.id = n;	// store id as current n
 		this.name = "_" + Long.toString(n++); // e.g. _0, _1 etc.
 	}
 
@@ -96,7 +91,6 @@ public class Variable extends Term {
 			throw new JPLException("name cannot be empty String");
 		} else {
 			this.name = name;
-			this.id = n++;
 		}
 	}
 
@@ -120,25 +114,26 @@ public class Variable extends Term {
 	 *            The Object to compare.
 	 * @return true if the Object is a Variable and the above condition apply.
 	 */
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			Variable variable = (Variable) o;
-			return id == variable.id && name.equals(variable.name);
-		}
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Variable variable = (Variable) o;
+		return name.equals(variable.name);
+	}
+
 
 	// just use the id which is unique for each object
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(name);
 	}
 
 	/**
-	 * This can be used to get the current solution binding of the Variable instance.
+	 * This can be used to get the **current** solution binding of the Variable instance.
 	 * So we are calling when the goal is in a solution
 	 *
-	 * This mtehod returns nothing but modifies the argument mappings, by filling
+	 * This method returns nothing but modifies the argument mappings, by filling
 	 * them with the current solution binding of the Variable instance.
 	 *
 	 * If Variable instance is anonymous or a dont-tell-me variable, then do nothing

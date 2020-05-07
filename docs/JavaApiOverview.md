@@ -98,7 +98,22 @@ constructing queries which can be called within Prolog, and they are also a mean
 
 `Term` instances are never changed by any activity within the Prolog engine: indeed; it doesn't know of their existence.
 
-The `Term` class is abstract, so it cannot be directly instantiated; to create a Term, create an instance of one of its subclasses, which are the ones accounting for the various [data types in SWI-Prolog](https://www.swi-prolog.org/datatypes.html).
+The `Term` class is abstract, so it cannot be directly instantiated; to create a Term, one can create an instance of one of its subclasses, which are the ones accounting for the various [data types in SWI-Prolog](https://www.swi-prolog.org/datatypes.html). 
+
+Below, we explain how to create Terms of different specific types. However, a convenient way to create a Term is to build one from its actual textual representation, as done in Prolog. This is done via static method:
+ 
+```java
+public static Term textToTerm(String text) 
+```
+
+For example, the following creates a Compound Term that has includes many other types as (sub)Terms:
+
+```java
+Term t = Term.textToTerm("X = age_of(aristotle, 33)");
+```
+
+Here Term `t` is a Compound with functor `=` and two Terms args: a `Variable` Term with name "`X`" and a `Compound` Term representing Term `age_of(aristotle, 33)` which itself contains an `Atom` sub Term for "`aristotle`" and one `Integer` sub Term for `33`.
+
 
 ### Atoms 
 
@@ -123,19 +138,6 @@ a1.name()
 
 See [org.jpl7.Atom JavaDoc](https://jpl7.org/javadoc/org/jpl7/Atom.html) for details of how SWI Prolog version 7's strings and blobs (including reserved symbols) are accommodated.
 
-### Variables
-
-`org.jpl7.Variable` instances have identifying names, which must comply with conventional Prolog source text syntax.
-
-```java
-Variable v1 = new Variable("X"); // a regular variable
-
-Variable v2 = new Variable("_"); // an "anonymous" variable
-
-Variable v3 = new Variable("_Y"); // a "dont-tell-me" variable, whose bindings we don't want to know
-```
-
-They are just tokens, and do not behave like Prolog variables.
 
 ### Integers
 
@@ -167,8 +169,6 @@ org.jpl7.Integer i = new org.jpl7.Rational("5r2");
 
 The `org.jpl7.Rational` class has an `floatValue()` and `doubleValue()` methods, as well as `intValue()` that will perform Integer division (thus dropping the decimal part). It also provides getters ``getNumerator()`` and ``getDenominator()``.
 
-
-
 ### Floats
 
 A `org.jpl7.Float` is a specialized `org.jpl7.Term` which holds a Java `double` value. This class corresponds to the Prolog *float* [arithmethic type](https://www.swi-prolog.org/pldoc/man?section=artypes) (64-bit ISO/IEC in SWI Prolog).
@@ -180,6 +180,56 @@ org.jpl7.Float f = new org.jpl7.Float(3.14159265);
 As with integers, take care to avoid confusion between `org.jpl7.Float` and `java.lang.Float`.
 
 The `org.jpl7.Float` class has a `doubleValue()` accessor to obtain the `double` value of an instance, and also a `floatValue()` accessor.
+
+
+### Variables
+
+`org.jpl7.Variable` instances have identifying names, which must comply with conventional Prolog source text syntax.
+
+```java
+Variable v1 = new Variable("X"); // a regular variable
+
+Variable v2 = new Variable("_"); // an "anonymous" variable
+
+Variable v3 = new Variable("_Y"); // a "dont-tell-me" variable, whose bindings we don't want to know
+```
+
+Note that they are just **_tokens_** to create queries, but do _not_ behave like Prolog variables. In particular, instances of `org.jpl7.Variable` are never bound nor shared across queries. 
+
+So, it is not possible to extract, for example, the "binding" of a Variable. Also, a Variable does not "belong" to any query as the following code shows:
+
+```java
+Variable v = new Variable("X");
+
+Term s1 = new Query("? = 5", v).oneSolution().get("X"); // s1 an JPL Integer(5)
+int n = s1.intValue();
+
+Term s2 = new Query("? = hello", v).oneSolution().get("X"); // s2 a JPL Atom("hello")
+String x = s2.toString();
+```
+
+Instances of `org.jpl7.Variable` have (textual) names ("`X1`" in this case), and bindings are retrieved by name. Thus, the role of `v` above is merely to build Prolog queries and provide name "`X`" to free variables in those queries in order to be able to access their bindings (via those names) in solution methods (in this case `oneSolution()`). 
+
+All this implies that all we care about a Variable is its _textual name_ and hence Variable instances with the same name are interchangeable and thus treated as equal under `Variable.equals()`. This is analogous to the other Term subclasses, as JPL takes a purely syntactic view of `org.jpl7.Term`. For example, two different objects created via `new Atom("fred")` will be treated as equals via method `.equals()`, and the same goes for `new Variable("X")`.
+
+In the following example, even though two Variables instances are different and use in different queries, they are equal under `.equals()`:
+ 
+```java
+    Variable v1 = new Variable("X");
+    Variable v2 = new Variable("X");
+
+    Term s1 = new Query("? = 5", v1).oneSolution().get("X");
+    Term s2 = new Query("? = 15", v2).oneSolution().get("X");
+    
+    boolean same_var = v1.equals(s2);   // evaluates to True
+    boolean same_bindings = s1.equals(s2); // evaluates to False
+```
+
+Anonymous, dont-tell-me, variables are not equal to any other variable.
+
+Please refer to [Creating queries](#creating-queries) and [Querying Prolog](#querying-prolog) below to understand how to use JPL `Variables` to build queries and how to access their bindings in solutions.
+
+
 
 ### Compound terms
 
@@ -200,10 +250,23 @@ Note the use of Java's *anonymous array* syntax
 ```java
 new Term[] {..., ...}
 ```
-
 to specify any quantity (perhaps zero) of arguments.
 
 In this example, the Java variable `t1` refers to a **Compound** instance, which represents the Prolog term *teacher\_of(aristotle, alexander)*.
+
+It is also possible to create a `Term` directly from a String using static `Term.textToTerm(String text)`. For example, we can achieve the same term as above as follows:
+
+```java
+Compound t1 = (Compound) Term.textToTerm("teacher_of(aristotle, alexander)")
+```
+
+Variables, with the usual Prolog notation, can also be included as part of the Term building process; e.g.:
+
+```java
+Compound t1 = (Compound) Term.textToTerm("teacher_of(aristotle, X)")
+```
+
+
 
 To obtain the (String) name of a **Compound**, use the **name()** accessor method.
 
@@ -337,14 +400,32 @@ The `Query q` in this example represents the Prolog query
 ?- teacher_of(aristotle, alexander).
 ```
 
-`org.jpl7.Query` implements `java.util.Iterator`, allowing a query's solutions to be retrieved one at a time.
+The above Query is a ground one. To create queries with free variables we resort to JPL `Variable` term:
+
+```java
+Term goal = new Compound("teacher_of", new Term[] {new Atom("aristotle"), new Variable("X")});
+Query q = new Query(goal);
+```
+
+The `Query q` in this example represents the Prolog query
+
+```prolog
+?- teacher_of(aristotle, X).
+```
+
+`org.jpl7.Query` implements `java.util.Iterator`, allowing a query's solutions to be retrieved one at a time, each yielding a `Map<String, Term>` to access the solution binding for each free non-anonymous variable via their textual name (in the above example, just "`X`").
+
+As a Query is constructor from a Term, as explained above in [Creating terms](#creating-terms) section, we can also build a Query directly from a String. The above Query can be built as follows:
+
+```java
+Query q = new Query("teacher_of(aristotle, X)");
+```
+
+
 
 ## Querying Prolog
 
-To ask the Prolog engine a query, one first constructs a `Query` instance, as in the above example,
-and then uses the `java.util.Iterator` interface, which the `Query` class implements,
-to obtain solutions (where a "solution" is what is known in logic programming jargon as a *substitution*,
-which is a collection of *bindings*, each of which relates one of the variables within the query's goal to a `Term` representation of the Prolog term to which the corresponding Prolog variable was bound by the proof).
+To ask the Prolog engine a query, one first constructs a `Query` instance, as in the above example, and then uses the `java.util.Iterator` interface, which the `Query` class implements, to obtain solutions (where a "solution" is what is known in logic programming jargon as a *substitution*, which is a collection of *bindings* represented via a `Map<String, Term>` object, each of which relates one of the variables within the query's goal to a `Term` representation of the Prolog term to which the corresponding Prolog variable was bound by the proof).
 
 ```java
 public interface Iterator {
@@ -361,18 +442,15 @@ q.hasNext()
 
 returns `true` if the Prolog query *teaches(aristotle, alexander)* is provable, and `false` otherwise. In this example, the Prolog query is a ground term, so the "solution" to the query is merely a truth value, and is given by the `hasNext()` method.
 
-Where a query contains variables, on the other hand, its execution yields a sequence of bindings
-of the variables' names to `Term` instances.
-JPL uses a `java.util.Map<String, Term>` (implemented as a `java.util.HashMap`) to represent these bindings;
+Where a query contains variables, on the other hand, its execution yields a sequence of bindings of the variables' names to `Term` instances. JPL uses a `java.util.Map<String, Term>` (implemented as a `java.util.HashMap`) to represent these bindings;
 the objects in the map are `org.jpl7.Term` instances, keyed (uniquely) by the `String` names of their associated variables.
 
-For example, to print all of Aristotle's pupils, i.e. all the bindings of `X` which satisfy `teaches(aristotle,X)`,
-one could write
+For example, to print all of Aristotle's pupils, i.e. all the bindings of `X` which satisfy `teaches(aristotle,X)`, one could write
 
 ```java
 Query q = new Query("teaches", new Term[] {new Atom("aristotle"), new Variable("X")});
 while (q.hasNext()) {
-    Map binding = q.next();
+    Map<String, Term> binding = q.next();
     Term t = (Term) binding.get("X");
     System.out.println(t);
 }

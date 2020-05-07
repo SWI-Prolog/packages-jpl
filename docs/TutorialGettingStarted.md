@@ -21,7 +21,7 @@ Although the `org.jpl7.JPL` class provides a number of methods for initializing 
 By default, the SWIPL install accessible via the _default executable_ (i.e., the one that runs when one types `swipl`) will be initialized. If one, instead, _requires to use another install_ of SWIPL+JPL (e.g., the one under development or an alternative one installed in `/usr/local`), then we need to set-up a few variables to make sure the intended SWIPL resources are found. For example, suppose we intend that our Java-based application uses the SWIPL framework locally installed in `/usr/local/swipl/`. Then:
 
 	SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/	# root of SWIPL install
-	LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/ # all .so nativ libs
+	LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/ # all .so native libs
 	LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so
 	CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar
 
@@ -29,7 +29,7 @@ From here, [SWIPL will try to find/guess the resources](https://www.swi-prolog.o
 
 Note also that you need to tell your development environment (e.g., IntelliJ or ECLIPSE) to use the correct `jpl.jar` (rather than one coming with the default active SWIPL system) or even the place where the JPL compiled classes are located if you intend to use a development (but uninstall) version of JPL. 
 
-Sometimes one needs to _explicitly initialize_ the engine (before a query triggers defaul initialization); for example, if one wants to use an SWIPL & JPL under a development tree that is not yet installed. Assuming that development is happening under `/home/ssardina/git/soft/prolog/swipl-devel.git`, the following code template will perform a comprehensive, and quiety, initialization (before any query is performed) (see [CLI options](https://www.swi-prolog.org/pldoc/man?section=cmdline) available):
+Sometimes one needs to _explicitly initialize_ the engine (before a query triggers defaul initialization); for example, if one wants to use an SWIPL & JPL under a development tree that is not yet installed. The following code template will perform a comprehensive, and quiet, initialization (before any query is performed) (see [CLI options](https://www.swi-prolog.org/pldoc/man?section=cmdline) available):
 
 ```java
 String init_swi_config =
@@ -41,7 +41,9 @@ JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));	# initialize SWIPL engine
 JPL.init()
 ```
 
-The option `-F swipl` will cause the script `$SWI_HOME_DIR/swipl.rc` to be loaded which will set-up all the search paths relative to the install. The above code will require the following environment variables:
+The option `-F swipl` will cause the script `$SWI_HOME_DIR/swipl.rc` to be loaded which will set-up all the search paths relative to the install. 
+
+Assuming that development is happening under `/home/ssardina/git/soft/prolog/swipl-devel.git`, the above code will require the following environment variables:
 
 	SWI_HOME_DIR=/home/ssardina/git/soft/prolog/swipl-devel.git/build/home
 	SWI_EXEC_FILE=/home/ssardina/git/soft/prolog/swipl-devel.git/build/src/swipl
@@ -62,7 +64,8 @@ JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));	# initialize SWIPL engine
 
 In an ordinary interactive Prolog session, we would load the above Prolog database using the Prolog `consult/1` predicate, a built-in predicate in standard Prolog.  Note, however, that as a Prolog predicate, "calling" `consult/1` is just an example of making a Prolog query, and this is how we perform it with JPL.
 
-First, we construct an instance of `Query`, whose name is consult and whose arguments (just one) comprise the atom 	`'test.pl'`:
+First, we construct an instance of `Query`, whose name is consult and whose arguments (just one) comprise the atom  `'test.pl'`:
+
 ```java
 Query q1 = 
     new Query( 
@@ -72,9 +75,11 @@ Query q1 =
 ```
     
 Then, we call the `hasSolution()` method of this `Query` object, which returns a `boolean` value indicating its success:
+
 ```java
 System.out.println( "consult " + (q1.hasSolution() ? "succeeded" : "failed"));
 ```
+
 At this point, this process may seem a bit long-winded; however, you should soon see that the classes are sufficiently general that they provide a robust and powerful interface into the Prolog engine. 
 
 
