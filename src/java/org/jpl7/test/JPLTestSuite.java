@@ -24,6 +24,7 @@ import org.junit.runners.Suite;
         Test_Variables.class,
         Tests.class,
         Test_Equals.class,
+        Test_Dict.class,
 })
 
 public class JPLTestSuite {
