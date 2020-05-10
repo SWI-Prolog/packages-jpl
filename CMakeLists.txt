@@ -17,6 +17,7 @@ include(Install)
 # which makes sense as that is what we want.  Unfortunately, with
 # this flag we get an old MacOS version rather than the Oracle one.
 
+
 if(NOT JAVA_HOME)
   find_program(
       PROG_JAVA_HOME
@@ -48,136 +49,142 @@ endif()
 
 # JNI is part of the Android NDK
 if(NOT ANDROID)
-  find_package(JNI)
+  find_package(JNI) # https://cmake.org/cmake/help/v3.17/module/FindJNI.html
 else()
   set(JNI_FOUND ON)
 endif(NOT ANDROID)
 
-find_package(Java COMPONENTS Development)
+if (JNI_FOUND)
+    message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
+    message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
+endif()
+
+find_package(Java COMPONENTS Development)   # https://cmake.org/cmake/help/v3.14/module/FindJava.html
 
 if(JNI_FOUND AND Java_FOUND)
     include(JUnit)  # load module defined in cmake/JUnit.cmake
 
-add_subdirectory(src/java)
+    add_subdirectory(src/java)
 
-AC_CHECK_HEADERS(wchar.h)
+    AC_CHECK_HEADERS(wchar.h)
 
-check_type_size("long" SIZEOF_LONG)
-check_type_size("void *" SIZEOF_VOIDP)
-check_type_size("long long" SIZEOF_LONG_LONG)
-check_type_size("wchar_t" SIZEOF_WCHAR_T)
+    check_type_size("long" SIZEOF_LONG)
+    check_type_size("void *" SIZEOF_VOIDP)
+    check_type_size("long long" SIZEOF_LONG_LONG)
+    check_type_size("wchar_t" SIZEOF_WCHAR_T)
 
-configure_file(config.h.cmake config.h)
+    configure_file(config.h.cmake config.h)
 
-link_directories(${JNI_INCLUDE_DIRS})
+    link_directories(${JNI_INCLUDE_DIRS})
 
-set(JPLCONFIG)
-if(APPLE)
-  set(JPLCONFIG jpl_config.pl)
-  set(JPLTYPE SHARED)
-  set(JPLEXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
-else()
-  set(JPLEXT ${CMAKE_SHARED_MODULE_SUFFIX})
-endif()
-
-if(WIN32)
-  set(jpl_module jpl)
-else()
-  set(jpl_module libjpl)
-endif()
-
-swipl_plugin(
-    libjpl ${JPLTYPE}
-    MODULE ${jpl_module}
-    C_SOURCES src/c/jpl.c
-    THREADED C_LIBS ${JAVA_JVM_LIBRARY} libswipl
-    C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
-    PL_LIBS jpl.pl ${JPLCONFIG})
-
-if(JNIDIR)
-    install(DIRECTORY DESTINATION ${JNIDIR})
-    ilink(${CMAKE_INSTALL_PREFIX}/${SWIPL_INSTALL_ARCH_LIB}/${jpl_module}${JPLEXT}
-          ${JNIDIR}/${jpl_module}${JPLEXT})
-endif()
-
-# Debian policies do not want  RPATH/RUNPATH.   This  clears the RUNPATH
-# pointing at the Java installation from   libjpl.so. Probably we should
-# do so for all package generation builds, but we would like to keep the
-# RUNPATH pointing at libswipl.so
-if(CMAKE_BUILD_TYPE STREQUAL "DEB" AND SWIPL_INSTALL_IN_LIB)
-  set_target_properties(
-      plugin_${jpl_module} PROPERTIES
-	  INSTALL_RPATH ""
-	  INSTALL_RPATH_USE_LINK_PATH FALSE)
-endif()
-
-add_custom_target(jpl)
-add_dependencies(jpl libjpl jpl_jar)
-
-################
-# Testing
-
-# We do not need $SWIPL_BOOT_FILE as this is now in the standard
-# location for the cmake build.  Still using it though as the old
-# build still uses it and modifying all that would cause another
-# cycle to get everything in place
-
-set(swihome ../../home)
-#set(swihome ${PROJECT_BINARY_DIR}/../../home)
-if(JUNIT_JAR)
-    set(swibootfile ${swihome}/boot.prc)
-
-
-    # Add testing pack on Java code calling Prolog (class org.jpl7.test.junit.TestJUnit4)
-    add_test(
-        NAME jpl:prolog_in_java
-        COMMAND env
-            CLASSPATH=src/java/jpl.jar
-            SWI_HOME_DIR=${swihome}
-            SWIPL_BOOT_FILE=${swibootfile}
-            SOURCE_DIR=${PROJECT_SOURCE_DIR}
-            ${Java_JAVA_EXECUTABLE}
-             -Djava.library.path=.
-                     -classpath ${JUNIT_JAR}:${HAMCREST}:src/java/jpl.jar:src/java/jpltest.jar
-                     org.jpl7.test.JPLTestSuiteRunner)
-
-
-    # Add testing pack on Prolog code calling Java
-    test_lib(jpl
-         NAME java_in_prolog
-         PACKAGES plunit)
-
-    if(INSTALL_TESTS)
-      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/java/jpltest.jar
-          DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/java
-          COMPONENT Tests)
+    set(JPLCONFIG)
+    if(APPLE)
+      set(JPLCONFIG jpl_config.pl)
+      set(JPLTYPE SHARED)
+      set(JPLEXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
+    else()
+      set(JPLEXT ${CMAKE_SHARED_MODULE_SUFFIX})
     endif()
-else(JUNIT_JAR)
-  message("-- No junit.jar. Make sure junit.jar points to junit4.jar  Dropping JPL tests.")
-endif(JUNIT_JAR)
 
-################
-# Install examples
+    if(WIN32)
+      set(jpl_module jpl)
+    else()
+      set(jpl_module libjpl)
+    endif()
 
-set(EXPL jpl_colour_choose_demo.pl jpl_jlist_demo.pl jpl_table_demo.pl
-         jpl_text_entry_demo.pl jpl_versions_demo.pl)
-prepend(EXPL examples/prolog ${EXPL})
+    swipl_plugin(
+        libjpl ${JPLTYPE}
+        MODULE ${jpl_module}
+        C_SOURCES src/c/jpl.c
+        THREADED C_LIBS ${JAVA_JVM_LIBRARY} libswipl
+        C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
+        PL_LIBS jpl.pl ${JPLCONFIG})
 
-set(EXJAVA exceptions exceptions2 family familyMT test test2 time
-	   versions zahed semWeb)
-prepend(EXJAVA examples/java ${EXJAVA})
+    if(JNIDIR)
+        install(DIRECTORY DESTINATION ${JNIDIR})
+        ilink(${CMAKE_INSTALL_PREFIX}/${SWIPL_INSTALL_ARCH_LIB}/${jpl_module}${JPLEXT}
+              ${JNIDIR}/${jpl_module}${JPLEXT})
+    endif()
 
-swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
-swipl_examples(DIRECTORIES ${EXJAVA} SUBDIR java)
-swipl_examples(FILES examples/java/env.sh SUBDIR java)
+    # Debian policies do not want  RPATH/RUNPATH.   This  clears the RUNPATH
+    # pointing at the Java installation from   libjpl.so. Probably we should
+    # do so for all package generation builds, but we would like to keep the
+    # RUNPATH pointing at libswipl.so
+    if(CMAKE_BUILD_TYPE STREQUAL "DEB" AND SWIPL_INSTALL_IN_LIB)
+      set_target_properties(
+          plugin_${jpl_module} PROPERTIES
+          INSTALL_RPATH ""
+          INSTALL_RPATH_USE_LINK_PATH FALSE)
+    endif()
 
-################
-# Documentation
+    add_custom_target(jpl)
+    add_dependencies(jpl libjpl jpl_jar)
 
-pkg_doc(
-    jpl
-    SUBSECTION
-	SOURCE jpl.pl jpldoc.tex
-    DEPENDS jpl)
+    ################
+    # Testing
+
+    # We do not need $SWIPL_BOOT_FILE as this is now in the standard
+    # location for the cmake build.  Still using it though as the old
+    # build still uses it and modifying all that would cause another
+    # cycle to get everything in place
+
+    set(swihome ../../home)
+    #set(swihome ${PROJECT_BINARY_DIR}/../../home)
+    if(JUNIT_JAR)
+        set(swibootfile ${swihome}/boot.prc)
+
+
+        # Add testing pack on Java code calling Prolog (class org.jpl7.test.junit.TestJUnit4)
+        add_test(
+            NAME jpl:prolog_in_java
+            COMMAND env
+                CLASSPATH=src/java/jpl.jar
+                SWI_HOME_DIR=${swihome}
+                SWIPL_BOOT_FILE=${swibootfile}
+                SOURCE_DIR=${PROJECT_SOURCE_DIR}
+                ${Java_JAVA_EXECUTABLE}
+                 -Djava.library.path=.
+                         -classpath ${JUNIT_JAR}:${HAMCREST}:src/java/jpl.jar:src/java/jpltest.jar
+                         org.jpl7.test.JPLTestSuiteRunner)
+
+
+        # Add testing pack on Prolog code calling Java
+        test_lib(jpl
+             NAME java_in_prolog
+             PACKAGES plunit)
+
+        if(INSTALL_TESTS)
+          install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/java/jpltest.jar
+              DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/java
+              COMPONENT Tests)
+        endif()
+    else(JUNIT_JAR)
+      message("-- No junit.jar. Make sure junit.jar points to junit4.jar  Dropping JPL tests.")
+    endif(JUNIT_JAR)
+
+    ################
+    # Install examples
+
+    set(EXPL jpl_colour_choose_demo.pl jpl_jlist_demo.pl jpl_table_demo.pl
+             jpl_text_entry_demo.pl jpl_versions_demo.pl)
+    prepend(EXPL examples/prolog ${EXPL})
+
+    set(EXJAVA exceptions exceptions2 family familyMT test test2 time
+           versions zahed semWeb)
+    prepend(EXJAVA examples/java ${EXJAVA})
+
+    swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
+    swipl_examples(DIRECTORIES ${EXJAVA} SUBDIR java)
+    swipl_examples(FILES examples/java/env.sh SUBDIR java)
+
+    ################
+    # Documentation
+
+    pkg_doc(
+        jpl
+        SUBSECTION
+        SOURCE jpl.pl jpldoc.tex
+        DEPENDS jpl)
 
 endif(JNI_FOUND AND Java_FOUND)
+
