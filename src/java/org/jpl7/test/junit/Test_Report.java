@@ -41,14 +41,15 @@ public class Test_Report extends JPLTest {
 
 
 
-    @Test
+//    @Test
     public void ReportPrologFlags() {
         StringBuffer sb = new StringBuffer();
         Query q = new Query("current_prolog_flag(X, Y)");
         q.open();
         while (q.hasMoreSolutions()) {
             Map<String,Term> sol = q.nextSolution();
-            System.out.println(String.format("\t Value of %s: %s",   sol.get("X").toString(), sol.get(("Y").toString())));
+            System.out.println(String.format("\t Value of %s: %s",
+                    sol.get("X").toString(), sol.get(("Y").toString())));
         }
         q.close();
     }
