@@ -278,6 +278,7 @@ public abstract class Term {
 		IntHolder hInt;
 		Int64Holder hInt64;
 		ObjectHolder hObject;
+		Term[] args;
 		switch (Prolog.term_type(term)) {
 			case Prolog.VARIABLE: // 1
 				for (Iterator<term_t> i = vars_to_Vars.keySet().iterator(); i.hasNext();) {
@@ -339,7 +340,7 @@ public abstract class Term {
 				hString = new StringHolder();
 				hInt = new IntHolder();
 				Prolog.get_name_arity(term, hString, hInt); // assume it succeeds
-				Term args[] = new Term[hInt.value];
+				args = new Term[hInt.value];
 				// term_t term1 = Prolog.new_term_refs(hArity.value);
 				for (int i = 1; i <= hInt.value; i++) {
 					term_t termi = Prolog.new_term_ref();
@@ -360,6 +361,33 @@ public abstract class Term {
 				} else {
 					throw new JPLException("unsupported blob type passed from Prolog");
 				}
+			case Prolog.DICT: // 44
+				hString = new StringHolder();
+				hInt = new IntHolder();
+				Prolog.get_name_arity(term, hString, hInt);
+				// assume it succeeds hString = "dict" / term = dict(tag, v1, key1, v2, key2, ...)
+
+				// first get the tag name of the dictionary
+				term_t term_tag = Prolog.new_term_ref();
+				Prolog.get_arg(1, term, term_tag);
+				Term tagAtomOrVar = Term.getTerm(vars_to_Vars, term_tag);
+
+				Map<Atom, Term> map = new HashMap<Atom, Term>();
+				for (int i = 2; i <= hInt.value-1; i = i + 2) {
+					// get the value
+					term_t termValue = Prolog.new_term_ref();
+					Prolog.get_arg(i, term, termValue);
+					Term value = Term.getTerm(vars_to_Vars, termValue);
+
+					// Get the key
+					term_t termKey = Prolog.new_term_ref();
+					Prolog.get_arg(i+1, term, termKey);
+					Atom key = (Atom) Term.getTerm(vars_to_Vars, termKey);
+
+					// add key-value to mapping
+					map.put(key, value);
+				}
+				return new Dict(tagAtomOrVar, map);
 			default: // should never happen
 				throw new JPLException("unknown term type=" + Prolog.term_type(term));
 		}
