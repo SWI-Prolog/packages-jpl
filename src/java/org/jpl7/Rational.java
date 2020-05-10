@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
  * Rational is a specialised Term representing a Prolog rational value.
  *
  * <pre>
- * Rational i1 = new Rational(2,3);
- * Rational i2 = new Rational(2r3);
+ * Rational r1 = new Rational(2,3);
+ * Rational r2 = new Rational(2r3);
  * </pre>
  *
  * A rational will be stored in its canonical form with gcd(numerator, denominator =  1 (not reducible) and
