@@ -63,6 +63,55 @@ public class Test_Equals extends JPLTest {
     ///////////////////////////////////////////////////////////////////////////////
 
 
+
+
+    @Test
+    public void test_numbers_equal() {
+        // INTEGERS
+        Term i1 = new Integer(1212);
+        Term i2 = new Integer(1212);
+        Term i3 = new Integer(212);
+
+        assertEquals("should be = integers", i1, i2);
+        assertNotEquals("should be <> integers", i1, i3);
+
+        // BIG INTEGERS
+        Term bi1 = new Integer(BigInteger.valueOf(java.lang.Long.MIN_VALUE));
+        Term bi2 = new Integer(BigInteger.valueOf(java.lang.Long.MIN_VALUE));
+
+        assertEquals("should be = integers", i1, i2);
+        assertNotEquals("should be <> integers", i1, i3);
+
+
+        // RATIONALS
+        Term r1 = new Rational(2, 3);
+        Term r2 = new Rational(20, 30);
+        Term r3 = new Rational("20r30");
+
+        Term r4 = new Rational("21r30");
+
+        assertEquals("should be = rationals", r1, r2);
+        assertEquals("should be = rationals", r1, r3);
+        assertEquals("should be = rationals", r2, r3);
+
+        assertNotEquals("should be <> rationals", r1, r4);
+
+
+        // FLOATS
+        Term f1 = new Float(1212.23);
+        Term f2 = new Float(1212.23);
+        Term f3 = new Float(212);
+
+        assertEquals("should be = floats", f1, f2);
+        assertNotEquals("should be <> float", f1, f3);
+
+        assertEquals("should be = float and integer", f3, i3);
+        assertNotEquals("should be <> float and integer", f3, i2);
+        assertNotEquals("should be <> float and rational", f3, r2);
+
+    }
+
+
     ////////////////////////////////////////////////////
     //// ATOM
     ////////////////////////////////////////////////////

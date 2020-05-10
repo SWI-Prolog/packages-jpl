@@ -225,7 +225,7 @@ In the following example, even though two Variables instances are different and 
     boolean same_bindings = s1.equals(s2); // evaluates to False
 ```
 
-Anonymous, dont-tell-me, variables are not equal to any other variable.
+Anonymous, dont-tell-me, variables are not equal to any other variable (including themselves!) as their name is unique and "unknown".
 
 Please refer to [Creating queries](#creating-queries) and [Querying Prolog](#querying-prolog) below to understand how to use JPL `Variables` to build queries and how to access their bindings in solutions.
 

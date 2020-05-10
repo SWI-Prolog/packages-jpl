@@ -108,7 +108,9 @@ public class Variable extends Term {
 	};
 
 	/**
-	 * A Variable is equal to another if their names and id are the same, just the name is not enough!
+	 * A Variable is equal to another if their names are the same
+	 * Totally lexical textual interpretation of vars, not related to bindings
+	 * Anonymous vars are always different
 	 *
 	 * @param o
 	 *            The Object to compare.
@@ -116,12 +118,11 @@ public class Variable extends Term {
 	 */
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		Variable variable = (Variable) o;
-		return name.equals(variable.name);
+		return o instanceof Variable
+				&& !this.name.startsWith("_")
+				&& !((Variable) o).name.startsWith("_")
+				&& this.name.equals(((Variable) o).name);
 	}
-
 
 	// just use the id which is unique for each object
 	@Override

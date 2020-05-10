@@ -53,7 +53,7 @@ public class Test_Variables extends JPLTest {
     // SUPPORTING CODE
     ///////////////////////////////////////////////////////////////////////////////
 
-     ///////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
     // TESTS
     ///////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +67,6 @@ public class Test_Variables extends JPLTest {
         assertTrue("two Variables with different names can bind to distinct atoms",
                 soln != null && (soln.get("X")).name().equals("a") && (soln.get("Y")).name().equals("b"));
     }
-
 
 
     @Test
@@ -106,6 +105,7 @@ public class Test_Variables extends JPLTest {
         assertTrue("two references to an anonymous Variable can unify with differing atoms",
                 new Query(goal).hasSolution());
     }
+
     Variable v = new Variable("X");
 
     @Test
@@ -113,13 +113,12 @@ public class Test_Variables extends JPLTest {
         Variable v = new Variable("X");
 
         Term t1 = new Query("? = 5", v).oneSolution().get("X");
-        assertEquals("Variable X must be bound to JPL Integer 5", 5,  t1.intValue());
+        assertEquals("Variable X must be bound to JPL Integer 5", 5, t1.intValue());
 
         // Variable v is re-used for another query, no problem
         Term t2 = new Query("? = 10", v).oneSolution().get("X");
-        assertEquals("Variable X must be bound to JPL Integer 10", 10,  t2.intValue());
+        assertEquals("Variable X must be bound to JPL Integer 10", 10, t2.intValue());
     }
-
 
 
     @Test
@@ -133,7 +132,7 @@ public class Test_Variables extends JPLTest {
 
     /**
      * TEST DISABLED!!
-     *
+     * <p>
      * Gives error:
      * java.lang.AssertionError: Variable X must be bound to Y
      * Expected :Y
@@ -145,14 +144,12 @@ public class Test_Variables extends JPLTest {
         Variable VarY = new Variable("Y");
 
 //        Query q = new Query("append([X],[_,_],[_,_,_])");
-        Query q = new Query(new Compound("=", new Term[] { VarX, VarY }));
+        Query q = new Query(new Compound("=", new Term[]{VarX, VarY}));
 
         Map<String, Term> sol = q.oneSolution();
 
         assertEquals("Variable X must be bound to Y", VarY, sol.get("X"));
     }
-
-
 
 
     ////////////////////////////////////////////////////
@@ -200,51 +197,16 @@ public class Test_Variables extends JPLTest {
 
 
     @Test
-    public void test_numbers_equal() {
-        // INTEGERS
-        Term i1 = new Integer(1212);
-        Term i2 = new Integer(1212);
-        Term i3 = new Integer(212);
-
-        assertEquals("should be = integers", i1, i2);
-        assertNotEquals("should be <> integers", i1, i3);
-
-        // BIG INTEGERS
-        Term bi1 = new Integer(BigInteger.valueOf(java.lang.Long.MIN_VALUE));
-        Term bi2 = new Integer(BigInteger.valueOf(java.lang.Long.MIN_VALUE));
-
-        assertEquals("should be = integers", i1, i2);
-        assertNotEquals("should be <> integers", i1, i3);
+    public void test_variable_equal_anonymous1() {
+        Term v1 = new Variable();
+        Term v2 = new Variable("X");
 
 
-        // RATIONALS
-        Term r1 = new Rational(2, 3);
-        Term r2 = new Rational(20, 30);
-        Term r3 = new Rational("20r30");
+        assertFalse("anonymous var is not equal to itself", v1.equals(v1));
 
-        Term r4 = new Rational("21r30");
-
-        assertEquals("should be = rationals", r1, r2);
-        assertEquals("should be = rationals", r1, r3);
-        assertEquals("should be = rationals", r2, r3);
-
-        assertNotEquals("should be <> rationals", r1, r4);
-
-
-        // FLOATS
-        Term f1 = new Float(1212.23);
-        Term f2 = new Float(1212.23);
-        Term f3 = new Float(212);
-
-        assertEquals("should be = floats", f1, f2);
-        assertNotEquals("should be <> float", f1, f3);
-
-        assertEquals("should be = float and integer", f3, i3);
-        assertNotEquals("should be <> float and integer", f3, i2);
-        assertNotEquals("should be <> float and rational", f3, r2);
+        assertFalse("anonymous var is not equal to any var", v1.equals(v2));
+        assertFalse("anonymous var is not equal to any var", v2.equals(v1));
 
     }
-
-
 
 }
