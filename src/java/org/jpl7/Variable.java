@@ -70,7 +70,7 @@ public class Variable extends Term {
 	protected transient term_t term_ = null;
 
 	/**
-	 * Create a new Variable with new sequential name of the form "_261".
+	 * Create a new don't tell Variable with new sequential name of the form "_261".
 	 *
 	 */
 	public Variable() {
@@ -110,7 +110,7 @@ public class Variable extends Term {
 	/**
 	 * A Variable is equal to another if their names are the same
 	 * Totally lexical textual interpretation of vars, not related to bindings
-	 * Anonymous vars are always different
+	 * Anonymous var _ is always different (including to itsef)
 	 *
 	 * @param o
 	 *            The Object to compare.
@@ -118,11 +118,12 @@ public class Variable extends Term {
 	 */
 	@Override
 	public boolean equals(Object o) {
-		return o instanceof Variable
-				&& !this.name.startsWith("_")
-				&& !((Variable) o).name.startsWith("_")
-				&& this.name.equals(((Variable) o).name);
+		if (o == null || getClass() != o.getClass() || this.name.equals("_") || ((Variable) o).name.equals("_")) return false;
+		if (this == o) return true;
+		Variable variable = (Variable) o;
+		return name.equals(variable.name);
 	}
+
 
 	// just use the id which is unique for each object
 	@Override

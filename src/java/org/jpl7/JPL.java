@@ -53,7 +53,7 @@ public class JPL {
 	public static final Term JNULL = new Compound("@", new Term[] { new Atom("null") });
 	public static final Term JVOID = new Compound("@", new Term[] { new Atom("void") });
 
-	protected static boolean modeDontTellMe = true;	// don't tell me about anonymous _ variables
+	protected static boolean modeDontTellMe = true;	// don't tell me about _XXX variables
 
 	protected static final Atom LIST_NIL_MODERN = new Atom("[]", "reserved_symbol"); // NB
 																						// an

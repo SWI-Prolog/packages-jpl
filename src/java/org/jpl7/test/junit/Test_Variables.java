@@ -200,12 +200,83 @@ public class Test_Variables extends JPLTest {
     public void test_variable_equal_anonymous1() {
         Term v1 = new Variable();
         Term v2 = new Variable("X");
+        Term v3 = new Variable("_X");
 
 
-        assertFalse("anonymous var is not equal to itself", v1.equals(v1));
+        assertTrue("anonymous var is equal to itself", v1.equals(v1));
+        assertTrue("dont-tell var is equal to itself", v1.equals(v1));
 
-        assertFalse("anonymous var is not equal to any var", v1.equals(v2));
-        assertFalse("anonymous var is not equal to any var", v2.equals(v1));
+        assertFalse("anonymous var is not equal to any var", v1.equals(v2) || v1.equals(v3));
+    }
+
+    @Test
+    public void test_variable_equal_anonymous2() {
+        Term t = new Query("length(X, 2)").oneSolution().get("X"); // X = [_13, _14]
+
+        Term v1 = t.listToTermArray()[0];
+        Term v2 = t.listToTermArray()[1];
+
+        assertNotEquals(v1, v2);
+    }
+
+
+    @Test
+    public void test_variable_equal_anonymous3() {
+        Term t = new Query("copy_term([A,A,A], X).").oneSolution().get("X"); // X = [_12, _12, _12]
+
+        Term v1 = t.listToTermArray()[0];
+        Term v2 = t.listToTermArray()[1];
+
+        assertEquals(v1, v2);
+    }
+
+    @Test
+    public void test_variable_equal_anonymous4() {
+        Term t = Term.textToTerm("related(X, _, _) = related(_, A, B)");
+
+        Map<String, Term> sol = new Query(t).oneSolution();
+
+        Term vA = sol.get("A");
+        Term vB = sol.get("B");
+
+        assertNotEquals(vA, vB);
+    }
+
+    @Test
+    public void test_variable_equal_anonymous5() {
+        Term t = Term.textToTerm("related(X, _Y, _Y) = related(_, A, B)");
+
+        Map<String, Term> sol = new Query(t).oneSolution();
+
+        Term vA = sol.get("A");
+        Term vB = sol.get("B");
+
+        assertEquals(vA, vB);
+    }
+
+
+    @Test
+    public void test_variable_equal_anonymous6() {
+        Variable v = new Variable("_");
+        Variable v1 = new Variable();
+
+        assertNotEquals("The anonymous var _ is not equal to itself", v, v);
+        assertNotEquals("The anonymous var _ is not equal to dont tell vars", v, v1);
+    }
+
+    @Test
+    public void test_variable_equal_anonymous7() {
+        Term t = new Query("X = p(_), Y = q(X,X)").oneSolution().get("Y");
+
+        Term t1 = t.arg(1); // t1 = p(_38)
+        Term t2 = t.arg(2); // t2 = p(_38)
+
+        assertEquals(t1, t2);
+
+        Variable v1 = (Variable) t1.arg(1); // v1 = _38
+        Variable v2 = (Variable) t2.arg(1); // v2 = _38
+
+        assertEquals(v1, v2);
 
     }
 

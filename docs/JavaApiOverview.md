@@ -192,6 +192,9 @@ Variable v1 = new Variable("X"); // a regular variable
 Variable v2 = new Variable("_"); // an "anonymous" variable
 
 Variable v3 = new Variable("_Y"); // a "dont-tell-me" variable, whose bindings we don't want to know
+
+Variable v3 = new Variable(); // a "dont-tell-me" variable sequentially named _N (N is a unique number)
+
 ```
 
 Note that they are just **_tokens_** to create queries, but do _not_ behave like Prolog variables. In particular, instances of `org.jpl7.Variable` are never bound nor shared across queries. 
@@ -210,7 +213,7 @@ String x = s2.toString();
 
 Instances of `org.jpl7.Variable` have (textual) names ("`X1`" in this case), and bindings are retrieved by name. Thus, the role of `v` above is merely to build Prolog queries and provide name "`X`" to free variables in those queries in order to be able to access their bindings (via those names) in solution methods (in this case `oneSolution()`). 
 
-All this implies that all we care about a Variable is its _textual name_ and hence Variable instances with the same name are interchangeable and thus treated as equal under `Variable.equals()`. This is analogous to the other Term subclasses, as JPL takes a purely syntactic view of `org.jpl7.Term`. For example, two different objects created via `new Atom("fred")` will be treated as equals via method `.equals()`, and the same goes for `new Variable("X")`.
+As the [new Variable semantics from](https://jpl7.org/ReleaseNotes3000 section) explains, all we care about a Variable is its _textual name_ and hence Variable instances with the same name are interchangeable and thus treated as equal under `Variable.equals()`. This is analogous to the other Term subclasses, as JPL takes a purely syntactic view of `org.jpl7.Term`. For example, two different objects created via `new Atom("fred")` will be treated as equals via method `.equals()`, and the same goes for `new Variable("X")`.
 
 In the following example, even though two Variables instances are different and use in different queries, they are equal under `.equals()`:
  
@@ -225,7 +228,7 @@ In the following example, even though two Variables instances are different and 
     boolean same_bindings = s1.equals(s2); // evaluates to False
 ```
 
-Anonymous, dont-tell-me, variables are not equal to any other variable (including themselves!) as their name is unique and "unknown".
+The anonymous variable "`_`" is not equal to any other variable (including itself!), as it cannot be interchangeably used (every of its use is different).
 
 Please refer to [Creating queries](#creating-queries) and [Querying Prolog](#querying-prolog) below to understand how to use JPL `Variables` to build queries and how to access their bindings in solutions.
 
