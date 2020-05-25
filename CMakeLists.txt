@@ -54,10 +54,10 @@ else()
   set(JNI_FOUND ON)
 endif(NOT ANDROID)
 
-if (JNI_FOUND)
-    message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
-    message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
-endif()
+#if(JNI_FOUND)
+#  message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
+#  message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
+#endif()
 
 find_package(Java COMPONENTS Development)   # https://cmake.org/cmake/help/v3.14/module/FindJava.html
 
