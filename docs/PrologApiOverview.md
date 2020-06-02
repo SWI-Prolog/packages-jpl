@@ -300,11 +300,8 @@ Java exceptions are always returned as Prolog exceptions with this structure:
 error(java_exception(reference_to_exception_object), exception_classname)
 ```
 
-## Gotchas
 
-Here are a few things to watch out for.
-
-### Naming static nested classes
+## Naming static nested classes
 
 Although, in Java source code, static nested classes are named with the *dot* notation, e.g.
 
@@ -326,7 +323,8 @@ java/awt/geom/Path2D$Float.class
 
 Unfortunately it is far from trivial to support the Java naming in JPL.  Thanks go to Timo Baumann and Sebastian Godelet for their input on this issue.
 
-### Instantiating a non-static member class
+
+## Instantiating a non-static member class
 
 If you need to create an instance of a non-static member class, you must explicitly pass (a reference to) an instance of its parent class as an additional (first) argument of any of its constructors. Java source syntax hides this, but reflection shows that every constructor (implicit or explicit) has this extra argument.
 
@@ -342,7 +340,7 @@ jpl_new('Parent', [], P),
 jpl_new('Parent$Child', [P], C).
 ```
 
-### Enums are static nested classes
+## Enums are static nested classes
 
 Given
 
@@ -382,7 +380,7 @@ S = upwards.
 where X is bound to the nominated enum constant (actually an object reference),
 then passed as an arg to legend/1
 
-### Calling parameterless methods
+## Calling parameterless methods
 
 You must pass an empty parameter list when calling Java methods which take no parameters, e.g.
 
@@ -392,7 +390,7 @@ jpl_call('java.lang.System', gc, [], _)
 
 There is (deliberately) no `jpl_call/3` convenience predicate which defaults parameters to `[]` (see below).
 
-### Calling void methods
+## Calling void methods
 
 You must accept an `@(void)` result when calling void Java methods, e.g. either
 
@@ -410,7 +408,7 @@ which uses an anonymous variable to ignore the result.
 
 There is (deliberately) no `jpl_call/3` convenience predicate which conceals the return value of `void` methods (see above).
 
-### Exiting the JVM
+## Exiting the JVM
 
 Note that
 
