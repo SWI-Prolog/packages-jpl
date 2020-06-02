@@ -52,10 +52,11 @@ This page also contains a short overview of the various [release versions](Relea
 
 ## Applications
 
-To see JPL in action, you can check some of these projects:
+There are many projects out there using SWI+JPL. If you have one project using JPL, and you are happy for it to be listed here, please let us know and we will include it. This will help others understand the potential of embedding SWI in their systems.
 
-* [SARL-PROLOG-CAP](https://bitbucket.org/ssardina-research/sarl-prolog-cap): capacity for [SARL](http://sarl.io) agents to access SWI Prolog knowledgebases. Used for example in the [SARL Agents in City](https://bitbucket.org/joshuahansen188/sarl-agtcity-base) system.
+One example is the [SARL-PROLOG-CAP](https://github.com/ssardina-agts/sarl-prolog-cap) project, which provides a capacity/skill  for [SARL](http://sarl.io) agents to access SWI Prolog knowledgebases. It is then used in  the [SARL Elevator Controller](https://github.com/ssardina-agts/elevator-sarl-base) and [SARL Agents in City](https://github.com/ssardina-agts/agtcity-sarl-base) systems.
     
+
 
 
 ## Other resources
