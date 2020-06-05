@@ -2505,7 +2505,13 @@ jpl_class_to_classname(C, CN) :-
 
 %! jpl_class_to_raw_classname(+Class:jref, -ClassName:rawName)
 %
-% Hhmm, I forget exactly what a "raw" classname is.
+% The "raw classname" is the "name of the entity" as returned by
+% Class.getName()
+%
+% For example: "java.lang.String", "byte", "[Ljava.lang.Object;", "[[[[[[[I"
+%
+% @see https://docs.oracle.com/javase/7/docs/api/java/lang/Class.html#getName()
+%      https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
 
 jpl_class_to_raw_classname(Cobj, CN) :-
     jpl_classname_to_class('java.lang.Class', CC),      % cached?
