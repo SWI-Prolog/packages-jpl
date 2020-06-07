@@ -4,11 +4,11 @@
 
 * Version [JPL 7.x](https://jpl7.org/) uses SWI Prolog V7 and has modernise JPL's APIs significantly.
 
-    * Version [7.6.0](ReleaseNotes760.jsp) works with SWI versions V8.1.x+. It adds Rationals as a data type and has several term methods refactored into class Term.
+    * Version [7.6.0](ReleaseNotes760.md) works with SWI versions V8.1.x+. It adds Rationals as a data type and has several term methods refactored into class Term.
         
-    * Version [7.5.0](ReleaseNotes750.jsp) works with SWI versions V7.4.x to V7.7.x. It has a new implemention of iterators ans solution methods in Queries and better handling of quoted terms.
+    * Version [7.5.0](ReleaseNotes750.md) works with SWI versions V7.4.x to V7.7.x. It has a new implemention of iterators ans solution methods in Queries and better handling of quoted terms.
 
-    * Version [7.4.0](ReleaseNotes740.jsp) works with SWI versions V7.4.x to V7.7.x. It has a new implemention of JRefs as blobs to address Java objects from Prolog.
+    * Version [7.4.0](ReleaseNotes740.md) works with SWI versions V7.4.x to V7.7.x. It has a new implemention of JRefs as blobs to address Java objects from Prolog.
     
 * Versions [JPL 3.x,y](http://www.swi-prolog.org/packages/jpl/) implemented many changes and worked with SWI V5.2.0 or later (it used multi-threading FLI calls not available in older versions) and Java 2 runtime.  It was tested with Microsoft Visual C/C++ 5 under Windows NT 4.0 (SP6a). 
 
