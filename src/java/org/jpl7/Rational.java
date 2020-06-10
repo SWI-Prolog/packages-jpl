@@ -8,17 +8,22 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Integer is a specialised Term representing a Prolog integer value; if the value fits, it is held in a long field,
- * else as a BigInteger.
+ * Rational is a specialised Term representing a Prolog rational value.
  *
  * <pre>
- * Integer i = new Integer(1024);
+ * Rational i1 = new Rational(2,3);
+ * Rational i2 = new Rational(2r3);
  * </pre>
  *
- * Once constructed, the value of an Integer instance cannot be altered. An Integer can be used (and re-used) as an
- * argument of Compounds. Beware confusing jpl.Integer with java.lang.Integer.
+ * A rational will be stored in its canonical form with gcd(numerator, denominator =  1 (not reducible) and
+ * denominator greater than 1. If the denominator reduces to 1, a JPLException is thrown.
+ *
+ * Once constructed, the value of an Rational instance cannot be altered. An Rational can be used (and re-used) as an
+ * argument of Compounds.
  *
  * <hr>
+ * Copyright (C) 2020 Sebastian Sardina
+ * <p>
  * Copyright (C) 2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
@@ -143,7 +148,7 @@ public class Rational extends Term {
 	 * (remember Rationals are stored in canonical form)
 	 *
 	 * @param o
-	 *            The Object to compare (not necessarily an Integer)
+	 *            The Object to compare (not necessarily an Rational)
 	 * @return true if the Object satisfies the above condition
 	 */
 	@Override
@@ -244,9 +249,9 @@ public class Rational extends Term {
 	}
 
 	/**
-	 * the type of this term, as "Prolog.INTEGER"
+	 * the type of this term, as "Prolog.RATIONAL"
 	 *
-	 * @return the type of this term, as "Prolog.INTEGER"
+	 * @return the type of this term, as "Prolog.JPLException"
 	 */
 	public final int type() {
 		return Prolog.RATIONAL;
