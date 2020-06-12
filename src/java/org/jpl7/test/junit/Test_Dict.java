@@ -74,8 +74,11 @@ public class Test_Dict extends JPLTest {
     @Test
     public void test_dict2() {
         Term t = Term.textToTerm("location{x:12, z:312, y:23}");
-
         assertEquals(Prolog.DICT, t.type());
+
+        Dict d = (Dict) Term.textToTerm("location{x:12, z:312, y:23}");
+        assertEquals(Prolog.DICT, d.type());
+
     }
 
 
@@ -108,6 +111,21 @@ public class Test_Dict extends JPLTest {
         assertEquals("W{x:12, z:312, y:23}", dict.toString());
         assertEquals(Prolog.DICT, dict.type());
 
+    }
+
+
+
+
+
+    @Test
+    public void test_dict5() {
+        Term t = new Query("current_prolog_flag(abi_version, X)").oneSolution().get("X");
+
+        assertEquals(Prolog.DICT, t.type());
+
+        Dict d = (Dict) t;
+
+        assertEquals(new Atom("abi"), d.getTag());
     }
 
 }

@@ -12,7 +12,14 @@ import java.util.stream.Collectors;
  * Dict is a specialised Term representing a Prolog dictionary of the form Tag{Key1:Value1, Key2:Value2, ...}.
  * IN SWIPL refer to https://www.swi-prolog.org/pldoc/man?section=bidicts
  *
+ * <pre>
+ * 	Dict dict1 = new Dict(new Atom("location"), map);
+ * 	Dict t3 = (Dict) Term.textToTerm("location{t:12, z:312, y:23}");
+ * </pre>
+ *
  * <hr>
+ * Copyright (C) 2020 Sebastian Sardina
+ * <p>
  * Copyright (C) 2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
@@ -125,7 +132,6 @@ public class Dict extends Term {
 	/**
 	 * whether this Dictionary's functor has 'name' and 'arity' (c.f. traditional functor/3)
 	 *
-	 * TODO: needs to be sync with Prolog
 	 * ?- A = point{x:1, y:2}, A =.. [X|Y].
 	 * A = point{x:1, y:2},
 	 * X = C'dict',
@@ -134,7 +140,7 @@ public class Dict extends Term {
 	 * @return whether this Rational's functor has (long) 'name' and 'arity'
 	 */
 	public final boolean hasFunctor(Term val, int arity) {
-		return this.tag.equals(val) &&  arity == this.map.size();
+		return this.tag.equals("C'dict'") &&  arity == this.map.size() + 1;
 	}
 
 

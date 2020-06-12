@@ -355,6 +355,33 @@ When it comes to non-empty, compound, list terms, the behavior of `toString()` w
 * If True, lists will be represented as String in the usual Prolog textual representation `[e1, e2, e3, ...., en]`. Note a space wil be added after each comma always.
 * If False, lists will be represented in infix notation with the list pair functor `[|]`, e.g.,  `[|](1, [|](2, [|](3, '[]')))` for list `[1, 2, 3]`.
 
+### Dictionaries
+
+A `org.jpl7.Dict` is a specialized `org.jpl7.Term` encoding a structure with named arguments, that is, dictionaries. A `Dict` has a tag name as a `Term` and a Java `Map` from `Atom` to `Term`. Its String representation is of the form `Tag{Key1:Value1, ...,Keyn:Valuen}`. 
+
+ 
+```java
+Map<Atom, Term> map = new HashMap<Atom, Term>();
+
+map.put(new Atom("x"), new org.jpl7.Integer(12));
+map.put(new Atom("y"), new org.jpl7.Integer(23));
+map.put(new Atom("z"), new Integer(312));
+
+Dict dict = new Dict(new Atom("location"), map);
+```
+
+One can also create a dictionary from its String representation:
+
+```java
+Dict d = (Dict) Term.textToTerm("location{home:loc(12,3), work:loc(32,3), school:loc(3,33)}");
+```
+
+To get the dictionary tag and map:
+
+```java
+public final Term getTag();
+public final Map<Atom, Term> getMap();
+```
 
 ### Java objects  
 
