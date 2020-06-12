@@ -64,7 +64,7 @@ find_package(Java COMPONENTS Development)   # https://cmake.org/cmake/help/v3.14
 if(JNI_FOUND AND Java_FOUND)
     include(JUnit)  # load module defined in cmake/JUnit.cmake
 
-    add_subdirectory(src/java)
+    add_subdirectory(src/main/java)
 
     AC_CHECK_HEADERS(wchar.h)
 
@@ -95,7 +95,7 @@ if(JNI_FOUND AND Java_FOUND)
     swipl_plugin(
         libjpl ${JPLTYPE}
         MODULE ${jpl_module}
-        C_SOURCES src/c/jpl.c
+        C_SOURCES src/main/c/jpl.c
         THREADED C_LIBS ${JAVA_JVM_LIBRARY} libswipl
         C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
         PL_LIBS jpl.pl ${JPLCONFIG})
@@ -138,13 +138,13 @@ if(JNI_FOUND AND Java_FOUND)
         add_test(
             NAME jpl:prolog_in_java
             COMMAND env
-                CLASSPATH=src/java/jpl.jar
+                CLASSPATH=src/main/java/jpl.jar
                 SWI_HOME_DIR=${swihome}
                 SWIPL_BOOT_FILE=${swibootfile}
                 SOURCE_DIR=${PROJECT_SOURCE_DIR}
                 ${Java_JAVA_EXECUTABLE}
                  -Djava.library.path=.
-                         -classpath ${JUNIT_JAR}:${HAMCREST}:src/java/jpl.jar:src/java/jpltest.jar
+                         -classpath ${JUNIT_JAR}:${HAMCREST}:src/main/java/jpl.jar:src/main/java/jpltest.jar
                          org.jpl7.test.JPLTestSuiteRunner)
 
 
@@ -154,8 +154,8 @@ if(JNI_FOUND AND Java_FOUND)
              PACKAGES plunit)
 
         if(INSTALL_TESTS)
-          install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/java/jpltest.jar
-              DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/java
+          install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/main/java/jpltest.jar
+              DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/main/java
               COMPONENT Tests)
         endif()
     else(JUNIT_JAR)
