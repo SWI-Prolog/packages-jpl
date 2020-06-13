@@ -65,6 +65,7 @@ if(JNI_FOUND AND Java_FOUND)
     include(JUnit)  # load module defined in cmake/JUnit.cmake
 
     add_subdirectory(src/main/java)
+    add_subdirectory(src/test/java)
 
     AC_CHECK_HEADERS(wchar.h)
 
@@ -119,6 +120,7 @@ if(JNI_FOUND AND Java_FOUND)
 
     add_custom_target(jpl)
     add_dependencies(jpl libjpl jpl_jar)
+    #add_dependencies(jpltest jpl_jar)
 
     ################
     # Testing
@@ -134,7 +136,7 @@ if(JNI_FOUND AND Java_FOUND)
         set(swibootfile ${swihome}/boot.prc)
 
 
-        # Add testing pack on Java code calling Prolog (class org.jpl7.test.junit.TestJUnit4)
+        # Add testing pack on Java code calling Prolog (class org.jpl7.junit.TestJUnit4)
         add_test(
             NAME jpl:prolog_in_java
             COMMAND env
@@ -144,8 +146,8 @@ if(JNI_FOUND AND Java_FOUND)
                 SOURCE_DIR=${PROJECT_SOURCE_DIR}
                 ${Java_JAVA_EXECUTABLE}
                  -Djava.library.path=.
-                         -classpath ${JUNIT_JAR}:${HAMCREST}:src/main/java/jpl.jar:src/main/java/jpltest.jar
-                         org.jpl7.test.JPLTestSuiteRunner)
+                         -classpath ${JUNIT_JAR}:${HAMCREST}:src/main/java/jpl.jar:src/test/java/jpltest.jar
+                         org.jpl7.JPLTestSuiteRunner)
 
 
         # Add testing pack on Prolog code calling Java
@@ -154,8 +156,8 @@ if(JNI_FOUND AND Java_FOUND)
              PACKAGES plunit)
 
         if(INSTALL_TESTS)
-          install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/main/java/jpltest.jar
-              DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/main/java
+          install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/test/java/jpltest.jar
+              DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/test/java
               COMPONENT Tests)
         endif()
     else(JUNIT_JAR)

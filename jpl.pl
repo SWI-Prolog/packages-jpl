@@ -4104,7 +4104,6 @@ library_search_path(Path, EnvVar) :-
 
 add_jpl_to_classpath :-
     classpath(Jar),
-    writeln(Jar),
     file_base_name(Jar, 'jpl.jar'),
     !.
 add_jpl_to_classpath :-

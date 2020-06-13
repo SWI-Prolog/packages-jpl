@@ -103,8 +103,8 @@
      ####################################################################### -->
     <build>
         <!-- Ensure custom source directory structure taken into account -->
-        <sourceDirectory>src/java</sourceDirectory>
-        <testSourceDirectory>src/java/org/jpl7/test</testSourceDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java/org/jpl7</testSourceDirectory>
 
         <plugins>
                 <!-- Java source compilation plugin -->
@@ -117,8 +117,8 @@
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <!-- Exclude tests from source compilation as JUnit is a test dependency -->
                         <excludes>
-                            <exclude>org/jpl7/test/*.java</exclude>
-                            <exclude>org/jpl7/test/standalone/*.java</exclude>
+                            <exclude>org/jpl7/*.java</exclude>
+                            <exclude>org/jpl7/standalone/*.java</exclude>
                         </excludes>
                     </configuration>
                </plugin>
