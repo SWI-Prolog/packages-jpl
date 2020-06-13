@@ -120,7 +120,7 @@ if(JNI_FOUND AND Java_FOUND)
 
     add_custom_target(jpl)
     add_dependencies(jpl libjpl jpl_jar)
-    #add_dependencies(jpltest jpl_jar)
+    add_dependencies(jpltest jpl_jar)   # jpltest uses jpl.jar
 
     ################
     # Testing
@@ -174,7 +174,7 @@ if(JNI_FOUND AND Java_FOUND)
     prepend(EXPL examples/prolog ${EXPL})
 
     set(EXJAVA exceptions exceptions2 family familyMT test test2 time
-           versions zahed semWeb)
+           zahed semWeb)
     prepend(EXJAVA examples/java ${EXJAVA})
 
     swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
