@@ -43,7 +43,7 @@
 :- asserta(user:file_search_path(foreign, '.')).
 :- asserta(user:file_search_path(jpl_examples, 'examples/prolog')).
 :- asserta(user:file_search_path(jar, '.')).
-:- asserta(user:file_search_path(jar, foreign('src/java'))).
+:- asserta(user:file_search_path(jar, foreign('src/main/java'))).
 :- asserta(user:file_search_path(jar, foreign('.'))).
 :- asserta(user:file_search_path(library, '.')).
 :- asserta(user:file_search_path(library, '../plunit')).
@@ -56,7 +56,7 @@
 :- use_module(library(plunit)).
 
 % Using cmake location
-:- jpl:add_search_path('CLASSPATH', 'src/java/jpltest.jar').
+:- jpl:add_search_path('CLASSPATH', 'src/main/java/jpltest.jar').
 % For before cmake
 :- jpl:add_search_path('CLASSPATH', 'jpltest.jar').
 
