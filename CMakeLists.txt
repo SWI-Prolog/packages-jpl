@@ -151,6 +151,8 @@ if(JNI_FOUND AND Java_FOUND)
 
 
         # Add testing pack on Prolog code calling Java
+        # test_lib is a script defined in packages/cmake/PrologPackage.cmake that installs tests via
+        # CMAKE add_test() with plunit on file test_xxx.pl (in this case test_jpl.pl)
         test_lib(jpl
              NAME java_in_prolog
              PACKAGES plunit)
