@@ -6,6 +6,7 @@ include(UseJava)
 include(JUnit) # junit4.jar
 
 # This is the jpl.jar file that was compiled before this step
+# This is not used anymore as we say "jpl_jar" directly in INCLUDE_JARS below
 set(JPL_JAR ${CMAKE_BINARY_DIR}/packages/jpl/src/main/java/jpl.jar)
 
 set(TEST
@@ -65,6 +66,6 @@ if(JUNIT_JAR)
     # Compiles the test source files into jpltest.jar file
     add_jar(jpltest
         SOURCES ${TEST}
-        INCLUDE_JARS ${JUNIT_JAR} ${JPL_JAR}
+        INCLUDE_JARS ${JUNIT_JAR} jpl_jar
        	VERSION ${JPL_VERSION}) # VERSION creates jar with the -<version>jar format and a symblic to it.
 endif()

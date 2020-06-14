@@ -118,9 +118,12 @@ if(JNI_FOUND AND Java_FOUND)
           INSTALL_RPATH_USE_LINK_PATH FALSE)
     endif()
 
-    add_custom_target(jpl)
-    add_dependencies(jpl libjpl jpl_jar)
+    add_custom_target(jpl DEPENDS libjpl jpl_jar)   # main module
     add_dependencies(jpltest jpl_jar)   # jpltest uses jpl.jar
+
+#    add_custom_target(jpl)
+#    add_dependencies(jpl libjpl jpl_jar)
+#    add_dependencies(jpltest jpl_jar)   # jpltest uses jpl.jar
 
     ################
     # Testing
