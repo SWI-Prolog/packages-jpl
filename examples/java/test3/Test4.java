@@ -48,7 +48,6 @@ public class Test4 {
         String prop = "[os_argv, home, executable, version, traditional, resource_database, c_libplso, toplevel_goal]";
 //        Query q = new Query(String.format("member(X, %s), current_prolog_flag(X, Y)", prop));
         Query q = new Query("current_prolog_flag(X, Y)");
-        System.out.println("ssssssssssssss");
         q.open();
         while (q.hasMoreSolutions()) {
             Map<String,Term> sol = q.nextSolution();

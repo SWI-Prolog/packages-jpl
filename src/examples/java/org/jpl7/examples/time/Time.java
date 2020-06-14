@@ -1,4 +1,4 @@
-package time;
+package org.jpl7.examples.time;
 
 import org.jpl7.Atom;
 import org.jpl7.Compound;
@@ -70,9 +70,9 @@ public class Time {
 				tree = create_tree();
 				timer.stop();
 				data[0][i] = timer.getElapsedTimeInMillis();
-				System.out.print(".");
+				System.out.print("");
 			}
-			System.out.println("done");
+			System.out.println(" done");
 		}
 	}
 
@@ -84,9 +84,9 @@ public class Time {
 			query.hasSolution();
 			timer.stop();
 			data[1][i] = timer.getElapsedTimeInMillis();
-			System.out.print(".");
+			System.out.print("");
 		}
-		System.out.println("done");
+		System.out.println(" done");
 	}
 
 	static void test_2() {
@@ -97,9 +97,9 @@ public class Time {
 			query.oneSolution();
 			timer.stop();
 			data[2][i] = timer.getElapsedTimeInMillis();
-			System.out.print(".");
+			System.out.print("");
 		}
-		System.out.println("done");
+		System.out.println(" done");
 	}
 
 	static void test_3() {
@@ -111,9 +111,9 @@ public class Time {
 			query.hasSolution();
 			timer.stop();
 			data[3][i] = timer.getElapsedTimeInMillis();
-			System.out.print(".");
+			System.out.print("");
 		}
-		System.out.println("done");
+		System.out.println(" done");
 	}
 
 	static void test_4() {
@@ -125,9 +125,9 @@ public class Time {
 			query.oneSolution();
 			timer.stop();
 			data[4][i] = timer.getElapsedTimeInMillis();
-			System.out.print(".");
+			System.out.print("");
 		}
-		System.out.println("done");
+		System.out.println(" done");
 	}
 
 	static java.text.NumberFormat format = java.text.NumberFormat.getInstance();

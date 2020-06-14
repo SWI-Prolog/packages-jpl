@@ -1,5 +1,6 @@
-package exceptions;
+package org.jpl7.examples;
 
+import org.jpl7.PrologException;
 import org.jpl7.Query;
 
 public class Exceptions {
@@ -11,7 +12,11 @@ public class Exceptions {
 		System.out.print("calling\n\n");
 		System.out.print("?- X is Y.\n\n");
 		System.out.print("in Prolog to force a Prolog 'instantiation_error' exception,\n");
-		System.out.print("which should be returned via Java as an uncaught org.jpl7.PrologException in thread \"main\":\n\n");
-		Query.hasSolution("X is Y");
+		System.out.print("which should be returned via Java as an uncaught org.jpl7.PrologException in thread \"main\".\n\n");
+		try {
+			Query.hasSolution("X is Y");
+		} catch (PrologException e) {
+			System.out.println("BINGO! The following exception was thrown: \n\t" + e.getMessage());
+		}
 	}
 }
