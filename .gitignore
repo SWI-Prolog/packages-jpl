@@ -49,4 +49,4 @@ packages-jpl.iml
 *.iml
 /out
 SWIJPL-development.md
-examples/java/Scratch.java
+scratch/

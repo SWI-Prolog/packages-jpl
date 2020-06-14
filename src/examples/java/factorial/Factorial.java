@@ -1,4 +1,4 @@
-package org.jpl7.examples.factorial;
+package factorial;
 
 import org.jpl7.Compound;
 import org.jpl7.Query;

@@ -167,19 +167,19 @@ if(JNI_FOUND AND Java_FOUND)
     endif(JUNIT_JAR)
 
     ################
-    # Install examples
+    # Install pack of Java and Prolog examples
 
     set(EXPL jpl_colour_choose_demo.pl jpl_jlist_demo.pl jpl_table_demo.pl
              jpl_text_entry_demo.pl jpl_versions_demo.pl)
-    prepend(EXPL examples/prolog ${EXPL})
+    prepend(EXPL src/examples/prolog ${EXPL})
 
-    set(EXJAVA exceptions exceptions2 family familyMT test test2 time
-           zahed semWeb)
-    prepend(EXJAVA examples/java ${EXJAVA})
+    set(EXJAVA
+        db factorial family semWeb system test testGC time zahed)
+    prepend(EXJAVA src/examples/java ${EXJAVA})
 
     swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
     swipl_examples(DIRECTORIES ${EXJAVA} SUBDIR java)
-    swipl_examples(FILES examples/java/env.sh SUBDIR java)
+    swipl_examples(FILES src/examples/java/README.md SUBDIR java)
 
     ################
     # Documentation

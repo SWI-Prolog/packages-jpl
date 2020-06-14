@@ -5,6 +5,6 @@ jpl_test_fac(N, F) :-
     (   N == 1
     ->  F = 1
     ;   N2 is N-1,
-        jpl_call('org.jpl7.examples.factorial.Factorial', fac, [N2], F2),
+        jpl_call('factorial.Factorial', fac, [N2], F2),
         F is N*F2
     ).

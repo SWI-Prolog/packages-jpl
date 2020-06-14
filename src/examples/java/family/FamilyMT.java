@@ -1,4 +1,4 @@
-package org.jpl7.examples.family;
+package family;
 
 import java.util.Map;
 

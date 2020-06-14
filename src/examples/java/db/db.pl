@@ -1,6 +1,3 @@
-% a simple database for Test.java
-
-
 person(john, 20, melbourne).
 person(maria, 31, city(sydney)).
 person(maria, 11, city(perth)).

@@ -1,9 +1,8 @@
-package org.jpl7.examples.zahed;
+package zahed;
 
 import java.util.Map;
 
 import org.jpl7.*;
-import org.jpl7.fli.Prolog;
 
 public class Zahed {
 	public static void main(java.lang.String argv[]) {

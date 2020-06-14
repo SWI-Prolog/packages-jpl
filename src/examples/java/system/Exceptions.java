@@ -1,4 +1,4 @@
-package org.jpl7.examples;
+package system;
 
 import org.jpl7.PrologException;
 import org.jpl7.Query;
