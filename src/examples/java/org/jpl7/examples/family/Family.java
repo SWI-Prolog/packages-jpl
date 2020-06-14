@@ -1,4 +1,4 @@
-package family;
+package org.jpl7.examples.family;
 
 import java.util.Map;
 
@@ -12,7 +12,7 @@ public class Family {
 		//
 		Query.hasSolution("use_module(library(jpl))"); // only because we call e.g. jpl_pl_syntax/1 below
 		Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-		System.out.println("swipl.version = " + swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
+		System.out.println("swipl.version = " + swi.arg(1) + "" + swi.arg(2) + "." + swi.arg(3));
 		System.out.println("swipl.syntax = " + Query.oneSolution("jpl_pl_syntax(Syntax)").get("Syntax"));
 		System.out.println("swipl.home = " + Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
 		System.out.println("jpl.jar = " + JPL.version_string());

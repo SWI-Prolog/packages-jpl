@@ -1,4 +1,4 @@
-package familyMT;
+package org.jpl7.examples.family;
 
 import java.util.Map;
 
@@ -8,7 +8,7 @@ import org.jpl7.Term;
 
 public class FamilyMT extends Thread {
 	int id; // client thread id
-	private static final int delay = 0;
+	private static final int delay = 1;
 	private static final Term delayGoal = new Compound("sleep", new Term[] { new org.jpl7.Integer(delay) });
 
 	FamilyMT(int i) {

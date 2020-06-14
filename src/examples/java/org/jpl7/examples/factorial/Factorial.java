@@ -1,11 +1,11 @@
-package test2;
+package org.jpl7.examples.factorial;
 
 import org.jpl7.Compound;
 import org.jpl7.Query;
 import org.jpl7.Term;
 import org.jpl7.Variable;
 
-public class Test2 {
+public class Factorial {
 	public static int fac(int n) {
 		if (n == 1) {
 			return 1;
@@ -15,7 +15,7 @@ public class Test2 {
 	}
 
 	public static void main(String argv[]) {
-		Query.oneSolution("consult('test2.pl')");
+		Query.oneSolution("consult('fact.pl')");
 		System.out.print("calling Prolog to call Java to call Prolog...\n");
 		System.out.println("factorial(10) = " + fac(10));
 	}

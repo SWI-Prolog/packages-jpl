@@ -1,4 +1,4 @@
-package test;
+package org.jpl7.examples.test;
 
 import java.util.Map;
 
