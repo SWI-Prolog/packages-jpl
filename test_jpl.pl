@@ -722,7 +722,7 @@ test(
         set_array_element_cyclic_term_1,
         [       setup((
                         T = f(T),
-                        jpl_new(array(class([org,jpl7,test],['Test'])), 5, A)
+                        jpl_new(array(class([org,jpl7],['Test'])), 5, A)
                 )),
                 throws(
                         error(

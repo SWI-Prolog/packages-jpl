@@ -40,7 +40,7 @@ java -cp .:/usr/lib/swi-prolog/lib/jpl.jar  x.X
 If the example requires some resource, such as loading a Prolog `.pl` file, we need to cd into the location of the example and run it from there so that the resource is in the current user dir. For example:
 
 ```bash
-cd family
+cd <swi-home>/doc/packages/examples/jpl/java/family
 java -cp ..:/usr/lib/swi-prolog/lib/jpl.jar family.Family
 ```
 

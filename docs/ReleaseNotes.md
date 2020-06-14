@@ -4,6 +4,8 @@
 
 * Version [JPL 7.x](https://jpl7.org/) uses SWI Prolog V7 and has modernise JPL's APIs significantly.
 
+    * Version [7.6.1](ReleaseNotes761.md) works with SWI versions V8.3.x+. It adds Dictionaries as a data type and uses Maven build automation tool.
+
     * Version [7.6.0](ReleaseNotes760.md) works with SWI versions V8.1.x+. It adds Rationals as a data type and has several term methods refactored into class Term.
         
     * Version [7.5.0](ReleaseNotes750.md) works with SWI versions V7.4.x to V7.7.x. It has a new implemention of iterators ans solution methods in Queries and better handling of quoted terms.
