@@ -1,5 +1,5 @@
 :- asserta(file_search_path(foreign, '.')).
-:- asserta(file_search_path(jpl_examples, 'examples/prolog')).
+:- asserta(file_search_path(jpl_examples, '.')).
 :- asserta(file_search_path(jar, '.')).
 :- asserta(file_search_path(library, '.')).
 
