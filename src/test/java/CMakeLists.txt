@@ -64,6 +64,7 @@ endif()
 
 if(JUNIT_JAR)
     # Compiles the test source files into jpltest.jar file
+    # from here, CMAKE will infer the dependency on jpl_jar (and will build that one first)
     add_jar(jpltest
         SOURCES ${TEST}
         INCLUDE_JARS ${JUNIT_JAR} jpl_jar
