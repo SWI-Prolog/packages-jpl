@@ -1,4 +1,4 @@
-# Tutorials - Developing JPL
+# Developing JPL
 
 Say you want to develop JPL further, to extend it or address some bug.
 
@@ -15,7 +15,7 @@ The first thing to understand is that JPL has three parts:
 Both the Java and Prolog sources will make use of the C JNI code.
 
 
-## Setting up SWI-Prolog for JPL for development
+## Setting up SWIPL & JPL for development
 
 The second thing to understand is that JPL is just a package on the overall SWI Prolog system. So, to compile the whole JPL, one needs to core SWI system as the JPL C component (`libswipl.so`) links against the core SWI library (e.g., `libswipl.so`):
 
@@ -129,7 +129,7 @@ Now you have a local branch `proposal` tracking a remote branch in `ssardina` fo
 
 
 
-## Developing & Testing JPL Java API from an IDE
+## Developing from an IDE
 
 Most probably one develops the Java-API of JPL from an IDE, for example IntelliJ or ECLIPSE and would like to run and test from the IDE itself, rather than from the CLI via CMAKE for the whole SWIPL framework (the C library `libjpl.so` most of often won't change).
 
@@ -247,7 +247,7 @@ Total Test time (real) =   0.63 sec
 ```
 
 
-## Using non-installed development tree of SWIPL & JPL in Java application
+## Using the live devel tree
 
 Suppose you are developing JPL as above, in this case at `/home/ssardina/git/soft/prolog/swipl-devel.git`
 
