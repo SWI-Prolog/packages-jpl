@@ -32,48 +32,45 @@ JPL is **generally distributed with official Linux**. For example, in Ubuntu-bas
    
 ## Configuring environment variables
 
-When embeeding SWIPL into a Java, one may needs to "tell" the Java application the right information, via environment variables, so that SWIPL is initialized properly and can find all resources (`.pl` and `.so` libraries).
+When embedding SWIPL into a Java, one may need to "tell" the Java application the right information, via environment variables, so that SWIPL is initialized properly and can find all resources (`.pl` and `.so` libraries).
 
 In general, if the Java application will use the default executable of the system (i.e., the one that runs when executing `swipl`), then you only need to set-up `CLASSPATH` to include `jpl.jar` and possibly `LD_PRELOAD` to point to your active SWIPL `libswipl.so` library to avoid run-time errors. The executable has a pointer to the right information to initialize; see [here](https://www.swi-prolog.org/FAQ/FindResources.html).
 
-However, if your embedded application must use an SWIPL & JPL version that is _not_ the executable default in the system, one needs to provide the right paths to find SWIPL's home dir and SWIPL's C native `.so` libraries.
+However, if your embedded application must use an SWIPL & JPL version that is _not_ the executable default in the system, one needs to provide the right paths to find SWIPL's home dir _and_ SWIPL's C native `.so` libraries.
 
 ### Using stable distribution versions of SWIPL
 
-If the **Linux distribution install** of SWIPL & JPL is not the executable default but the one to be used, set-up the following environment variables:
+To use the SWIPL install in the **standard distribution** install location:
 
-      SWI_HOME_DIR=/usr/lib/swi-prolog/   # if default binary not pointing to this version
-      LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/x86_64-linux/   # to find all .so, including libjpl.so
-      CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar # Java API
-      LD_PRELOAD=/usr/lib/libswipl.so  # core SWIPL
-
-or in one line (for IDE Run configurations, for example):
-
-    CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar;LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/x86_64-linux/;LD_PRELOAD=/usr/lib/swi-prolog/lib/x86_64-linux/libswipl.so;SWI_HOME_DIR=/usr/lib/swi-prolog/
-
-Notice that, in this case, library `libswipl.so` will be found automatically, as it is located in the standard system-wide library dir `/usr/lib`.
+```shell script
+SWI_HOME_DIR=/usr/lib/swi-prolog/   # if default binary not pointing to this version
+LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/x86_64-linux/   # to find all .so, including libjpl.so
+CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar # Java API
+LD_PRELOAD=/usr/lib/libswipl.so  # core SWIPL
+```
 
 ### Using locally compiled and installed version of SWIPL
 
-Alternatively, if you have **compiled and installed** an SWIPL system, say, under directory `/usr/local/swipl-git/`, then the SWIPL home will be `/usr/local/swipl-git/lib/swipl/`, the executable binary will be `/usr/local/swipl-git/lib/swipl/bin/x86_64-linux/swipl` and the environment variables should be set-up as follows:
+Alternatively, if you have **compiled and installed** an SWIPL system, say, under directory `/usr/local/swipl-git/`, then:
 
-      SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/  # if binary exec not pointing to this SWIPL
-      LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/     # to find all .so, including libjpl.so
-      CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar
-      LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so  # see below for explanation
+```shell script
+SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/  # if binary exec not pointing to this SWIPL
+LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/     # to find all .so, including libjpl.so
+CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar
+LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so  # see below for explanation
+```
 
 or in one line (for IDE Run configurations, for example):
 
-    CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar;LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/;LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so;SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/
+```shell script
+CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar;LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/;LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so;SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/
+```
 
-## Using the development tree of SWI+JPL that is yet not installed?
-
-If you want to run your application against a development source tree of SWIPL & JPL that is not yet installed, then refer to [Developing JPL](TutorialDeveloping.md) guide.
+If you want to run your application against a development source tree of SWIPL & JPL that is not yet installed in the system, then refer to [Developing JPL](TutorialDeveloping.md) guide.
 
 
 
 ## Troubleshooting
-
 
 ### Cannot find `libjvm.so` (Prolog-calls-Java)
 
@@ -93,8 +90,10 @@ true.
 Do a `locate libjvm.so` to find where it is and add the path to `LD_LIBRARY_PATH` so that Java VM shard objects can be found:
 
 ```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/jvm/java-11-openjdk-amd64/lib/server/libjvm.so
 ```
+
+For Java Oracle: `/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/`
 
 ### FATAL ERROR: Could not find system resources
 

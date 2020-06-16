@@ -11,8 +11,8 @@ However, others have reported success with [OpenJDK 8 with OpenJ9 as JVM](https:
 On the other hand, errors have been reported when using:
 
 1. OpenJDK 8 with HotSpot VM; see [here](https://github.com/ssardina-research/packages-jpl/issues/23).
-2. OpenJDK 11.
-3. AdoptOpenJDK 11 (Hotspot), AdoptOpenJDK 11 (OpenJ9), and OracleJDK 13 (Hotspot); see [here](https://github.com/SWI-Prolog/packages-jpl/issues/34)
+2. AdoptOpenJDK 11 (Hotspot), AdoptOpenJDK 11 (OpenJ9), and OracleJDK 13 (Hotspot); see [here](https://github.com/SWI-Prolog/packages-jpl/issues/34)
+
 
 
 
