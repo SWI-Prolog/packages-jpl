@@ -291,16 +291,18 @@ test_4: avg: 2ms		0.002ms/term
 
 ## Init
 
-This example is in `system` package and showcases how to [initialize JPL](https://jpl7.org/TutorialGettingStarted) to use a particular SWIPL engine in case one has a non-standard, distribution based, install or has many SWIPL installs.
+This example is in `system` package and showcases how to [initialize JPL](https://jpl7.org/TutorialGettingStarted) with different [CLI options](https://www.swi-prolog.org/pldoc/man?section=cmdline).
 
-For example, suppose we want JPL to use a local SWIPL install located at `/usr/local/swipl-git/lib/swipl/`:
+Class `system.Init` can be initialized with any combination (including none) of `SWI_HOME_DIR` (for `--home` option), `SWIPL_BOOT_FILE` (for `-x` option), and `SWI_EXEC_FILE`.
+
+For example, to include them all for the local SWIPL install located at `/usr/local/swipl-git/lib/swipl/`:
 
 ```shell script
-[ssardina@Thinkpad-X1 system]$ LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/ \
-  SWI_HOME_DIR=/usr/local/swipl-git  \
-  SWI_EXEC_FILE=/usr/local/swipl-git/lib/swipl/bin/x86_64-linux/swipl \
+LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/ \
+  SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/ \
+  SWI_EXEC_FILE=/usr/local/swipl-git/lib/swipl/bin/x86_64-linux/swipl 
   SWIPL_BOOT_FILE=/usr/local/swipl-git/lib/swipl/boot.prc \
-    java -cp ../:/usr/local/swipl-git/lib/swipl/lib/jpl.jar system.Init
+      java -cp ../:/usr/local/swipl-git/lib/swipl/lib/jpl.jar system.Init
 ```
 
 Note that we need to set up `LD_LIBRARY_PATH` to make sure the `.so` libraries of that local install are used (and not the libraries from the local distribution install, e.g., `/usr/lib/swi-prolog`).
@@ -320,11 +322,11 @@ To use the SWIPL in the Linux distribution, located in `/usr/lib/swi-prolog`:
 
 ## Contributions
 
-Paul Singleton (paul.singleton@bcs.org.uk)
-July 2003
-January 2004 (revised)
-December 2004 (not revised much apart from this line)
+* Paul Singleton (paul.singleton@bcs.org.uk)
+    * July 2003
+    * January 2004 (revised)
+    * December 2004 (not revised much apart from this line)
 
-Sebastian Sardina (ssardina@gmail.com)
-June 2020
+* Sebastian Sardina (ssardina@gmail.com)
+    * June 2020 (refactored, updated, extended)
 
