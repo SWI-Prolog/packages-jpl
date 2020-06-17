@@ -183,8 +183,8 @@
 
     <distributionManagement>
         <repository>
-            <id>github</id>
-            <name>GitHub SWI-Prolog Apache Maven Packages</name>
+            <id>com.github</id>
+            <name>GitHub SWI-Prolog JPL Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/SWI-Prolog/packages-jpl</url>
         </repository>
     </distributionManagement>
