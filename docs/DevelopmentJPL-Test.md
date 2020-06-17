@@ -4,6 +4,8 @@ Once you have the SWIPL compiled, it is time to test it. To do so, we use CMAKE 
  * `jpl:java_in_prolog`, for testing Prolog-calls-Java; and 
  * `jpl:prolog_in_java` (for testing Java-calls-Prolog).
 
+To run the tests with minimal output:
+
 ```bash
 ssardina@Thinkpad-X1 build]$ ctest -R jpl:prolog_in_java
 Test project /home/ssardina/git/soft/prolog/swipl-devel.git/build
@@ -100,6 +102,5 @@ The following tests passed:
 100% tests passed, 0 tests failed out of 1
 
 Total Test time (real) =   1.07 sec
-[ssardina@Thinkpad-X1 build]$ 
 ```
 
