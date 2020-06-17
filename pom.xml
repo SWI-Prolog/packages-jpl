@@ -11,9 +11,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ##################################################################
-		PROJECT INFO
-     ####################################################################### -->
+    <!-- ######################### PROJECT INFO ######################### -->
     <groupId>com.github.SWI-Prolog</groupId>
     <artifactId>packages-jpl</artifactId>
     <version>7.6.1</version>
@@ -52,9 +50,7 @@
         </developer>
     </developers>
 
-    <!-- ##################################################################
-		PROPERTIES
-     ####################################################################### -->
+    <!-- ######################### PROPERTIES ######################### -->
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -66,14 +62,9 @@
 
 <!--        <jar.finalName>jpl-${version}</jar.finalName>-->
     </properties>
-    
-    <!--<prerequisites>-->
-        <!--<maven>2.2.1</maven>-->
-    <!--</prerequisites>-->
 
-    <!-- ##################################################################
-		DEPENDENCIES
-     ####################################################################### -->
+
+    <!-- ######################### DEPENDENCIES ######################### -->
     <dependencies>
         <!-- JUNIT testing framework -->
         <dependency>
@@ -93,14 +84,10 @@
 
     </dependencies>
 
-    <!-- ##################################################################
-		REPOSITORIES
-     ####################################################################### -->
+    <!-- ######################### REPOSITORIES ######################### -->
 
 
-    <!-- ##################################################################
-		BUILD PIPELINE PLUGINS
-     ####################################################################### -->
+    <!-- ######################### BUILD PIPELINE  ######################### -->
     <build>
         <!-- Ensure custom source directory structure taken into account -->
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -164,7 +151,9 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <source>8</source>
                     <excludePackageNames>org.jpl7.util;org.jpl7.test;org.jpl7.test.*</excludePackageNames>
+                    <!-- NOT NEEDED - But have JAVA_HOME correctly set-up
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                    -->
                 </configuration>
                 <executions>
                     <execution>
@@ -189,6 +178,20 @@
         </plugins>
     </build>
 
+    <!-- ######################### DISTRIBUTIONS ######################### -->
+    <!-- https://maven.apache.org/plugins/maven-deploy-plugin/usage.html -->
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub SWI-Prolog Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/SWI-Prolog/packages-jpl</url>
+        </repository>
+    </distributionManagement>
+
+
+
+    <!-- ######################### PROFILES ######################### -->
     <profiles>
         <profile>
             <id>disable-java8-doclint</id>
