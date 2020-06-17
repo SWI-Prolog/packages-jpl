@@ -29,7 +29,7 @@ Next, if we want to use JPL, we need to set-up two variables:
 
 ```
 export CLASSPATH=$SWI_BUILD/packages/jpl/src/main/java/jpl.jar:$CLASSPATH
-export LD_LIBRARY_PATH=/home/ssardina/git/soft/prolog/swipl-devel.git/build/packages/jpl:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$SWI_BUILD/packages/jpl:$LD_LIBRARY_PATH
 ```
 
 The setting of `CLASSPATH` is necessary so that `jpl.pl` has access to the JPL JAR compiled in the development tree (to access JAVA from Prolog).
