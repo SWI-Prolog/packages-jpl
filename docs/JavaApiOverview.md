@@ -218,14 +218,14 @@ As the [new Variable semantics from](https://jpl7.org/ReleaseNotes3000 section) 
 In the following example, even though two Variables instances are different and use in different queries, they are equal under `.equals()`:
  
 ```java
-    Variable v1 = new Variable("X");
-    Variable v2 = new Variable("X");
+Variable v1 = new Variable("X");
+Variable v2 = new Variable("X");
 
-    Term s1 = new Query("? = 5", v1).oneSolution().get("X");
-    Term s2 = new Query("? = 15", v2).oneSolution().get("X");
-    
-    boolean same_var = v1.equals(s2);   // evaluates to True
-    boolean same_bindings = s1.equals(s2); // evaluates to False
+Term s1 = new Query("? = 5", v1).oneSolution().get("X");
+Term s2 = new Query("? = 15", v2).oneSolution().get("X");
+
+boolean same_var = v1.equals(s2);   // evaluates to True
+boolean same_bindings = s1.equals(s2); // evaluates to False
 ```
 
 The anonymous variable "`_`" is not equal to any other variable (including itself!), as it cannot be interchangeably used (every of its use is different).

@@ -12,7 +12,7 @@ To use JPL under Linux one must have the following in place (here showing the lo
    * The Java API JAR file `jpl.jar` in `$SWI_HOME_DIR/lib/jpl.jar`.
    * The Prolog API as an SWIPL source module `jpl.pl` at `$SWI_HOME_DIR/library`.
    
-**_What does an embedded application ned to find?_**
+**_What does an embedded application need to find?_**
 
 * The Java API via `jpl.jar`. This needs to be in the `CLASSPATH`.
 * All Prolog `.pl` core libraries, including `jpl.pl`. These are found relative to SWIPL's home: `$SWI_HOME_DIR/library`
@@ -42,7 +42,7 @@ However, if your embedded application must use an SWIPL & JPL version that is _n
 
 To use the SWIPL install in the **standard distribution** install location:
 
-```shell script
+```bash
 SWI_HOME_DIR=/usr/lib/swi-prolog/   # if default binary not pointing to this version
 LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/x86_64-linux/   # to find all .so, including libjpl.so
 CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar # Java API
@@ -53,7 +53,7 @@ LD_PRELOAD=/usr/lib/libswipl.so  # core SWIPL
 
 Alternatively, if you have **compiled and installed** an SWIPL system, say, under directory `/usr/local/swipl-git/`, then:
 
-```shell script
+```bash
 SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/  # if binary exec not pointing to this SWIPL
 LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/     # to find all .so, including libjpl.so
 CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar
@@ -62,7 +62,7 @@ LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so  # see be
 
 or in one line (for IDE Run configurations, for example):
 
-```shell script
+```bash
 CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar;LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/;LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so;SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/
 ```
 
