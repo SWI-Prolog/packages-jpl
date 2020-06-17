@@ -907,7 +907,7 @@ public abstract class Term {
 	}
 
 	/**
-	 * whether the Term represents a proper list
+	 * Whether the Term represents a proper list
 	 *
 	 * @param term the term to check if it is a list
 	 * @return whether the Term represents a proper list
@@ -919,6 +919,8 @@ public abstract class Term {
 
 
 	/**
+	 * Returns the length of a list
+	 *
 	 * @param term any Term
 	 * @return the length of the proper list which the Term represents, else -1
 	 */
@@ -956,8 +958,7 @@ public abstract class Term {
 	/**
 	 * Converts an array of int to a corresponding JPL list
 	 *
-	 * @param a
-	 *            An array of int values
+	 * @param a An array of int values
 	 * @return Term a JPL list corresponding to the given int array
 	 */
 	public static Term intArrayToList(int[] a) {
@@ -971,8 +972,7 @@ public abstract class Term {
 	/**
 	 * Converts an array of arrays of int to a corresponding JPL list of lists
 	 *
-	 * @param a
-	 *            An array of arrays of int values
+	 * @param a An array of arrays of int values
 	 * @return Term a JPL list of lists corresponding to the given int array of arrays
 	 */
 	public static Term intArrayArrayToList(int[][] a) {
@@ -1035,8 +1035,9 @@ public abstract class Term {
 
 
 	/**
-	 * converts a proper list to an array of terms, else throws an exception
+	 * Converts a proper list to an array of terms, else throws an exception
 	 *
+	 * @param t the Term representing a list
 	 * @throws JPLException if the term passed is not itself a Prolog list term
 	 * @return an array of terms whose successive elements are the corresponding members of the list (if it is a list)
 	 */
@@ -1054,7 +1055,7 @@ public abstract class Term {
 	}
 
 	/**
-	 * converts a proper list to an array of terms, else throws an exception
+	 * Converts a proper list to an array of terms, else throws an exception
 	 *
 	 * @throws JPLException if the term passed is not itself a Prolog list term
 	 * @return an array of terms whose successive elements are the corresponding members of the list (if it is a list)
@@ -1064,6 +1065,8 @@ public abstract class Term {
 	}
 
 	/**
+	 * @return an array of terms whose successive elements are the corresponding members of the list (if it is a list)
+	 *
 	 * @deprecated Use {@link Term#listToTermArray()}
 	 */
 	@Deprecated

@@ -130,13 +130,15 @@ public class Dict extends Term {
 	};
 
 	/**
-	 * whether this Dictionary's functor has 'name' and 'arity' (c.f. traditional functor/3)
+	 * Whether this Dictionary's functor has 'name' and 'arity' (c.f. traditional functor/3)
 	 *
 	 * ?- A = point{x:1, y:2}, A =.. [X|Y].
 	 * A = point{x:1, y:2},
 	 * X = C'dict',
 	 * Y = [point, 1, x, 2, y].
 	 *
+	 * @param  val the name of the function (irrelevant here)
+	 * @param arity the arity of the function (size of dict + 1 as tag is added to list)
 	 * @return whether this Rational's functor has (long) 'name' and 'arity'
 	 */
 	public final boolean hasFunctor(Term val, int arity) {

@@ -113,9 +113,11 @@ public class Float extends Term {
 	}
 
 	/**
-	 * Tests whether this Float's functor has (double) 'name' and 'arity'
+	 * Tests whether this Float's functor has (double) name 'val' and 'arity'
 	 *
-	 * @return whether this Float's functor has (double) 'name' and 'arity'
+	 * @param val the value of the function (the number value in this case)
+	 * @param arity the arity of the function (zero in this case)
+	 * @return whether this Float's functor has (double) name 'val' and 'arity'
 	 */
 	public final boolean hasFunctor(double val, int arity) {
 		return val == this.value && arity == 0;

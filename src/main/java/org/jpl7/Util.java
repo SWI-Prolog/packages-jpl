@@ -56,8 +56,7 @@ public final class Util {
 	/**
 	 * Converts a substitution, in the form of a Map from variable names to Terms, to a String.
 	 *
-	 * @param varnames_to_Terms
-	 *            A Map from variable names to Terms.
+	 * @param varnames_to_Terms A Map from variable names to Terms.
 	 * @return String A String representation of the variable bindings
 	 */
 	public static String subsToString(Map<String, Term> varnames_to_Terms) {
@@ -75,6 +74,11 @@ public final class Util {
 	}
 
 	/**
+	 * Converts a substitution, in the form of a Map from variable names to Terms, to a String.
+	 *
+	 * @param varnames_to_Terms A Map from variable names to Terms.
+	 * @return String A String representation of the variable bindings
+	 *
 	 * @deprecated Use {@link Util#subsToString(Map)}
 	 */
 	@Deprecated
@@ -119,6 +123,13 @@ public final class Util {
 	}
 
 	/**
+	 * Converts a Prolog source text (as a String) to a corresponding JPL Term
+	 * (in which each Variable has the appropriate name from the source text).
+	 *
+	 * @param text A Prolog source text denoting a term
+	 * @return Term a JPL Term equivalent to the given source text
+	 * @throws PrologException containing error(syntax_error(_),_) if text is invalid as a term.
+	 *
 	 * @deprecated Use {@link Term#textToTerm(String text)}
 	 */
 	@Deprecated
@@ -141,7 +152,13 @@ public final class Util {
 		return Term.textToTerm(text).putParams(params);
 	}
 
+
 	/**
+	 * Converts an array of String to a corresponding JPL list of atoms
+	 *
+	 * @param a An array of String objects
+	 * @return Term a JPL list of atoms corresponding to the given String array
+	 *
 	 * @deprecated Use {@link Term#stringArrayToList(String[] a)}
 	 */
 	@Deprecated
@@ -150,6 +167,11 @@ public final class Util {
 	}
 
 	/**
+	 * Converts an array of int to a corresponding JPL list
+	 *
+	 * @param a An array of int values
+	 * @return Term a JPL list corresponding to the given int array
+	 *
 	 * @deprecated Use {@link Term#intArrayToList(int[] a)}
 	 */
 	@Deprecated
@@ -158,6 +180,11 @@ public final class Util {
 	}
 
 	/**
+	 * Converts an array of arrays of int to a corresponding JPL list of lists
+	 *
+	 * @param a An array of arrays of int values
+	 * @return Term a JPL list of lists corresponding to the given int array of arrays
+	 *
 	 * @deprecated Use {@link Term#intArrayArrayToList(int[][] a)}
 	 */
 	@Deprecated
@@ -166,6 +193,7 @@ public final class Util {
 	}
 
 	/**
+	 * Whether the Term represents a proper list
 	 *
 	 * @param term a term
 	 * @return if term is a proper list
@@ -179,6 +207,8 @@ public final class Util {
 
 
 	/**
+	 * Returns the length of a list
+	 *
 	 * @param term any Term
 	 * @return the length of the proper list which the Term represents, else -1
 	 * @deprecated Use {@link Term#listLength(Term)}
@@ -212,6 +242,10 @@ public final class Util {
 	}
 
 	/**
+	 *  Converts a term representing a list of atoms into an array of Strings, each element
+	 * 	in the array being a String for the corresponding atom
+	 * 	e.g., [a, b, 1
+	 *
 	 * @param t a compound term that is a list of atoms
 	 * @return a String array representing the list of atoms
 	 *
