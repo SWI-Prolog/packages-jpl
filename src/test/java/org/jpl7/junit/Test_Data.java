@@ -202,4 +202,22 @@ public class Test_Data extends JPLTest {
     }
 
 
+
+    // issue #13: https://github.com/SWI-Prolog/packages-jpl/issues/13
+    @Test
+    public void testWeirdCompound() {
+        Term t = new Query("A = 'age(mary)'(1,2,3)").oneSolution().get("A");
+
+        assertEquals("'age(mary)'(1, 2, 3)", t.toString());
+    }
+
+    // issue #13: https://github.com/SWI-Prolog/packages-jpl/issues/13
+    @Test
+    public void testWeirdCompound2() {
+        Map sol = new Query("A = '[1,2,3]'(a,b,c), A =.. [B1|B2]").oneSolution();
+
+        assertEquals("'[1,2,3]'(a, b, c)", sol.get("A").toString());
+        assertEquals("'[1,2,3]'", sol.get("B1").toString());
+        assertEquals("[a, b, c]", sol.get("B2").toString());
+    }
 }
