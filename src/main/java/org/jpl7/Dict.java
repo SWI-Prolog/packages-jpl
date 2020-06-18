@@ -4,9 +4,10 @@ import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
+//import java.util.stream.Collectors;	// include when upgrading to Java 1.8
 
 /**
  * Dict is a specialised Term representing a Prolog dictionary of the form Tag{Key1:Value1, Key2:Value2, ...}.
@@ -165,13 +166,30 @@ public class Dict extends Term {
 	 *
 	 * @return a Prolog source text representation of this dictionary's value
 	 */
+	@Override
 	public String toString() {
-		// https://www.baeldung.com/java-map-to-string-conversion
-		String mapAsString = map.keySet().stream()
-				.map(key -> key + ":" + map.get(key))
-				.collect(Collectors.joining(", ", "{", "}"));
-		return String.format("%s%s", tag.toString(), mapAsString);
+		String mapping = "";
+
+		for (Iterator<Atom> iterator = map.keySet().iterator(); iterator.hasNext();) {
+			Atom key= iterator.next();
+			Term value = map.get(key);
+			mapping = mapping + String.format("%s:%s", key.toString(), value.toString()) ;
+			if (iterator.hasNext()) mapping = mapping + ", ";
+		}
+		return String.format("%s{%s}", tag, mapping);
 	}
+
+	//TODO: exchange for this when upgrading to Java 1.8
+//	public String toString() {
+//		// https://www.baeldung.com/java-map-to-string-conversion
+//		String mapAsString = map.keySet().stream()
+//				.map(key -> key + ":" + map.get(key))
+//				.collect(Collectors.joining(", ", "{", "}"));
+//		return String.format("%s%s", tag.toString(), mapAsString);
+//	}
+
+
+
 
 	/**
 	 * the type of this term, as "Prolog.DICT"
