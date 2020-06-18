@@ -7,7 +7,7 @@ Once you have the SWIPL compiled, it is time to test it. To do so, we use CMAKE 
 To run the tests with minimal output:
 
 ```bash
-ssardina@Thinkpad-X1 build]$ ctest -R jpl:prolog_in_java
+$ ctest -R jpl:prolog_in_java
 Test project /home/ssardina/git/soft/prolog/swipl-devel.git/build
     Start 63: jpl:prolog_in_java
 1/1 Test #63: jpl:prolog_in_java ...............   Passed    0.79 sec
@@ -28,7 +28,7 @@ Total Test time (real) =   0.59 sec
 One can use the verbose `-V` option as follows:
 
 ```bash
-# ctest -V -R jpl:java_in_prolog
+$ ctest -V -R jpl:java_in_prolog
 UpdateCTestConfiguration  from :/home/ssardina/git/soft/prolog/swipl-devel.git/build/DartConfiguration.tcl
 UpdateCTestConfiguration  from :/home/ssardina/git/soft/prolog/swipl-devel.git/build/DartConfiguration.tcl
 Test project /home/ssardina/git/soft/prolog/swipl-devel.git/build
@@ -65,7 +65,7 @@ Total Test time (real) =   0.60 sec
 Similarly, for the Java-calls-Prolog test:
 
 ```java
-# ctest -V -R jpl:prolog_in_java
+$ ctest -V -R jpl:prolog_in_java
 UpdateCTestConfiguration  from :/home/ssardina/git/soft/prolog/swipl-devel.git/build/DartConfiguration.tcl
 UpdateCTestConfiguration  from :/home/ssardina/git/soft/prolog/swipl-devel.git/build/DartConfiguration.tcl
 Test project /home/ssardina/git/soft/prolog/swipl-devel.git/build

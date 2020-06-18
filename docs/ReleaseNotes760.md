@@ -1,5 +1,7 @@
 # Release Notes - 7.6.0
 
+Uses Java source 1.7.
+
 - New `org.jpl7.Rational` type to handle [SWI rationals](https://www.swi-prolog.org/pldoc/man?section=rational).
 - Refactored several methods dealing with JPL terms, from `org.jpl7.Util` to `org.jpl7.Term`:
     - `Term textToTerm(String text)`

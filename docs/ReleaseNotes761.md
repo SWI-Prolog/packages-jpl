@@ -1,5 +1,7 @@
 # Release Notes - 7.6.1
 
+Uses Java source 1.7.
+
 - New `org.jpl7.Dict` type to handle [SWI dictionaries](https://www.swi-prolog.org/pldoc/man?section=bidicts).
 - Refactored into [Maven-compatible standard directory layout](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html).
     - This included application sources in `src/main/` and tests in `src/test/`

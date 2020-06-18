@@ -1,4 +1,4 @@
-# Tutorials - Getting started
+# Tutorials - Java-calls-Prolog
 
 Assume we have a testing Prolog file with this content:
 ```prolog
@@ -12,52 +12,6 @@ descendent_of(X, Y) :-
     descendent_of(X, Z).
 ```
 You may wish to load this database into an interactive Prolog session to experiment with the predicates in this database before experimenting with JPL.
-
-
-## Initializing the Prolog engine
-
-Although the `org.jpl7.JPL` class provides a number of methods for initializing the Prolog engine from within Java, their use is not usually necessary: Prolog will be _automatically initialised_ with default parameters at the first attempt to use it.
-
-By default, the SWIPL install accessible via the _default executable_ (i.e., the one that runs when one types `swipl`) will be initialized. If one, instead, _requires to use another install_ of SWIPL+JPL (e.g., the one under development or an alternative one installed in `/usr/local`), then we need to set-up a few variables to make sure the intended SWIPL resources are found. For example, suppose we intend that our Java-based application uses the SWIPL framework locally installed in `/usr/local/swipl/`. Then:
-
-	SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/	# root of SWIPL install
-	LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/ # all .so native libs
-	LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so
-	CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar
-
-From here, [SWIPL will try to find/guess the resources](https://www.swi-prolog.org/FAQ/FindResources.html) and set-up the engine correctly. 
-
-Note also that you need to tell your development environment (e.g., IntelliJ or ECLIPSE) to use the correct `jpl.jar` (rather than one coming with the default active SWIPL system) or even the place where the JPL compiled classes are located if you intend to use a development (but uninstall) version of JPL. 
-
-Sometimes one needs to _explicitly initialize_ the engine (before a query triggers defaul initialization); for example, if one wants to use an SWIPL & JPL under a development tree that is not yet installed. The following code template will perform a comprehensive, and quiet, initialization (before any query is performed) (see [CLI options](https://www.swi-prolog.org/pldoc/man?section=cmdline) available):
-
-```java
-String init_swi_config =
-	String.format("%s -x %s -F swipl --home=%s -g true -q",
-		System.getenv("SWI_EXEC_FILE"), 	# irrelevant for Windows
-		System.getenv("SWIPL_BOOT_FILE"), 	
-		System.getenv("SWI_HOME_DIR"));
-JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));	# initialize SWIPL engine
-JPL.init()
-```
-
-The option `-F swipl` will cause the script `$SWI_HOME_DIR/swipl.rc` to be loaded which will set-up all the search paths relative to the install. 
-
-Assuming that development is happening under `/home/ssardina/git/soft/prolog/swipl-devel.git`, the above code will require the following environment variables:
-
-	SWI_HOME_DIR=/home/ssardina/git/soft/prolog/swipl-devel.git/build/home
-	SWI_EXEC_FILE=/home/ssardina/git/soft/prolog/swipl-devel.git/build/src/swipl
-	SWIPL_BOOT_FILE=/home/ssardina/git/soft/prolog/swipl-devel.git/build/home/boot.prc
-	
-Because SWIPL tries to "guess" the location of the binary and boot file, in most cases, it also suffies to do:
-
-```java
-String init_swi_config =
-	String.format("dummy --home=%s -g true -q",
-		System.getenv("SWI_HOME_DIR"));
-JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));	# initialize SWIPL engine
-```
-
 
 
 ## Consulting the Prolog database from its text file

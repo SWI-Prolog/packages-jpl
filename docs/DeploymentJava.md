@@ -1,8 +1,10 @@
 ## Which Java: Oracle Java JDK vs OpenJDK?
 
+The **source version** for JPL 7.6.1 is Java 1.7, so no advanced features like lambdas are used. Next versions of JPL will probably use 1.8+ language features.
+
 One can use Oracle JDK or OpenJDK; check a comparison [here](https://www.baeldung.com/oracle-jdk-vs-openjdk).
 
-Note there has been some changes in Licenses from Java SE 11. The changes are fairly complex but a good sumary and explanation of impact can be found [here](https://blog.jetbrains.com/idea/2018/09/using-java-11-in-production-important-things-to-know/)
+Note there has been some changes in Licenses from Java SE 11. The changes are fairly complex but a good summary and explanation of impact can be found [here](https://blog.jetbrains.com/idea/2018/09/using-java-11-in-production-important-things-to-know/)
 
 The current guide/documentation has been produced using the [Oracle Java](https://www.oracle.com/java/) SE 8.
 

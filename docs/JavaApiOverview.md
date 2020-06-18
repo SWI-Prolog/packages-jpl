@@ -91,41 +91,7 @@ JPL does not support reinitialization of a Prolog VM, but some command line opti
 
 For details about the legal parameter values, see [2.4 Command Line Options](http://www.swi-prolog.org/pldoc/man?section=cmdline) in the [SWI Prolog Reference Manual](http://www.swi-prolog.org/pldoc/doc_for?object=manual). 
 
-Most users will rely on automatic initialization. However, the following is a template for explicitly initializing the Prolog engine:
-
-```java
-if (System.getenv("SWI_HOME_DIR") != null ||
-        System.getenv("SWI_EXEC_FILE") != null ||
-        System.getenv("SWIPL_BOOT_FILE") != null) {
-   String init_swi_config =
-            String.format("%s %s %s -F swipl -g true -q --no-signals --no-packs",
-                    System.getenv("SWI_EXEC_FILE") == null ? "swipl" :
-                            System.getenv("SWI_EXEC_FILE"),
-                    System.getenv("SWIPL_BOOT_FILE") == null ? "" :
-                            String.format("-x %s", System.getenv("SWIPL_BOOT_FILE")),
-                    System.getenv("SWI_HOME_DIR") == null ? "" :
-                            String.format("--home=%s", System.getenv("SWI_HOME_DIR")));
-    System.out.println(String.format("\nSWIPL initialized with: %s", init_swi_config));
-
-    JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));    // initialize SWIPL engine
-} else
-    System.out.println("No explicit initialization done: no SWI_HOME_DIR, SWI_EXEC_FILE, or SWIPL_BOOT_FILE defined");
-
-//JPL.setTraditional(); // most often not used
-JPL.init();
-System.out.println("Prolog engine actual init args: " + Arrays.toString(Prolog.get_actual_init_args()));
-``` 
-
-This template will initialize the Prolog engine if any of the three environment variables `SWI_HOME_DIR`, `SWI_EXEC_FILE`, or `SWIPL_BOOT_FILE` are provided. A typical way to start such Java application could look as follows (this is one of the examples provided with SWIPL) forcing the application to use the SWI Prolog install at `/usr/local/swipl-git/`:
-
-```bash
-LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/   \
-   SWI_HOME_DIR=/usr/local/swipl-git \
-   SWI_EXEC_FILE=/usr/local/swipl-git/lib/swipl/bin/x86_64-linux/swipl \
-   SWIPL_BOOT_FILE=/usr/local/swipl-git/lib/swipl/boot.prc \    
-    java -cp ../:/usr/local/swipl-git/lib/swipl/lib/jpl.jar system.Init  
-```
-
+If you want or need (e.g., to use a non-standard install of SWIPL&JPL) to explicitly initialize the Prolog engine, you may want to check the following [initialization template code](TutorialInitializing) explicitly the Prolog engine.
 
 ## Creating terms
 

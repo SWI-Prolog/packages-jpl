@@ -10,7 +10,7 @@ To use JPL to embed Prolog in Java or Java in Prolog, at least three libraries n
         *  If needed, its dir should be in the `DYLD_LIBRARY_PATH` env variable.
 * **JAR file `jpl.jar` implementing the Java API**. This file must be found by any Java VMs (and compilers) used with JPL. 
      * Would generally be in `SWI_HOME_DIR/lib/`.
-     * The JAR has to be in the `CLASSPATH` or obtained automatically as a [Maven dependency](DelopymentJava).
+     * The JAR has to be in the `CLASSPATH` or obtained automatically as a [Maven dependency](DeploymentJava).
 * **Prolog source module file `jpl.pl` implementing the Prolog API**. This file will be used by the SWI-Prolog engines (either standalone or created by JPL from Java).
     * Would generally be in `$SWI_HOME_DIR/library`
 

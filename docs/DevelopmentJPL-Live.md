@@ -10,7 +10,7 @@ export SWI_BUILD=/home/ssardina/git/soft/prolog/swipl-devel.git/build/
 We can now start SWIPL from CLI as follows:
 
 ```bash
-[ssardina@Thinkpad-X1 build]$ $SWI_BUILD/src/swipl -x $SWI_BUILD/home/boot.prc -F swipl --home=$SWI_BUILD/home 
+$ $SWI_BUILD/src/swipl -x $SWI_BUILD/home/boot.prc -F swipl --home=$SWI_BUILD/home 
 Welcome to SWI-Prolog (threaded, 64 bits, version 8.3.1-34-g9adbe8ff1-DIRTY)
 SWI-Prolog comes with ABSOLUTELY NO WARRANTY. This is free software.
 Please run ?- license. for legal details.
@@ -27,7 +27,7 @@ The option `-F swipl` in the source tree will execute file `swipl.rc` which sets
 
 Next, if we want to use JPL, we need to set-up two variables:
 
-```
+```bash
 export CLASSPATH=$SWI_BUILD/packages/jpl/src/main/java/jpl.jar:$CLASSPATH
 export LD_LIBRARY_PATH=$SWI_BUILD/packages/jpl:$LD_LIBRARY_PATH
 ```
