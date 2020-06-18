@@ -1,5 +1,7 @@
 # JPL - Java <-> SWI Prolog Interface
 
+![Java CI with Maven](https://github.com/SWI-Prolog/packages-jpl/workflows/Java%20CI%20with%20Maven/badge.svg)
+
 JPL is a set of Java classes and C functions providing a **bidirectional interface between Java and Prolog**.  JPL uses the Java Native Interface (JNI) to connect to a Prolog engine through the Prolog Foreign Language Interface (FLI).  JPL is not a pure Java implementation of Prolog; it makes extensive use of native implementations of Prolog on supported platforms.
 
 In its current version, JPL supports the _embedding of a Prolog engine within the Java VM_ as well as the _embedding of a Java VM within Prolog_, so that, for example, one could take advantage of the rich class structure of the Java environment from within Prolog.
