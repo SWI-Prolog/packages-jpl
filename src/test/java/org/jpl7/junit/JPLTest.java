@@ -5,6 +5,8 @@ import org.jpl7.JPL;
 import org.jpl7.Query;
 import org.junit.runner.Description;
 
+import static org.junit.Assert.fail;
+
 abstract class JPLTest {
     public static final String home =
             (System.getenv("SWI_HOME_DIR") == null ? "../../build/home/"
@@ -76,6 +78,15 @@ abstract class JPLTest {
 //        q_load_jpl.hasSolution();
     }
 
+
+    protected static void machExceptionError(Exception e, String expectedError) {
+        if (e.getMessage().contains(expectedError)) {
+            // OK: an appropriate exception was thrown
+        } else {
+            String msg = String.format("did not catch expected error '%s', received: %s ", expectedError, e.toString());
+            fail(msg);
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////////
     // SUPPORTING CODE

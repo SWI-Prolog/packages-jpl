@@ -139,12 +139,7 @@ public class Test_Rational extends JPLTest {
             try {
                 Rational rat = new Rational(r);
             } catch (JPLException e) {
-                if (e.getMessage().contains(expectedError)) {
-                    // OK: an appropriate exception was thrown
-                } else {
-                    String msg = String.format("did not catch expected error '%s', received: %s ", expectedError, e.toString());
-                    fail(msg);
-                }
+                machExceptionError(e, expectedError);
             }
         }
     }
@@ -158,12 +153,7 @@ public class Test_Rational extends JPLTest {
             try {
                 Rational rat = new Rational(r);
             } catch (JPLException e) {
-                if (e.getMessage().contains("denominator of rational cannot be 0")) {
-                    // OK: an appropriate exception was thrown
-                } else {
-                    String msg = String.format("did not catch expected error '%s', received: %s ", expectedError, e.toString());
-                    fail(msg);
-                }
+                machExceptionError(e, expectedError);
             }
         }
     }
