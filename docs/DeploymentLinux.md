@@ -90,7 +90,7 @@ true.
 Do a `locate libjvm.so` to find where it is and add the path to `LD_LIBRARY_PATH` so that Java VM shard objects can be found:
 
 ```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/jvm/java-11-openjdk-amd64/lib/server/libjvm.so
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/jvm/java-11-openjdk-amd64/lib/server
 ```
 
 For Java Oracle: `/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/`

@@ -28,7 +28,7 @@ Note also that one may need to tell your development environment or applications
 If you want to call Java from Prolog using JPL, you need to add the directory holding the JVM shared objects to the dynamic linker search path:
  
  ```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/jvm/java-11-openjdk-amd64/lib/server/libjvm.so
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/jvm/java-11-openjdk-amd64/lib/server/
 ```
 
 Also, some applications may require the pre-loading of libraries, e.g.,:
