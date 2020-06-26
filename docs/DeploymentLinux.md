@@ -29,6 +29,8 @@ JPL is **generally distributed with official Linux**. For example, in Ubuntu-bas
 
 2. Manually compile & install from sources at [SWI-devel repo](https://github.com/SWI-Prolog/swipl-devel) using CMAKE. See instructions below.
 
+
+If you want to have more than one SWIPL installed (your locally compiled system and the distribution one), you may want to use  `fnogatz`'s [swivm](https://github.com/fnogatz/swivm) to manage them.
    
 ## Configuring environment variables
 
@@ -37,6 +39,7 @@ When embedding SWIPL into a Java, one may need to "tell" the Java application th
 In general, if the Java application will use the default executable of the system (i.e., the one that runs when executing `swipl`), then you only need to set-up `CLASSPATH` to include `jpl.jar` and possibly `LD_PRELOAD` to point to your active SWIPL `libswipl.so` library to avoid run-time errors. The executable has a pointer to the right information to initialize; see [here](https://www.swi-prolog.org/FAQ/FindResources.html).
 
 However, if your embedded application must use an SWIPL & JPL version that is _not_ the executable default in the system, one needs to provide the right paths to find SWIPL's home dir _and_ SWIPL's C native `.so` libraries.
+
 
 ### Using stable distribution versions of SWIPL
 
@@ -68,6 +71,8 @@ CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar;LD_LIBRARY_PATH=/usr/local/
 
 If you want to run your application against a development source tree of SWIPL & JPL that is not yet installed in the system, then refer to [Developing JPL](TutorialDeveloping.md) guide.
 
+
+Again, you can check `fnogatz`'s [swivm](https://github.com/fnogatz/swivm) system to manage many SWIPL.
 
 
 ## Troubleshooting
