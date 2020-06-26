@@ -8,6 +8,9 @@ JPL is designed in two layers, a low-level interface to the Prolog FLI and a hig
 
 JPL has been integrated into the full SWI-Prolog distribution starting with version 5.4.x, including binaries for MS-Windows and a Linux RPM. Check a high-level overview of its many versions [here](ReleaseNotes.md).
 
+For the JPL source code please refer to its GitHub repository [here].
+
+JPL is developed in the GitHub [packges-jpl](https://github.com/SWI-Prolog/packages-jpl) repository withn the [SWI-Prolog](https://github.com/SWI-Prolog) organization. 
 
 ## Objectives
 
