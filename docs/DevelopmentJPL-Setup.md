@@ -75,7 +75,7 @@ export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 ```
 
 
-## Compiling \& Installing SWIPL with JPL
+## Compiling & Installing SWIPL with JPL
 
 Everything is ready. Now, **build the SWIPL system**  (SWIPL + JPL + PLUNIT) using CMAKE (with install in`/usr/local/swipl-git`):
 
