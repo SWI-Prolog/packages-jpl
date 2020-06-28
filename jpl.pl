@@ -1013,8 +1013,8 @@ jpl_set_array(T, A, N, I, Ds) :-
         jpl_set_elements(T, A, N, I, Bp),
         jni_free_buffer(Bp)
     ;
-        % throw_system_error(Pred,array_element_type,T,eq03)        % a system error with args is not ISO and this is not a system error
-        throw_illegal_state_error(Pred,array_element_type,T,eq03)   % this is not ISO either, but at least it's meaningful
+        % T is neither a class, nor an array type nor a primitive type
+        throw_type_error(Pred,array_element_type,T,eq03)
     ).
 
 
@@ -4492,7 +4492,7 @@ exception_msg(ep07,'more than one public static field of the class has this name
 
 exception_msg(eq01,'not all values are assignable to the array element type').
 exception_msg(eq02,'not all values are convertible to Java values or references').
-exception_msg(eq03,'array element type is unknown (this should not happen)').
+exception_msg(eq03,'array element type is unknown: neither a class, nor an array type, nor a primitive type').
 
 % ---
 
@@ -4502,7 +4502,7 @@ exception_msg(er01,'must be acyclic').
 
 exception_msg(es01,'1st arg must be bound to a JPL type').
 
-% The predicates that throw. 
+% The predicates that throw.
 % Pred+    is generally the predicate descriptor of the predicate raising the exception.
 % MsgCode+ is the atom indicating which cleartext message to insert into the exception term.
 
@@ -4538,20 +4538,6 @@ throw_permission_error(Pred,Operation,PermissionType,Culprit,MsgCode) :-
    Formal  = permission_error(Operation,PermissionType,Culprit),
    Context = context(Pred,MsgText),
    throw(error(Formal,Context)).
-
-% throw_illegal_state_error/2 is not ISO but we need it! (there should
-% be an ISO error like that, really).
-%
-% It is used in place of the original approach of throwing a system_error
-% with parameters. system_errors with parameters is not ISO either --
-% and dubious: system_error should be used when the harddisk crashes etc,
-% not when the assertion fails.
-
-throw_illegal_state_error(Pred,MsgCode) :-
-   from_msg_code(MsgCode,MsgText),
-   Formal  = illegal_state_error,
-   Context = context(Pred,MsgText),
-   throw(error(Formal,Context)).  % TODO maybe not have functor "error" but "jpl_error"?
 
          /*******************************
          *      Initialize JVM          *
