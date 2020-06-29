@@ -59,6 +59,7 @@ endif(NOT ANDROID)
 #  message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
 #endif()
 
+set(Java_JAVAH_EXECUTABLE /bin/true)	    # We do not need this
 find_package(Java COMPONENTS Development)   # https://cmake.org/cmake/help/v3.14/module/FindJava.html
 
 if(JNI_FOUND AND Java_FOUND)
