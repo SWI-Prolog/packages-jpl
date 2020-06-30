@@ -4196,10 +4196,12 @@ add_java_to_ldpath.
 extend_dll_search_path(Dir) :-
     win_add_dll_directory(Dir),
     (   current_prolog_flag(wine_version, _)
-    ->  getenv('PATH', Path0),
-        prolog_to_os_filename(Dir, OSDir),
-        atomic_list_concat([Path0, OSDir], ';', Path),
-        setenv('PATH', Path)
+    ->  prolog_to_os_filename(Dir, OSDir),
+        (   getenv('PATH', Path0)
+        ->  atomic_list_concat([Path0, OSDir], ';', Path),
+            setenv('PATH', Path)
+        ;   setenv('PATH', OSDir)
+        )
     ;   true
     ).
 :- endif.
