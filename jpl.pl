@@ -951,7 +951,7 @@ jpl_set_static(Type, ClassObj, Fname, V) :-
     ->  true
     ;   var(Fname)
     ->  throw_instantiation_error(Pred,pl_set/3,ep01)
-    ;   throw_type_error(field_name,Fname,ep02)
+    ;   throw_type_error(Pred,field_name,Fname,ep02)
     ),
     findall(  % get all static fields of the denoted class
         z4(I,Mods,FID,Tf),
