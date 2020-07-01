@@ -57,19 +57,18 @@ In a nutshell, assuming we are develping JPL in its usual location with SWIPL (`
 SWI_HOME_DIR=../../build/home/
 SWIPL_BOOT_FILE=../../build/home/boot.prc   # to setup SWIPL engine
 LD_LIBRARY_PATH=../../build/packages/jpl    # to find libjpl.so
-CLASSPATH=out/artifacts/jpl_jar/	        # for calls from Prolog to Java
+CLASSPATH=target/classes/	        # for calls from Prolog to Java
 LD_PRELOAD=../../build/src/libswipl.so	    # avoid run-time errors
-TEST_DIR=src/java/org/jpl7/test 		    # find aux .pl testing support files
 ``` 
 
-In IntelliJ, for example, this is done by modifying the [Java/JUnit Template]((https://intellij-support.jetbrains.com/hc/en-us/community/posts/205820189-How-to-set-default-environment-variables-) in "Run/Debug Configuration" to include the environment variables.
+In IntelliJ, for example, this is done by modifying the [Java/JUnit Template](https://intellij-support.jetbrains.com/hc/en-us/community/posts/205820189-How-to-set-default-environment-variables-) in "Run/Debug Configuration" to include the environment variables.
 
 For instance, modify the JUnit template by just enter this string in "Environment variables":
         
 ```bash
-LD_LIBRARY_PATH=../../build/packages/jpl;SWI_HOME_DIR=../../build/home;SWIPL_BOOT_FILE=../../build/home/boot.prc;CLASSPATH=out/artifacts/jpl_jar/;LD_PRELOAD=../../build/src/libswipl.so
+LD_LIBRARY_PATH=../../build/packages/jpl;SWI_HOME_DIR=../../build/home;SWIPL_BOOT_FILE=../../build/home/boot.prc;CLASSPATH=target/classes;LD_PRELOAD=../../build/src/libswipl.so
 ```
 
-Note this assumes you have produced `jpl.jar` as an artifact under `out/`.
+Note this assumes your IDE will compile the JPL classes into `target/classes` dir, as default in a Maven project.
 
 Finally, you can create a new Run from the template, it will already inherit the environment variables. The whole JUNIT testing framework is aggregated by class `org.jpl7.test.JPLTestSuite`.
