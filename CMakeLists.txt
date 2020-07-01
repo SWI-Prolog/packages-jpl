@@ -120,9 +120,6 @@ if(JNI_FOUND AND Java_FOUND)
     endif()
 
     add_custom_target(jpl DEPENDS libjpl jpl_jar)   # main module
-#    if(JUNIT_JAR)
-#      add_dependencies(jpltest jpl_jar)   # jpltest uses jpl.jar
-#    endif()
 
     ################
     # Testing

@@ -12,10 +12,11 @@
 #   using the specified class path.
 #
 
-# search for the JAR providing JUNIT versin 4
+# search for the JAR providing JUNIT version 4
 # Unfortunately GLOB ? means exactly one, so cannot use it to make the - optional!
 ## GLOB EXPRESSION: https://facelessuser.github.io/wcmatch/glob/
-file(GLOB JUNIT_JAR
+if(NOT JUNIT_JAR)
+  file(GLOB JUNIT_JAR
                 ${JAVA_LIB_INSTALL_DIR}/junit4.jar
                 ${JAVA_LIB_INSTALL_DIR}/junit-4*.jar
                 /usr/share/java/junit4.jar
@@ -25,6 +26,7 @@ file(GLOB JUNIT_JAR
                 /opt/local/share/java/junit-4*.jar
                 /usr/local/share/java/junit4.jar
                 /usr/local/share/java/junit-4*.jar)
+endif()
 MARK_AS_ADVANCED(JUNIT_JAR)
 find_file(HAMCREST
     NAMES
