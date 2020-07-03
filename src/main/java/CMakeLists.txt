@@ -59,8 +59,8 @@ endif()
 add_jar(jpl_jar
 	SOURCES ${CLS} ${FLI}
 	OUTPUT_NAME jpl
-	MANIFEST META-INF/MANIFEST.MF
-	VERSION ${JPL_VERSION}) # VERSION creates jar with the -<version>jar format and a symblic to it.
+	#VERSION ${JPL_VERSION} # VERSION creates jar with the -<version>jar format and a symblic to it. (not used now for portability)
+	MANIFEST META-INF/MANIFEST.MF)
 
 
 install_jar(jpl_jar

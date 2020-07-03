@@ -67,6 +67,5 @@ if(JUNIT_JAR)
     # from here, CMAKE will infer the dependency on jpl_jar (and will build that one first)
     add_jar(jpltest
         SOURCES ${TEST}
-        INCLUDE_JARS ${JUNIT_JAR} jpl_jar
-       	VERSION ${JPL_VERSION}) # VERSION creates jar with the -<version>jar format and a symblic to it.
+        INCLUDE_JARS ${JUNIT_JAR} jpl_jar)
 endif()

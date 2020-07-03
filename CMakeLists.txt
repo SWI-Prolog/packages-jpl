@@ -135,7 +135,7 @@ if(JNI_FOUND AND Java_FOUND)
         set(swibootfile ${swihome}/boot.prc)
 
 
-        # Add testing pack on Java code calling Prolog (class org.jpl7.junit.TestJUnit4)
+        # Add testing pack on Java code calling Prolog (class org.jpl7.JPLTestSuiteRunne)
         add_test(
             NAME jpl:prolog_in_java
             COMMAND env
@@ -158,9 +158,9 @@ if(JNI_FOUND AND Java_FOUND)
 
         if(INSTALL_TESTS)
           install(FILES
-		  ${CMAKE_CURRENT_BINARY_DIR}/src/test/java/jpltest-${JPL_VERSION}.jar
+          #${CMAKE_CURRENT_BINARY_DIR}/src/test/java/jpltest-${JPL_VERSION}.jar # not used for portability
+		  ${CMAKE_CURRENT_BINARY_DIR}/src/test/java/jpltest.jar
 		  DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/test/java
-		  RENAME jpltest.jar
 		  COMPONENT Tests)
         endif()
     else(JUNIT_JAR)
