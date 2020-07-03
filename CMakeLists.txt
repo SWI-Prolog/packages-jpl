@@ -157,9 +157,11 @@ if(JNI_FOUND AND Java_FOUND)
              PACKAGES plunit)
 
         if(INSTALL_TESTS)
-          install(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/test/java/jpltest.jar
-              DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/test/java
-              COMPONENT Tests)
+          install(FILES
+		  ${CMAKE_CURRENT_BINARY_DIR}/src/test/java/jpltest-${JPL_VERSION}.jar
+		  DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/test/java
+		  RENAME jpltest.jar
+		  COMPONENT Tests)
         endif()
     else(JUNIT_JAR)
       message("-- No junit.jar. Make sure junit.jar points to junit4.jar  Dropping JPL tests.")
