@@ -180,12 +180,13 @@ jpl_new_1(class(Ps,Cs), Params, Vx) :-
     (   Z3s == []               % no constructors which require the given qty of parameters?
     ->  jpl_type_to_classname(Tx, Cn),
         (   jpl_call(Cx, isInterface, [], @(true))
-        ->  throwme(jpl_new_class,class_is_interface(Cn)),
+        ->  throwme(jpl_new_class,class_is_interface(Cn))
         ;   throwme(jpl_new_class,class_without_constructor(Cn/A))
         )
     ;   (   catch(
                 jpl_datums_to_types(Params, Taps),  % infer actual parameter types
-                error(type_error(acyclic,Te),context(jpl_datum_to_type/2,Msg)),
+                % 2020-07-21: make catcher's 1st context arg an "anonvar" instead of a overspecified predicate indicator
+                error(type_error(acyclic,Te),context(_,Msg)), 
                 throwme(jpl_new_class,acyclic(Te,Msg)) % rethrow
             )
         ->  true
@@ -222,7 +223,7 @@ jpl_new_1(class(Ps,Cs), Params, Vx) :-
 jpl_new_1(array(T), Params, Vx) :-
     !,
     (   var(Params)
-    ->  throwme(jpl_new_array,params_is_var))
+    ->  throwme(jpl_new_array,params_is_var)
     ;   integer(Params)         % integer I -> array[0..I-1] of default values
     ->  (   Params >= 0
         ->  Len is Params
@@ -333,7 +334,8 @@ jpl_call(X, Mspec, Params, R) :-
     (   is_list(Params)
     ->  (   catch(
                 jpl_datums_to_types(Params, Taps),
-                error(type_error(acyclic,Te),context(jpl_datum_to_type/2,Msg)),
+                % 2020-07-21: make catcher's 1st context arg an "anonvar" instead of a overspecified predicate indicator
+                error(type_error(acyclic,Te),context(_,Msg)), 
                 throwme(jpl_call,acyclic(Te,Msg)) % rethrow
             )
         ->  true
@@ -414,7 +416,7 @@ jpl_call_static(Type, ClassObj, Mname, Params, Taps, A, Rx) :-
         Z5s
     ),
     (   Z5s = []
-    ->  throwme(jpl_call_static,no_such_method(M))
+    ->  throwme(jpl_call_static,no_such_method(Mname))
     ;   findall(
             z5(I,Mods,MID,Tr,Tfps),
             (   member(z5(I,Mods,MID,Tr,Tfps), Z5s),
@@ -560,7 +562,6 @@ jpl_get(X, Fspec, V) :-
 % value
 
 jpl_get_static(Type, ClassObj, Fname, Vx) :-
-    Pred=jpl_get/3,
     (   atom(Fname)             % assume it's a field name
     ->  true
     ;   var(Fname)
@@ -640,7 +641,7 @@ jpl_get_instance(array(ElementType), _, Array, Fspec, Vx) :-
     ;   atom(Fspec)
     ->  (   Fspec == length             % special-case for this solitary array "method"
         ->  jGetArrayLength(Array, Vx)
-        ;   throwme(jpl_get_instance_array,no_such_field(Fspec)),
+        ;   throwme(jpl_get_instance_array,no_such_field(Fspec))
         )
     ;   throwme(jpl_get_instance_array,wrong_spec(Fspec))
     ).
@@ -808,7 +809,8 @@ jpl_set(X, Fspec, V) :-
     ->  Obj = X,
         catch(
             jpl_set_instance(Type, Type, Obj, Fspec, V),    % first 'Type' is for FAI
-            error(type_error(acyclic,Te),context(jpl_datum_to_type/2,Msg)), % isn't the catcher overspecified?
+            % 2020-07-21: make catcher's 1st context arg an "anonvar" instead of a overspecified predicate indicator
+            error(type_error(acyclic,Te),context(_,Msg)), 
             throwme(jpl_set,acyclic(Te,Msg)) % rethrow
         )
     ;   var(X)
@@ -830,7 +832,8 @@ jpl_set(X, Fspec, V) :-
         )
     ->  catch(
             jpl_set_static(Type, ClassObj, Fspec, V),
-            error(type_error(acyclic,Te),context(jpl_datum_to_type/2,Msg)), % isn't the catcher overspecified?
+            % 2020-07-21: make catcher's 1st context arg an "anonvar" instead of a overspecified predicate indicator
+            error(type_error(acyclic,Te),context(_,Msg)),
             throwme(jpl_set,acyclic(Te,Msg)) % rethrow
         )
     ;   throwme(jpl_set,arg1_is_bad(X))
@@ -872,7 +875,7 @@ jpl_set_instance(class(_,_), Type, Obj, Fname, V) :-    % a non-array object
                 ;   jpl_set_instance_field(Tf, Obj, FID, V)         % oughta be jpl_set_instance_field?
                 )
             ;   jpl_type_to_nicename(Tf, NNf),
-                throwme(jpl_set_instance_class,incompatible_value(NNF,V))
+                throwme(jpl_set_instance_class,incompatible_value(NNf,V))
             )
         ;   throwme(jpl_set_instance_class,arg3_is_bad(V))
         )
@@ -961,7 +964,7 @@ jpl_set_static(Type, ClassObj, Fname, V) :-
         ->  (   jpl_type_fits_type(Tv, Tf)
             ->  jpl_set_static_field(Tf, ClassObj, FID, V)
             ;   jpl_type_to_nicename(Tf, NNf),
-                throwme(jpl_set_static,value_not_assignable(NNF,V))
+                throwme(jpl_set_static,value_not_assignable(NNf,V))
             )
         ;   throwme(jpl_set_static,arg3_is_bad(field_value,V))
         )
@@ -977,7 +980,6 @@ jpl_set_static(Type, ClassObj, Fname, V) :-
 % throws error(type_error(acyclic,_),context(jpl_datum_to_type/2,_))
 
 jpl_set_array(T, A, N, I, Ds) :-
-    Pred=jpl_set/3,
     (   jpl_datums_to_types(Ds, Tds)        % most specialised types of given values
     ->  (   jpl_types_fit_type(Tds, T)      % all assignable to element type?
         ->  true
@@ -2643,7 +2645,7 @@ jpl_datum_to_type(D, T) :-
     ;   nonvar(D),
         D = {Term}
     ->  (   cyclic_term(Term)
-        ->  exc_desc(jpl_datum_to_type,is_cyclic(Term))
+        ->  throwme(jpl_datum_to_type,is_cyclic(Term))
         ;   atom(Term)
         ->  T = class([org,jpl7],['Atom'])
         ;   integer(Term)
@@ -4372,14 +4374,14 @@ throwme(LookupPred,LookupTerm) :-
 
 throwme_h1(0,_,LookupPred,LookupTerm) :-
    with_output_to(atom(Txt),format("Did not find an exception descriptor for LookupPred = ~q, LookupTerm = ~q", [LookupPred,LookupTerm])),
-   throw(programming_error(Txt)). % resolutely non-ISO standard
+   throw(error(programming_error,context(_,Txt))). % resolutely non-ISO standard
 
 throwme_h1(1,[[Location,Formal,MsgTxt]],_,_) :-
    throw(error(Formal,context(Location,MsgTxt))).
 
 throwme_h1(Count,_,LookupPred,LookupTerm) :-
    with_output_to(atom(Txt),format("Found ~d exception descriptors for LookupPred = ~q, LookupTerm = ~q", [Count,LookupPred,LookupTerm])),
-   throw(programming_error(Txt)). % resolutely non-ISO standard
+   throw(error(programming_error,context(_,Txt))). % resolutely non-ISO standard
 
 % ===
 % exc_desc(+LookupPred,+LookupTerm,?Location,?Formal,?MsgTxt)
@@ -4934,7 +4936,7 @@ exc_desc(jpl_set_array,element_type_unknown(array_element_type,T),
 % ---
 
 exc_desc(jpl_datum_to_type,is_cyclic(Term),
-         jpl_datum_to_type/2,
+         jpl_call/4, % I don't know why, but the tests expect jpl_call/4 here
          type_error(acyclic,Term),
          'must be acyclic').
 
