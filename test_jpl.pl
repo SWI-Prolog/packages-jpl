@@ -68,8 +68,8 @@ test_jpl :-
      ,java_id
      ,java_type_id
      ,messy_dollar_split
-     ,jpl_binary_classname_without_dollar
-     ,jpl_binary_classname_with_dollar
+     ,jpl_classname_without_dollar
+     ,jpl_classname_with_dollar
      ,jpl_entity_is_primitive
      ,jpl_entity_is_array
      ,compare_both_dotty
@@ -1386,29 +1386,38 @@ recognize(In,Rest,DcgGoal,TypeTerm) :-
 % ===========================================================================
 
 % ---
-% Select which old DCG predicate to call
+% Construct the returnable term
+% ---
+
+outcome(true ,X,success(X)).
+outcome(false,_,failure).
+
+% ---
+% Select which "old DCG predicate" (the ones in the old jpl code embedded
+% in this file) to call
 % ---
 
 old_goal_by_mode(slashy   , jpl_type_findclassname ). % jpl_type_findclassname//1
 old_goal_by_mode(dotty    , jpl_type_classname_1   ). % jpl_type_classname_1//1
 old_goal_by_mode(typedesc , jpl_type_descriptor_1  ). % jpl_type_descriptor_1//1
 
+% ---
+% New DCG predicates
+% ---
+
 new_goal_by_mode(slashy   , new_slashy).
 new_goal_by_mode(dotty    , new_dotty).
 new_goal_by_mode(typedesc , new_typedesc).
 
-% Construct the returnable term
-
-outcome(true ,X,success(X)).
-outcome(false,_,failure).
-
 % Indirection for new calls; easier than constructing the goal
 
-new_slashy(T)   --> jpl_typeterm_entityname(T,slashy).
-new_dotty(T)    --> jpl_typeterm_entityname(T,dotty).
-new_typedesc(T) --> jpl_slashy_type_descriptor(T).
+new_slashy(T)   --> jpl_typeterm_rel_entityname(T,slashy).
+new_dotty(T)    --> jpl_typeterm_rel_entityname(T,dotty).
+new_typedesc(T) --> jpl_typeterm_rel_slashy_typedesc(T).
 
+% ---
 % Run the old call and the new call with input "In"
+% ---
 
 run_both(In,OutNew,OutOld,Mode) :-
    new_goal_by_mode(Mode,NewGoal),
@@ -1419,20 +1428,12 @@ run_both(In,OutNew,OutOld,Mode) :-
    reify(
       recognize(In,'',OldGoal,TypeTermOld),
       SuccessOld),
-   if_then(
-      call(SuccessNew),
-      (deprimitive(TypeTermNew,TypeTermNewDP))), % rip out the "primitive/1" tags
-   outcome(SuccessNew,TypeTermNewDP,OutNew),
+   outcome(SuccessNew,TypeTermNew  ,OutNew),
    outcome(SuccessOld,TypeTermOld  ,OutOld),
    if_then_else(
-      call(SuccessNew),
-      (debug(run_both,"~q : New   : ~q",[In,TypeTermNew]),
-       debug(run_both,"~q : NewDP : ~q",[In,TypeTermNewDP])),
-      (debug(run_both,"~q : New failed",[In]))),
+      call(SuccessNew),debug(run_both,"~q : New   : ~q",[In,TypeTermNew]),debug(run_both,"~q : New failed",[In])),
    if_then_else(
-      call(SuccessOld),
-      (debug(run_both,"~q : Old   : ~q",[In,TypeTermOld])),
-      (debug(run_both,"~q : Old failed",[In]))),
+      call(SuccessOld),debug(run_both,"~q : Old   : ~q",[In,TypeTermOld]),debug(run_both,"~q : Old failed",[In])),
    call(once(SuccessNew;SuccessOld)). % at least one must have succeeded!
 
 % ===========================================================================
@@ -1591,15 +1592,15 @@ test(9,true(Runs == ['$$alfa','$bravo','$$charlie','$$$'])) :-
 % as it appears in binaries (in its 'dotty' form)
 % ===========================================================================
 
-:- begin_tests(jpl_binary_classname_without_dollar).
+:- begin_tests(jpl_classname_without_dollar).
 
 test("simple classname",true(Out == class([],[foo]))) :-
-   recognize('foo','',jpl_binary_classname,Out,dotty).
+   recognize('foo','',jpl_classname,Out,dotty).
 
 test("qualified classname",true(Out == class([alfa,bravo,charlie],[foo]))) :-
-   recognize('alfa.bravo.charlie.foo','',jpl_binary_classname,Out,dotty).
+   recognize('alfa.bravo.charlie.foo','',jpl_classname,Out,dotty).
 
-:- end_tests(jpl_binary_classname_without_dollar).
+:- end_tests(jpl_classname_without_dollar).
 
 % ===========================================================================
 % Testing recognition of the "binary classname" with "$" inside.
@@ -1607,21 +1608,21 @@ test("qualified classname",true(Out == class([alfa,bravo,charlie],[foo]))) :-
 % should eventually disappear.
 % ===========================================================================
 
-:- begin_tests(jpl_binary_classname_with_dollar).
+:- begin_tests(jpl_classname_with_dollar).
 
 test("qualified inner member type",true(Out == class([alfa,bravo,charlie],[foo,bar]))) :-
-   recognize('alfa.bravo.charlie.foo$bar','',jpl_binary_classname,Out,dotty).
+   recognize('alfa.bravo.charlie.foo$bar','',jpl_classname,Out,dotty).
 
 test("qualified inner anonymous type",true(Out == class([alfa,bravo,charlie],[foo,'01234']))) :-
-   recognize('alfa.bravo.charlie.foo$01234','',jpl_binary_classname,Out,dotty).
+   recognize('alfa.bravo.charlie.foo$01234','',jpl_classname,Out,dotty).
 
 test("qualified inner local class",true(Out == class([alfa,bravo,charlie],[foo,'01234bar']))) :-
-   recognize('alfa.bravo.charlie.foo$01234bar','',jpl_binary_classname,Out,dotty).
+   recognize('alfa.bravo.charlie.foo$01234bar','',jpl_classname,Out,dotty).
 
 test("qualified inner member type, deep",true(Out == class([alfa,bravo,charlie],[foo,bar,baz,quux]))) :-
-   recognize('alfa.bravo.charlie.foo$bar$baz$quux','',jpl_binary_classname,Out,dotty).
+   recognize('alfa.bravo.charlie.foo$bar$baz$quux','',jpl_classname,Out,dotty).
 
-:- end_tests(jpl_binary_classname_with_dollar).
+:- end_tests(jpl_classname_with_dollar).
 
 % ===========================================================================
 % Testing Java entityname <-> typeterm mapping for some primitives
@@ -1629,14 +1630,14 @@ test("qualified inner member type, deep",true(Out == class([alfa,bravo,charlie],
 
 :- begin_tests(jpl_entity_is_primitive).
 
-test("entityname is just 'int': integer primitive",true(Out == primitive(int))) :-
-   recognize('int','',jpl_typeterm_entityname,Out,dotty).
+test("entityname is just 'int': integer primitive",true(Out == int)) :-
+   recognize('int','',jpl_typeterm_rel_entityname,Out,dotty).
 
-test("entityname is just 'void': void primitive",true(Out == primitive(void))) :-
-   recognize('void','',jpl_typeterm_entityname,Out,dotty).
+test("entityname is just 'void': void primitive",true(Out == void)) :-
+   recognize('void','',jpl_typeterm_rel_entityname,Out,dotty).
 
 test("entityname is actually 'integer', which is a class called 'integer', which is ok!",true(Out == class([],[integer]))) :-
-   recognize('integer','',jpl_typeterm_entityname,Out,dotty).
+   recognize('integer','',jpl_typeterm_rel_entityname,Out,dotty).
 
 :- end_tests(jpl_entity_is_primitive).
 
@@ -1646,17 +1647,17 @@ test("entityname is actually 'integer', which is a class called 'integer', which
 
 :- begin_tests(jpl_entity_is_array).
 
-test("array of double",true(Out == array(primitive(double)))) :-
-   recognize('[D','',jpl_typeterm_entityname,Out,dotty).
+test("array of double",true(Out == array(double))) :-
+   recognize('[D','',jpl_typeterm_rel_entityname,Out,dotty).
 
-test("array of array of integer",true(Out == array(array(primitive(int))))) :-
-   recognize('[[I','',jpl_typeterm_entityname,Out,dotty).
+test("array of array of integer",true(Out == array(array(int)))) :-
+   recognize('[[I','',jpl_typeterm_rel_entityname,Out,dotty).
 
 test("array of void",fail) :-
-   recognize('[[V','',jpl_typeterm_entityname,_,dotty).
+   recognize('[[V','',jpl_typeterm_rel_entityname,_,dotty).
 
 test("array of java.lang.String",true(Out == array(array(class([java, lang], ['String']))))) :-
-   recognize('[[Ljava.lang.String;','',jpl_typeterm_entityname,Out,dotty).
+   recognize('[[Ljava.lang.String;','',jpl_typeterm_rel_entityname,Out,dotty).
 
 :- end_tests(jpl_entity_is_array).
 

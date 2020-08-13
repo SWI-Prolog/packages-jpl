@@ -81,15 +81,14 @@
         jpl_array_to_terms/2,
         jpl_map_element/2,
         jpl_set_element/2,
-        jpl_java_id/3,                       % export for tests
-        jpl_java_type_id/3,                  % export for tests
-        jpl_java_id_part_char/1,             % export for tests
-        jpl_java_id_start_char/1,            % export for tests
-        messy_dollar_split/2,                % export for tests
-        deprimitive/2,                       % export for tests
-        jpl_typeterm_to_entityname//2,       % export for tests
-        jpl_typeterm_to_slashy_typedesc//1,  % export for tests
-        jpl_binary_classname//2              % export for tests
+        jpl_java_id/3,                        % export for tests
+        jpl_java_type_id/3,                   % export for tests
+        jpl_java_id_part_char/1,              % export for tests
+        jpl_java_id_start_char/1,             % export for tests
+        messy_dollar_split/2,                 % export for tests
+        jpl_typeterm_rel_entityname//2,       % export for tests
+        jpl_typeterm_rel_slashy_typedesc//1,  % export for tests
+        jpl_classname//2                      % export for tests
    ]).
 :- autoload(library(apply),[maplist/2]).
 :- autoload(library(debug),[debugging/1,debug/3]).
@@ -2377,7 +2376,7 @@ jpl_class_to_type(Ref, Type) :-
     (   jpl_class_tag_type_cache(Ref, Tx)
     ->  true
     ;   jpl_class_to_raw_classname_chars(Ref, Cs),   % uncached
-        jpl_classname_chars_to_type(Cs, Tr),
+        jpl_entityname_codes_rel_typeterm(Cs, Tr),
         jpl_type_to_canonical_type(Tr, Tx),             % map e.g. class([],[byte]) -> byte
         jpl_assert(jpl_class_tag_type_cache(Ref,Tx))
     ->  true    % the elseif goal should be determinate, but just in case...
@@ -2391,9 +2390,9 @@ jpl_classes_to_types([C|Cs], [T|Ts]) :-
     jpl_classes_to_types(Cs, Ts).
 
 
-jpl_classname_chars_to_type(Cs, T) :-
-    once(phrase(jpl_typeterm_to_entityname(T,dotty), Cs)). % make determninistic
-
+jpl_entityname_codes_rel_typeterm(Cs, T) :-
+    % Cs is actually characters codes (not characters)
+    once(phrase(jpl_typeterm_rel_entityname(T,dotty), Cs)). % make deterministic
 
 %! jpl_classname_to_class(+ClassName:className, -Class:jref)
 %
@@ -2418,15 +2417,33 @@ jpl_classname_to_class(N, C) :-
 %
 % NB should this throw an exception for unbound CN? is this public API?
 
+/*
+ * I don't understand this code, rewritten to legibility below
+
 jpl_classname_to_type(CN, T) :-
+    assertion(nonvar(CN)),
+    assertion(var(T)),
     (   jpl_classname_type_cache(CN, Tx)
     ->  Tx = T
-    ;   atom_codes(CN, CsCN),
-        phrase(jpl_typeterm_to_entityname(T,dotty), CsCN)
-    ->  jpl_assert(jpl_classname_type_cache(CN,T)),
+    ;   atom_codes(CN, Cs),
+        jpl_entityname_codes_rel_typeterm(Cs,T)
+    ->  jpl_assert(jpl_classname_type_cache(CN,T)), %%% WHY IS THERE A ,true here?
         true
     ).
+*/
 
+if_then_else(Condition,Then,Else) :-
+   call(Condition) -> call(Then) ; call(Else).
+
+jpl_classname_to_type(CN, T) :-
+    assertion(nonvar(CN)),
+    assertion(var(T)),
+    if_then_else(
+       jpl_classname_type_cache(CN, Tx),
+       (Tx = T),
+       (atom_codes(CN, Cs),
+        jpl_entityname_codes_rel_typeterm(Cs,T),
+        jpl_assert(jpl_classname_type_cache(CN,T)))).
 
 %! jpl_classname_type_cache( -Classname:className, -Type:type)
 %
@@ -2917,9 +2934,10 @@ jpl_type_to_class(T, RefA) :-
 % @see jpl_type_to_classname/2
 
 jpl_type_to_nicename(T, NN) :-
-    jpl_primitive_type(T)
-    ->  NN = T  % "boolean" is translated to "boolean" etc
-    ;   jpl_type_to_classname(T, NN).
+    if_then_else(
+       jpl_primitive_type(T),
+       (NN = T),                         % "boolean" is translated to "boolean" etc
+       jpl_type_to_classname(T, NN)).
 
 %! jpl_type_to_classname(+Type:type, -ClassName:dottedName)
 %
@@ -2931,7 +2949,9 @@ jpl_type_to_nicename(T, NN) :-
 % @see jpl_type_to_nicename/2
 
 jpl_type_to_classname(T, CN) :-
-    once(phrase(jpl_typeterm_to_entityname(T,dotty), Cs)), % make deterministic
+    assertion(nonvar(T)),
+    assertion(var(CN)),
+    jpl_entityname_codes_rel_typeterm(Cs,T),
     atom_codes(CN, Cs).
 
 %! jpl_type_to_descriptor(+Type:type, -Descriptor:descriptor)
@@ -2949,7 +2969,7 @@ jpl_type_to_classname(T, CN) :-
 % I'd cache this, but I'd prefer more efficient indexing on types (hashed?)
 
 jpl_type_to_descriptor(T, D) :-
-    once(phrase(jpl_typeterm_to_slashy_typedesc(T), Cs)), % make deterministic
+    once(phrase(jpl_typeterm_rel_slashy_typedesc(T), Cs)), % make deterministic
     atom_codes(D, Cs).
 
 %! jpl_type_to_findclassname(+Type:type, -FindClassName:findClassName)
@@ -2964,8 +2984,14 @@ jpl_type_to_descriptor(T, D) :-
 %  ==
 
 jpl_type_to_findclassname(T, FCN) :-
-    once(phrase(jpl_typeterm_to_entityname(T,slashy), Cs)), % make deterministic
+    jpl_findclassname_codes_rel_typeterm(Cs, T),
     atom_codes(FCN, Cs).
+
+%! jpl_findclassname_codes_rel_typeterm(?Cs:charcodes, ?Type:type)
+
+jpl_findclassname_codes_rel_typeterm(Cs, T) :-
+    % Cs is actually characters codes (not characters)
+    once(phrase(jpl_typeterm_rel_entityname(T,slashy), Cs)). % make deterministic
 
 %! jpl_type_to_super_type(+Type:type, -SuperType:type)
 %
@@ -4149,8 +4175,6 @@ dir_per_line([H|T]) -->
          *  JAVA CLASSNAME RECOGNIZING  *
          *******************************/
 
-
-
 % ===
 % Convention:
 %
@@ -4165,32 +4189,7 @@ dir_per_line([H|T]) -->
 % ===
 
 % ===========================================================================
-% Rip out the "primitive/1" tag which exists in the new version but not the
-% old. This is called for every recognize operation and a bit costly.
-% Going forward, one can either leave it out or (better) adapt JPL to
-% consider it on the same level as class/2, array/1 etc.
-% ===========================================================================
-
-deprimitive(primitive(X),X) :- !.
-
-deprimitive(X,X) :-
-   atomic(X),!.
-
-deprimitive(X,Y) :-
-   compound(X),
-   compound_name_arguments(X,N,Args),
-   maplist([I,O]>>deprimitive(I,O),Args,ArgsNew),
-   compound_name_arguments(Y,N,ArgsNew).
-
-% ===========================================================================
-%! jpl_typeterm_to_entityname(TypeTerm)//2
-%
-% ------
-% Previously (pre 2020-08) called: `jpl_type_classname_1//1`    for the "dotty form"
-%                                  `jpl_type_findclassname//1`  for the "slashy form"
-%
-% Now called:                      `jpl_typeterm_to_entityname//1`
-% ------
+%! jpl_typeterm_rel_entityname(TypeTerm)//2
 %
 % Map an "entityname" (a classname as returned from Class.getName())
 % into a Prolog-side "type term" and vice-versa. The second argument indicates
@@ -4234,14 +4233,15 @@ deprimitive(X,Y) :-
 % THE TOP OF RECOGNIZING DOTTY (standard) and SLASHY (JNI Findclass) ENTITY NAMES
 % We can be pretty precise here regarding what will be found as 1st arg term
 % instead of just "T" as argument. This also helps in documentation.
-% Not sure where the cases for primitive/1 (primitive not inside array)
-% ever occur.
+% Not sure where the cases for "primitive not inside array" ever occur.
+% Note that the fact that the last two clauses T are not tagged as "primitive()" makes this
+% representation somewhat less than ideal. BAD!!
 % ---
 
-jpl_typeterm_to_entityname(class(Ps,Cs),Mode) --> jpl_binary_classname(class(Ps,Cs),Mode),!.
-jpl_typeterm_to_entityname(array(T),Mode)     --> jpl_array_of_entityname(array(T),Mode),!.
-jpl_typeterm_to_entityname(primitive(P),_)    --> jpl_primitive_at_toplevel(primitive(P)),!.
-jpl_typeterm_to_entityname(primitive(void),_) --> jpl_void_at_toplevel(primitive(void)).
+jpl_typeterm_rel_entityname(class(Ps,Cs),Mode) --> jpl_classname(class(Ps,Cs),Mode),!.
+jpl_typeterm_rel_entityname(array(T),Mode)     --> jpl_array_of_entityname(array(T),Mode),!.
+jpl_typeterm_rel_entityname(P,_)               --> jpl_primitive_at_toplevel(P),!.
+jpl_typeterm_rel_entityname(void,_)            --> jpl_void_at_toplevel(void).
 
 % ---
 % THE TOP OF RECOGNIZING SLASHY TYPE DESCRIPTORS
@@ -4251,10 +4251,10 @@ jpl_typeterm_to_entityname(primitive(void),_) --> jpl_void_at_toplevel(primitive
 % It can also understand a method descriptor.
 % ---
 
-jpl_typeterm_to_slashy_typedesc(class(Ps,Cs)) --> jpl_entityname_in_array(class(Ps,Cs),slashy).
-jpl_typeterm_to_slashy_typedesc(array(T))     --> jpl_entityname_in_array(array(T),slashy).
-jpl_typeterm_to_slashy_typedesc(primitive(T)) --> jpl_entityname_in_array(primitive(T),slashy).
-jpl_typeterm_to_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(Ts,T)).
+jpl_typeterm_rel_slashy_typedesc(class(Ps,Cs)) --> jpl_entityname_in_array(class(Ps,Cs),slashy).
+jpl_typeterm_rel_slashy_typedesc(array(T))     --> jpl_entityname_in_array(array(T),slashy).
+jpl_typeterm_rel_slashy_typedesc(T)            --> jpl_entityname_in_array(T,slashy).
+jpl_typeterm_rel_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(Ts,T)).
 
 % ---
 % The "binary classname" (i.e. the classname as it appears in binaries) as
@@ -4268,7 +4268,7 @@ jpl_typeterm_to_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(T
 % technically makes this NOT the "binary classname", but we keep the predicate name.
 % ---
 
-jpl_binary_classname(class(Ps,Cs),Mode) --> jpl_package_parts(Ps,Mode), jpl_class_parts(Cs).
+jpl_classname(class(Ps,Cs),Mode) --> jpl_package_parts(Ps,Mode), jpl_class_parts(Cs).
 
 % ---
 % The qualified name of the package (which may be empty if it is the
@@ -4356,23 +4356,25 @@ jpl_array_of_entityname(array(T),Mode) --> `[`, jpl_entityname_in_array(T,Mode).
 % ---
 % jpl_array_of_entityname//1
 % Described informally at Javadoc for Class.getName()
+% Note that the fact that the last T is not tagged as "primitive()" makes this
+% representation somewhat less than ideal. BAD!!
 % ---
 
-jpl_entityname_in_array(class(Ps,Cs),Mode)  --> `L`, jpl_binary_classname(class(Ps,Cs),Mode), `;`.
+jpl_entityname_in_array(class(Ps,Cs),Mode)  --> `L`, jpl_classname(class(Ps,Cs),Mode), `;`.
 jpl_entityname_in_array(array(T),Mode)      --> jpl_array_of_entityname(array(T),Mode).
-jpl_entityname_in_array(primitive(T),_)     --> jpl_primitive_in_array(primitive(T)).
+jpl_entityname_in_array(T,_)                --> jpl_primitive_in_array(T). 
 
 % ---
-% Rules for recognizng methods; called by jpl_typeterm_to_slashy_typedesc//1 only
+% Rules for recognizng methods; called by jpl_typeterm_rel_slashy_typedesc//1 only
 % ---
 
 jpl_method_descriptor(method(Ts,T)) --> `(`, jpl_method_descriptor_args(Ts), `)`, jpl_method_descriptor_retval(T).
 
-jpl_method_descriptor_args([T|Ts]) --> jpl_typeterm_to_slashy_typedesc(T), !, jpl_method_descriptor_args(Ts).
+jpl_method_descriptor_args([T|Ts]) --> jpl_typeterm_rel_slashy_typedesc(T), !, jpl_method_descriptor_args(Ts).
 jpl_method_descriptor_args([]) --> [].
 
-jpl_method_descriptor_retval(primitive(void)) --> `V`.
-jpl_method_descriptor_retval(T) --> jpl_typeterm_to_slashy_typedesc(T).
+jpl_method_descriptor_retval(void) --> `V`.
+jpl_method_descriptor_retval(T) --> jpl_typeterm_rel_slashy_typedesc(T).
 
 % ===========================================================================
 % Common low-level DCG rules
@@ -4413,36 +4415,38 @@ jpl_java_id_part_chars([])     --> [].
 % No description found for this; empirical
 % ---
 
-jpl_void_at_toplevel(primitive(void)) --> `void`.
+jpl_void_at_toplevel(void) --> `void`.
 
 % ---
 % jpl_primitive_in_array//1
 % Described informally in Javadoc for Class.getName()
 % https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
+% The left-hand side should really be tagged with primitive(boolean) etc.
 % ---
 
-jpl_primitive_in_array(primitive(boolean)) --> `Z`,!.
-jpl_primitive_in_array(primitive(byte))    --> `B`,!.
-jpl_primitive_in_array(primitive(char))    --> `C`,!.
-jpl_primitive_in_array(primitive(double))  --> `D`,!.
-jpl_primitive_in_array(primitive(float))   --> `F`,!.
-jpl_primitive_in_array(primitive(int))     --> `I`,!.
-jpl_primitive_in_array(primitive(long))    --> `J`,!.
-jpl_primitive_in_array(primitive(short))   --> `S`.
+jpl_primitive_in_array(boolean) --> `Z`,!.
+jpl_primitive_in_array(byte)    --> `B`,!.
+jpl_primitive_in_array(char)    --> `C`,!.
+jpl_primitive_in_array(double)  --> `D`,!.
+jpl_primitive_in_array(float)   --> `F`,!.
+jpl_primitive_in_array(int)     --> `I`,!.
+jpl_primitive_in_array(long)    --> `J`,!.
+jpl_primitive_in_array(short)   --> `S`.
 
 % ---
 % jpl_primitive_at_toplevel//1
 % These are just the primitive names!
+% The left-hand side should really be tagged with primitive(boolean) etc.
 % ---
 
-jpl_primitive_at_toplevel(primitive(boolean)) --> `boolean`,!.
-jpl_primitive_at_toplevel(primitive(byte))    --> `byte`,!.
-jpl_primitive_at_toplevel(primitive(char))    --> `char`,!.
-jpl_primitive_at_toplevel(primitive(double))  --> `double`,!.
-jpl_primitive_at_toplevel(primitive(float))   --> `float`,!.
-jpl_primitive_at_toplevel(primitive(int))     --> `int`,!.
-jpl_primitive_at_toplevel(primitive(long))    --> `long`,!.
-jpl_primitive_at_toplevel(primitive(short))   --> `short`.
+jpl_primitive_at_toplevel(boolean) --> `boolean`,!.
+jpl_primitive_at_toplevel(byte)    --> `byte`,!.
+jpl_primitive_at_toplevel(char)    --> `char`,!.
+jpl_primitive_at_toplevel(double)  --> `double`,!.
+jpl_primitive_at_toplevel(float)   --> `float`,!.
+jpl_primitive_at_toplevel(int)     --> `int`,!.
+jpl_primitive_at_toplevel(long)    --> `long`,!.
+jpl_primitive_at_toplevel(short)   --> `short`.
 
 % ---
 % Certain java keywords that may not occur as java identifier
