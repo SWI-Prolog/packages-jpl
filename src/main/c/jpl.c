@@ -4314,17 +4314,16 @@ Java_org_jpl7_fli_Prolog_put_1atom_1chars(
  * Method:    put_term
  * Signature: (Lorg/jpl7/fli/term_t;Lorg/jpl7/fli/term_t;)V
  */
-JNIEXPORT void JNICALL /* maybe oughta return jboolean (false iff given object is null) */
+JNIEXPORT jboolean JNICALL /* maybe oughta return jboolean (false iff given object is null) */
 Java_org_jpl7_fli_Prolog_put_1term(JNIEnv *env, jclass jProlog,
                                    jobject jterm1, jobject jterm2)
 { term_t term1;
   term_t term2;
 
-  if ( jpl_ensure_pvm_init(env) &&
-       getTermValue(env, jterm1, &term1) &&
-       getTermValue(env, jterm2, &term2) )
-  { PL_put_term(term1, term2);
-  }
+  return ( jpl_ensure_pvm_init(env) &&
+	   getTermValue(env, jterm1, &term1) &&
+	   getTermValue(env, jterm2, &term2) &&
+	   PL_put_term(term1, term2) );
 }
 
 /*
