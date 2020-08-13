@@ -80,8 +80,17 @@
         jpl_terms_to_array/2,
         jpl_array_to_terms/2,
         jpl_map_element/2,
-        jpl_set_element/2
-    ]).
+        jpl_set_element/2,
+        jpl_java_id/3,                       % export for tests
+        jpl_java_type_id/3,                  % export for tests
+        jpl_java_id_part_char/1,             % export for tests
+        jpl_java_id_start_char/1,            % export for tests
+        messy_dollar_split/2,                % export for tests
+        deprimitive/2,                       % export for tests
+        jpl_typeterm_to_entityname//2,       % export for tests
+        jpl_typeterm_to_slashy_typedesc//1,  % export for tests
+        jpl_binary_classname//2              % export for tests
+   ]).
 :- autoload(library(apply),[maplist/2]).
 :- autoload(library(debug),[debugging/1,debug/3]).
 :- autoload(library(lists),
@@ -1305,201 +1314,6 @@ jpl_java_lib_path(Path) :-
     jpl_call('org.jpl7.JPL', jarPath, [], Path).
 
 
-% jpl_type_alfa(0'$) -->        % presumably not allowed
-%   "$".                        % given the "inner class" syntax?
-
-jpl_type_alfa(0'_) -->
-    "_",
-    !.
-jpl_type_alfa(C) -->
-    [C], { C>=0'a, C=<0'z },
-    !.
-jpl_type_alfa(C) -->
-    [C], { C>=0'A, C=<0'Z }.
-
-
-jpl_type_alfa_num(C) -->
-    jpl_type_alfa(C),
-    !.
-jpl_type_alfa_num(C) -->
-    [C], { C>=0'0, C=<0'9 }.
-
-
-jpl_type_array_classname(array(T)) -->
-    "[", jpl_type_classname_2(T).
-
-
-jpl_type_array_descriptor(array(T)) -->
-    "[", jpl_type_descriptor_1(T).
-
-
-jpl_type_bare_class_descriptor(class(Ps,Cs)) -->
-    jpl_type_slashed_package_parts(Ps), jpl_type_class_parts(Cs).
-
-
-jpl_type_bare_classname(class(Ps,Cs)) -->
-    jpl_type_dotted_package_parts(Ps), jpl_type_class_parts(Cs).
-
-
-jpl_type_class_descriptor(class(Ps,Cs)) -->
-    "L", jpl_type_bare_class_descriptor(class(Ps,Cs)), ";".
-
-
-jpl_type_class_part(N) -->
-    jpl_type_id(N).
-
-
-jpl_type_class_parts([C|Cs]) -->
-    jpl_type_class_part(C), jpl_type_inner_class_parts(Cs).
-
-
-jpl_type_classname_1(T) -->
-    jpl_type_bare_classname(T),
-    !.
-jpl_type_classname_1(T) -->
-    jpl_type_array_classname(T),
-    !.
-jpl_type_classname_1(T) -->
-    jpl_type_primitive(T).
-
-
-jpl_type_classname_2(T) -->
-    jpl_type_delimited_classname(T).
-jpl_type_classname_2(T) -->
-    jpl_type_array_classname(T).
-jpl_type_classname_2(T) -->
-    jpl_type_primitive(T).
-
-
-
-jpl_type_delimited_classname(Class) -->
-    "L", jpl_type_bare_classname(Class), ";".
-
-
-
-jpl_type_descriptor_1(T) -->
-    jpl_type_primitive(T),
-    !.
-jpl_type_descriptor_1(T) -->
-    jpl_type_class_descriptor(T),
-    !.
-jpl_type_descriptor_1(T) -->
-    jpl_type_array_descriptor(T),
-    !.
-jpl_type_descriptor_1(T) -->
-    jpl_type_method_descriptor(T).
-
-
-
-jpl_type_dotted_package_parts([P|Ps]) -->
-    jpl_type_package_part(P), ".", !, jpl_type_dotted_package_parts(Ps).
-jpl_type_dotted_package_parts([]) -->
-    [].
-
-
-
-jpl_type_findclassname(T) -->
-    jpl_type_bare_class_descriptor(T).
-jpl_type_findclassname(T) -->
-    jpl_type_array_descriptor(T).
-
-
-
-jpl_type_id(A) -->
-    { nonvar(A) -> atom_codes(A,[C|Cs]) ; true },
-    jpl_type_alfa(C), jpl_type_id_rest(Cs),
-    { atom_codes(A, [C|Cs]) }.
-
-
-
-jpl_type_id_rest([C|Cs]) -->
-    jpl_type_alfa_num(C), !, jpl_type_id_rest(Cs).
-jpl_type_id_rest([]) -->
-    [].
-
-
-
-jpl_type_id_v2(A) -->                   % inner class name parts (empirically)
-    { nonvar(A) -> atom_codes(A,Cs) ; true },
-    jpl_type_id_rest(Cs),
-    { atom_codes(A, Cs) }.
-
-
-
-jpl_type_inner_class_part(N) -->
-    jpl_type_id_v2(N).
-
-
-
-jpl_type_inner_class_parts([C|Cs]) -->
-    "$", jpl_type_inner_class_part(C), !, jpl_type_inner_class_parts(Cs).
-jpl_type_inner_class_parts([]) -->
-    [].
-
-
-
-jpl_type_method_descriptor(method(Ts,T)) -->
-    "(", jpl_type_method_descriptor_args(Ts), ")", jpl_type_method_descriptor_return(T).
-
-
-
-jpl_type_method_descriptor_args([T|Ts]) -->
-    jpl_type_descriptor_1(T), !, jpl_type_method_descriptor_args(Ts).
-jpl_type_method_descriptor_args([]) -->
-    [].
-
-
-
-jpl_type_method_descriptor_return(T) -->
-    jpl_type_void(T).
-jpl_type_method_descriptor_return(T) -->
-    jpl_type_descriptor_1(T).
-
-
-
-jpl_type_package_part(N) -->
-    jpl_type_id(N).
-
-
-
-jpl_type_primitive(boolean) -->
-    "Z",
-    !.
-jpl_type_primitive(byte) -->
-    "B",
-    !.
-jpl_type_primitive(char) -->
-    "C",
-    !.
-jpl_type_primitive(short) -->
-    "S",
-    !.
-jpl_type_primitive(int) -->
-    "I",
-    !.
-jpl_type_primitive(long) -->
-    "J",
-    !.
-jpl_type_primitive(float) -->
-    "F",
-    !.
-jpl_type_primitive(double) -->
-    "D".
-
-
-
-jpl_type_slashed_package_parts([P|Ps]) -->
-    jpl_type_package_part(P), "/", !, jpl_type_slashed_package_parts(Ps).
-jpl_type_slashed_package_parts([]) -->
-    [].
-
-
-
-jpl_type_void(void) -->
-    "V".
-
-
-
 %! jCallBooleanMethod(+Obj:jref, +MethodID:methodId, +Types:list(type), +Params:list(datum), -Rbool:boolean)
 
 jCallBooleanMethod(Obj, MethodID, Types, Params, Rbool) :-
@@ -2577,10 +2391,8 @@ jpl_classes_to_types([C|Cs], [T|Ts]) :-
     jpl_classes_to_types(Cs, Ts).
 
 
-jpl_classname_chars_to_type(Cs, Type) :-
-    (   phrase(jpl_type_classname_1(Type), Cs)
-    ->  true
-    ).
+jpl_classname_chars_to_type(Cs, T) :-
+    once(phrase(jpl_typeterm_to_entityname(T,dotty), Cs)). % make determninistic
 
 
 %! jpl_classname_to_class(+ClassName:className, -Class:jref)
@@ -2610,7 +2422,7 @@ jpl_classname_to_type(CN, T) :-
     (   jpl_classname_type_cache(CN, Tx)
     ->  Tx = T
     ;   atom_codes(CN, CsCN),
-        phrase(jpl_type_classname_1(T), CsCN)
+        phrase(jpl_typeterm_to_entityname(T,dotty), CsCN)
     ->  jpl_assert(jpl_classname_type_cache(CN,T)),
         true
     ).
@@ -3105,14 +2917,9 @@ jpl_type_to_class(T, RefA) :-
 % @see jpl_type_to_classname/2
 
 jpl_type_to_nicename(T, NN) :-
-    (   jpl_primitive_type(T)
-    ->  NN = T
-    ;   (   phrase(jpl_type_classname_1(T), Cs)
-        ->  atom_codes(CNx, Cs),                                % green commit to first solution
-            NN = CNx
-        )
-    ).
-
+    jpl_primitive_type(T)
+    ->  NN = T  % "boolean" is translated to "boolean" etc
+    ;   jpl_type_to_classname(T, NN).
 
 %! jpl_type_to_classname(+Type:type, -ClassName:dottedName)
 %
@@ -3124,11 +2931,8 @@ jpl_type_to_nicename(T, NN) :-
 % @see jpl_type_to_nicename/2
 
 jpl_type_to_classname(T, CN) :-
-    (   phrase(jpl_type_classname_1(T), Cs)
-    ->  atom_codes(CNx, Cs),                                % green commit to first solution
-        CN = CNx
-    ).
-
+    once(phrase(jpl_typeterm_to_entityname(T,dotty), Cs)), % make deterministic
+    atom_codes(CN, Cs).
 
 %! jpl_type_to_descriptor(+Type:type, -Descriptor:descriptor)
 %
@@ -3145,11 +2949,8 @@ jpl_type_to_classname(T, CN) :-
 % I'd cache this, but I'd prefer more efficient indexing on types (hashed?)
 
 jpl_type_to_descriptor(T, D) :-
-    (   phrase(jpl_type_descriptor_1(T), Cs)
-    ->  atom_codes(Dx, Cs),
-        D = Dx
-    ).
-
+    once(phrase(jpl_typeterm_to_slashy_typedesc(T), Cs)), % make deterministic
+    atom_codes(D, Cs).
 
 %! jpl_type_to_findclassname(+Type:type, -FindClassName:findClassName)
 %
@@ -3163,11 +2964,8 @@ jpl_type_to_descriptor(T, D) :-
 %  ==
 
 jpl_type_to_findclassname(T, FCN) :-
-    (   phrase(jpl_type_findclassname(T), Cs)
-    ->  atom_codes(FCNx, Cs),
-        FCN = FCNx
-    ).
-
+    once(phrase(jpl_typeterm_to_entityname(T,slashy), Cs)), % make deterministic
+    atom_codes(FCN, Cs).
 
 %! jpl_type_to_super_type(+Type:type, -SuperType:type)
 %
@@ -4348,22 +4146,377 @@ dir_per_line([H|T]) -->
     dir_per_line(T).
 
          /*******************************
-         *          JAVA CODEPOINTS     *
+         *  JAVA CLASSNAME RECOGNIZING  *
          *******************************/
 
+
+
 % ===
-% Classify codepoints (i.e. integers) as "Java identifier start/part characters"
+% Convention:
+%
+% We process list of character codes with the DCG (as opposed to lists of characters)
+% In SWI Prolog the character codes are the Unicode code values.
+% We can then use backquotes for in-code literals that resolve to such lists:
+% ?- X=`alpha`.
+% X = [97, 108, 112, 104, 97].
+% We will have to examine the unicode code values of any characters to decide
+% whether a sequence of characters from a valid Java identifier, so using the
+% character code representation is necessary in any case.
 % ===
 
+% ===========================================================================
+% Rip out the "primitive/1" tag which exists in the new version but not the
+% old. This is called for every recognize operation and a bit costly.
+% Going forward, one can either leave it out or (better) adapt JPL to
+% consider it on the same level as class/2, array/1 etc.
+% ===========================================================================
+
+deprimitive(primitive(X),X) :- !.
+
+deprimitive(X,X) :-
+   atomic(X),!.
+
+deprimitive(X,Y) :-
+   compound(X),
+   compound_name_arguments(X,N,Args),
+   maplist([I,O]>>deprimitive(I,O),Args,ArgsNew),
+   compound_name_arguments(Y,N,ArgsNew).
+
+% ===========================================================================
+%! jpl_typeterm_to_entityname(TypeTerm)//2
+%
+% ------
+% Previously (pre 2020-08) called: `jpl_type_classname_1//1`    for the "dotty form"
+%                                  `jpl_type_findclassname//1`  for the "slashy form"
+%
+% Now called:                      `jpl_typeterm_to_entityname//1`
+% ------
+%
+% Map an "entityname" (a classname as returned from Class.getName())
+% into a Prolog-side "type term" and vice-versa. The second argument indicates
+% whether it's:
+%
+% The "dotty" form, for which package names contain dots. This is the usual
+% form, also used in binaries and as returned by Class.getName()
+%
+% The "slashy" form, for which package names contain slashes. This is used
+% by JNI's FindClass.
+%
+% ~~~
+%         Entityname                      Prolog-side Type Term
+%           Atom  <---------------------------> Term
+%       java.util.Date                class([java,util],['Date'])
+% ~~~
+%
+% Examples from the Java Documentation at Oracle for the "dotty" form:
+%
+% https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
+%
+% ~~~
+% String.class.getName()
+%   returns "java.lang.String"
+% byte.class.getName()
+%   returns "byte"
+% (new Object[3]).getClass().getName()
+%   returns "[Ljava.lang.Object;"
+% (new int[3][4][5][6][7][8][9]).getClass().getName()
+%   returns "[[[[[[[I"
+% ~~~
+%
+% For the relates "slashy form", which uses "/" in package names instead of "."
+% and which is used by JNI findClass only, see:
+%
+% https://docs.oracle.com/en/java/javase/14/docs/specs/jni/functions.html#findclass
+%
+% ===========================================================================
+
+% ---
+% THE TOP OF RECOGNIZING DOTTY (standard) and SLASHY (JNI Findclass) ENTITY NAMES
+% We can be pretty precise here regarding what will be found as 1st arg term
+% instead of just "T" as argument. This also helps in documentation.
+% Not sure where the cases for primitive/1 (primitive not inside array)
+% ever occur.
+% ---
+
+jpl_typeterm_to_entityname(class(Ps,Cs),Mode) --> jpl_binary_classname(class(Ps,Cs),Mode),!.
+jpl_typeterm_to_entityname(array(T),Mode)     --> jpl_array_of_entityname(array(T),Mode),!.
+jpl_typeterm_to_entityname(primitive(P),_)    --> jpl_primitive_at_toplevel(primitive(P)),!.
+jpl_typeterm_to_entityname(primitive(void),_) --> jpl_void_at_toplevel(primitive(void)).
+
+% ---
+% THE TOP OF RECOGNIZING SLASHY TYPE DESCRIPTORS
+% This is the replacement for the old `jpl_type_descriptor_1//1`
+% It basically seems to be using the same serialized format as the
+% one for arrays (but in slashy mode), so we use that directly.
+% It can also understand a method descriptor.
+% ---
+
+jpl_typeterm_to_slashy_typedesc(class(Ps,Cs)) --> jpl_entityname_in_array(class(Ps,Cs),slashy).
+jpl_typeterm_to_slashy_typedesc(array(T))     --> jpl_entityname_in_array(array(T),slashy).
+jpl_typeterm_to_slashy_typedesc(primitive(T)) --> jpl_entityname_in_array(primitive(T),slashy).
+jpl_typeterm_to_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(Ts,T)).
+
+% ---
+% The "binary classname" (i.e. the classname as it appears in binaries) as
+% specified in The Java™ Language Specification.
+% See "Binary Compatibility" - "The Form of a Binary"
+% https://docs.oracle.com/javase/specs/jls/se14/html/jls-13.html#jls-13.1
+% which points to the "fully qualified name" and "canonical name"
+% https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.7
+%
+% For JNI, we can switch to "slashy" mode instead of the "dotty" mode, which
+% technically makes this NOT the "binary classname", but we keep the predicate name.
+% ---
+
+jpl_binary_classname(class(Ps,Cs),Mode) --> jpl_package_parts(Ps,Mode), jpl_class_parts(Cs).
+
+% ---
+% The qualified name of the package (which may be empty if it is the
+% unnamed package). This is a series of Java identifiers separated by dots.
+% "The fully qualified name of a named package that is not a subpackage of a
+% named package is its simple name." ... "A simple name is a single identifier."
+% https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.7
+% Note that the last '.' is not considered a separator towards the subsequent
+% class parts but as a terminator of the package parts sequence (it's a view
+% less demanding of backtracking)
+% ---
+
+jpl_package_parts([A|As],dotty)  --> jpl_java_id(A), `.`, !, jpl_package_parts(As,dotty).
+jpl_package_parts([A|As],slashy) --> jpl_java_id(A), `/`, !, jpl_package_parts(As,slashy).
+jpl_package_parts([],_)          --> [].
+
+% ---
+% The class parts of a class name (everything beyond the last dot
+% of the package prefix, if it exists). This comes from "13.1 - The form of
+% a binary", where it is laid out a bit confusingly.
+% https://docs.oracle.com/javase/specs/jls/se14/html/jls-13.html#jls-13.1
+%
+% PROBLEM 2020-08:
+%
+% Here is an ambiguity that I haven't been able to resolve: '$' is a perfectly
+% legitimate character both at the start and in the middle of a classname,
+% in fact you can create classes with '$' inside the classname and they compile
+% marvelously (try it!). However it is also used as separator for inner class
+% names ... but not really! In fact, it is just a concatentation character for
+% a _generated class name_ (that makes sense - an inner class is a syntactic
+% construct of Java the Language, but of no concern to the JVM, not even for
+% access checking because the compiler is supposed to have bleached out any
+% problemtic code).
+% Parsing such a generated class name can go south in several different ways:
+% '$' at the begging, '$' at the end, multiple runs of '$$$' .. one should not
+% attempt to do it!
+% But the original JPL code does, so we keep this practice for now.
+% ---
+
+jpl_class_parts(Parts) --> jpl_java_type_id(A),{ messy_dollar_split(A,Parts) }.
+
+% Heuristic: Only a '$' flanked to the left by a valid character
+% that is a non-dollar and to the right by a valid character that
+% may or may not be a dollar gives rise to split.
+
+messy_dollar_split(A,Out) :-
+   assertion(A \== ''),
+   atom_chars(A,Chars),
+   append([''|Chars],[''],GAChars), % GA is a "guarded A char list" flanked by empties and contains at least 3 chars
+   triple_process(GAChars,[],[],RunsOut),
+   postprocess_messy_dollar_split_runs(RunsOut,Out).
+
+postprocess_messy_dollar_split_runs(Runs,Out) :-
+   reverse(Runs,R1),
+   maplist([Rin,Rout]>>reverse(Rin,Rout),R1,O1),
+   maplist([Chars,Atom]>>atom_chars(Atom,Chars),O1,Out).
+
+% Split only between P and N, dropping C, when:
+% 1) C is a $ and P is not a dollar and not a start of line
+% 2) N is not the end of line
+
+triple_process([P,'$',N|Rest],Run,Runs,Out) :-
+   N \== '', P \== '$' , P \== '',!,
+   triple_process(['',N|Rest],[],[Run|Runs],Out).
+
+triple_process(['','$',N|Rest],Run,Runs,Out) :-
+   !,
+   triple_process(['',N|Rest],['$'|Run],Runs,Out).
+
+triple_process([_,C,N|Rest],Run,Runs,Out) :-
+   C \== '$',!,
+   triple_process([C,N|Rest],[C|Run],Runs,Out).
+
+triple_process([_,C,''],Run,Runs,[[C|Run]|Runs]) :- !.
+
+triple_process([_,''],Run,Runs,[Run|Runs]).
+
+% ---
+% jpl_array_of_entityname//1
+% Described informally at Javadoc for Class.getName()
+% ---
+
+jpl_array_of_entityname(array(T),Mode) --> `[`, jpl_entityname_in_array(T,Mode).
+
+% ---
+% jpl_array_of_entityname//1
+% Described informally at Javadoc for Class.getName()
+% ---
+
+jpl_entityname_in_array(class(Ps,Cs),Mode)  --> `L`, jpl_binary_classname(class(Ps,Cs),Mode), `;`.
+jpl_entityname_in_array(array(T),Mode)      --> jpl_array_of_entityname(array(T),Mode).
+jpl_entityname_in_array(primitive(T),_)     --> jpl_primitive_in_array(primitive(T)).
+
+% ---
+% Rules for recognizng methods; called by jpl_typeterm_to_slashy_typedesc//1 only
+% ---
+
+jpl_method_descriptor(method(Ts,T)) --> `(`, jpl_method_descriptor_args(Ts), `)`, jpl_method_descriptor_retval(T).
+
+jpl_method_descriptor_args([T|Ts]) --> jpl_typeterm_to_slashy_typedesc(T), !, jpl_method_descriptor_args(Ts).
+jpl_method_descriptor_args([]) --> [].
+
+jpl_method_descriptor_retval(primitive(void)) --> `V`.
+jpl_method_descriptor_retval(T) --> jpl_typeterm_to_slashy_typedesc(T).
+
+% ===========================================================================
+% Common low-level DCG rules
+% ===========================================================================
+
+% ---
+% A Java type identifier is a Java identifier different from "var" and "yield"
+% ---
+
+jpl_java_type_id(I)  --> jpl_java_id(I), { \+memberchk(I,[var,yield]) }.
+
+% ---
+% The Java identifier is described at
+% https://docs.oracle.com/javase/specs/jls/se14/html/jls-3.html#jls-Identifier
+% ---
+
+jpl_java_id(I) --> jpl_java_id_raw(I),
+                   { \+jpl_java_keyword(I),
+                     \+jpl_java_boolean_literal(I),
+                     \+jpl_java_null_literal(I) }.
+
+jpl_java_id_raw(I) --> { atom(I),!,atom_codes(I,[C|Cs]) },
+                         [C],
+                         { jpl_java_id_start_char(C) },
+                         jpl_java_id_part_chars(Cs). % the Cs are passed for verification against the codes
+
+jpl_java_id_raw(I) --> { var(I),! },
+                         [C],
+                         { jpl_java_id_start_char(C) },
+                         jpl_java_id_part_chars(Cs), % the Cs are instantiated from the codes
+                         { atom_codes(I,[C|Cs]) }.
+
+jpl_java_id_part_chars([C|Cs]) --> [C], { jpl_java_id_part_char(C) } ,!, jpl_java_id_part_chars(Cs).
+jpl_java_id_part_chars([])     --> [].
+
+% ---
+% jpl_void_at_toplevel//1
+% No description found for this; empirical
+% ---
+
+jpl_void_at_toplevel(primitive(void)) --> `void`.
+
+% ---
+% jpl_primitive_in_array//1
+% Described informally in Javadoc for Class.getName()
+% https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
+% ---
+
+jpl_primitive_in_array(primitive(boolean)) --> `Z`,!.
+jpl_primitive_in_array(primitive(byte))    --> `B`,!.
+jpl_primitive_in_array(primitive(char))    --> `C`,!.
+jpl_primitive_in_array(primitive(double))  --> `D`,!.
+jpl_primitive_in_array(primitive(float))   --> `F`,!.
+jpl_primitive_in_array(primitive(int))     --> `I`,!.
+jpl_primitive_in_array(primitive(long))    --> `J`,!.
+jpl_primitive_in_array(primitive(short))   --> `S`.
+
+% ---
+% jpl_primitive_at_toplevel//1
+% These are just the primitive names!
+% ---
+
+jpl_primitive_at_toplevel(primitive(boolean)) --> `boolean`,!.
+jpl_primitive_at_toplevel(primitive(byte))    --> `byte`,!.
+jpl_primitive_at_toplevel(primitive(char))    --> `char`,!.
+jpl_primitive_at_toplevel(primitive(double))  --> `double`,!.
+jpl_primitive_at_toplevel(primitive(float))   --> `float`,!.
+jpl_primitive_at_toplevel(primitive(int))     --> `int`,!.
+jpl_primitive_at_toplevel(primitive(long))    --> `long`,!.
+jpl_primitive_at_toplevel(primitive(short))   --> `short`.
+
+% ---
+% Certain java keywords that may not occur as java identifier
+% ---
+
+jpl_java_boolean_literal(true).
+jpl_java_boolean_literal(false).
+
+jpl_java_null_literal(null).
+
+jpl_java_keyword('_').
+jpl_java_keyword(abstract).
+jpl_java_keyword(assert).
+jpl_java_keyword(boolean).
+jpl_java_keyword(break).
+jpl_java_keyword(byte).
+jpl_java_keyword(case).
+jpl_java_keyword(catch).
+jpl_java_keyword(char).
+jpl_java_keyword(class).
+jpl_java_keyword(const).
+jpl_java_keyword(continue).
+jpl_java_keyword(default).
+jpl_java_keyword(do).
+jpl_java_keyword(double).
+jpl_java_keyword(else).
+jpl_java_keyword(enum).
+jpl_java_keyword(extends).
+jpl_java_keyword(final).
+jpl_java_keyword(finally).
+jpl_java_keyword(float).
+jpl_java_keyword(for).
+jpl_java_keyword(goto).
+jpl_java_keyword(if).
+jpl_java_keyword(implements).
+jpl_java_keyword(import).
+jpl_java_keyword(instanceof).
+jpl_java_keyword(int).
+jpl_java_keyword(interface).
+jpl_java_keyword(long).
+jpl_java_keyword(native).
+jpl_java_keyword(new).
+jpl_java_keyword(package).
+jpl_java_keyword(private).
+jpl_java_keyword(protected).
+jpl_java_keyword(public).
+jpl_java_keyword(return).
+jpl_java_keyword(short).
+jpl_java_keyword(static).
+jpl_java_keyword(strictfp).
+jpl_java_keyword(super).
+jpl_java_keyword(switch).
+jpl_java_keyword(synchronized).
+jpl_java_keyword(this).
+jpl_java_keyword(throw).
+jpl_java_keyword(throws).
+jpl_java_keyword(transient).
+jpl_java_keyword(try).
+jpl_java_keyword(void).
+jpl_java_keyword(volatile).
+jpl_java_keyword(while).
+
+% ===========================================================================
+% Classify codepoints (i.e. integers) as "Java identifier start/part characters"
+%
 % A "Java identifier" starts with a "Java identifier start character" and
 % continues with a "Java identifier part character".
 %
 % A "Java identifier start character" is a character for which
-% Character.isJavaIdentifierStart(cp) returns true, where "ch" can be a
+% Character.isJavaIdentifierStart(c) returns true, where "c" can be a
 % Java char or an integer Unicode code value (basically, that's the definition).
 %
 % Similarly, a "Java identifier part character" is a character for which
-% point Character.isJavaIdentifierPart(cp) returns true
+% point Character.isJavaIdentifierPart(c) returns true
 %
 % See:
 %
@@ -4372,22 +4525,28 @@ dir_per_line([H|T]) -->
 %
 % A simple Java program was used to generate the runs of unicode character
 % points listed below. They are searched lineraly. Generally, a
-% code point/value encountered by jpl would be below even 255 and so be found
-% quickly
+% code point/value encountered by jpl would be below even 255 and so be
+% found quickly
 %
 % PROBLEM:
 %
-% If the Prolog implementation does not represent characters internally
-% with Unicode code points (as may well be the case for Prologs other than
-% SWI Prolog) is the case for SWI Prolog), an implementation-dependent mapping
-% will have to be performed first!
+% 1) If the Prolog implementation does not represent characters internally
+%    with Unicode code values, i.e. if atom_codes/2 takes/returns other values
+%    than Unicode code values (may be the case for Prologs other than SWI Prolog)
+%    an implementation-dependent mapping from/to Unicode will have to be performed
+%    first!
+%
+% 2) Is this slow or not? It depends on what the compiler does.
+% ===========================================================================
 
-java_identifier_start_char(C) :-
-   java_identifier_start_char_ranges(Ranges), % retrieve ranges
+jpl_java_id_start_char(C) :-
+   assertion(integer(C)),
+   java_id_start_char_ranges(Ranges), % retrieve ranges
    char_inside_range(C,Ranges).               % check
 
-java_identifier_part_char(C) :-
-   java_identifier_part_char_ranges(Ranges),  % retrieve ranges
+jpl_java_id_part_char(C) :-
+   assertion(integer(C)),
+   java_id_part_char_ranges(Ranges),  % retrieve ranges
    char_inside_range(C,Ranges).               % check
 
 char_inside_range(C,[[_Low,High]|Ranges]) :-
@@ -4399,9 +4558,12 @@ char_inside_range(C,[[Low,High]|_]) :-
 % ---
 % The ranges below are generated with a Java program, then printed
 % See "CharRangePrinter.java"
+% Note that 36 is "$" which IS allowed as start and part character!
+% In fact, there are class names that start with '$' (which is why the
+% current version of JPL cannot connect to LibreOffice)
 % ---
 
-java_identifier_start_char_ranges(
+java_id_start_char_ranges(
    [[36,36],[65,90],[95,95],[97,122],[162,165],[170,170],[181,181],[186,186],
    [192,214],[216,246],[248,705],[710,721],[736,740],[748,748],[750,750],
    [880,884],[886,887],[890,893],[895,895],[902,902],[904,906],[908,908],
@@ -4473,7 +4635,7 @@ java_identifier_start_char_ranges(
    [65343,65343],[65345,65370],[65382,65470],[65474,65479],[65482,65487],
    [65490,65495],[65498,65500],[65504,65505],[65509,65510]]).
 
-java_identifier_part_char_ranges(
+java_id_part_char_ranges(
    [[0,8],[14,27],[36,36],[48,57],[65,90],[95,95],[97,122],[127,159],[162,165],
    [170,170],[173,173],[181,181],[186,186],[192,214],[216,246],[248,705],
    [710,721],[736,740],[748,748],[750,750],[768,884],[886,887],[890,893],
