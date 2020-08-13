@@ -1316,6 +1316,7 @@ test(jref2,
 % :- debug(identifier_chars).
 % :- debug(java_id).
 % :- debug(run_both).
+% :- debug(generate).
 
 % ===========================================================================
 % Some helper functions
@@ -1380,6 +1381,16 @@ recognize(In,Rest,DcgGoal,TypeTerm) :-
       [TypeTerm]),
    phrase(DcgGoalCompleted,InCodes,RestCodes),
    atom_codes(Rest,RestCodes).
+
+generate(TypeTerm,DcgGoal,Out) :-
+   assertion(nonvar(TypeTerm)),
+   compound_name_arguments(
+      DcgGoalCompleted,
+      DcgGoal,
+      [TypeTerm]),
+   phrase(DcgGoalCompleted,OutCodes),
+   atom_codes(Out,OutCodes),
+   debug(generate,"Transformed structure '~q' to atom '~s'",[TypeTerm,Out]).
 
 % ===========================================================================
 % Code used to compare the results of the old calls and the new calls
@@ -1790,9 +1801,94 @@ test("typedesc/comparing 10" , true(OutNew == OutOld)) :-
 test("typedesc/comparing 11" , true(OutNew == OutOld)) :-
    run_both('([[Ljava/lang/String;Ljava/lang/Integer;JJ[D)D',OutNew,OutOld,typedesc).
 
-
 :- end_tests(compare_both_typedesc).
 
+% ===========================================================================
+% Generating "dotty classnames" (the ones found in binaries)
+% ===========================================================================
+
+:- begin_tests(generate_dotty).
+
+test("generate dotty 01", true(Out == int)) :-
+   generate(int,new_dotty,Out).
+
+test("generate dotty 02", true(Out == void)) :-
+   generate(void,new_dotty,Out).
+
+test("generate dotty 03", true(Out == double)) :-
+   generate(double,new_dotty,Out).
+
+test("generate dotty 04", true(Out == 'java.lang.String')) :-
+   generate(class([java,lang],['String']),new_dotty,Out).
+
+test("generate dotty 05", true(Out == '[Ljava.lang.String;')) :-
+   generate(array(class([java,lang],['String'])),new_dotty,Out).
+
+test("generate dotty 06", true(Out == '[[[Ljava.util.Calendar;')) :-
+   generate(array(array(array(class([java,util],['Calendar'])))),new_dotty,Out).
+
+test("generate dotty failure 01", fail) :-
+   generate(array(array(array(class([foo,bared],['-hello'])))),new_dotty,_).
+
+:- end_tests(generate_dotty).
+
+% ===========================================================================
+% Generating "slashy classnames" (the ones for JNI findclass)
+% ===========================================================================
+
+:- begin_tests(generate_slashy).
+
+test("generate slashy 01", true(Out == int)) :-
+   generate(int,new_slashy,Out).
+
+test("generate slashy 02", true(Out == void)) :-
+   generate(void,new_slashy,Out).
+
+test("generate slashy 03", true(Out == double)) :-
+   generate(double,new_slashy,Out).
+
+test("generate slashy 04", true(Out == 'java/lang/String')) :-
+   generate(class([java,lang],['String']),new_slashy,Out).
+
+test("generate slashy 05", true(Out == '[Ljava/lang/String;')) :-
+   generate(array(class([java,lang],['String'])),new_slashy,Out).
+
+test("generate slashy 06", true(Out == '[[[Ljava/util/Calendar;')) :-
+   generate(array(array(array(class([java,util],['Calendar'])))),new_slashy,Out).
+
+test("generate slashy failure 01", fail) :-
+   generate(array(array(array(class([foo,bared],['-hello'])))),new_slashy,_).
+
+:- end_tests(generate_slashy).
+
+% ===========================================================================
+% Generating "slashy type descritpors"
+% ===========================================================================
+
+:- begin_tests(generate_slashy_typedesc).
+
+test("generate slashy typedesc 01", true(Out == 'I')) :-
+   generate(int,new_typedesc,Out).
+
+test("generate slashy typedesc 02", [true(Out == 'V'),blocked("No 'void' in slashy typedesc, AFAIK")]) :-
+   generate(void,new_typedesc,Out).
+
+test("generate slashy typedesc 03", true(Out == 'D')) :-
+   generate(double,new_typedesc,Out).
+
+test("generate slashy typedesc 04", true(Out == 'Ljava/lang/String;')) :-
+   generate(class([java,lang],['String']),new_typedesc,Out).
+
+test("generate slashy typedesc 05", true(Out == '[Ljava/lang/String;')) :-
+   generate(array(class([java,lang],['String'])),new_typedesc,Out).
+
+test("generate slashy typedesc 06", true(Out == '[[[Ljava/util/Calendar;')) :-
+   generate(array(array(array(class([java,util],['Calendar'])))),new_typedesc,Out).
+
+test("generate slashy typedesc failure 01", fail) :-
+   generate(array(array(array(class([foo,bared],['-hello'])))),new_typedesc,_).
+
+:- end_tests(generate_slashy_typedesc).
 
 % ===========================================================================
 % The original jpl code for recognizing entity names etc.
