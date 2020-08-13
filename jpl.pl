@@ -4240,8 +4240,8 @@ dir_per_line([H|T]) -->
 
 jpl_typeterm_rel_entityname(class(Ps,Cs),Mode) --> jpl_classname(class(Ps,Cs),Mode),!.
 jpl_typeterm_rel_entityname(array(T),Mode)     --> jpl_array_of_entityname(array(T),Mode),!.
-jpl_typeterm_rel_entityname(P,_)               --> jpl_primitive_at_toplevel(P),!.
-jpl_typeterm_rel_entityname(void,_)            --> jpl_void_at_toplevel(void).
+jpl_typeterm_rel_entityname(void,_)            --> jpl_void_at_toplevel(void),!.
+jpl_typeterm_rel_entityname(P,_)               --> jpl_primitive_at_toplevel(P). 
 
 % ---
 % THE TOP OF RECOGNIZING SLASHY TYPE DESCRIPTORS
@@ -4251,10 +4251,10 @@ jpl_typeterm_rel_entityname(void,_)            --> jpl_void_at_toplevel(void).
 % It can also understand a method descriptor.
 % ---
 
-jpl_typeterm_rel_slashy_typedesc(class(Ps,Cs)) --> jpl_entityname_in_array(class(Ps,Cs),slashy).
-jpl_typeterm_rel_slashy_typedesc(array(T))     --> jpl_entityname_in_array(array(T),slashy).
+jpl_typeterm_rel_slashy_typedesc(class(Ps,Cs)) --> jpl_entityname_in_array(class(Ps,Cs),slashy),!.
+jpl_typeterm_rel_slashy_typedesc(array(T))     --> jpl_entityname_in_array(array(T),slashy),!.
+jpl_typeterm_rel_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(Ts,T)),!.
 jpl_typeterm_rel_slashy_typedesc(T)            --> jpl_entityname_in_array(T,slashy).
-jpl_typeterm_rel_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(Ts,T)).
 
 % ---
 % The "binary classname" (i.e. the classname as it appears in binaries) as
@@ -4308,11 +4308,19 @@ jpl_package_parts([],_)          --> [].
 % But the original JPL code does, so we keep this practice for now.
 % ---
 
-jpl_class_parts(Parts) --> jpl_java_type_id(A),{ messy_dollar_split(A,Parts) }.
+jpl_class_parts(Cs) --> { nonvar(Cs), ! },                 % guard
+                        { atomic_list_concat(Cs,'$',A) },  % fuse known Cs with '$'  
+                        jpl_java_type_id(A).               % verify it & insert it into list
+
+jpl_class_parts(Cs) --> { var(Cs), ! },                % guard
+                        jpl_java_type_id(A),           % grab an id including its '$'
+                        { messy_dollar_split(A,Cs) }.  % split it along '$' 
 
 % Heuristic: Only a '$' flanked to the left by a valid character
 % that is a non-dollar and to the right by a valid character that
 % may or may not be a dollar gives rise to split.
+%
+% The INVERSE of messy_dollar_split/2 is atomic_list_concat/3
 
 messy_dollar_split(A,Out) :-
    assertion(A \== ''),
@@ -4396,16 +4404,23 @@ jpl_java_id(I) --> jpl_java_id_raw(I),
                      \+jpl_java_boolean_literal(I),
                      \+jpl_java_null_literal(I) }.
 
-jpl_java_id_raw(I) --> { atom(I),!,atom_codes(I,[C|Cs]) },
-                         [C],
-                         { jpl_java_id_start_char(C) },
-                         jpl_java_id_part_chars(Cs). % the Cs are passed for verification against the codes
+% ---
+% For direct handling of an identifier, we suffer symmetry breakdown.
+% ---
 
-jpl_java_id_raw(I) --> { var(I),! },
-                         [C],
-                         { jpl_java_id_start_char(C) },
-                         jpl_java_id_part_chars(Cs), % the Cs are instantiated from the codes
-                         { atom_codes(I,[C|Cs]) }.
+jpl_java_id_raw(A) --> { atom(A),! },  % guard
+                       { atom_codes(A,[C|Cs]) }, % explode A
+                       { jpl_java_id_start_char(C) },
+                       [C],
+                       jpl_java_id_part_chars(Cs). 
+
+% building X from the character code list
+
+jpl_java_id_raw(A) --> { var(A),! },  % guard
+                       [C],
+                       { jpl_java_id_start_char(C) },
+                       jpl_java_id_part_chars(Cs),
+                       { atom_codes(A,[C|Cs]) }. % fuse A
 
 jpl_java_id_part_chars([C|Cs]) --> [C], { jpl_java_id_part_char(C) } ,!, jpl_java_id_part_chars(Cs).
 jpl_java_id_part_chars([])     --> [].
