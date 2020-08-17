@@ -1333,6 +1333,7 @@ all_true(List) :-
 
 % ---
 % An implementation of ->/2. Pass three goals.
+% (How do I transform this into a proper metacall?)
 % ---
 
 if_then_else(Condition,Then,Else) :-
@@ -1340,6 +1341,7 @@ if_then_else(Condition,Then,Else) :-
 
 % ---
 % Reification of truth value
+% (How do I transform this into a proper metacall?)
 % ---
 
 reify(Goal,Truth) :-
@@ -1347,6 +1349,7 @@ reify(Goal,Truth) :-
 
 % ---
 % An implementation of ->/2 with an "else" that's true. Pass two goals.
+% (How do I transform this into a proper metacall?)
 % ---
 
 if_then(Condition,Then) :-
@@ -1361,25 +1364,63 @@ if_then(Condition,Then) :-
 % - instantiating "TypeTerm" to the strutured result (or unify-comnparing it if set)
 % ===========================================================================
 
-recognize(In,Rest,DcgGoal,TypeTerm,Mode) :-
+% DcgGoal can be an atom (indicating a predicate w/o arity)
+% It can also be a qualified atom x:y (indicating a predicate from a dedicated package)
+
+% --- 
+% Remove the module from an atomic goal "M:G" (a compound), giving separate "M" and "G", 
+% if the goal is qualified. If not, nothing happens, "M" remains a freshvar.
+% ---
+
+module_off(:(Module,BareGoal),Module,BareGoal) :- !.
+
+module_off(Goal,_,Goal) :- atomic(Goal),!.
+
+% --- 
+% Add the module "M" to an atomic goal "G", forming a qualified goal "M:G" (a compound),
+% if "M" is not a freshvar. Otherwise nothing happens and the goal "G" stays as it was.
+% ---
+
+module_on(BareGoal,Module,:(Module,BareGoal)) :- nonvar(Module),!.
+
+module_on(Goal,Module,Goal) :- var(Module),!.
+
+% ---
+% Dynamically call a DCG, "DcgGoal", parsing "In" into (a structure) "Out",
+% with "Rest" remaining. We are parsing some Java class names or descriptors
+% and "Mode" indicates what we really expect: "slashy", "dotty" or "typedesc"
+% as input.
+% ---
+
+dcg_parse_moded(In,Rest,DcgGoal,Out,Mode) :-
    assertion(nonvar(In)),
    assertion(memberchk(Mode,[slashy,dotty,typedesc])),
    atom_codes(In,InCodes),
+   module_off(DcgGoal,Module,BareGoal),
    compound_name_arguments(
-      DcgGoalCompleted,
-      DcgGoal,
-      [TypeTerm,Mode]),
-   phrase(DcgGoalCompleted,InCodes,RestCodes),
+      DcgGoalExt,
+      BareGoal,
+      [Out,Mode]),
+   module_on(DcgGoalExt,Module,QualifiedGoal),
+   phrase(QualifiedGoal,InCodes,RestCodes),
    atom_codes(Rest,RestCodes).
 
-recognize(In,Rest,DcgGoal,TypeTerm) :-
+% ---
+% Dynamically call a DCG, "DcgGoal", parsing "In" into (a structure) "Out",
+% with "Rest" remaining. We are parsing some Java class names or descriptors.
+% There is no mode, as "DcgGoal" is assumed to be mode-specific.
+% ---
+
+dcg_parse(In,Rest,DcgGoal,Out) :-
    assertion(nonvar(In)),
    atom_codes(In,InCodes),
+   module_off(DcgGoal,Module,BareGoal),
    compound_name_arguments(
-      DcgGoalCompleted,
-      DcgGoal,
-      [TypeTerm]),
-   phrase(DcgGoalCompleted,InCodes,RestCodes),
+      DcgGoalExt,
+      BareGoal,
+      [Out]),
+   module_on(DcgGoalExt,Module,QualifiedGoal),
+   phrase(QualifiedGoal,InCodes,RestCodes),
    atom_codes(Rest,RestCodes).
 
 generate(TypeTerm,DcgGoal,Out) :-
@@ -1422,9 +1463,9 @@ new_goal_by_mode(typedesc , new_typedesc).
 
 % Indirection for new calls; easier than constructing the goal
 
-new_slashy(T)   --> jpl_typeterm_rel_entityname(T,slashy).
-new_dotty(T)    --> jpl_typeterm_rel_entityname(T,dotty).
-new_typedesc(T) --> jpl_typeterm_rel_slashy_typedesc(T).
+new_slashy(T)   --> jpl:jpl_typeterm_rel_entityname(T,slashy).
+new_dotty(T)    --> jpl:jpl_typeterm_rel_entityname(T,dotty).
+new_typedesc(T) --> jpl:jpl_typeterm_rel_slashy_typedesc(T).
 
 % ---
 % Run the old call and the new call with input "In"
@@ -1433,11 +1474,11 @@ new_typedesc(T) --> jpl_typeterm_rel_slashy_typedesc(T).
 run_both(In,OutNew,OutOld,Mode) :-
    new_goal_by_mode(Mode,NewGoal),
    reify(
-      recognize(In,'',NewGoal,TypeTermNew),
+      dcg_parse(In,'',NewGoal,TypeTermNew),
       SuccessNew),
    old_goal_by_mode(Mode,OldGoal),
    reify(
-      recognize(In,'',OldGoal,TypeTermOld),
+      dcg_parse(In,'',OldGoal,TypeTermOld),
       SuccessOld),
    outcome(SuccessNew,TypeTermNew  ,OutNew),
    outcome(SuccessOld,TypeTermOld  ,OutOld),
@@ -1459,26 +1500,26 @@ run_both(In,OutNew,OutOld,Mode) :-
 
 maplist_java_id_start_char(ListIn,ListOut) :-
    maplist([C,T]>>
-      reify(jpl_java_id_start_char(C),T),
+      reify(jpl:jpl_java_id_start_char(C),T),
       ListIn,ListOut).
 
 maplist_java_id_part_char(ListIn,ListOut) :-
    maplist([C,T]>>
-      reify(jpl_java_id_part_char(C),T),
+      reify(jpl:jpl_java_id_part_char(C),T),
       ListIn,ListOut).
 
 maplist_java_id_disallowed_char(ListIn,ListOut) :-
    maplist([C,T]>>
       reify(
-         ((\+ jpl_java_id_part_char(C)),
-          (\+ jpl_java_id_start_char(C))),T),
+         ((\+ jpl:jpl_java_id_part_char(C)),
+          (\+ jpl:jpl_java_id_start_char(C))),T),
       ListIn,ListOut).
 
 maplist_java_id_part_char_but_not_start_char(ListIn,ListOut) :-
    maplist([C,T]>>
       reify(
-         ((   jpl_java_id_part_char(C)),
-          (\+ jpl_java_id_start_char(C))),T),
+         ((   jpl:jpl_java_id_part_char(C)),
+          (\+ jpl:jpl_java_id_start_char(C))),T),
       ListIn,ListOut).
 
 
@@ -1507,39 +1548,39 @@ test("characters allowed as part but not as start of identifiers") :-
 :- end_tests(identifier_chars).
 
 % ===========================================================================
-% Testing Java identifiers via "jpl_java_id//1"
+% Testing Java identifiers via "jpl:jpl_java_id//1"
 % ===========================================================================
 
 :- begin_tests(java_id).
 
 test("recognize Java identifier (unconstrained Out), no rest", true([Out,Rest] == [my_identifier,''])) :-
-   recognize('my_identifier',Rest,jpl_java_id,Out),
+   dcg_parse('my_identifier',Rest,jpl:jpl_java_id,Out),
    debug(java_id,"Recognized: ~q with rest: ~q",[Out,Rest]).
 
 test("recognize Java identifier (unconstrained Out), with rest", true([Out,Rest] == [my_identifier,'.dodododo'])) :-
-   recognize('my_identifier.dodododo',Rest,jpl_java_id,Out),
+   dcg_parse('my_identifier.dodododo',Rest,jpl:jpl_java_id,Out),
    debug(java_id,"Recognized: ~q with rest: ~q",[Out,Rest]).
 
 test("recognize Java identifier of length 1, no rest", true([Out,Rest] == [m,''])) :-
-   recognize('m',Rest,jpl_java_id,Out).
+   dcg_parse('m',Rest,jpl:jpl_java_id,Out).
 
 test("recognize Java identifier (Out already set to result), no rest", true(Rest == '')) :-
-   recognize('my_identifier',Rest,jpl_java_id,'my_identifier').
+   dcg_parse('my_identifier',Rest,jpl:jpl_java_id,'my_identifier').
 
 test("recognize Java identifier (Out already set to result), with rest", true(Rest == '.dodododo')) :-
-   recognize('my_identifier.dodododo',Rest,jpl_java_id,'my_identifier').
+   dcg_parse('my_identifier.dodododo',Rest,jpl:jpl_java_id,'my_identifier').
 
 test("starts with dash: not a Java identifier", fail) :-
-   recognize('-my',_,jpl_java_id,_).
+   dcg_parse('-my',_,jpl:jpl_java_id,_).
 
 test("contains dash and thus is broken up", true([Out,Rest] == ['my','-my'])) :-
-   recognize('my-my',Rest,jpl_java_id,Out).
+   dcg_parse('my-my',Rest,jpl:jpl_java_id,Out).
 
 test("empty atom is not a Java identifier", fail) :-
-   recognize('',_,jpl_java_id,_).
+   dcg_parse('',_,jpl:jpl_java_id,_).
 
 test("valid identifier with differing Out", fail) :-
-   recognize('my',_,jpl_java_id,'notmy').
+   dcg_parse('my',_,jpl:jpl_java_id,'notmy').
 
 :- end_tests(java_id).
 
@@ -1552,13 +1593,13 @@ test("valid identifier with differing Out", fail) :-
 :- begin_tests(java_type_id).
 
 test("recognize Java type identifier",true([Out,Rest] == [my_identifier,''])) :-
-   recognize('my_identifier',Rest,jpl_java_type_id,Out).
+   dcg_parse('my_identifier',Rest,jpl:jpl_java_type_id,Out).
 
 test("reject bad Java type identifier 'var'",fail) :-
-   recognize('var',_,jpl_java_type_id,_).
+   dcg_parse('var',_,jpl:jpl_java_type_id,_).
 
 test("java type identifier DOES NOT stop at '$'",true([Out,Rest] == ['foo$bar',''])) :-
-   recognize('foo$bar',Rest,jpl_java_type_id,Out).
+   dcg_parse('foo$bar',Rest,jpl:jpl_java_type_id,Out).
 
 :- end_tests(java_type_id).
 
@@ -1570,31 +1611,31 @@ test("java type identifier DOES NOT stop at '$'",true([Out,Rest] == ['foo$bar','
 :- begin_tests(messy_dollar_split).
 
 test(1,true(Runs == [alfa])) :-
-   messy_dollar_split(alfa,Runs).
+   jpl:messy_dollar_split(alfa,Runs).
 
 test(2,true(Runs == [a])) :-
-   messy_dollar_split(a,Runs).
+   jpl:messy_dollar_split(a,Runs).
 
 test(3,true(Runs == ['$'])) :-
-   messy_dollar_split('$',Runs).
+   jpl:messy_dollar_split('$',Runs).
 
 test(4,true(Runs == ['alfa$'])) :-
-   messy_dollar_split('alfa$',Runs).
+   jpl:messy_dollar_split('alfa$',Runs).
 
 test(5,true(Runs == [alfa,bravo])) :-
-   messy_dollar_split('alfa$bravo',Runs).
+   jpl:messy_dollar_split('alfa$bravo',Runs).
 
 test(6,true(Runs == ['$alfa'])) :-
-   messy_dollar_split('$alfa',Runs).
+   jpl:messy_dollar_split('$alfa',Runs).
 
 test(7,true(Runs == ['alfa','$bravo'])) :-
-   messy_dollar_split('alfa$$bravo',Runs).
+   jpl:messy_dollar_split('alfa$$bravo',Runs).
 
 test(8,true(Runs == ['$alfa','bravo','charlie$'])) :-
-   messy_dollar_split('$alfa$bravo$charlie$',Runs).
+   jpl:messy_dollar_split('$alfa$bravo$charlie$',Runs).
 
 test(9,true(Runs == ['$$alfa','$bravo','$$charlie','$$$'])) :-
-   messy_dollar_split('$$alfa$$bravo$$$charlie$$$$',Runs).
+   jpl:messy_dollar_split('$$alfa$$bravo$$$charlie$$$$',Runs).
 
 :- end_tests(messy_dollar_split).
 
@@ -1606,10 +1647,10 @@ test(9,true(Runs == ['$$alfa','$bravo','$$charlie','$$$'])) :-
 :- begin_tests(jpl_classname_without_dollar).
 
 test("simple classname",true(Out == class([],[foo]))) :-
-   recognize('foo','',jpl_classname,Out,dotty).
+   dcg_parse_moded('foo','',jpl:jpl_classname,Out,dotty).
 
 test("qualified classname",true(Out == class([alfa,bravo,charlie],[foo]))) :-
-   recognize('alfa.bravo.charlie.foo','',jpl_classname,Out,dotty).
+   dcg_parse_moded('alfa.bravo.charlie.foo','',jpl:jpl_classname,Out,dotty).
 
 :- end_tests(jpl_classname_without_dollar).
 
@@ -1622,16 +1663,16 @@ test("qualified classname",true(Out == class([alfa,bravo,charlie],[foo]))) :-
 :- begin_tests(jpl_classname_with_dollar).
 
 test("qualified inner member type",true(Out == class([alfa,bravo,charlie],[foo,bar]))) :-
-   recognize('alfa.bravo.charlie.foo$bar','',jpl_classname,Out,dotty).
+   dcg_parse_moded('alfa.bravo.charlie.foo$bar','',jpl:jpl_classname,Out,dotty).
 
 test("qualified inner anonymous type",true(Out == class([alfa,bravo,charlie],[foo,'01234']))) :-
-   recognize('alfa.bravo.charlie.foo$01234','',jpl_classname,Out,dotty).
+   dcg_parse_moded('alfa.bravo.charlie.foo$01234','',jpl:jpl_classname,Out,dotty).
 
 test("qualified inner local class",true(Out == class([alfa,bravo,charlie],[foo,'01234bar']))) :-
-   recognize('alfa.bravo.charlie.foo$01234bar','',jpl_classname,Out,dotty).
+   dcg_parse_moded('alfa.bravo.charlie.foo$01234bar','',jpl:jpl_classname,Out,dotty).
 
 test("qualified inner member type, deep",true(Out == class([alfa,bravo,charlie],[foo,bar,baz,quux]))) :-
-   recognize('alfa.bravo.charlie.foo$bar$baz$quux','',jpl_classname,Out,dotty).
+   dcg_parse_moded('alfa.bravo.charlie.foo$bar$baz$quux','',jpl:jpl_classname,Out,dotty).
 
 :- end_tests(jpl_classname_with_dollar).
 
@@ -1642,13 +1683,13 @@ test("qualified inner member type, deep",true(Out == class([alfa,bravo,charlie],
 :- begin_tests(jpl_entity_is_primitive).
 
 test("entityname is just 'int': integer primitive",true(Out == int)) :-
-   recognize('int','',jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('int','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
 
 test("entityname is just 'void': void primitive",true(Out == void)) :-
-   recognize('void','',jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('void','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
 
 test("entityname is actually 'integer', which is a class called 'integer', which is ok!",true(Out == class([],[integer]))) :-
-   recognize('integer','',jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('integer','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
 
 :- end_tests(jpl_entity_is_primitive).
 
@@ -1659,16 +1700,16 @@ test("entityname is actually 'integer', which is a class called 'integer', which
 :- begin_tests(jpl_entity_is_array).
 
 test("array of double",true(Out == array(double))) :-
-   recognize('[D','',jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('[D','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
 
 test("array of array of integer",true(Out == array(array(int)))) :-
-   recognize('[[I','',jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('[[I','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
 
 test("array of void",fail) :-
-   recognize('[[V','',jpl_typeterm_rel_entityname,_,dotty).
+   dcg_parse_moded('[[V','',jpl:jpl_typeterm_rel_entityname,_,dotty).
 
 test("array of java.lang.String",true(Out == array(array(class([java, lang], ['String']))))) :-
-   recognize('[[Ljava.lang.String;','',jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('[[Ljava.lang.String;','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
 
 :- end_tests(jpl_entity_is_array).
 

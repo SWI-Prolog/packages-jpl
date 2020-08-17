@@ -80,15 +80,7 @@
         jpl_terms_to_array/2,
         jpl_array_to_terms/2,
         jpl_map_element/2,
-        jpl_set_element/2,
-        jpl_java_id/3,                        % export for tests
-        jpl_java_type_id/3,                   % export for tests
-        jpl_java_id_part_char/1,              % export for tests
-        jpl_java_id_start_char/1,             % export for tests
-        messy_dollar_split/2,                 % export for tests
-        jpl_typeterm_rel_entityname//2,       % export for tests
-        jpl_typeterm_rel_slashy_typedesc//1,  % export for tests
-        jpl_classname//2                      % export for tests
+        jpl_set_element/2
    ]).
 :- autoload(library(apply),[maplist/2]).
 :- autoload(library(debug),[debugging/1,debug/3]).
@@ -2314,7 +2306,7 @@ jpl_class_to_ancestor_classes(C, Cas) :-
     ).
 
 
-%! jpl_class_to_classname(+Class:jref, -ClassName:dottedName)
+%! jpl_class_to_classname(+Class:jref, -ClassName:entityName)
 %
 % Class is a reference to a class object.
 %
@@ -2324,6 +2316,9 @@ jpl_class_to_ancestor_classes(C, Cas) :-
 % NB not used outside jni_junk and jpl_test (is this (still) true?)
 %
 % NB oughta use the available caches (but their indexing doesn't suit)
+%
+% The implementation actually just calls `Class.getName()` to get
+% the entity name (dotted name)
 
 jpl_class_to_classname(C, CN) :-
     jpl_call(C, getName, [], CN).
@@ -2432,18 +2427,16 @@ jpl_classname_to_type(CN, T) :-
     ).
 */
 
-if_then_else(Condition,Then,Else) :-
-   call(Condition) -> call(Then) ; call(Else).
-
 jpl_classname_to_type(CN, T) :-
     assertion(nonvar(CN)),
     assertion(var(T)),
-    if_then_else(
-       jpl_classname_type_cache(CN, Tx),
-       (Tx = T),
-       (atom_codes(CN, Cs),
-        jpl_entityname_codes_rel_typeterm(Cs,T),
-        jpl_assert(jpl_classname_type_cache(CN,T)))).
+    (jpl_classname_type_cache(CN, Tx) ->  (Tx = T) ; jpl_put_into_cache(CN, T)).
+
+jpl_put_into_cache(CN, T) :- 
+   atom_codes(CN, Cs),
+   (jpl_entityname_codes_rel_typeterm(Cs,T)
+    -> 
+    jpl_assert(jpl_classname_type_cache(CN,T))).
 
 %! jpl_classname_type_cache( -Classname:className, -Type:type)
 %
@@ -2913,7 +2906,7 @@ jpl_type_to_class(T, RefA) :-
     ).
 
 
-%! jpl_type_to_nicename(+Type:type, -NiceName:dottedName)
+%! jpl_type_to_nicename(+Type:type, -NiceName:entityName)
 %
 % Type, which is a class or array type (not sure about the others...),
 % is denoted by ClassName in dotted syntax.
@@ -2934,12 +2927,11 @@ jpl_type_to_class(T, RefA) :-
 % @see jpl_type_to_classname/2
 
 jpl_type_to_nicename(T, NN) :-
-    if_then_else(
-       jpl_primitive_type(T),
-       (NN = T),                         % "boolean" is translated to "boolean" etc
-       jpl_type_to_classname(T, NN)).
+   jpl_primitive_type(T) ->
+   (NN = T);                         % "boolean" is translated to "boolean" etc
+   jpl_type_to_classname(T, NN).
 
-%! jpl_type_to_classname(+Type:type, -ClassName:dottedName)
+%! jpl_type_to_classname(+Type:type, -ClassName:entityName)
 %
 % Type, which is a class or array type (not sure about the others...),
 % is denoted by ClassName in dotted syntax.
@@ -4176,16 +4168,31 @@ dir_per_line([H|T]) -->
          *******************************/
 
 % ===
-% Convention:
+% PRINCIPLE
+% 
+% We process list of character codes with the DCG (as opposed to lists of 
+% characters)
 %
-% We process list of character codes with the DCG (as opposed to lists of characters)
-% In SWI Prolog the character codes are the Unicode code values.
-% We can then use backquotes for in-code literals that resolve to such lists:
-% ?- X=`alpha`.
-% X = [97, 108, 112, 104, 97].
+% In SWI Prolog the character codes are the Unicode code values, which is 
+% perfect.
+%
 % We will have to examine the unicode code values of any characters to decide
 % whether a sequence of characters from a valid Java identifier, so using the
-% character code representation is necessary in any case.
+% character code representation is necessary in any case, as opposed to using 
+% the character representation.
+% 
+% To generate list of character codes from literals, the backquote notation
+% can be used:
+%
+% ?- X=`alpha`.
+% X = [97, 108, 112, 104, 97].
+%
+% However, Jab Wielmaker says:
+%
+% "Please use "string" for terminals in DCGs. The SWI-Prolog DCG compiler 
+%  handles these correctly and this retains compatibility."
+%
+% So we do that.
 % ===
 
 % ===========================================================================
@@ -4281,8 +4288,8 @@ jpl_classname(class(Ps,Cs),Mode) --> jpl_package_parts(Ps,Mode), jpl_class_parts
 % less demanding of backtracking)
 % ---
 
-jpl_package_parts([A|As],dotty)  --> jpl_java_id(A), `.`, !, jpl_package_parts(As,dotty).
-jpl_package_parts([A|As],slashy) --> jpl_java_id(A), `/`, !, jpl_package_parts(As,slashy).
+jpl_package_parts([A|As],dotty)  --> jpl_java_id(A), ".", !, jpl_package_parts(As,dotty).
+jpl_package_parts([A|As],slashy) --> jpl_java_id(A), "/", !, jpl_package_parts(As,slashy).
 jpl_package_parts([],_)          --> [].
 
 % ---
@@ -4359,7 +4366,7 @@ triple_process([_,''],Run,Runs,[Run|Runs]).
 % Described informally at Javadoc for Class.getName()
 % ---
 
-jpl_array_of_entityname(array(T),Mode) --> `[`, jpl_entityname_in_array(T,Mode).
+jpl_array_of_entityname(array(T),Mode) --> "[", jpl_entityname_in_array(T,Mode).
 
 % ---
 % jpl_array_of_entityname//1
@@ -4368,7 +4375,7 @@ jpl_array_of_entityname(array(T),Mode) --> `[`, jpl_entityname_in_array(T,Mode).
 % representation somewhat less than ideal. BAD!!
 % ---
 
-jpl_entityname_in_array(class(Ps,Cs),Mode)  --> `L`, jpl_classname(class(Ps,Cs),Mode), `;`.
+jpl_entityname_in_array(class(Ps,Cs),Mode)  --> "L", jpl_classname(class(Ps,Cs),Mode), ";".
 jpl_entityname_in_array(array(T),Mode)      --> jpl_array_of_entityname(array(T),Mode).
 jpl_entityname_in_array(T,_)                --> jpl_primitive_in_array(T). 
 
@@ -4376,12 +4383,12 @@ jpl_entityname_in_array(T,_)                --> jpl_primitive_in_array(T).
 % Rules for recognizng methods; called by jpl_typeterm_rel_slashy_typedesc//1 only
 % ---
 
-jpl_method_descriptor(method(Ts,T)) --> `(`, jpl_method_descriptor_args(Ts), `)`, jpl_method_descriptor_retval(T).
+jpl_method_descriptor(method(Ts,T)) --> "(", jpl_method_descriptor_args(Ts), ")", jpl_method_descriptor_retval(T).
 
 jpl_method_descriptor_args([T|Ts]) --> jpl_typeterm_rel_slashy_typedesc(T), !, jpl_method_descriptor_args(Ts).
 jpl_method_descriptor_args([]) --> [].
 
-jpl_method_descriptor_retval(void) --> `V`.
+jpl_method_descriptor_retval(void) --> "V".
 jpl_method_descriptor_retval(T) --> jpl_typeterm_rel_slashy_typedesc(T).
 
 % ===========================================================================
@@ -4430,7 +4437,7 @@ jpl_java_id_part_chars([])     --> [].
 % No description found for this; empirical
 % ---
 
-jpl_void_at_toplevel(void) --> `void`.
+jpl_void_at_toplevel(void) --> "void".
 
 % ---
 % jpl_primitive_in_array//1
@@ -4439,14 +4446,14 @@ jpl_void_at_toplevel(void) --> `void`.
 % The left-hand side should really be tagged with primitive(boolean) etc.
 % ---
 
-jpl_primitive_in_array(boolean) --> `Z`,!.
-jpl_primitive_in_array(byte)    --> `B`,!.
-jpl_primitive_in_array(char)    --> `C`,!.
-jpl_primitive_in_array(double)  --> `D`,!.
-jpl_primitive_in_array(float)   --> `F`,!.
-jpl_primitive_in_array(int)     --> `I`,!.
-jpl_primitive_in_array(long)    --> `J`,!.
-jpl_primitive_in_array(short)   --> `S`.
+jpl_primitive_in_array(boolean) --> "Z",!.
+jpl_primitive_in_array(byte)    --> "B",!.
+jpl_primitive_in_array(char)    --> "C",!.
+jpl_primitive_in_array(double)  --> "D",!.
+jpl_primitive_in_array(float)   --> "F",!.
+jpl_primitive_in_array(int)     --> "I",!.
+jpl_primitive_in_array(long)    --> "J",!.
+jpl_primitive_in_array(short)   --> "S".
 
 % ---
 % jpl_primitive_at_toplevel//1
@@ -4454,14 +4461,14 @@ jpl_primitive_in_array(short)   --> `S`.
 % The left-hand side should really be tagged with primitive(boolean) etc.
 % ---
 
-jpl_primitive_at_toplevel(boolean) --> `boolean`,!.
-jpl_primitive_at_toplevel(byte)    --> `byte`,!.
-jpl_primitive_at_toplevel(char)    --> `char`,!.
-jpl_primitive_at_toplevel(double)  --> `double`,!.
-jpl_primitive_at_toplevel(float)   --> `float`,!.
-jpl_primitive_at_toplevel(int)     --> `int`,!.
-jpl_primitive_at_toplevel(long)    --> `long`,!.
-jpl_primitive_at_toplevel(short)   --> `short`.
+jpl_primitive_at_toplevel(boolean) --> "boolean" ,!.
+jpl_primitive_at_toplevel(byte)    --> "byte"    ,!.
+jpl_primitive_at_toplevel(char)    --> "char"    ,!.
+jpl_primitive_at_toplevel(double)  --> "double"  ,!.
+jpl_primitive_at_toplevel(float)   --> "float"   ,!.
+jpl_primitive_at_toplevel(int)     --> "int"     ,!.
+jpl_primitive_at_toplevel(long)    --> "long"    ,!.
+jpl_primitive_at_toplevel(short)   --> "short".
 
 % ---
 % Certain java keywords that may not occur as java identifier
