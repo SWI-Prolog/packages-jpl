@@ -1463,8 +1463,8 @@ new_goal_by_mode(typedesc , new_typedesc).
 
 % Indirection for new calls; easier than constructing the goal
 
-new_slashy(T)   --> jpl:jpl_typeterm_rel_entityname(T,slashy).
-new_dotty(T)    --> jpl:jpl_typeterm_rel_entityname(T,dotty).
+new_slashy(T)   --> jpl:jpl_entityname_rel_jpltype(T,slashy).
+new_dotty(T)    --> jpl:jpl_entityname_rel_jpltype(T,dotty).
 new_typedesc(T) --> jpl:jpl_typeterm_rel_slashy_typedesc(T).
 
 % ---
@@ -1683,13 +1683,13 @@ test("qualified inner member type, deep",true(Out == class([alfa,bravo,charlie],
 :- begin_tests(jpl_entity_is_primitive).
 
 test("entityname is just 'int': integer primitive",true(Out == int)) :-
-   dcg_parse_moded('int','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('int','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
 
 test("entityname is just 'void': void primitive",true(Out == void)) :-
-   dcg_parse_moded('void','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('void','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
 
 test("entityname is actually 'integer', which is a class called 'integer', which is ok!",true(Out == class([],[integer]))) :-
-   dcg_parse_moded('integer','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('integer','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
 
 :- end_tests(jpl_entity_is_primitive).
 
@@ -1700,16 +1700,16 @@ test("entityname is actually 'integer', which is a class called 'integer', which
 :- begin_tests(jpl_entity_is_array).
 
 test("array of double",true(Out == array(double))) :-
-   dcg_parse_moded('[D','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('[D','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
 
 test("array of array of integer",true(Out == array(array(int)))) :-
-   dcg_parse_moded('[[I','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('[[I','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
 
 test("array of void",fail) :-
-   dcg_parse_moded('[[V','',jpl:jpl_typeterm_rel_entityname,_,dotty).
+   dcg_parse_moded('[[V','',jpl:jpl_entityname_rel_jpltype,_,dotty).
 
 test("array of java.lang.String",true(Out == array(array(class([java, lang], ['String']))))) :-
-   dcg_parse_moded('[[Ljava.lang.String;','',jpl:jpl_typeterm_rel_entityname,Out,dotty).
+   dcg_parse_moded('[[Ljava.lang.String;','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
 
 :- end_tests(jpl_entity_is_array).
 
@@ -1903,7 +1903,7 @@ test("generate slashy failure 01", fail) :-
 :- end_tests(generate_slashy).
 
 % ===========================================================================
-% Generating "slashy type descritpors"
+% Generating "slashy type descriptors"
 % ===========================================================================
 
 :- begin_tests(generate_slashy_typedesc).
@@ -1930,6 +1930,102 @@ test("generate slashy typedesc failure 01", fail) :-
    generate(array(array(array(class([foo,bared],['-hello'])))),new_typedesc,_).
 
 :- end_tests(generate_slashy_typedesc).
+
+% ===========================================================================
+% Testing jpl_type_to_classname
+% ===========================================================================
+
+:- begin_tests(jpl_type_to_classname).
+
+test("jpl_type_to_classname: class", CN == 'java.util.String') :-
+   jpl_type_to_classname(class([java,util],['String']),CN).
+
+test("jpl_type_to_classname: class in default package", CN == 'String') :-
+   jpl_type_to_classname(class([],['String']),CN).
+
+test("jpl_type_to_classname: class name separated along '$'", CN == 'foo.bar.Bling$Blong') :-
+   jpl_type_to_classname(class([foo,bar],['Bling','Blong']),CN).
+   
+test("jpl_type_to_classname: array of class", CN == '[Ljava.util.String;') :-
+   jpl_type_to_classname(array(class([java,util],['String'])),CN).
+
+test("jpl_type_to_classname: array of primtive", CN == '[B') :-
+   jpl_type_to_classname(array(byte),CN).
+
+test("jpl_type_to_classname: unboxed primitive", CN == byte) :-
+   jpl_type_to_classname(byte,CN).
+   
+test("jpl_type_to_classname: void", CN == void) :-
+   jpl_type_to_classname(void,CN).
+
+test("jpl_type_to_classname: unrecognized primitive", fail) :-
+   jpl_type_to_classname(bar,_).
+   
+:- end_tests(jpl_type_to_classname).
+
+% ===========================================================================
+% Testing jpl_classname_to_type
+% ===========================================================================
+
+:- begin_tests(jpl_classname_to_type).
+
+test("jpl_classname_to_type: class", T == class([java,util],['String'])) :-
+   jpl_classname_to_type('java.util.String',T).
+
+test("jpl_classname_to_type: class in default package", T == class([],'String')) :-
+   jpl_classname_to_type('String',T).
+
+test("jpl_classname_to_type: class name separated along '$'", T == class([foo,bar],['Bling','Blong'])) :-
+   jpl_classname_to_type('foo.bar.Bling$Blong',T).
+   
+test("jpl_classname_to_type: array of class", T == array(class([java,util],['String']))) :-
+   jpl_classname_to_type('[Ljava.util.String;',T). 
+
+test("jpl_classname_to_type: array of primtive", T == array(byte)) :-
+   jpl_classname_to_type('[B'),T).
+
+test("jpl_classname_to_type: unboxed primitive", T == byte) :-
+   jpl_classname_to_type(byte,T). 
+   
+test("jpl_classname_to_type: void", CN == void) :-
+   jpl_classname_to_type(void,T).
+
+:- end_tests(jpl_classname_to_type).
+
+% ===========================================================================
+% Testing safe_type_to_classname
+% ===========================================================================
+
+:- begin_tests(safe_type_to_classname).
+
+test("safe_type_to_classname: class", CN == 'java.util.String') :-
+   jpl:safe_type_to_classname(class([java,util],['String']),CN).
+
+test("safe_type_to_classname: class in default package", CN == 'String') :-
+   jpl:safe_type_to_classname(class([],['String']),CN).
+
+test("safe_type_to_classname: class name separated along '$'", CN == 'foo.bar.Bling$Blong') :-
+   jpl:safe_type_to_classname(class([foo,bar],['Bling','Blong']),CN).
+
+test("safe_type_to_classname: array of class", CN == '[Ljava.util.String;') :-
+   jpl:safe_type_to_classname(array(class([java,util],['String'])),CN).
+
+test("safe_type_to_classname: array of primtive", CN == '[B') :-
+   jpl:safe_type_to_classname(array(byte),CN).
+
+test("safe_type_to_classname: unboxed primitive", CN == byte) :-
+   jpl:safe_type_to_classname(byte,CN).
+
+test("safe_type_to_classname: void", CN == void) :-
+   jpl:safe_type_to_classname(void,CN).
+
+test("safe_type_to_classname: unrecognized primitive", CN == 'bar') :-
+   jpl:safe_type_to_classname(bar,CN).
+
+test("safe_type_to_classname: unrecognized structure", CN == 'foo(bar(baz))') :-
+   jpl:safe_type_to_classname(foo(bar(baz)),CN).
+
+:- end_tests(safe_type_to_classname).
 
 % ===========================================================================
 % The original jpl code for recognizing entity names etc.
