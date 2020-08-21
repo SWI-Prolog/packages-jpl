@@ -75,6 +75,12 @@ test_jpl :-
      ,compare_both_dotty
      ,compare_both_slashy
      ,compare_both_typedesc
+     ,generate_dotty
+     ,generate_slashy
+     ,generate_slashy_typedesc
+     ,jpl_type_to_classname
+     ,jpl_classname_to_type
+     ,safe_type_to_classname
     ]).
 
 :- begin_tests(jpl).
@@ -1972,7 +1978,7 @@ test("jpl_type_to_classname: unrecognized primitive", fail) :-
 test("jpl_classname_to_type: class", T == class([java,util],['String'])) :-
    jpl_classname_to_type('java.util.String',T).
 
-test("jpl_classname_to_type: class in default package", T == class([],'String')) :-
+test("jpl_classname_to_type: class in default package", T == class([],['String'])) :-
    jpl_classname_to_type('String',T).
 
 test("jpl_classname_to_type: class name separated along '$'", T == class([foo,bar],['Bling','Blong'])) :-
@@ -1984,10 +1990,16 @@ test("jpl_classname_to_type: array of class", T == array(class([java,util],['Str
 test("jpl_classname_to_type: array of primtive", T == array(byte)) :-
    jpl_classname_to_type('[B'),T).
 
-test("jpl_classname_to_type: unboxed primitive", T == byte) :-
+test("jpl_classname_to_type: unboxed primitive 1", T == byte) :-
    jpl_classname_to_type(byte,T). 
+
+test("jpl_classname_to_type: unboxed primitive 2", T == int) :-
+   jpl_classname_to_type(int,T). 
+
+test("jpl_classname_to_type: not an integer", T == class([],[integer])) :-
+   jpl_classname_to_type(integer,T). 
    
-test("jpl_classname_to_type: void", CN == void) :-
+test("jpl_classname_to_type: void", T == void) :-
    jpl_classname_to_type(void,T).
 
 :- end_tests(jpl_classname_to_type).
