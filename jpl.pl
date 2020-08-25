@@ -2405,8 +2405,8 @@ jpl_classes_to_types([C|Cs], [T|Ts]) :-
 
 %! jpl_entityname_codes_rel_jpltype(?EntityNameAsCodes:list(integer),?Type:type)
 % 
-% Relate a Java Entity Name (in the form of a list of Unicode code values)
-% to a corresponding JPL type term.
+% Relate a "Java entity name" (in the form of a list of Unicode code values)
+% to a corresponding "JPL type" (a term).
 
 jpl_entityname_codes_rel_jpltype(Cs, T) :-
     once(phrase(jpl_entityname_rel_jpltype(T,dotty), Cs)). % make deterministic
@@ -2433,6 +2433,12 @@ jpl_classname_to_class(N, C) :-
 % NB by "classname" do I mean "typename"?
 %
 % NB should this throw an exception for unbound CN? is this public API?
+%
+% TO BE FIXED:
+% This predciate also accepts primitive types by interpretes them wrongly:
+%
+% ?- jpl_classname_to_type(float,X).
+% X = class([], [float]).
 
 /*
  * I don't understand this code, rewritten to legibility below
@@ -4275,10 +4281,10 @@ jpl_entityname_rel_jpltype(P,_)               --> jpl_primitive_at_toplevel(P).
 % It can also understand a method descriptor.
 % ---
 
-jpl_typeterm_rel_slashy_typedesc(class(Ps,Cs)) --> jpl_entityname_in_array(class(Ps,Cs),slashy),!.
-jpl_typeterm_rel_slashy_typedesc(array(T))     --> jpl_entityname_in_array(array(T),slashy),!.
+jpl_typeterm_rel_slashy_typedesc(class(Ps,Cs)) --> jpl_typedescriptor(class(Ps,Cs),slashy),!.
+jpl_typeterm_rel_slashy_typedesc(array(T))     --> jpl_typedescriptor(array(T),slashy),!.
 jpl_typeterm_rel_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(Ts,T)),!.
-jpl_typeterm_rel_slashy_typedesc(T)            --> jpl_entityname_in_array(T,slashy).
+jpl_typeterm_rel_slashy_typedesc(T)            --> jpl_typedescriptor(T,slashy).
 
 % ---
 % The "binary classname" (i.e. the classname as it appears in binaries) as
@@ -4383,7 +4389,7 @@ triple_process([_,''],Run,Runs,[Run|Runs]).
 % Described informally at Javadoc for Class.getName()
 % ---
 
-jpl_array_of_entityname(array(T),Mode) --> "[", jpl_entityname_in_array(T,Mode).
+jpl_array_of_entityname(array(T),Mode) --> "[", jpl_typedescriptor(T,Mode).
 
 % ---
 % jpl_array_of_entityname//1
@@ -4392,9 +4398,9 @@ jpl_array_of_entityname(array(T),Mode) --> "[", jpl_entityname_in_array(T,Mode).
 % representation somewhat less than ideal. BAD!!
 % ---
 
-jpl_entityname_in_array(class(Ps,Cs),Mode)  --> "L", jpl_classname(class(Ps,Cs),Mode), ";".
-jpl_entityname_in_array(array(T),Mode)      --> jpl_array_of_entityname(array(T),Mode).
-jpl_entityname_in_array(T,_)                --> jpl_primitive_in_array(T). 
+jpl_typedescriptor(class(Ps,Cs),Mode)  --> "L", jpl_classname(class(Ps,Cs),Mode), ";". % the "reference type descriptor"
+jpl_typedescriptor(array(T),Mode)      --> jpl_array_of_entityname(array(T),Mode).
+jpl_typedescriptor(T,_)                --> jpl_primitive_typedescriptor(T). 
 
 % ---
 % Rules for recognizng methods; called by jpl_typeterm_rel_slashy_typedesc//1 only
@@ -4463,14 +4469,14 @@ jpl_void_at_toplevel(void) --> "void".
 % The left-hand side should really be tagged with primitive(boolean) etc.
 % ---
 
-jpl_primitive_in_array(boolean) --> "Z",!.
-jpl_primitive_in_array(byte)    --> "B",!.
-jpl_primitive_in_array(char)    --> "C",!.
-jpl_primitive_in_array(double)  --> "D",!.
-jpl_primitive_in_array(float)   --> "F",!.
-jpl_primitive_in_array(int)     --> "I",!.
-jpl_primitive_in_array(long)    --> "J",!.
-jpl_primitive_in_array(short)   --> "S".
+jpl_primitive_typedescriptor(boolean) --> "Z",!.
+jpl_primitive_typedescriptor(byte)    --> "B",!.
+jpl_primitive_typedescriptor(char)    --> "C",!.
+jpl_primitive_typedescriptor(double)  --> "D",!.
+jpl_primitive_typedescriptor(float)   --> "F",!.
+jpl_primitive_typedescriptor(int)     --> "I",!.
+jpl_primitive_typedescriptor(long)    --> "J",!.
+jpl_primitive_typedescriptor(short)   --> "S".
 
 % ---
 % jpl_primitive_at_toplevel//1
