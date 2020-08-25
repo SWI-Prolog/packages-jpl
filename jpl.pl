@@ -4269,7 +4269,7 @@ dir_per_line([H|T]) -->
 % ---
 
 jpl_entityname_rel_jpltype(class(Ps,Cs),Mode) --> jpl_classname(class(Ps,Cs),Mode),!.
-jpl_entityname_rel_jpltype(array(T),Mode)     --> jpl_array_of_entityname(array(T),Mode),!.
+jpl_entityname_rel_jpltype(array(T),Mode)     --> jpl_array_typedescriptor(array(T),Mode),!.
 jpl_entityname_rel_jpltype(void,_)            --> jpl_void_at_toplevel(void),!.
 jpl_entityname_rel_jpltype(P,_)               --> jpl_primitive_at_toplevel(P). 
 
@@ -4281,10 +4281,10 @@ jpl_entityname_rel_jpltype(P,_)               --> jpl_primitive_at_toplevel(P).
 % It can also understand a method descriptor.
 % ---
 
-jpl_typeterm_rel_slashy_typedesc(class(Ps,Cs)) --> jpl_typedescriptor(class(Ps,Cs),slashy),!.
-jpl_typeterm_rel_slashy_typedesc(array(T))     --> jpl_typedescriptor(array(T),slashy),!.
+jpl_typeterm_rel_slashy_typedesc(class(Ps,Cs)) --> jpl_fielddescriptor(class(Ps,Cs),slashy),!.
+jpl_typeterm_rel_slashy_typedesc(array(T))     --> jpl_fielddescriptor(array(T),slashy),!.
 jpl_typeterm_rel_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(Ts,T)),!.
-jpl_typeterm_rel_slashy_typedesc(T)            --> jpl_typedescriptor(T,slashy).
+jpl_typeterm_rel_slashy_typedesc(T)            --> jpl_fielddescriptor(T,slashy).
 
 % ---
 % The "binary classname" (i.e. the classname as it appears in binaries) as
@@ -4385,22 +4385,19 @@ triple_process([_,C,''],Run,Runs,[[C|Run]|Runs]) :- !.
 triple_process([_,''],Run,Runs,[Run|Runs]).
 
 % ---
-% jpl_array_of_entityname//1
-% Described informally at Javadoc for Class.getName()
-% ---
-
-jpl_array_of_entityname(array(T),Mode) --> "[", jpl_typedescriptor(T,Mode).
-
-% ---
-% jpl_array_of_entityname//1
+% jpl_fielddescriptor//2
 % Described informally at Javadoc for Class.getName()
 % Note that the fact that the last T is not tagged as "primitive()" makes this
 % representation somewhat less than ideal. BAD!!
 % ---
 
-jpl_typedescriptor(class(Ps,Cs),Mode)  --> "L", jpl_classname(class(Ps,Cs),Mode), ";". % the "reference type descriptor"
-jpl_typedescriptor(array(T),Mode)      --> jpl_array_of_entityname(array(T),Mode).
-jpl_typedescriptor(T,_)                --> jpl_primitive_typedescriptor(T). 
+jpl_fielddescriptor(class(Ps,Cs),Mode)  --> jpl_reference_typedescriptor(class(Ps,Cs),Mode),!.
+jpl_fielddescriptor(array(T),Mode)      --> jpl_array_typedescriptor(array(T),Mode),!.
+jpl_fielddescriptor(T,_)                --> jpl_primitive_typedescriptor(T).
+
+jpl_reference_typedescriptor(class(Ps,Cs),Mode) --> "L", jpl_classname(class(Ps,Cs),Mode), ";".
+
+jpl_array_typedescriptor(array(T),Mode) --> "[", jpl_fielddescriptor(T,Mode).
 
 % ---
 % Rules for recognizng methods; called by jpl_typeterm_rel_slashy_typedesc//1 only
