@@ -133,7 +133,7 @@ jpl_new(X, Params, V) :-
     ;   jpl_is_type(X)                  % NB Should check for "instantiable type"? Also accepts "double" for example.
     ->  Type = X
     ;   atom(X)                         % an atom not captured by jpl_is_type/1 e.g. 'java.lang.String', '[L', even "void"
-    ->  (   jpl_classname_to_type(X, Type)
+    ->  (   jpl_entity_name_to_type(X, Type)
         ->  true
         ;   throwme(jpl_new,x_not_classname(X))
         )
@@ -308,7 +308,7 @@ jpl_call(X, Mspec, Params, R) :-
     ;   var(X)
     ->  throwme(jpl_call,arg1_is_var)
     ;   atom(X)
-    ->  (   jpl_classname_to_type(X, Type)     % does this attempt to load the class?
+    ->  (   jpl_entity_name_to_type(X, Type)     % does this attempt to load the class?
         ->  (   jpl_type_to_class(Type, ClassObj)
             ->  Kind = static
             ;   throwme(jpl_call,no_such_class(X))
@@ -530,7 +530,7 @@ jpl_get(X, Fspec, V) :-
         ;   throwme(jpl_get,named_class_not_found(Type))
         )
     ;   atom(X)
-    ->  (   jpl_classname_to_type(X, Type)     % does this attempt to load the class? (NO!)
+    ->  (   jpl_entity_name_to_type(X, Type)     % does this attempt to load the class? (NO!)
         ->  (   jpl_type_to_class(Type, ClassObj)
             ->  jpl_get_static(Type, ClassObj, Fspec, Vx)
             ;   throwme(jpl_get,named_class_not_found(Type))
@@ -813,7 +813,7 @@ jpl_set(X, Fspec, V) :-
     ;   var(X)
     ->  throwme(jpl_set,arg1_is_var)
     ;   (   atom(X)
-        ->  (   jpl_classname_to_type(X, Type)          % it's a classname or descriptor...
+        ->  (   jpl_entity_name_to_type(X, Type)          % it's a classname or descriptor...
             ->  true
             ;   throwme(jpl_set,classname_does_not_resolve(X))
             )
@@ -1550,8 +1550,8 @@ jGetDoubleField(Obj, FieldID, Rdouble) :-
 %! jGetFieldID(+Class:jref, +Name:fieldName, +Type:type, -FieldID:fieldId)
 
 jGetFieldID(Class, Name, Type, FieldID) :-
-    jpl_type_to_descriptor(Type, TD),
-    jni_func(94, Class, Name, TD, FieldID).
+    jpl_type_to_java_field_descriptor(Type, FD),
+    jni_func(94, Class, Name, FD, FieldID).
 
 
 %! jGetFloatArrayRegion(+Array:jref, +Start:int, +Len:int, +Buf:float_buf)
@@ -1593,8 +1593,8 @@ jGetLongField(Obj, FieldID, Rlong) :-
 %! jGetMethodID(+Class:jref, +Name:atom, +Type:type, -MethodID:methodId)
 
 jGetMethodID(Class, Name, Type, MethodID) :-
-    jpl_type_to_descriptor(Type, TD),
-    jni_func(33, Class, Name, TD, MethodID).
+    jpl_type_to_java_method_descriptor(Type, MD),
+    jni_func(33, Class, Name, MD, MethodID).
 
 
 %! jGetObjectArrayElement(+Array:jref, +Index:int, -Obj:jref)
@@ -1654,7 +1654,7 @@ jGetStaticDoubleField(Class, FieldID, Rdouble) :-
 %! jGetStaticFieldID(+Class:jref, +Name:fieldName, +Type:type, -FieldID:fieldId)
 
 jGetStaticFieldID(Class, Name, Type, FieldID) :-
-    jpl_type_to_descriptor(Type, TD),               % cache this?
+    jpl_type_to_java_field_descriptor(Type, TD),               % cache this?
     jni_func(144, Class, Name, TD, FieldID).
 
 
@@ -1679,7 +1679,7 @@ jGetStaticLongField(Class, FieldID, Rlong) :-
 %! jGetStaticMethodID(+Class:jref, +Name:methodName, +Type:type, -MethodID:methodId)
 
 jGetStaticMethodID(Class, Name, Type, MethodID) :-
-    jpl_type_to_descriptor(Type, TD),
+    jpl_type_to_java_method_descriptor(Type, TD),
     jni_func(113, Class, Name, TD, MethodID).
 
 
@@ -2343,32 +2343,19 @@ jpl_class_to_classname(C, CN) :-
     jpl_call(C, getName, [], CN).
 
 
-%! jpl_class_to_raw_classname(+Class:jref, -ClassName:rawName)
+%! jpl_class_to_entityname(+Class:jref, -ClassName:entityName)
 %
-% The "raw classname" is the "name of the entity" as returned by
-% Class.getName()
+% The "entity name" is the string as returned by Class.getName()
 %
 % For example: "java.lang.String", "byte", "[Ljava.lang.Object;", "[[[[[[[I"
 %
-% @see https://docs.oracle.com/javase/7/docs/api/java/lang/Class.html#getName()
-%      https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
+% @see https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
 
-jpl_class_to_raw_classname(Cobj, CN) :-
+jpl_class_to_entityname(Ref, EN) :-
     jpl_classname_to_class('java.lang.Class', CC),      % cached?
-    jGetMethodID(CC, getName, method([],class([java,lang],['String'])), MIDgetName),
-    jCallObjectMethod(Cobj, MIDgetName, [], [], S),
-    S = CN.
-
-
-%! jpl_class_to_raw_classname_chars(+Class:jref, -ClassnameChars:codes)
-%
-% Class is a reference to a class object
-%
-% ClassnameChars is a codes representation of its dotted name
-
-jpl_class_to_raw_classname_chars(Cobj, CsCN) :-
-    jpl_class_to_raw_classname(Cobj, CN),
-    atom_codes(CN, CsCN).
+    jGetMethodID(CC, getName, method([],class([java,lang],['String'])), MIDgetName), % does this ever change?
+    jCallObjectMethod(Ref, MIDgetName, [], [], S),
+    S = EN.
 
 
 jpl_class_to_super_class(C, Cx) :-
@@ -2389,9 +2376,9 @@ jpl_class_to_super_class(C, Cx) :-
 jpl_class_to_type(Ref, Type) :-
     (   jpl_class_tag_type_cache(Ref, Tx)
     ->  true
-    ;   jpl_class_to_raw_classname_chars(Ref, Cs),   % uncached
-        jpl_entityname_codes_rel_jpltype(Cs, Tr),
-        jpl_type_to_canonical_type(Tr, Tx),             % map e.g. class([],[byte]) -> byte
+    ;   jpl_class_to_entityname(Ref, EN),   % uncached ??
+        jpl_entity_name_to_type(EN, Tr),
+        jpl_type_to_canonical_type(Tr, Tx),             % map e.g. class([],[byte]) -> byte (TODO: I would say this is not needed)
         jpl_assert(jpl_class_tag_type_cache(Ref,Tx))
     ->  true    % the elseif goal should be determinate, but just in case...
     ),
@@ -2403,13 +2390,6 @@ jpl_classes_to_types([C|Cs], [T|Ts]) :-
     jpl_class_to_type(C, T),
     jpl_classes_to_types(Cs, Ts).
 
-%! jpl_entityname_codes_rel_jpltype(?EntityNameAsCodes:list(integer),?Type:type)
-% 
-% Relate a "Java entity name" (in the form of a list of Unicode code values)
-% to a corresponding "JPL type" (a term).
-
-jpl_entityname_codes_rel_jpltype(Cs, T) :-
-    once(phrase(jpl_entityname_rel_jpltype(T,dotty), Cs)). % make deterministic
 
 %! jpl_classname_to_class(+ClassName:className, -Class:jref)
 %
@@ -2420,51 +2400,35 @@ jpl_entityname_codes_rel_jpltype(Cs, T) :-
 % NB uses caches where the class is already encountered.
 
 jpl_classname_to_class(N, C) :-
-    jpl_classname_to_type(N, T),    % cached
-    jpl_type_to_class(T, C).        % cached
+    jpl_entity_name_to_type(N, T),    % cached
+    jpl_type_to_class(T, C).          % cached
 
 
-%! jpl_classname_to_type(+Classname:className, -Type:type)
+%! jpl_classname_to_type(+Entityname:atom, -Type:jpl_type)
 %
-% Classname is any of: a source-syntax (dotted) class name, e.g. 'java.util.Date', '[java.util.Date' or '[L'
+% TODO: This predicate is exported but should really be called `jpl_entity_name_to_type`
 %
-% Type is its corresponding JPL type structure, e.g. =|class([java,util],['Date'])|=, =|array(class([java,util],['Date']))|=, =|array(long)|=
+% An "entity name" is a Java-defined string representation of either:
 %
-% NB by "classname" do I mean "typename"?
+% - a primitive type, represented with a "primitive entity name", e.g. `float`
+% - a class or interface, represented with a fully qualified binary classname
+%   (the package name uses the "dotty" syntax), e.g. `java.util.Date`
+% - an array type, represented with an "array type descriptor", e.g. `[java.util.Date` or `[L`
 %
-% NB should this throw an exception for unbound CN? is this public API?
-%
-% TO BE FIXED:
-% This predciate also accepts primitive types by interpretes them wrongly:
-%
-% ?- jpl_classname_to_type(float,X).
-% X = class([], [float]).
+% The "jpl type" is the corresponding JPL type structure, e.g. 
+% `class([java,util],['Date'])`, `array(class([java,util],['Date']))`, `array(long)`
 
-/*
- * I don't understand this code, rewritten to legibility below
+jpl_classname_to_type(EN, T) :- jpl_entity_name_to_type(EN, T). % alias for historical usage/export
 
-jpl_classname_to_type(CN, T) :-
-    assertion(nonvar(CN)),
-    assertion(var(T)),
-    (   jpl_classname_type_cache(CN, Tx)
-    ->  Tx = T
-    ;   atom_codes(CN, Cs),
-        jpl_entityname_codes_rel_jpltype(Cs,T)
-    ->  jpl_assert(jpl_classname_type_cache(CN,T)), %%% WHY IS THERE A ,true here?
-        true
-    ).
-*/
+jpl_entity_name_to_type(EN, T) :-
+    assertion(atomic(EN)),
+    (jpl_classname_type_cache(EN, Tx) ->  (Tx = T) ; jpl_entity_name_to_type_with_caching(EN, T)).
 
-jpl_classname_to_type(CN, T) :-
-    assertion(atomic(CN)),
-    (jpl_classname_type_cache(CN, Tx) ->  (Tx = T) ; jpl_put_into_cache(CN, T)).
-
-jpl_put_into_cache(CN, T) :- 
-   atom_codes(CN, Cs),
-   (jpl_entityname_codes_rel_jpltype(Cs,T)
+jpl_entity_name_to_type_with_caching(EN, T) :- 
+    (atom_codes(EN,Cs),
+     once(phrase(jpl_entity_name(T), Cs))) % make deterministic
     -> 
-    jpl_assert(jpl_classname_type_cache(CN,T))).
-
+    jpl_assert(jpl_classname_type_cache(EN,T)).
 
 %! jpl_datum_to_type(+Datum:datum, -Type:type)
 %
@@ -2534,7 +2498,7 @@ jpl_datums_to_types([D|Ds], [T|Ts]) :-
 % `X`, known to be ground, is (or at least superficially resembles :-) a JPL type.
 % 
 % A (more complete) alternative would be to try to transfrom the `X` into its
-% entityname and see whether that works.
+% entity_name and see whether that works.
 
 jpl_ground_is_type(X) :-
     jpl_primitive_type(X),
@@ -2903,8 +2867,11 @@ jpl_type_to_canonical_type(P, P) :-
     jpl_primitive_type(P).
 
 
-%! jpl_type_to_class(+Type:type, -Class:jref)
+%! jpl_type_to_class(+Type:jpl_type, -Class:jref)
 %
+% `Type` is the JPL type, a ground term designating a class
+% or an array type.
+% 
 % Incomplete types are now never cached (or otherwise passed around).
 %
 % jFindClass throws an exception if FCN can't be found.
@@ -2913,7 +2880,7 @@ jpl_type_to_class(T, RefA) :-
     (   ground(T)
 	->  (   jpl_class_tag_type_cache(RefB, T)
 	    ->  true
-	    ;   (   jpl_type_to_findclassname(T, FCN)   % peculiar syntax for FindClass()
+	    ;   (   jpl_type_to_java_findclass_descriptor(T, FCN)   % peculiar syntax for FindClass()
 	        ->  jFindClass(FCN, RefB),       % which caches type of RefB
 	            jpl_cache_type_of_ref(class([java,lang],['Class']), RefB)    % 9/Nov/2004 bugfix (?)
 	        ),
@@ -2924,11 +2891,11 @@ jpl_type_to_class(T, RefA) :-
     ).
 
 
-%! jpl_type_to_classname(+Type:jpl_type, -ClassName:java_entity_name)
+%! jpl_type_to_classname(+Type:jpl_type, -ClassName:atom)
 %
 % - `Type` is a JPL type structure denoting a class or array type or a primitive. 
-% - `ClassName` is set to an atom of the Java entityname, with the package path in
-%   dotted syntax.
+% - `ClassName` is really a Java "entity name" (array, primitive or class 
+%    descriptor, with package in dotted syntax) as an atom.
 %
 % This predicate is exported, but internally it is only used to generate 
 % exception information.
@@ -2945,53 +2912,41 @@ jpl_type_to_class(T, RefA) :-
 % jpl_type_to_classname(void,void).
 % ```
 
-jpl_type_to_classname(T, CN) :-
+jpl_type_to_classname(T, EN) :-
     assertion(ground(T)),
-    jpl_entityname_codes_rel_jpltype(CNCodes,T),
-    atom_codes(CN, CNCodes).
+    once(phrase(jpl_entity_name(T), Cs)), % make deterministic
+    atom_codes(EN, Cs).
 
-%! jpl_type_to_descriptor(+Type:type, -Descriptor:descriptor)
+%! jpl_type_to_java_field_descriptor(+Type:jpl_type, -Descriptor:atom)
 %
-% Type (denoting any Java type)
-% (can also be a JPL method/2 structure (?!))
-% is represented by Descriptor (JVM internal syntax)
+% Type (the JPL type, a Prolog term) is mapped to the corresponding stringy
+% Java field descriptor (an atom)
 %
-% Example
-%  ==
-%  ?- jpl:jpl_type_to_descriptor(class([java,util],['Date']), Descriptor).
-%  Descriptor = 'Ljava/util/Date;'.
-%  ==
-%
-% I'd cache this, but I'd prefer more efficient indexing on types (hashed?)
+% TODO: I'd cache this, but I'd prefer more efficient indexing on types (hashed?)
 
-jpl_type_to_descriptor(T, D) :-
-    once(phrase(jpl_typeterm_rel_slashy_typedesc(T), Cs)), % make deterministic
-    atom_codes(D, Cs).
+jpl_type_to_java_field_descriptor(T, FD) :-
+    once(phrase(jpl_field_descriptor(T,slashy), Cs)), % make deterministic
+    atom_codes(FD, Cs).
 
-%! jpl_type_to_findclassname(+Type:type, -FindClassName:findClassName)
+%! jpl_type_to_java_method_descriptor(+Type:jpl_type, -Descriptor:atom)
 %
-% `Type` is a JPL type structure, known at call time.
+% Type (the JPL type, a Prolog term) is mapped to the corresponding stringy
+% Java method descriptor (an atom)
 %
-% `FindClassName` is an atom, the result of mapping the JPL type to 
-% a "slashy" Java type name (class or array only, but in fact this predicate
-% can be called with a primitive name, too) in the peculiar syntax required by
-% JNI's FindClass(), which requires the package name to use the `/` separator.
+% TODO: Caching might be nice (but is it worth it?)
+
+jpl_type_to_java_method_descriptor(T, MD) :-
+    once(phrase(jpl_method_descriptor(T), Cs)), % make deterministic
+    atom_codes(MD, Cs).
+
+%! jpl_type_to_java_findclass_descriptor(+Type:jpl_type, -Descriptor:atom)
 %
-% Example:
-% ```
-%  ?- jpl:jpl_type_to_findclassname(class([java,util],['Date']), FindClassName).
-%  FindClassName = 'java/util/Date'.
-% ```
+% Type (the JPL type, a Prolog term) is mapped to the corresponding stringy
+% Java findclass descriptor (an atom) to be used for JNI's "FindClass" function.
 
-jpl_type_to_findclassname(T, FCN) :-
-    jpl_findclassname_codes_rel_jpltype(Cs, T),
-    atom_codes(FCN, Cs).
-
-%! jpl_findclassname_codes_rel_jpltype(?Cs:charcodes, ?Type:type)
-
-jpl_findclassname_codes_rel_jpltype(Cs, T) :-
-    % Cs is actually characters codes (not characters)
-    once(phrase(jpl_entityname_rel_jpltype(T,slashy), Cs)). % make deterministic
+jpl_type_to_java_findclass_descriptor(T, FCD) :-
+    once(phrase(jpl_findclass_descriptor(T), Cs)), % make deterministic
+    atom_codes(FCD, Cs).
 
 %! jpl_type_to_super_type(+Type:type, -SuperType:type)
 %
@@ -4171,24 +4126,19 @@ dir_per_line([H|T]) -->
     [ nl, '  ~q'-[H] ],
     dir_per_line(T).
 
-         /*******************************
-         *  JAVA CLASSNAME RECOGNIZING  *
-         *******************************/
+         /****************************************************************************
+         * PARSING/GENERATING ENTITY NAME / FINDCLASS DESCRIPTOR / METHOD DESCRIPTOR *
+         ****************************************************************************/
 
 % ===
 % PRINCIPLE
 % 
-% We process list of character codes with the DCG (as opposed to lists of 
+% We process list of character codes in the DCG (as opposed to lists of 
 % characters)
 %
-% In SWI Prolog the character codes are the Unicode code values, which is 
-% perfect.
+% In SWI Prolog the character codes are the Unicode code values - the DCGs
+% looking at individual characters of a Java identifier expect this.
 %
-% We will have to examine the unicode code values of any characters to decide
-% whether a sequence of characters from a valid Java identifier, so using the
-% character code representation is necessary in any case, as opposed to using 
-% the character representation.
-% 
 % To generate list of character codes from literals, the backquote notation
 % can be used:
 %
@@ -4203,12 +4153,11 @@ dir_per_line([H|T]) -->
 % So we do that.
 % ===
 
-% ===========================================================================
-%! jpl_entityname_rel_jpltype(?Type:term,+Mode:atom)//2
+% jpl_entity_name//1
 %
-% Relate a Java-side "entity name" (a String as returned by Class.getName()
-% and which is found in the DCG accumulator as a list of Unicode code values)
-% to JPL's Prolog-side "type term". 
+% Relate a Java-side "entity name" (a String as returned by Class.getName())
+% (in the DCG accumulator as a list of Unicode code values) to JPL's
+% Prolog-side "type term". 
 % 
 % For example:
 %
@@ -4217,78 +4166,76 @@ dir_per_line([H|T]) -->
 %         "java.util.Date"                 class([java,util],['Date'])
 % ~~~
 % 
-% The `Mode` argument indicates whether the "entiy name" uses
+% @see https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
 %
-% - The "dotty" form, whereby which package names contain dots. This is the
-%   usual form, found in binaries and returned by Class.getName()
-%
-% - The "slashy" form, whereby which package names contain slashes. This
-%   is used by JNI's FindClass function.
-%
-% Java Documentation at Oracle for the "dotty" form:
-%
-% https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
-%
-% JNI Documentation for the "slashy" form: 
-%
-% https://docs.oracle.com/en/java/javase/14/docs/specs/jni/functions.html#findclass
-%
-% Example for getName() calls:
+% Example for getName() calls generating entity names
 %
 % ~~~
-% class Test {
-%  
-%    public static void main(String[] argv) {
-%       System.out.println(  String.class.getName() );
-%       System.out.println(  byte.class.getName() );
-%       System.out.println(  (new Object[3][4]).getClass().getName() );
-%       System.out.println(  (new int[3][4]).getClass().getName() );
-%       System.out.println(  void.class.getName() );
-%    }
+%
+% class TJ {
+%   public static final void main(String[] argv) {
+%
+%      System.out.println(void.class.getName());        // void
+%      System.out.println(Void.TYPE.getName());         // void
+%      System.out.println(Void.class.getName());        // java.lang.Void
+%
+%      System.out.println(char.class.getName());        // char 
+%      System.out.println(Character.TYPE.getName());    // char
+%      System.out.println(Character.class.getName());   // java.lang.Character
+%      System.out.println(Character.valueOf('x').getClass().getName());  // java.lang.Character
+%
+%      System.out.println(int[].class.getName());                               // [I
+%      System.out.println((new int[4]).getClass().getName());                   // [I
+%      int[] a = {1,2,3}; System.out.println(a.getClass().getName());           // [I
+%
+%      System.out.println(int[][].class.getName());                             // [[I
+%      System.out.println((new int[4][4]).getClass().getName());                // [[I
+%      int[][] aa = {{1},{2},{3}}; System.out.println(aa.getClass().getName()); // [[I
+%
+%      System.out.println(Integer[][].class.getName());                             // [[Ljava.lang.Integer;
+%      System.out.println((new Integer[4][4]).getClass().getName());                // [[Ljava.lang.Integer;
+%      Integer[][] bb = {{1},{2},{3}}; System.out.println(bb.getClass().getName()); // [[Ljava.lang.Integer;
+%
+%   }
 % }
-%
-% The above generates:
-%
-% java.lang.String
-% byte
-% [[Ljava.lang.Object;
-% [[I
-% void
 % ~~~
-% ===========================================================================
-
-% ---
-% THE TOP OF ENTITY NAMES PARSING
-%
-% We can enumerate the possible "type terms" directly except for the 
-% primitives. This helps in clause selection and documentation.
-%
-% Not sure where the cases for "a primitive not inside an array" ever occur.
-% Note that the fact that the last two clauses T are not tagged as 
-% "primitive()" makes this representation somewhat nonuniform. Bad!
+% 
+% Note that We can list the possible "jpl type terms" directly in the head of
+% jpl_entity_name//1 (except for the primitives). This helps in clause selection
+% and documentation. Note that the fact that the last two clauses T are not tagged as 
+% "primitive()" makes this representation nonuniform; should be fixed at some time.
 % ---
 
-jpl_entityname_rel_jpltype(class(Ps,Cs),Mode) --> jpl_classname(class(Ps,Cs),Mode),!.
-jpl_entityname_rel_jpltype(array(T),Mode)     --> jpl_array_typedescriptor(array(T),Mode),!.
-jpl_entityname_rel_jpltype(void,_)            --> jpl_void_at_toplevel(void),!.
-jpl_entityname_rel_jpltype(P,_)               --> jpl_primitive_at_toplevel(P). 
+jpl_entity_name(class(Ps,Cs)) --> jpl_classname(class(Ps,Cs),dotty),!.
+jpl_entity_name(array(T))     --> jpl_array_type_descriptor(array(T),dotty),!.
+jpl_entity_name(void)         --> "void",!.
+jpl_entity_name(P)            --> jpl_primitive_entity_name(P). 
 
 % ---
-% THE TOP OF RECOGNIZING SLASHY TYPE DESCRIPTORS
-% This is the replacement for the old `jpl_type_descriptor_1//1`
-% It basically seems to be using the same serialized format as the
-% one for arrays (but in slashy mode), so we use that directly.
-% It can also understand a method descriptor.
+% The "findclass descriptor" is used for the JNI function FindClass and is
+% either an array type descriptor with a "slashy" package name or directly
+% a classname, also with a "slasgy" package name
 % ---
 
-jpl_typeterm_rel_slashy_typedesc(class(Ps,Cs)) --> jpl_fielddescriptor(class(Ps,Cs),slashy),!.
-jpl_typeterm_rel_slashy_typedesc(array(T))     --> jpl_fielddescriptor(array(T),slashy),!.
-jpl_typeterm_rel_slashy_typedesc(method(Ts,T)) --> jpl_method_descriptor(method(Ts,T)),!.
-jpl_typeterm_rel_slashy_typedesc(T)            --> jpl_fielddescriptor(T,slashy).
+jpl_findclass_descriptor(array(T))     --> jpl_array_type_descriptor(array(T),slashy),!.
+jpl_findclass_descriptor(class(Ps,Cs)) --> jpl_classname(class(Ps,Cs),slashy).
+
+% ---
+% The "method descriptor" is used to find a method ID based on the method
+% signature. It contains method arguments and type of method return value
+% ---
+
+jpl_method_descriptor(method(Ts,T)) --> "(", jpl_method_descriptor_args(Ts), ")", jpl_method_descriptor_retval(T).
+
+jpl_method_descriptor_args([T|Ts]) --> jpl_field_descriptor(T,slashy), !, jpl_method_descriptor_args(Ts).
+jpl_method_descriptor_args([]) --> [].
+
+jpl_method_descriptor_retval(void) --> "V".
+jpl_method_descriptor_retval(T) --> jpl_field_descriptor(T,slashy).
 
 % ---
 % The "binary classname" (i.e. the classname as it appears in binaries) as
-% specified in The Java™ Language Specification.
+% specified in The "Java Language Specification".
 % See "Binary Compatibility" - "The Form of a Binary"
 % https://docs.oracle.com/javase/specs/jls/se14/html/jls-13.html#jls-13.1
 % which points to the "fully qualified name" and "canonical name"
@@ -4302,7 +4249,9 @@ jpl_classname(class(Ps,Cs),Mode) --> jpl_package_parts(Ps,Mode), jpl_class_parts
 
 % ---
 % The qualified name of the package (which may be empty if it is the
-% unnamed package). This is a series of Java identifiers separated by dots.
+% unnamed package). This is a series of Java identifiers separated by dots, but
+% in order to reduce codesize, we switch to the "slash" separator depending
+% on a second argument, the mode, which is either "dotty" or "slashy".
 % "The fully qualified name of a named package that is not a subpackage of a
 % named package is its simple name." ... "A simple name is a single identifier."
 % https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.7
@@ -4346,6 +4295,23 @@ jpl_class_parts(Cs) --> { var(Cs), ! },                % guard
                         jpl_java_type_id(A),           % grab an id including its '$'
                         { messy_dollar_split(A,Cs) }.  % split it along '$' 
 
+
+% ---
+% "field descriptors" appear in method signatures or inside array type
+% descriptors (which are itself field descriptors)
+% ---
+
+jpl_field_descriptor(class(Ps,Cs),Mode)  --> jpl_reference_type_descriptor(class(Ps,Cs),Mode),!.
+jpl_field_descriptor(array(T),Mode)      --> jpl_array_type_descriptor(array(T),Mode),!.
+jpl_field_descriptor(T,_)                --> jpl_primitive_type_descriptor(T). % sadly untagged with primitive(_) in the head
+
+jpl_reference_type_descriptor(class(Ps,Cs),Mode) --> "L", jpl_classname(class(Ps,Cs),Mode), ";".
+
+jpl_array_type_descriptor(array(T),Mode) --> "[", jpl_field_descriptor(T,Mode).
+
+% ---
+% Breaking a bare classname at the '$' 
+% ---
 % Heuristic: Only a '$' flanked to the left by a valid character
 % that is a non-dollar and to the right by a valid character that
 % may or may not be a dollar gives rise to split.
@@ -4384,36 +4350,9 @@ triple_process([_,C,''],Run,Runs,[[C|Run]|Runs]) :- !.
 
 triple_process([_,''],Run,Runs,[Run|Runs]).
 
-% ---
-% jpl_fielddescriptor//2
-% Described informally at Javadoc for Class.getName()
-% Note that the fact that the last T is not tagged as "primitive()" makes this
-% representation somewhat less than ideal. BAD!!
-% ---
-
-jpl_fielddescriptor(class(Ps,Cs),Mode)  --> jpl_reference_typedescriptor(class(Ps,Cs),Mode),!.
-jpl_fielddescriptor(array(T),Mode)      --> jpl_array_typedescriptor(array(T),Mode),!.
-jpl_fielddescriptor(T,_)                --> jpl_primitive_typedescriptor(T).
-
-jpl_reference_typedescriptor(class(Ps,Cs),Mode) --> "L", jpl_classname(class(Ps,Cs),Mode), ";".
-
-jpl_array_typedescriptor(array(T),Mode) --> "[", jpl_fielddescriptor(T,Mode).
-
-% ---
-% Rules for recognizng methods; called by jpl_typeterm_rel_slashy_typedesc//1 only
-% ---
-
-jpl_method_descriptor(method(Ts,T)) --> "(", jpl_method_descriptor_args(Ts), ")", jpl_method_descriptor_retval(T).
-
-jpl_method_descriptor_args([T|Ts]) --> jpl_typeterm_rel_slashy_typedesc(T), !, jpl_method_descriptor_args(Ts).
-jpl_method_descriptor_args([]) --> [].
-
-jpl_method_descriptor_retval(void) --> "V".
-jpl_method_descriptor_retval(T) --> jpl_typeterm_rel_slashy_typedesc(T).
-
-% ===========================================================================
-% Common low-level DCG rules
-% ===========================================================================
+% ===
+% Low-level DCG rules
+% ===
 
 % ---
 % A Java type identifier is a Java identifier different from "var" and "yield"
@@ -4453,42 +4392,35 @@ jpl_java_id_part_chars([C|Cs]) --> [C], { jpl_java_id_part_char(C) } ,!, jpl_jav
 jpl_java_id_part_chars([])     --> [].
 
 % ---
-% jpl_void_at_toplevel//1
-% No description found for this; empirical
-% ---
-
-jpl_void_at_toplevel(void) --> "void".
-
-% ---
 % jpl_primitive_in_array//1
 % Described informally in Javadoc for Class.getName()
 % https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
-% The left-hand side should really be tagged with primitive(boolean) etc.
+% The left-hand side should (the JPL type) really be tagged with primitive(boolean) etc.
 % ---
 
-jpl_primitive_typedescriptor(boolean) --> "Z",!.
-jpl_primitive_typedescriptor(byte)    --> "B",!.
-jpl_primitive_typedescriptor(char)    --> "C",!.
-jpl_primitive_typedescriptor(double)  --> "D",!.
-jpl_primitive_typedescriptor(float)   --> "F",!.
-jpl_primitive_typedescriptor(int)     --> "I",!.
-jpl_primitive_typedescriptor(long)    --> "J",!.
-jpl_primitive_typedescriptor(short)   --> "S".
+jpl_primitive_type_descriptor(boolean) --> "Z",!.
+jpl_primitive_type_descriptor(byte)    --> "B",!.
+jpl_primitive_type_descriptor(char)    --> "C",!.
+jpl_primitive_type_descriptor(double)  --> "D",!.
+jpl_primitive_type_descriptor(float)   --> "F",!.
+jpl_primitive_type_descriptor(int)     --> "I",!.
+jpl_primitive_type_descriptor(long)    --> "J",!.
+jpl_primitive_type_descriptor(short)   --> "S".
 
 % ---
-% jpl_primitive_at_toplevel//1
-% These are just the primitive names!
-% The left-hand side should really be tagged with primitive(boolean) etc.
+% jpl_primitive_entity_name//1
+% These are just the primitive names.
+% The left-hand side should (the JPL type) really be tagged with primitive(boolean) etc.
 % ---
 
-jpl_primitive_at_toplevel(boolean) --> "boolean" ,!.
-jpl_primitive_at_toplevel(byte)    --> "byte"    ,!.
-jpl_primitive_at_toplevel(char)    --> "char"    ,!.
-jpl_primitive_at_toplevel(double)  --> "double"  ,!.
-jpl_primitive_at_toplevel(float)   --> "float"   ,!.
-jpl_primitive_at_toplevel(int)     --> "int"     ,!.
-jpl_primitive_at_toplevel(long)    --> "long"    ,!.
-jpl_primitive_at_toplevel(short)   --> "short".
+jpl_primitive_entity_name(boolean) --> "boolean" ,!.
+jpl_primitive_entity_name(byte)    --> "byte"    ,!.
+jpl_primitive_entity_name(char)    --> "char"    ,!.
+jpl_primitive_entity_name(double)  --> "double"  ,!.
+jpl_primitive_entity_name(float)   --> "float"   ,!.
+jpl_primitive_entity_name(int)     --> "int"     ,!.
+jpl_primitive_entity_name(long)    --> "long"    ,!.
+jpl_primitive_entity_name(short)   --> "short".
 
 % ---
 % Certain java keywords that may not occur as java identifier
@@ -4551,7 +4483,7 @@ jpl_java_keyword(void).
 jpl_java_keyword(volatile).
 jpl_java_keyword(while).
 
-% ===========================================================================
+% ===
 % Classify codepoints (i.e. integers) as "Java identifier start/part characters"
 %
 % A "Java identifier" starts with a "Java identifier start character" and
@@ -4583,7 +4515,7 @@ jpl_java_keyword(while).
 %    first!
 %
 % 2) Is this slow or not? It depends on what the compiler does.
-% ===========================================================================
+% ===
 
 jpl_java_id_start_char(C) :-
    assertion(integer(C)),

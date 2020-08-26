@@ -70,18 +70,26 @@ test_jpl :-
      ,messy_dollar_split
      ,jpl_classname_without_dollar
      ,jpl_classname_with_dollar
-     ,jpl_entity_is_primitive
-     ,jpl_entity_is_array
-     ,compare_both_dotty
-     ,compare_both_slashy
-     ,compare_both_typedesc
-     ,generate_dotty
-     ,generate_slashy
-     ,generate_slashy_typedesc
+     ,jpl_entity_name
+     ,jpl_findclass_descriptor
+     ,jpl_method_descriptor
+     ,compare_old_and_new_entity_name
+     ,compare_old_and_new_findclass_descriptor
+     ,compare_both_field_descriptors
      ,jpl_type_to_classname
      ,jpl_classname_to_type
      ,safe_type_to_classname
     ]).
+
+
+% ---
+% Switch these on for some output in the logfile (build/Testing/Temporary/LastTest.log)
+% ---
+
+% :- debug(identifier_chars).
+% :- debug(java_id).
+% :- debug(run_both).
+% :- debug(dcg_mangle).
 
 :- begin_tests(jpl).
 
@@ -1317,13 +1325,6 @@ test(jref2,
          * Testing recognizing/parsing  *
          *******************************/
 
-% Switch these on for some output
-
-% :- debug(identifier_chars).
-% :- debug(java_id).
-% :- debug(run_both).
-% :- debug(generate).
-
 % ===========================================================================
 % Some helper functions
 % ===========================================================================
@@ -1361,83 +1362,75 @@ reify(Goal,Truth) :-
 if_then(Condition,Then) :-
    call(Condition) -> call(Then) ; true.
 
-% ===========================================================================
-% Recognize the descriptor in "In" (an atom)
-% - by calling "DcgGoal" augmented with the two arguments "TypeTerm"
-%   (generally a freshvar that captures the result of recognition)
-%   and "Mode" (one of slashy or dotty).
-% - leaving "Rest" (an atom) as leftover characters (or unify-comparing it if set)
-% - instantiating "TypeTerm" to the strutured result (or unify-comnparing it if set)
-% ===========================================================================
-
-% DcgGoal can be an atom (indicating a predicate w/o arity)
-% It can also be a qualified atom x:y (indicating a predicate from a dedicated package)
-
 % --- 
-% Remove the module from an atomic goal "M:G" (a compound), giving separate "M" and "G", 
-% if the goal is qualified. If not, nothing happens, "M" remains a freshvar.
+% Add/Remove the module from an atomic goal "M:G" (a compound), giving separate "M" and "G", 
+% if the goal is qualified. If not, nothing happens, "M" remains a freshvar. 
+% Runs in "both directions"
 % ---
 
-module_off(:(Module,BareGoal),Module,BareGoal) :- !.
-
-module_off(Goal,_,Goal) :- atomic(Goal),!.
-
-% --- 
-% Add the module "M" to an atomic goal "G", forming a qualified goal "M:G" (a compound),
-% if "M" is not a freshvar. Otherwise nothing happens and the goal "G" stays as it was.
-% ---
-
-module_on(BareGoal,Module,:(Module,BareGoal)) :- nonvar(Module),!.
-
-module_on(Goal,Module,Goal) :- var(Module),!.
+module_name_on_off(:(ModuleName,UnqualifiedGoal),ModuleName,UnqualifiedGoal) :- atomic(ModuleName),!,nonvar(UnqualifiedGoal).
+module_name_on_off(Goal,UnusedModuleName,Goal) :- var(UnusedModuleName),nonvar(Goal).
 
 % ---
 % Dynamically call a DCG, "DcgGoal", parsing "In" into (a structure) "Out",
 % with "Rest" remaining. We are parsing some Java class names or descriptors
-% and "Mode" indicates what we really expect: "slashy", "dotty" or "typedesc"
-% as input.
+% and "Mode" indicates what we really expect: "slashy", "dotty" as input.
+% Note that "DcgGoal" is augmented with the two arguments "Out"
+% (generally a freshvar that captures the result of recognition) and "Mode"
+% (one of slashy or dotty).
 % ---
 
 dcg_parse_moded(In,Rest,DcgGoal,Out,Mode) :-
    assertion(nonvar(In)),
-   assertion(memberchk(Mode,[slashy,dotty,typedesc])),
-   atom_codes(In,InCodes),
-   module_off(DcgGoal,Module,BareGoal),
+   assertion(memberchk(Mode,[slashy,dotty])),
+   module_name_on_off(DcgGoal,ModuleName,UnqualifiedGoal),
    compound_name_arguments(
-      DcgGoalExt,
-      BareGoal,
+      UnqualifiedGoalExtended,
+      UnqualifiedGoal,
       [Out,Mode]),
-   module_on(DcgGoalExt,Module,QualifiedGoal),
-   phrase(QualifiedGoal,InCodes,RestCodes),
+   module_name_on_off(DcgGoalNew,ModuleName,UnqualifiedGoalExtended),
+   atom_codes(In,InCodes),
+   phrase(DcgGoalNew,InCodes,RestCodes),
    atom_codes(Rest,RestCodes).
 
 % ---
 % Dynamically call a DCG, "DcgGoal", parsing "In" into (a structure) "Out",
-% with "Rest" remaining. We are parsing some Java class names or descriptors.
-% There is no mode, as "DcgGoal" is assumed to be mode-specific.
+% with "Rest" remaining (or the converse). We are parsing some Java class names
+%  or descriptors. There is no mode, as "DcgGoal" is assumed to not be mode-dependent.
 % ---
 
-dcg_parse(In,Rest,DcgGoal,Out) :-
-   assertion(nonvar(In)),
-   atom_codes(In,InCodes),
-   module_off(DcgGoal,Module,BareGoal),
+dcg_mangle(JavaSide,Rest,DcgGoal,JplSide) :-
+   assertion(nonvar(JavaSide);nonvar(JplSide)),
+   assertion(nonvar(DcgGoal)),
+   % extend DcgGoal with the "JplSide" argument
+   module_name_on_off(DcgGoal,ModuleName,UnqualifiedGoal),
    compound_name_arguments(
-      DcgGoalExt,
-      BareGoal,
-      [Out]),
-   module_on(DcgGoalExt,Module,QualifiedGoal),
-   phrase(QualifiedGoal,InCodes,RestCodes),
+      UnqualifiedGoalExtended,
+      UnqualifiedGoal,
+      [JplSide]),
+   module_name_on_off(DcgGoalNew,ModuleName,UnqualifiedGoalExtended),
+   % Branch on whether it's Java->Jpl or Jpl->Java 
+   (nonvar(JavaSide) 
+       -> 
+       (dcg_parse_from_java(JavaSide,Rest,DcgGoalNew), debug(dcg_mangle,"~q => ~q",[JavaSide,JplSide]))
+       ;
+       (dcg_generate_from_jpl(JavaSide,DcgGoalNew), debug(dcg_mangle,"~q => ~q",[JplSide,JavaSide]))).
+
+dcg_parse_from_java(JavaSide,Rest,DcgGoal) :- % JplSide has been buried in DcgGoal
+   atom_codes(JavaSide,JavaSideCodes),
+   phrase(DcgGoal,JavaSideCodes,RestCodes),
    atom_codes(Rest,RestCodes).
 
-generate(TypeTerm,DcgGoal,Out) :-
-   assertion(nonvar(TypeTerm)),
-   compound_name_arguments(
-      DcgGoalCompleted,
-      DcgGoal,
-      [TypeTerm]),
-   phrase(DcgGoalCompleted,OutCodes),
-   atom_codes(Out,OutCodes),
-   debug(generate,"Transformed structure '~q' to atom '~s'",[TypeTerm,Out]).
+dcg_generate_from_jpl(JavaSide,DcgGoal) :- % JplSide has been buried in DcgGoal
+   phrase(DcgGoal,JavaSideCodes),
+   atom_codes(JavaSide,JavaSideCodes).
+
+% ===========================================================================
+% Calling jpl_field_descriptor//2 in dotty or slashy mode
+% ===========================================================================
+
+jpl_field_descriptor_dotty(T)  --> jpl:jpl_field_descriptor(T,dotty).
+jpl_field_descriptor_slashy(T) --> jpl:jpl_field_descriptor(T,slashy).
 
 % ===========================================================================
 % Code used to compare the results of the old calls and the new calls
@@ -1451,47 +1444,29 @@ outcome(true ,X,success(X)).
 outcome(false,_,failure).
 
 % ---
-% Select which "old DCG predicate" (the ones in the old jpl code embedded
-% in this file) to call
+% Run the old call and the new call with input "JavaSide".
+% The NewDcg and OldDcg are names of 1-arg DCGs.a
+% ReifNew : output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
+% ReifOld : output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
 % ---
 
-old_goal_by_mode(slashy   , jpl_type_findclassname ). % jpl_type_findclassname//1
-old_goal_by_mode(dotty    , jpl_type_classname_1   ). % jpl_type_classname_1//1
-old_goal_by_mode(typedesc , jpl_type_descriptor_1  ). % jpl_type_descriptor_1//1
-
-% ---
-% New DCG predicates
-% ---
-
-new_goal_by_mode(slashy   , new_slashy).
-new_goal_by_mode(dotty    , new_dotty).
-new_goal_by_mode(typedesc , new_typedesc).
-
-% Indirection for new calls; easier than constructing the goal
-
-new_slashy(T)   --> jpl:jpl_entityname_rel_jpltype(T,slashy).
-new_dotty(T)    --> jpl:jpl_entityname_rel_jpltype(T,dotty).
-new_typedesc(T) --> jpl:jpl_typeterm_rel_slashy_typedesc(T).
-
-% ---
-% Run the old call and the new call with input "In"
-% ---
-
-run_both(In,OutNew,OutOld,Mode) :-
-   new_goal_by_mode(Mode,NewGoal),
+run_both(JavaSide,NewDcg,OldDcg,ReifNew,ReifOld) :-
    reify(
-      dcg_parse(In,'',NewGoal,TypeTermNew),
+      dcg_mangle(JavaSide,'',NewDcg,JplSideNew),
       SuccessNew),
-   old_goal_by_mode(Mode,OldGoal),
    reify(
-      dcg_parse(In,'',OldGoal,TypeTermOld),
+      dcg_mangle(JavaSide,'',OldDcg,JplSideOld),
       SuccessOld),
-   outcome(SuccessNew,TypeTermNew  ,OutNew),
-   outcome(SuccessOld,TypeTermOld  ,OutOld),
+   outcome(SuccessNew,JplSideNew,ReifNew),
+   outcome(SuccessOld,JplSideOld,ReifOld),
    if_then_else(
-      call(SuccessNew),debug(run_both,"~q : New   : ~q",[In,TypeTermNew]),debug(run_both,"~q : New failed",[In])),
+      call(SuccessNew),
+      debug(run_both,"~q : New   : ~q",[JavaSide,JplSideNew]),
+      debug(run_both,"~q : New failed",[JavaSide])),
    if_then_else(
-      call(SuccessOld),debug(run_both,"~q : Old   : ~q",[In,TypeTermOld]),debug(run_both,"~q : Old failed",[In])),
+      call(SuccessOld),
+      debug(run_both,"~q : Old   : ~q",[JavaSide,JplSideOld]),
+      debug(run_both,"~q : Old failed",[JavaSide])),
    call(once(SuccessNew;SuccessOld)). % at least one must have succeeded!
 
 % ===========================================================================
@@ -1559,34 +1534,45 @@ test("characters allowed as part but not as start of identifiers") :-
 
 :- begin_tests(java_id).
 
+the_dcg(jpl:jpl_java_id).
+
 test("recognize Java identifier (unconstrained Out), no rest", true([Out,Rest] == [my_identifier,''])) :-
-   dcg_parse('my_identifier',Rest,jpl:jpl_java_id,Out),
+   the_dcg(DCG),
+   dcg_mangle('my_identifier',Rest,DCG,Out),
    debug(java_id,"Recognized: ~q with rest: ~q",[Out,Rest]).
 
 test("recognize Java identifier (unconstrained Out), with rest", true([Out,Rest] == [my_identifier,'.dodododo'])) :-
-   dcg_parse('my_identifier.dodododo',Rest,jpl:jpl_java_id,Out),
+   the_dcg(DCG),
+   dcg_mangle('my_identifier.dodododo',Rest,DCG,Out),
    debug(java_id,"Recognized: ~q with rest: ~q",[Out,Rest]).
 
 test("recognize Java identifier of length 1, no rest", true([Out,Rest] == [m,''])) :-
-   dcg_parse('m',Rest,jpl:jpl_java_id,Out).
+   the_dcg(DCG),
+   dcg_mangle('m',Rest,DCG,Out).
 
 test("recognize Java identifier (Out already set to result), no rest", true(Rest == '')) :-
-   dcg_parse('my_identifier',Rest,jpl:jpl_java_id,'my_identifier').
+   the_dcg(DCG),
+   dcg_mangle('my_identifier',Rest,DCG,'my_identifier').
 
 test("recognize Java identifier (Out already set to result), with rest", true(Rest == '.dodododo')) :-
-   dcg_parse('my_identifier.dodododo',Rest,jpl:jpl_java_id,'my_identifier').
+   the_dcg(DCG),
+   dcg_mangle('my_identifier.dodododo',Rest,DCG,'my_identifier').
 
 test("starts with dash: not a Java identifier", fail) :-
-   dcg_parse('-my',_,jpl:jpl_java_id,_).
+   the_dcg(DCG),
+   dcg_mangle('-my',_,DCG,_).
 
 test("contains dash and thus is broken up", true([Out,Rest] == ['my','-my'])) :-
-   dcg_parse('my-my',Rest,jpl:jpl_java_id,Out).
+   the_dcg(DCG),
+   dcg_mangle('my-my',Rest,DCG,Out).
 
 test("empty atom is not a Java identifier", fail) :-
-   dcg_parse('',_,jpl:jpl_java_id,_).
+   the_dcg(DCG),
+   dcg_mangle('',_,DCG,_).
 
 test("valid identifier with differing Out", fail) :-
-   dcg_parse('my',_,jpl:jpl_java_id,'notmy').
+   the_dcg(DCG),
+   dcg_mangle('my',_,DCG,'notmy').
 
 :- end_tests(java_id).
 
@@ -1598,14 +1584,19 @@ test("valid identifier with differing Out", fail) :-
 
 :- begin_tests(java_type_id).
 
+the_dcg(jpl:jpl_java_type_id).
+
 test("recognize Java type identifier",true([Out,Rest] == [my_identifier,''])) :-
-   dcg_parse('my_identifier',Rest,jpl:jpl_java_type_id,Out).
+   the_dcg(DCG),
+   dcg_mangle('my_identifier',Rest,DCG,Out).
 
 test("reject bad Java type identifier 'var'",fail) :-
-   dcg_parse('var',_,jpl:jpl_java_type_id,_).
+   the_dcg(DCG),
+   dcg_mangle('var',_,DCG,_).
 
 test("java type identifier DOES NOT stop at '$'",true([Out,Rest] == ['foo$bar',''])) :-
-   dcg_parse('foo$bar',Rest,jpl:jpl_java_type_id,Out).
+   the_dcg(DCG),
+   dcg_mangle('foo$bar',Rest,DCG,Out).
 
 :- end_tests(java_type_id).
 
@@ -1648,297 +1639,346 @@ test(9,true(Runs == ['$$alfa','$bravo','$$charlie','$$$'])) :-
 % ===========================================================================
 % Testing recognition of the "binary classname", i.e. the classname
 % as it appears in binaries (in its 'dotty' form)
+% This calls the actual DCG parsing the binary classname, not the predicate
+% eventually calling it.
 % ===========================================================================
 
 :- begin_tests(jpl_classname_without_dollar).
 
+the_dcg(jpl:jpl_classname).
+
 test("simple classname",true(Out == class([],[foo]))) :-
-   dcg_parse_moded('foo','',jpl:jpl_classname,Out,dotty).
+   the_dcg(DCG),
+   dcg_parse_moded('foo','',DCG,Out,dotty). 
 
 test("qualified classname",true(Out == class([alfa,bravo,charlie],[foo]))) :-
-   dcg_parse_moded('alfa.bravo.charlie.foo','',jpl:jpl_classname,Out,dotty).
+   the_dcg(DCG),
+   dcg_parse_moded('alfa.bravo.charlie.foo','',DCG,Out,dotty).
 
 :- end_tests(jpl_classname_without_dollar).
 
 % ===========================================================================
 % Testing recognition of the "binary classname" with "$" inside.
-% Note that "splitting at a dollar is ill-defined and pointless and
-% should eventually disappear.
+% Note that "splitting at a dollar is ill-defined and should eventually disappear.
 % ===========================================================================
 
 :- begin_tests(jpl_classname_with_dollar).
 
+the_dcg(jpl:jpl_classname).
+
 test("qualified inner member type",true(Out == class([alfa,bravo,charlie],[foo,bar]))) :-
-   dcg_parse_moded('alfa.bravo.charlie.foo$bar','',jpl:jpl_classname,Out,dotty).
+   the_dcg(DCG),
+   dcg_parse_moded('alfa.bravo.charlie.foo$bar','',DCG,Out,dotty).
 
 test("qualified inner anonymous type",true(Out == class([alfa,bravo,charlie],[foo,'01234']))) :-
-   dcg_parse_moded('alfa.bravo.charlie.foo$01234','',jpl:jpl_classname,Out,dotty).
+   the_dcg(DCG),
+   dcg_parse_moded('alfa.bravo.charlie.foo$01234','',DCG,Out,dotty).
 
 test("qualified inner local class",true(Out == class([alfa,bravo,charlie],[foo,'01234bar']))) :-
-   dcg_parse_moded('alfa.bravo.charlie.foo$01234bar','',jpl:jpl_classname,Out,dotty).
+   the_dcg(DCG),
+   dcg_parse_moded('alfa.bravo.charlie.foo$01234bar','',DCG,Out,dotty).
 
 test("qualified inner member type, deep",true(Out == class([alfa,bravo,charlie],[foo,bar,baz,quux]))) :-
-   dcg_parse_moded('alfa.bravo.charlie.foo$bar$baz$quux','',jpl:jpl_classname,Out,dotty).
+   the_dcg(DCG),
+   dcg_parse_moded('alfa.bravo.charlie.foo$bar$baz$quux','',DCG,Out,dotty).
 
 :- end_tests(jpl_classname_with_dollar).
 
 % ===========================================================================
-% Testing Java entityname <-> typeterm mapping for some primitives
+% Testing Java entityname <-> JPL type (success)
+% Use assertion magic: on assertion failure, the unit test does not fail
+% immediately.
 % ===========================================================================
 
-:- begin_tests(jpl_entity_is_primitive).
+:- begin_tests(jpl_entity_name).
 
-test("entityname is just 'int': integer primitive",true(Out == int)) :-
-   dcg_parse_moded('int','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
+the_dcg(jpl:jpl_entity_name).
 
-test("entityname is just 'void': void primitive",true(Out == void)) :-
-   dcg_parse_moded('void','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
+the_tests([
+   q( int                       , int ),
+   q( integer                   , class([],[integer]) ),
+   q( void                      , void ),
+   q( char                      , char ),
+   q( double                    , double ),
+   q( '[D'                      , array(double) ),
+   q( '[[I'                     , array(array(int)) ),
+   q( 'java.lang.String'        , class([java,lang],['String'])),
+   q( '[Ljava.lang.String;'     , array(class([java,lang],['String']))),
+   q( '[[Ljava.lang.String;'    , array(array(class([java, lang], ['String']))) ), 
+   q( '[[[Ljava.util.Calendar;' , array(array(array(class([java,util],['Calendar'])))))
+]).
 
-test("entityname is actually 'integer', which is a class called 'integer', which is ok!",true(Out == class([],[integer]))) :-
-   dcg_parse_moded('integer','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
+test("Java entity name to JPL type") :-
+   the_tests(L),
+   the_dcg(DCG),
+   maplist({DCG}/[q(EN,T)]>>assertion((dcg_mangle(EN,'',DCG,Out),Out == T)),L).
 
-:- end_tests(jpl_entity_is_primitive).
-
-% ===========================================================================
-% Testing Java entityname <-> typeterm mapping for arrays
-% ===========================================================================
-
-:- begin_tests(jpl_entity_is_array).
-
-test("array of double",true(Out == array(double))) :-
-   dcg_parse_moded('[D','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
-
-test("array of array of integer",true(Out == array(array(int)))) :-
-   dcg_parse_moded('[[I','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
+test("JPL type to Java entity name") :-
+   the_tests(L),
+   the_dcg(DCG),
+   maplist({DCG}/[q(EN,T)]>>assertion((dcg_mangle(Out,'',DCG,T),Out == EN)),L).
 
 test("array of void",fail) :-
-   dcg_parse_moded('[[V','',jpl:jpl_entityname_rel_jpltype,_,dotty).
+   the_dcg(DCG),
+   dcg_mangle('[[V','',DCG,_).
 
-test("array of java.lang.String",true(Out == array(array(class([java, lang], ['String']))))) :-
-   dcg_parse_moded('[[Ljava.lang.String;','',jpl:jpl_entityname_rel_jpltype,Out,dotty).
+test("yield",fail) :-
+   the_dcg(DCG),
+   dcg_mangle('yield','',DCG,_).
 
-:- end_tests(jpl_entity_is_array).
+test("var",fail) :-
+   the_dcg(DCG),
+   dcg_mangle('var','',DCG,_).
+
+test("bad id with dash", fail) :-
+   the_dcg(DCG),
+   dcg_mangle(_,'',DCG,array(array(array(class([foo,bared],['-hello']))))).
+
+:- end_tests(jpl_entity_name).
 
 % ===========================================================================
-% Directly comparing old and new entityname <-> typeterm mapping
-% for "dotty" entity names
+% Testing Java findclass descriptor <-> JPL type
+% Use assertion magic: on assertion failure, the unit test does not fail
+% immediately.
 % ===========================================================================
 
-:- begin_tests(compare_both_dotty).
+:- begin_tests(jpl_findclass_descriptor).
 
-test("dotty/comparing #1" ,[blocked("Old response bad"),true(OutNew == OutOld)]) :-
-   run_both('int',OutNew,OutOld,dotty).    % Old: class([],[int])   ???
+the_dcg(jpl:jpl_findclass_descriptor).
 
-test("dotty/comparing #2" ,[blocked("Old response bad"),true(OutNew == OutOld)]) :-
-   run_both('float',OutNew,OutOld,dotty).  % Old: class([],[float]) ???
+the_tests([
+   q( '[D'                      , array(double) ),
+   q( '[[I'                     , array(array(int)) ),
+   q( 'java/lang/String'        , class([java,lang],['String'])),
+   q( '[Ljava/lang/String;'     , array(class([java,lang],['String']))),
+   q( '[[Ljava/lang/String;'    , array(array(class([java, lang], ['String']))) ), 
+   q( '[[[Ljava/util/Calendar;' , array(array(array(class([java,util],['Calendar'])))) )
+]).
 
-test("dotty/comparing #3" ,[blocked("Old response bad"),true(OutNew == OutOld)]) :-
-   run_both('void',OutNew,OutOld,dotty).   % Old: class([],[void])  ???
+test("Java findclass descriptor to JPL type") :-
+   the_tests(L),
+   the_dcg(DCG),
+   maplist({DCG}/[q(FCD,T)]>>assertion((dcg_mangle(FCD,'',DCG,Out),Out == T)),L).
+
+test("JPL type to Java findclass descriptor") :-
+   the_tests(L),
+   the_dcg(DCG),
+   maplist({DCG}/[q(FCD,T)]>>assertion((dcg_mangle(Out,'',DCG,T),Out == FCD)),L).
+
+test("no primitive in Java",fail) :-
+   the_dcg(DCG),
+   dcg_mangle(int,'',DCG,_).
+
+test("no primitive in JPL",fail) :-
+   the_dcg(DCG),
+   dcg_mangle(_,'',DCG,int).
+
+test("no void in Java",fail) :-
+   the_dcg(DCG),
+   dcg_mangle(void,'',DCG,_).
+
+test("no void in JPL",fail) :-
+   the_dcg(DCG),
+   dcg_mangle(_,'',DCG,void).
+
+test("no primitive descriptor (like I) in Java; in fact, it's a class name",true(T==class([],['I']))) :-
+   the_dcg(DCG),
+   dcg_mangle('I','',DCG,T).
+
+:- end_tests(jpl_findclass_descriptor).
+
+% ===========================================================================
+% Testing Java field descriptor <-> JPL type 
+% Use assertion magic: on assertion failure, the unit test does not fail
+% immediately.
+% ===========================================================================
+
+:- begin_tests(jpl_field_descriptor).
+
+the_dcg(jpl_field_descriptor_dotty).
+
+the_tests([
+   q( 'D'                       , double ),
+   q( 'I'                       , int ),
+   q( '[D'                      , array(double) ),
+   q( '[[I'                     , array(array(int)) ),
+   q( 'Ljava.lang.String;'      , class([java,lang],['String'])),
+   q( '[Ljava.lang.String;'     , array(class([java,lang],['String']))),
+   q( '[[Ljava.lang.String;'    , array(array(class([java, lang], ['String']))) ), 
+   q( '[[[Ljava.util.Calendar;' , array(array(array(class([java,util],['Calendar'])))) )
+]).
+
+test("Java field descriptor to JPL type") :-
+   the_tests(L),
+   the_dcg(DCG),
+   maplist({DCG}/[q(FD,T)]>>assertion((dcg_mangle(FD,'',DCG,Out),Out == T)),L).
+
+test("JPL type to Java field descriptor") :-
+   the_tests(L),
+   the_dcg(DCG),
+   maplist({DCG}/[q(FD,T)]>>assertion((dcg_mangle(Out,'',DCG,T),Out == FD)),L).
+
+test("no void on the left") :- 
+   the_dcg(DCG),
+   dcg_mangle(void,_,DCG,_).
+
+test("no void on the right") :- 
+   the_dcg(DCG),
+   dcg_mangle(v_,_,DCG,void).
+
+:- end_tests(jpl_field_descriptor).
+
+
+% ===========================================================================
+% Testing Java method descriptor <-> JPL type 
+% Use assertion magic: on assertion failure, the unit test does not fail
+% immediately.
+% ===========================================================================
+
+:- begin_tests(jpl_method_descriptor).
+
+the_dcg(jpl:jpl_method_descriptor).
+
+the_tests([
+   q( '()V', method([],void) ),
+   q( '(Ljava/lang/String;DD[Ljava/util/Calendar;)[[F', 
+      method([class([java,lang],['String']),double,double,array(class([java,util],['Calendar']))],array(array(float)))  )
+
+]).
+
+test("Java method descriptor to JPL type") :-
+   the_tests(L),
+   the_dcg(DCG),
+   maplist({DCG}/[q(MD,T)]>>assertion((dcg_mangle(MD,'',DCG,Out),Out == T)),L).
+
+test("JPL type to Java method descriptor") :-
+   the_tests(L),
+   the_dcg(DCG),
+   maplist({DCG}/[q(MD,T)]>>assertion((dcg_mangle(Out,'',DCG,T),Out == MD)),L).
+
+test("not a method descriptor",fail) :- 
+   the_dcg(DCG),
+   dcg_mangle('(void)void',_,DCG,_).
+
+:- end_tests(jpl_method_descriptor).
+
+% ===========================================================================
+% Directly comparing old and new Java entityname <-> JPL type mapping
+% ===========================================================================
+
+:- begin_tests(compare_old_and_new_entity_name).
+
+help_run_both(JavaSide,ReifNew,ReifOld) :-
+   run_both(
+      JavaSide,                % input
+      jpl:jpl_entity_name,     % name of new 1-arg DCG (in module jpl)
+      jpl_type_classname_1,    % name of old 1-arg DCG (included further below)
+      ReifNew,                 % output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
+      ReifOld).                % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
+
+test("comparing #1" ,[blocked("Old response bad"),true(ReifNew == ReifOld)]) :-   
+   help_run_both('int',ReifNew,ReifOld).    % Old: class([],[int])   ??? 
+
+test("comparing #2" ,[blocked("Old response bad"),true(ReifNew == ReifOld)]) :-
+   help_run_both('float',ReifNew,ReifOld).  % Old: class([],[float]) ???
+
+test("comparing #3" ,[blocked("Old response bad"),true(ReifNew == ReifOld)]) :-
+   help_run_both('void',ReifNew,ReifOld).   % Old: class([],[void])  ???
 
 test("old call gives wrong result #1") :-
-   run_both('foo.bar.baz.Foo$',success(OutNew),success(OutOld),dotty),
+   help_run_both('foo.bar.baz.Foo$',success(OutNew),success(OutOld)),
    OutNew == class([foo,bar,baz],['Foo$']),
    OutOld == class([foo,bar,baz],['Foo','']). % OLD IS WRONG
 
 test("failure on old call #2") :-
-   run_both('foo.bar.baz.$Foo',success(OutNew),failure,dotty), % OLD FAILS
+   help_run_both('foo.bar.baz.$Foo',success(OutNew),failure), % OLD FAILS
    OutNew == class([foo,bar,baz],['$Foo']).
 
-test("dotty/comparing 01" , true(OutNew == OutOld)) :-
-   run_both('java.lang.Integer',OutNew,OutOld,dotty).
+the_tests([ 
+   'java.lang.Integer',
+   'integer',
+   '[D',
+   '[[[[[I',
+   '[[J',
+   '[[Ljava.lang.String;',
+   'java.lang.String',
+   'Foo',
+   'foo.bar.baz.Foo',
+   'foo.bar.baz.Foo$Quux' ]).
 
-test("dotty/comparing 02" , true(OutNew == OutOld)) :-
-   run_both('integer',OutNew,OutOld,dotty). % The class called "integer" (not the primitive!)
+test("comparing several examples") :-
+   the_tests(L),
+   maplist([EN]>>assertion((help_run_both(EN,success(OutNew),success(OutOld)),OutNew == OutOld)),L).
 
-test("dotty/comparing 03" , true(OutNew == OutOld)) :-
-   run_both('[D',OutNew,OutOld,dotty).
-
-test("dotty/comparing 04" , true(OutNew == OutOld)) :-
-   run_both('[[[[[I',OutNew,OutOld,dotty).
-
-test("dotty/comparing 05" , true(OutNew == OutOld)) :-
-   run_both('[[J',OutNew,OutOld,dotty).
-
-test("dotty/comparing 06" , true(OutNew == OutOld)) :-
-   run_both('[[Ljava.lang.String;',OutNew,OutOld,dotty).
-
-test("dotty/comparing 07" , true(OutNew == OutOld)) :-
-   run_both('java.lang.String',OutNew,OutOld,dotty).
-
-test("dotty/comparing 08" , true(OutNew == OutOld)) :-
-   run_both('Foo',OutNew,OutOld,dotty).
-
-test("dotty/comparing 09" , true(OutNew == OutOld)) :-
-   run_both('foo.bar.baz.Foo',OutNew,OutOld,dotty).
-
-test("dotty/comparing 10" , true(OutNew == OutOld)) :-
-   run_both('foo.bar.baz.Foo$Quux',OutNew,OutOld,dotty).
-
-:- end_tests(compare_both_dotty).
+:- end_tests(compare_old_and_new_entity_name).
 
 % ===========================================================================
-% Directly comparing old and new entityname <-> typeterm mapping
-% for "slashy" entity names
+% Directly comparing old and new Java findclass descriptor <-> JPL type mapping
 % ===========================================================================
 
-:- begin_tests(compare_both_slashy).
+:- begin_tests(compare_old_and_new_findclass_descriptor).
 
-test("slashy/comparing 01" , true(OutNew == OutOld)) :-
-   run_both('java/lang/Integer',OutNew,OutOld,slashy).
+help_run_both(JavaSide,ReifNew,ReifOld) :-
+   run_both(
+      JavaSide,                       % input
+      jpl:jpl_findclass_descriptor,   % name of new 1-arg DCG (in module jpl)
+      jpl_type_findclassname,         % name of old 1-arg DCG (included further below)
+      ReifNew,                        % output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
+      ReifOld).                       % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
 
-test("slashy/comparing 02" , true(OutNew == OutOld)) :-
-   run_both('integer',OutNew,OutOld,slashy). % The class called "integer"
+the_tests([
+   'java/lang/Integer',
+   'integer',
+   '[D',
+   '[[[[[I',
+   '[[J',
+   '[[Ljava/lang/String;',
+   'java/lang/String',
+   'Foo',
+   'foo/bar/baz/Foo',
+   'foo/bar/baz/Foo$Quux' ]).
 
-test("slashy/comparing 03" , true(OutNew == OutOld)) :-
-   run_both('[D',OutNew,OutOld,slashy).
+test("comparing several examples") :-
+   the_tests(L),
+   maplist([FCD]>>assertion((help_run_both(FCD,success(OutNew),success(OutOld)),OutNew == OutOld)),L).
 
-test("slashy/comparing 04" , true(OutNew == OutOld)) :-
-   run_both('[[[[[I',OutNew,OutOld,slashy).
-
-test("slashy/comparing 05" , true(OutNew == OutOld)) :-
-   run_both('[[J',OutNew,OutOld,slashy).
-
-test("slashy/comparing 06" , true(OutNew == OutOld)) :-
-   run_both('[[Ljava/lang/String;',OutNew,OutOld,slashy).
-
-test("slashy/comparing 07" , true(OutNew == OutOld)) :-
-   run_both('java/lang/String',OutNew,OutOld,slashy).
-
-test("slashy/comparing 08" , true(OutNew == OutOld)) :-
-   run_both('Foo',OutNew,OutOld,slashy).
-
-test("slashy/comparing 09" , true(OutNew == OutOld)) :-
-   run_both('foo/bar/baz/Foo',OutNew,OutOld,slashy).
-
-test("slashy/comparing 10" , true(OutNew == OutOld)) :-
-   run_both('foo/bar/baz/Foo$Quux',OutNew,OutOld,slashy).
-
-:- end_tests(compare_both_slashy).
+:- end_tests(compare_old_and_new_findclass_descriptor).
 
 % ===========================================================================
 % Directly comparing old and new
 % ===========================================================================
 
-:- begin_tests(compare_both_typedesc).
+:- begin_tests(compare_both_field_descriptors).
 
-test("typedesc/comparing 03" , true(OutNew == OutOld)) :-
-   run_both('[D',OutNew,OutOld,typedesc).
+help_run_both(JavaSide,ReifNew,ReifOld) :-
+   run_both(
+      JavaSide,                       % input
+      jpl_field_descriptor_slashy,    % name of new 1-arg DCG (an indirection to one in module JPL)
+      jpl_type_descriptor_1,          % name of old 1-arg DCG (included further below)
+      ReifNew,                        % output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
+      ReifOld).                       % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
 
-test("typedesc/comparing 04" , true(OutNew == OutOld)) :-
-   run_both('[[[[[I',OutNew,OutOld,typedesc).
+the_tests([
+   '[D',
+   '[[[[[I',
+   '[[J',
+   '[[Ljava/lang/String;',
+   'Ljava/lang/String;',
+   'LFoo;',
+   'Lfoo/bar/baz/Foo;',
+   'Lfoo/bar/baz/Foo$Quux;'
+]).
 
-test("typedesc/comparing 05" , true(OutNew == OutOld)) :-
-   run_both('[[J',OutNew,OutOld,typedesc).
+test("comparing several examples") :-
+   the_tests(L),
+   maplist([FD]>>assertion((help_run_both(FD,success(OutNew),success(OutOld)),OutNew == OutOld)),L).
 
-test("typedesc/comparing 06" , true(OutNew == OutOld)) :-
-   run_both('[[Ljava/lang/String;',OutNew,OutOld,typedesc).
+:- end_tests(compare_both_field_descriptors).
 
-test("typedesc/comparing 07" , true(OutNew == OutOld)) :-
-   run_both('Ljava/lang/String;',OutNew,OutOld,typedesc).
-
-test("typedesc/comparing 08" , true(OutNew == OutOld)) :-
-   run_both('LFoo;',OutNew,OutOld,typedesc).
-
-test("typedesc/comparing 09" , true(OutNew == OutOld)) :-
-   run_both('Lfoo/bar/baz/Foo;',OutNew,OutOld,typedesc).
-
-test("typedesc/comparing 10" , true(OutNew == OutOld)) :-
-   run_both('Lfoo/bar/baz/Foo$Quux;',OutNew,OutOld,typedesc).
-
-test("typedesc/comparing 11" , true(OutNew == OutOld)) :-
-   run_both('([[Ljava/lang/String;Ljava/lang/Integer;JJ[D)D',OutNew,OutOld,typedesc).
-
-:- end_tests(compare_both_typedesc).
 
 % ===========================================================================
-% Generating "dotty classnames" (the ones found in binaries)
-% ===========================================================================
-
-:- begin_tests(generate_dotty).
-
-test("generate dotty 01", true(Out == int)) :-
-   generate(int,new_dotty,Out).
-
-test("generate dotty 02", true(Out == void)) :-
-   generate(void,new_dotty,Out).
-
-test("generate dotty 03", true(Out == double)) :-
-   generate(double,new_dotty,Out).
-
-test("generate dotty 04", true(Out == 'java.lang.String')) :-
-   generate(class([java,lang],['String']),new_dotty,Out).
-
-test("generate dotty 05", true(Out == '[Ljava.lang.String;')) :-
-   generate(array(class([java,lang],['String'])),new_dotty,Out).
-
-test("generate dotty 06", true(Out == '[[[Ljava.util.Calendar;')) :-
-   generate(array(array(array(class([java,util],['Calendar'])))),new_dotty,Out).
-
-test("generate dotty failure 01", fail) :-
-   generate(array(array(array(class([foo,bared],['-hello'])))),new_dotty,_).
-
-:- end_tests(generate_dotty).
-
-% ===========================================================================
-% Generating "slashy classnames" (the ones for JNI findclass)
-% ===========================================================================
-
-:- begin_tests(generate_slashy).
-
-test("generate slashy 01", true(Out == int)) :-
-   generate(int,new_slashy,Out).
-
-test("generate slashy 02", true(Out == void)) :-
-   generate(void,new_slashy,Out).
-
-test("generate slashy 03", true(Out == double)) :-
-   generate(double,new_slashy,Out).
-
-test("generate slashy 04", true(Out == 'java/lang/String')) :-
-   generate(class([java,lang],['String']),new_slashy,Out).
-
-test("generate slashy 05", true(Out == '[Ljava/lang/String;')) :-
-   generate(array(class([java,lang],['String'])),new_slashy,Out).
-
-test("generate slashy 06", true(Out == '[[[Ljava/util/Calendar;')) :-
-   generate(array(array(array(class([java,util],['Calendar'])))),new_slashy,Out).
-
-test("generate slashy failure 01", fail) :-
-   generate(array(array(array(class([foo,bared],['-hello'])))),new_slashy,_).
-
-:- end_tests(generate_slashy).
-
-% ===========================================================================
-% Generating "slashy type descriptors"
-% ===========================================================================
-
-:- begin_tests(generate_slashy_typedesc).
-
-test("generate slashy typedesc 01", true(Out == 'I')) :-
-   generate(int,new_typedesc,Out).
-
-test("generate slashy typedesc 02", [true(Out == 'V'),blocked("No 'void' in slashy typedesc, AFAIK")]) :-
-   generate(void,new_typedesc,Out).
-
-test("generate slashy typedesc 03", true(Out == 'D')) :-
-   generate(double,new_typedesc,Out).
-
-test("generate slashy typedesc 04", true(Out == 'Ljava/lang/String;')) :-
-   generate(class([java,lang],['String']),new_typedesc,Out).
-
-test("generate slashy typedesc 05", true(Out == '[Ljava/lang/String;')) :-
-   generate(array(class([java,lang],['String'])),new_typedesc,Out).
-
-test("generate slashy typedesc 06", true(Out == '[[[Ljava/util/Calendar;')) :-
-   generate(array(array(array(class([java,util],['Calendar'])))),new_typedesc,Out).
-
-test("generate slashy typedesc failure 01", fail) :-
-   generate(array(array(array(class([foo,bared],['-hello'])))),new_typedesc,_).
-
-:- end_tests(generate_slashy_typedesc).
-
-% ===========================================================================
-% Testing jpl_type_to_classname
+% Testing jpl_type_to_classname/2, the exported predicate.
+% This internally actually calls jpl_entity_name//2
 % ===========================================================================
 
 :- begin_tests(jpl_type_to_classname).
@@ -1970,7 +2010,8 @@ test("jpl_type_to_classname: unrecognized primitive", fail) :-
 :- end_tests(jpl_type_to_classname).
 
 % ===========================================================================
-% Testing jpl_classname_to_type
+% Testing jpl_classname_to_type/2, the exported predicate.
+% This internally actually calls jpl_entity_name//2 and performs caching
 % ===========================================================================
 
 :- begin_tests(jpl_classname_to_type).
@@ -1988,7 +2029,7 @@ test("jpl_classname_to_type: array of class", T == array(class([java,util],['Str
    jpl_classname_to_type('[Ljava.util.String;',T). 
 
 test("jpl_classname_to_type: array of primtive", T == array(byte)) :-
-   jpl_classname_to_type('[B'),T).
+   jpl_classname_to_type('[B',T).
 
 test("jpl_classname_to_type: unboxed primitive 1", T == byte) :-
    jpl_classname_to_type(byte,T). 
@@ -2005,7 +2046,7 @@ test("jpl_classname_to_type: void", T == void) :-
 :- end_tests(jpl_classname_to_type).
 
 % ===========================================================================
-% Testing safe_type_to_classname
+% Testing safe_type_to_classname, used in exceptions
 % ===========================================================================
 
 :- begin_tests(safe_type_to_classname).
