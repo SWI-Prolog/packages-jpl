@@ -70,10 +70,10 @@ test_jpl :-
      ,messy_dollar_split
      ,jpl_classname_without_dollar
      ,jpl_classname_with_dollar
-     ,jpl_entity_name
+     ,jpl_entityname
      ,jpl_findclass_descriptor
      ,jpl_method_descriptor
-     ,compare_old_and_new_entity_name
+     ,compare_old_and_new_entityname
      ,compare_old_and_new_findclass_descriptor
      ,compare_both_field_descriptors
      ,jpl_type_to_classname
@@ -1690,9 +1690,9 @@ test("qualified inner member type, deep",true(Out == class([alfa,bravo,charlie],
 % immediately.
 % ===========================================================================
 
-:- begin_tests(jpl_entity_name).
+:- begin_tests(jpl_entityname).
 
-the_dcg(jpl:jpl_entity_name).
+the_dcg(jpl:jpl_entityname).
 
 the_tests([
    q( int                       , int ),
@@ -1734,7 +1734,7 @@ test("bad id with dash", fail) :-
    the_dcg(DCG),
    dcg_mangle(_,'',DCG,array(array(array(class([foo,bared],['-hello']))))).
 
-:- end_tests(jpl_entity_name).
+:- end_tests(jpl_entityname).
 
 % ===========================================================================
 % Testing Java findclass descriptor <-> JPL type
@@ -1866,12 +1866,12 @@ test("not a method descriptor",fail) :-
 % Directly comparing old and new Java entityname <-> JPL type mapping
 % ===========================================================================
 
-:- begin_tests(compare_old_and_new_entity_name).
+:- begin_tests(compare_old_and_new_entityname).
 
 help_run_both(JavaSide,ReifNew,ReifOld) :-
    run_both(
       JavaSide,                % input
-      jpl:jpl_entity_name,     % name of new 1-arg DCG (in module jpl)
+      jpl:jpl_entityname,     % name of new 1-arg DCG (in module jpl)
       jpl_type_classname_1,    % name of old 1-arg DCG (included further below)
       ReifNew,                 % output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
       ReifOld).                % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
@@ -1910,7 +1910,7 @@ test("comparing several examples") :-
    the_tests(L),
    maplist([EN]>>assertion((help_run_both(EN,success(OutNew),success(OutOld)),OutNew == OutOld)),L).
 
-:- end_tests(compare_old_and_new_entity_name).
+:- end_tests(compare_old_and_new_entityname).
 
 % ===========================================================================
 % Directly comparing old and new Java findclass descriptor <-> JPL type mapping
@@ -1978,7 +1978,7 @@ test("comparing several examples") :-
 
 % ===========================================================================
 % Testing jpl_type_to_classname/2, the exported predicate.
-% This internally actually calls jpl_entity_name//2
+% This internally actually calls jpl_entityname//2
 % ===========================================================================
 
 :- begin_tests(jpl_type_to_classname).
@@ -2011,7 +2011,7 @@ test("jpl_type_to_classname: unrecognized primitive", fail) :-
 
 % ===========================================================================
 % Testing jpl_classname_to_type/2, the exported predicate.
-% This internally actually calls jpl_entity_name//2 and performs caching
+% This internally actually calls jpl_entityname//2 and performs caching
 % ===========================================================================
 
 :- begin_tests(jpl_classname_to_type).
