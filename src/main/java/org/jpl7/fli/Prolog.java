@@ -231,6 +231,10 @@ public final class Prolog {
 
 	public static native int attach_engine(engine_t e);
 
+	public static native int create_engine();
+
+	public static native int destroy_engine();
+
 	// misc.
 	public static native String get_c_lib_version();
 

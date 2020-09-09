@@ -351,9 +351,20 @@ static pthread_mutex_t jvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t pvm_init_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t jref_mutex     = PTHREAD_MUTEX_INITIALIZER;
 
+static pthread_key_t jpl_key;
+static int jpl_key_done = FALSE;
+
 static int jpl_syntax = JPL_SYNTAX_UNDEFINED; /* init sets
                                                  JPL_SYNTAX_TRADITIONAL or
                                                  JPL_SYNTAX_MODERN */
+
+#ifdef USE_WIN_EVENTS
+#define LOCK_ENGINES() EnterCriticalSection(&engines_mutex)
+#define UNLOCK_ENGINES() LeaveCriticalSection(&engines_mutex)
+#else
+#define LOCK_ENGINES() pthread_mutex_lock(&engines_mutex)
+#define UNLOCK_ENGINES() pthread_mutex_unlock(&engines_mutex)
+#endif
 
 /*=== common functions ==================================================== */
 
@@ -3581,6 +3592,84 @@ Java_org_jpl7_fli_Prolog_attach_1engine(JNIEnv *env, jclass jProlog,
   }
 }
 
+static void
+java_thread_done(void *ctx)
+{ PL_engine_t e = ctx;
+
+  (void)e;
+  Sdprintf("Warning: Java thread used Prolog.create_engine() but\n"
+	   "Warning: not call Prolog.destroy_engine()\n");
+}
+
+/*
+ * Class:     org_jpl7_fli_Prolog
+ * Method:    create_engine
+ * Signature: ()I
+ */
+JNIEXPORT int JNICALL
+Java_org_jpl7_fli_Prolog_create_1engine(JNIEnv *env, jclass jProlog)
+{ /* Create a permanent Prolog engine for the current Java thread
+   */
+
+  if (jpl_ensure_pvm_init(env))
+  { PL_engine_t e;
+
+    if ( PL_thread_self() == -1 )
+    { if ( !jpl_key_done )
+      { LOCK_ENGINES();
+	if ( !jpl_key_done )
+	{ pthread_key_create(&jpl_key, java_thread_done);
+	  jpl_key_done = TRUE;
+	}
+	UNLOCK_ENGINES();
+      }
+
+      if ( PL_thread_attach_engine(NULL) )
+      { PL_engine_t e;
+
+	PL_set_engine(PL_ENGINE_CURRENT, &e);
+	pthread_setspecific(jpl_key, e);
+	return 0;
+      }
+      return -1;			/* could not create engine */
+    } else if ( current_pool_engine_handle(&e) > 0 )
+    { return -2;			/* already attached to a pool engine */
+    } else
+    { Sdprintf("Already has engine %d\n", PL_thread_self());
+      return 0;
+    }
+  } else
+  { return -2;
+  }
+}
+
+
+/*
+ * Class:     org_jpl7_fli_Prolog
+ * Method:    destroy_engine
+ * Signature: ()I
+ */
+JNIEXPORT int JNICALL
+Java_org_jpl7_fli_Prolog_destroy_1engine(JNIEnv *env, jclass jProlog)
+{ /* Destroy the permanent Prolog engine for the current Java thread
+   */
+
+  if (jpl_ensure_pvm_init(env))
+  { PL_engine_t e;
+
+    if ( (e=pthread_getspecific(jpl_key)) )
+    { pthread_setspecific(jpl_key, NULL);
+      PL_thread_destroy_engine();
+      return 0;
+    } else
+    { return -1;
+    }
+  } else
+  { return -2;
+  }
+}
+
+
 /*
  * Class:         org_jpl7_fli_Prolog
  * Method:        close_query
@@ -4483,14 +4572,6 @@ create_pool_engines(void)
  * Method:    attach_pool_engine
  * Signature: ()Lorg/jpl7/fli/engine_t;
  */
-#ifdef USE_WIN_EVENTS
-#define LOCK_ENGINES() EnterCriticalSection(&engines_mutex)
-#define UNLOCK_ENGINES() LeaveCriticalSection(&engines_mutex)
-#else
-#define LOCK_ENGINES() pthread_mutex_lock(&engines_mutex)
-#define UNLOCK_ENGINES() pthread_mutex_unlock(&engines_mutex)
-#endif
-
 JNIEXPORT jobject JNICALL
 Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
 { jobject rval;
