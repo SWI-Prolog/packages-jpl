@@ -175,7 +175,7 @@ if(JNI_FOUND AND Java_FOUND)
     prepend(EXPL src/examples/prolog ${EXPL})
 
     set(EXJAVA
-        db factorial family semWeb system test testGC time zahed)
+        db factorial family semWeb system test testGC time zahed thread)
     prepend(EXJAVA src/examples/java ${EXJAVA})
 
     swipl_examples(FILES       ${EXPL}   SUBDIR prolog)
