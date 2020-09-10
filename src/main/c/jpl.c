@@ -3598,7 +3598,7 @@ java_thread_done(void *ctx)
 
   if ( e )
     Sdprintf("Warning: Java thread used Prolog.create_engine() but\n"
-	     "Warning: not call Prolog.destroy_engine()\n");
+	     "Warning: did not call Prolog.destroy_engine()\n");
 }
 
 /*
