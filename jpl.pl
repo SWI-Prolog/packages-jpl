@@ -315,7 +315,7 @@ jpl_call(X, Mspec, Params, R) :-
             ->  Kind = static
             ;   throwme(jpl_call,no_such_class(X))
             )
-        ;   throw(jpl_call,arg1_is_bad(X))
+        ;   throwme(jpl_call,arg1_is_bad(X))
         )
     ;   X = class(_,_)
     ->  Type = X,
