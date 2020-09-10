@@ -186,7 +186,7 @@ jpl_new_1(class(Ps,Cs), Params, Vx) :-
     ;   (   catch(
                 jpl_datums_to_types(Params, Taps),  % infer actual parameter types
                 % 2020-07-21: make catcher's 1st context arg an "anonvar" instead of a overspecified predicate indicator
-                error(type_error(acyclic,Te),context(_,Msg)), 
+                error(type_error(acyclic,Te),context(_,Msg)),
                 throwme(jpl_new_class,acyclic(Te,Msg)) % rethrow
             )
         ->  true
@@ -335,7 +335,7 @@ jpl_call(X, Mspec, Params, R) :-
     ->  (   catch(
                 jpl_datums_to_types(Params, Taps),
                 % 2020-07-21: make catcher's 1st context arg an "anonvar" instead of a overspecified predicate indicator
-                error(type_error(acyclic,Te),context(_,Msg)), 
+                error(type_error(acyclic,Te),context(_,Msg)),
                 throwme(jpl_call,acyclic(Te,Msg)) % rethrow
             )
         ->  true
@@ -810,7 +810,7 @@ jpl_set(X, Fspec, V) :-
         catch(
             jpl_set_instance(Type, Type, Obj, Fspec, V),    % first 'Type' is for FAI
             % 2020-07-21: make catcher's 1st context arg an "anonvar" instead of a overspecified predicate indicator
-            error(type_error(acyclic,Te),context(_,Msg)), 
+            error(type_error(acyclic,Te),context(_,Msg)),
             throwme(jpl_set,acyclic(Te,Msg)) % rethrow
         )
     ;   var(X)
@@ -4604,7 +4604,7 @@ exc_desc(jpl_call,not_a_jpl_term(X),
 % ---
 
 exc_desc(jpl_call_instance,no_such_method(M),
- 	 jpl_call/4,
+	 jpl_call/4,
 	 existence_error(method,M),
          'the class or object has no public methods with the given name and quantity of parameters').
 
@@ -4622,11 +4622,11 @@ exc_desc(jpl_call_instance,multiple_most_specific(M),
 
 exc_desc(jpl_call_static,no_such_method(M),
          jpl_call/4,
- 	 existence_error(method,M),
+	 existence_error(method,M),
          'the class has no public static methods with the given name and quantity of parameters').
 
 exc_desc(jpl_call_static,param_not_assignable(P),
- 	 jpl_call/4,
+	 jpl_call/4,
 	 type_error(method_params,P),
          'the actual parameters are not assignable to the formal parameters of any of the named methods').
 
@@ -4671,7 +4671,7 @@ exc_desc(jpl_get_static,arg2_is_var,
 
 exc_desc(jpl_get_static,arg2_is_bad(F),
 	 jpl_get/3,
- 	 type_error(field_name,F),
+	 type_error(field_name,F),
          '2nd arg must be an atom naming a public field of the class').
 
 exc_desc(jpl_get_static,no_such_field(F),
@@ -4720,7 +4720,7 @@ exc_desc(jpl_get_instance_array,arg2_is_bad(X),
 
 exc_desc(jpl_get_instance_array,arg2_is_too_large(X),
 	 jpl_get/3,
- 	 domain_error(array_index,X),
+	 domain_error(array_index,X),
          'when 1st arg is an array, integral 2nd arg must not exceed upper bound of array').
 
 exc_desc(jpl_get_instance_array,bad_range_low(R),
@@ -4761,7 +4761,7 @@ exc_desc(jpl_set,arg1_is_var,
          '1st arg must be an object, classname, descriptor or type').
 
 exc_desc(jpl_set,classname_does_not_resolve(X),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 existence_error(class,X),
          'the named class cannot be found').
 
@@ -4776,7 +4776,7 @@ exc_desc(jpl_set,acyclic(X,Msg),
          Msg).
 
 exc_desc(jpl_set,arg1_is_bad(X),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 domain_error(object_or_class,X),
          '1st arg must be an object, classname, descriptor or type').
 
@@ -4820,62 +4820,62 @@ exc_desc(jpl_set_instance_class,multiple_fields(Fname),
 % ---
 
 exc_desc(jpl_set_instance_array,arg3_is_var,
- 	 jpl_set/3,
+	 jpl_set/3,
 	 instantiation_error,
 	 'when 1st arg is an array, 3rd arg must be bound to a suitable element value or list of values').
 
 exc_desc(jpl_set_instance_array,arg2_is_var,
- 	 jpl_set/3,
+	 jpl_set/3,
 	 instantiation_error,
 	 'when 1st arg is an array, 2nd arg must be bound to an index or index range').
 
 exc_desc(jpl_set_instance_array,arg2_is_bad(FSpec),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 domain_error(array_index,FSpec),
 	 'when 1st arg is an array, an integral 2nd arg must be a non-negative index').
 
 exc_desc(jpl_set_instance_array,no_values(Fspec,Vs),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 domain_error(array_element(Fspec),Vs),
 	 'no values for array element assignment: needs one').
 
 exc_desc(jpl_set_instance_array,more_than_one_value(Fspec,Vs),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 domain_error(array_element(Fspec),Vs),
 	 'too many values for array element assignment: needs one').
 
 exc_desc(jpl_set_instance_array,too_few_values(N-M,Vs),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 domain_error(array_elements(N-M),Vs),
 	 'too few values for array range assignment').
 
 exc_desc(jpl_set_instance_array,too_many_values(N-M,Vs),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 domain_error(array_elements(N-M),Vs),
 	 'too many values for array range assignment').
 
 exc_desc(jpl_set_instance_array,bad_range_pair_values(N-M),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 domain_error(array_index_range,N-M),
 	 'array index range must be a non-decreasing pair of non-negative integers').
 
 exc_desc(jpl_set_instance_array,bad_range_pair_types(N-M),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 type_error(array_index_range,N-M),
 	 'array index range must be a non-decreasing pair of non-negative integers').
 
 exc_desc(jpl_set_instance_array,cannot_assign_to_final_field,
- 	 jpl_set/3,
+	 jpl_set/3,
 	 permission_error(modify,final_field,length),
 	 'cannot assign a value to a final field').
 
 exc_desc(jpl_set_instance_array,no_such_field(Fspec),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 existence_error(field,Fspec),
 	 'array has no field with that name').
 
 exc_desc(jpl_set_instance_array,arg2_is_bad_2(Fspec),
- 	 jpl_set/3,
+	 jpl_set/3,
 	 domain_error(array_index,Fspec),
 	 'when 1st arg is an array object, 2nd arg must be a non-negative index or index range').
 
@@ -4926,7 +4926,7 @@ exc_desc(jpl_set_array,not_all_values_assignable(T,Ds),
 exc_desc(jpl_set_array,not_all_values_convertible(T,Ds),
          jpl_set/3,
          type_error(array(T),Ds),
-  	 'not all values are convertible to Java values or references').
+	 'not all values are convertible to Java values or references').
 
 exc_desc(jpl_set_array,element_type_unknown(array_element_type,T),
          jpl_set/3,
