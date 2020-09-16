@@ -81,8 +81,8 @@ public final class Prolog {
 	public static final int COMPOUND = 7; // PL_TERM
 
 	public static final int LIST_NIL = 8; // PL_NIL
-	public static final int LIST_PAIR = 10; // PL_LIST_PAIR
 	public static final int BLOB = 9; // PL_BLOB
+	public static final int LIST_PAIR = 10; // PL_LIST_PAIR
 	public static final int DICT = 44; // PL_DICT
 
 	public static final int JBOOLEAN = 101;
@@ -109,10 +109,10 @@ public final class Prolog {
 	public static final int CVT_VARIABLE = 0x0040;
 	public static final int CVT_NUMBER = (CVT_INTEGER | CVT_FLOAT | CVT_RATIONAL);
 	public static final int CVT_ATOMIC = (CVT_NUMBER | CVT_ATOM | CVT_STRING);
-	public static final int CVT_ALL = 0x00ff;
-	public static final int BUF_DISCARDABLE = 0x0000;
-	public static final int BUF_RING = 0x0100;
-	public static final int BUF_MALLOC = 0x0200;
+	public static final int CVT_ALL = (CVT_ATOMIC | CVT_LIST);
+	public static final int BUF_DISCARDABLE = 0x00000;
+	public static final int BUF_STACK       = 0x01000;
+	public static final int BUF_MALLOC      = 0x02000;
 
 	/* syntax flavours */
 	public static final int SYNTAX_TRADITIONAL = 202;
