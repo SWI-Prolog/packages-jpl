@@ -3417,7 +3417,7 @@ static bool
 setPointerValue(JNIEnv *env, jobject jpointer_holder, pointer pv)
 { return jpointer_holder != NULL &&
          ((*env)->SetLongField(env, jpointer_holder, jPointerHolderValue_f,
-                               (long)pv),
+                               (jlong)pv),
           TRUE);
 }
 
