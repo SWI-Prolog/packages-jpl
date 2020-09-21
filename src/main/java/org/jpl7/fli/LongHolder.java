@@ -43,7 +43,7 @@ public class LongHolder {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || !(o instanceof LongHolder)) return false;
 		LongHolder that = (LongHolder) o;
 		return value == that.value;
 	}

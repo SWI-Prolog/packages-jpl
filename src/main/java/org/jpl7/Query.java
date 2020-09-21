@@ -562,7 +562,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 			Term BindingVarTerm = args[args.length - 1]; // the Query's last arg: a variable binding list; type Variable
 			String BindingVarName = ((Variable) BindingVarTerm).name; // its textual name ("Bindings" in example)
 
-			Term TermVar = args[args.length - 2]; // the Query's last arg: a variable binding list; type Variable
+//			Term TermVar = args[args.length - 2]; // the Query's last arg: a variable binding list; type Variable
 //			String TermVarName = ((Variable) TermVar).name; // its textual name ("Bindings" in example)
 
 			// SECOND, we store what B was bound to as JPL Compound list instance BindingVarValue

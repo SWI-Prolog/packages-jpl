@@ -168,7 +168,7 @@ public class Compound extends Term {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || !(o instanceof Compound)) return false;
 		Compound compound = (Compound) o;
 		return Arrays.equals(args, compound.args) &&
 				name.equals(compound.name);

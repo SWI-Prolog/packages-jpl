@@ -118,7 +118,7 @@ public class Variable extends Term {
 	 */
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || getClass() != o.getClass() || this.name.equals("_") || ((Variable) o).name.equals("_")) return false;
+		if (o == null || !(o instanceof Variable) || this.name.equals("_") || ((Variable) o).name.equals("_")) return false;
 		if (this == o) return true;
 		Variable variable = (Variable) o;
 		return name.equals(variable.name);

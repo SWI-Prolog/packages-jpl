@@ -112,7 +112,7 @@ public class Dict extends Term {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || !(o instanceof Dict)) return false;
 		Dict dict1 = (Dict) o;
 		return tag.equals(dict1.tag) &&
 				Objects.equals(map, dict1.map);
