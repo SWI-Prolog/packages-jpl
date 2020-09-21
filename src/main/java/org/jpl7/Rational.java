@@ -154,7 +154,7 @@ public class Rational extends Term {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || !(o instanceof Rational)) return false;
 		Rational rational = (Rational) o;
 		return numerator == rational.numerator &&
 				denominator == rational.denominator;

@@ -130,7 +130,7 @@ public class Integer extends Term {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || !(o instanceof Integer)) return false;
 		Integer that = (Integer) o;
 		if (this.bigValue == null && that.bigValue == null) { // both are long
 			return this.value == that.value;
