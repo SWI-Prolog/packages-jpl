@@ -102,6 +102,11 @@ if(JNI_FOUND AND Java_FOUND)
         C_INCLUDE_DIR ${JNI_INCLUDE_DIRS}
         PL_LIBS jpl.pl ${JPLCONFIG})
 
+    if(WIN32 AND CMAKE_COMPILER_IS_GNUCC)
+      set_target_properties(plugin_${jpl_module} PROPERTIES
+			    LINK_FLAGS "-Wl,--kill-at")
+    endif()
+
     if(JNIDIR)
         install(DIRECTORY DESTINATION ${JNIDIR})
         ilink(${CMAKE_INSTALL_PREFIX}/${SWIPL_INSTALL_ARCH_LIB}/${jpl_module}${JPLEXT}
