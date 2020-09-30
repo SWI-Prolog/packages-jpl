@@ -1362,9 +1362,9 @@ reify(Goal,Truth) :-
 if_then(Condition,Then) :-
    call(Condition) -> call(Then) ; true.
 
-% --- 
-% Add/Remove the module from an atomic goal "M:G" (a compound), giving separate "M" and "G", 
-% if the goal is qualified. If not, nothing happens, "M" remains a freshvar. 
+% ---
+% Add/Remove the module from an atomic goal "M:G" (a compound), giving separate "M" and "G",
+% if the goal is qualified. If not, nothing happens, "M" remains a freshvar.
 % Runs in "both directions"
 % ---
 
@@ -1409,9 +1409,9 @@ dcg_mangle(JavaSide,Rest,DcgGoal,JplSide) :-
       UnqualifiedGoal,
       [JplSide]),
    module_name_on_off(DcgGoalNew,ModuleName,UnqualifiedGoalExtended),
-   % Branch on whether it's Java->Jpl or Jpl->Java 
-   (nonvar(JavaSide) 
-       -> 
+   % Branch on whether it's Java->Jpl or Jpl->Java
+   (nonvar(JavaSide)
+       ->
        (dcg_parse_from_java(JavaSide,Rest,DcgGoalNew), debug(dcg_mangle,"~q => ~q",[JavaSide,JplSide]))
        ;
        (dcg_generate_from_jpl(JavaSide,DcgGoalNew), debug(dcg_mangle,"~q => ~q",[JplSide,JavaSide]))).
@@ -1447,7 +1447,7 @@ outcome(false,_,failure).
 % Run the old call and the new call with input "JavaSide".
 % The NewDcg and OldDcg are names of 1-arg DCGs.a
 % ReifNew : output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
-% ReifOld : output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
+% ReifOld : output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
 % ---
 
 run_both(JavaSide,NewDcg,OldDcg,ReifNew,ReifOld) :-
@@ -1649,7 +1649,7 @@ the_dcg(jpl:jpl_classname).
 
 test("simple classname",true(Out == class([],[foo]))) :-
    the_dcg(DCG),
-   dcg_parse_moded('foo','',DCG,Out,dotty). 
+   dcg_parse_moded('foo','',DCG,Out,dotty).
 
 test("qualified classname",true(Out == class([alfa,bravo,charlie],[foo]))) :-
    the_dcg(DCG),
@@ -1704,7 +1704,7 @@ the_tests([
    q( '[[I'                     , array(array(int)) ),
    q( 'java.lang.String'        , class([java,lang],['String'])),
    q( '[Ljava.lang.String;'     , array(class([java,lang],['String']))),
-   q( '[[Ljava.lang.String;'    , array(array(class([java, lang], ['String']))) ), 
+   q( '[[Ljava.lang.String;'    , array(array(class([java, lang], ['String']))) ),
    q( '[[[Ljava.util.Calendar;' , array(array(array(class([java,util],['Calendar'])))))
 ]).
 
@@ -1751,7 +1751,7 @@ the_tests([
    q( '[[I'                     , array(array(int)) ),
    q( 'java/lang/String'        , class([java,lang],['String'])),
    q( '[Ljava/lang/String;'     , array(class([java,lang],['String']))),
-   q( '[[Ljava/lang/String;'    , array(array(class([java, lang], ['String']))) ), 
+   q( '[[Ljava/lang/String;'    , array(array(class([java, lang], ['String']))) ),
    q( '[[[Ljava/util/Calendar;' , array(array(array(class([java,util],['Calendar'])))) )
 ]).
 
@@ -1788,7 +1788,7 @@ test("no primitive descriptor (like I) in Java; in fact, it's a class name",true
 :- end_tests(jpl_findclass_descriptor).
 
 % ===========================================================================
-% Testing Java field descriptor <-> JPL type 
+% Testing Java field descriptor <-> JPL type
 % Use assertion magic: on assertion failure, the unit test does not fail
 % immediately.
 % ===========================================================================
@@ -1804,7 +1804,7 @@ the_tests([
    q( '[[I'                     , array(array(int)) ),
    q( 'Ljava.lang.String;'      , class([java,lang],['String'])),
    q( '[Ljava.lang.String;'     , array(class([java,lang],['String']))),
-   q( '[[Ljava.lang.String;'    , array(array(class([java, lang], ['String']))) ), 
+   q( '[[Ljava.lang.String;'    , array(array(class([java, lang], ['String']))) ),
    q( '[[[Ljava.util.Calendar;' , array(array(array(class([java,util],['Calendar'])))) )
 ]).
 
@@ -1818,11 +1818,11 @@ test("JPL type to Java field descriptor") :-
    the_dcg(DCG),
    maplist({DCG}/[q(FD,T)]>>assertion((dcg_mangle(Out,'',DCG,T),Out == FD)),L).
 
-test("no void on the left") :- 
+test("no void on the left") :-
    the_dcg(DCG),
    dcg_mangle(void,_,DCG,_).
 
-test("no void on the right") :- 
+test("no void on the right") :-
    the_dcg(DCG),
    dcg_mangle(v_,_,DCG,void).
 
@@ -1830,7 +1830,7 @@ test("no void on the right") :-
 
 
 % ===========================================================================
-% Testing Java method descriptor <-> JPL type 
+% Testing Java method descriptor <-> JPL type
 % Use assertion magic: on assertion failure, the unit test does not fail
 % immediately.
 % ===========================================================================
@@ -1841,7 +1841,7 @@ the_dcg(jpl:jpl_method_descriptor).
 
 the_tests([
    q( '()V', method([],void) ),
-   q( '(Ljava/lang/String;DD[Ljava/util/Calendar;)[[F', 
+   q( '(Ljava/lang/String;DD[Ljava/util/Calendar;)[[F',
       method([class([java,lang],['String']),double,double,array(class([java,util],['Calendar']))],array(array(float)))  )
 
 ]).
@@ -1856,7 +1856,7 @@ test("JPL type to Java method descriptor") :-
    the_dcg(DCG),
    maplist({DCG}/[q(MD,T)]>>assertion((dcg_mangle(Out,'',DCG,T),Out == MD)),L).
 
-test("not a method descriptor",fail) :- 
+test("not a method descriptor",fail) :-
    the_dcg(DCG),
    dcg_mangle('(void)void',_,DCG,_).
 
@@ -1874,10 +1874,10 @@ help_run_both(JavaSide,ReifNew,ReifOld) :-
       jpl:jpl_entityname,     % name of new 1-arg DCG (in module jpl)
       jpl_type_classname_1,    % name of old 1-arg DCG (included further below)
       ReifNew,                 % output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
-      ReifOld).                % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
+      ReifOld).                % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
 
-test("comparing #1" ,[blocked("Old response bad"),true(ReifNew == ReifOld)]) :-   
-   help_run_both('int',ReifNew,ReifOld).    % Old: class([],[int])   ??? 
+test("comparing #1" ,[blocked("Old response bad"),true(ReifNew == ReifOld)]) :-
+   help_run_both('int',ReifNew,ReifOld).    % Old: class([],[int])   ???
 
 test("comparing #2" ,[blocked("Old response bad"),true(ReifNew == ReifOld)]) :-
    help_run_both('float',ReifNew,ReifOld).  % Old: class([],[float]) ???
@@ -1894,7 +1894,7 @@ test("failure on old call #2") :-
    help_run_both('foo.bar.baz.$Foo',success(OutNew),failure), % OLD FAILS
    OutNew == class([foo,bar,baz],['$Foo']).
 
-the_tests([ 
+the_tests([
    'java.lang.Integer',
    'integer',
    '[D',
@@ -1924,7 +1924,7 @@ help_run_both(JavaSide,ReifNew,ReifOld) :-
       jpl:jpl_findclass_descriptor,   % name of new 1-arg DCG (in module jpl)
       jpl_type_findclassname,         % name of old 1-arg DCG (included further below)
       ReifNew,                        % output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
-      ReifOld).                       % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
+      ReifOld).                       % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
 
 the_tests([
    'java/lang/Integer',
@@ -1956,7 +1956,7 @@ help_run_both(JavaSide,ReifNew,ReifOld) :-
       jpl_field_descriptor_slashy,    % name of new 1-arg DCG (an indirection to one in module JPL)
       jpl_type_descriptor_1,          % name of old 1-arg DCG (included further below)
       ReifNew,                        % output from new 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
-      ReifOld).                       % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure' 
+      ReifOld).                       % output from old 1-arg DCG: success(JplType) on success, otherwise the atom 'failure'
 
 the_tests([
    '[D',
@@ -1991,7 +1991,7 @@ test("jpl_type_to_classname: class in default package", CN == 'String') :-
 
 test("jpl_type_to_classname: class name separated along '$'", CN == 'foo.bar.Bling$Blong') :-
    jpl_type_to_classname(class([foo,bar],['Bling','Blong']),CN).
-   
+
 test("jpl_type_to_classname: array of class", CN == '[Ljava.util.String;') :-
    jpl_type_to_classname(array(class([java,util],['String'])),CN).
 
@@ -2000,13 +2000,13 @@ test("jpl_type_to_classname: array of primtive", CN == '[B') :-
 
 test("jpl_type_to_classname: unboxed primitive", CN == byte) :-
    jpl_type_to_classname(byte,CN).
-   
+
 test("jpl_type_to_classname: void", CN == void) :-
    jpl_type_to_classname(void,CN).
 
 test("jpl_type_to_classname: unrecognized primitive", fail) :-
    jpl_type_to_classname(bar,_).
-   
+
 :- end_tests(jpl_type_to_classname).
 
 % ===========================================================================
@@ -2024,22 +2024,22 @@ test("jpl_classname_to_type: class in default package", T == class([],['String']
 
 test("jpl_classname_to_type: class name separated along '$'", T == class([foo,bar],['Bling','Blong'])) :-
    jpl_classname_to_type('foo.bar.Bling$Blong',T).
-   
+
 test("jpl_classname_to_type: array of class", T == array(class([java,util],['String']))) :-
-   jpl_classname_to_type('[Ljava.util.String;',T). 
+   jpl_classname_to_type('[Ljava.util.String;',T).
 
 test("jpl_classname_to_type: array of primtive", T == array(byte)) :-
    jpl_classname_to_type('[B',T).
 
 test("jpl_classname_to_type: unboxed primitive 1", T == byte) :-
-   jpl_classname_to_type(byte,T). 
+   jpl_classname_to_type(byte,T).
 
 test("jpl_classname_to_type: unboxed primitive 2", T == int) :-
-   jpl_classname_to_type(int,T). 
+   jpl_classname_to_type(int,T).
 
 test("jpl_classname_to_type: not an integer", T == class([],[integer])) :-
-   jpl_classname_to_type(integer,T). 
-   
+   jpl_classname_to_type(integer,T).
+
 test("jpl_classname_to_type: void", T == void) :-
    jpl_classname_to_type(void,T).
 

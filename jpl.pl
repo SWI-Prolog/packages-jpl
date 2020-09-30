@@ -1163,7 +1163,7 @@ jpl_get_actual_jvm_opts(Opts) :-
 % We index on `Class` (a jref) so as to keep these objects around
 % even after an atom garbage collection (if needed once, they are likely
 % to be needed again)
-% 
+%
 % (Is it possble to have different Ref for the same ClassType,
 %  which happens once several ClassLoaders become involved?) (Most likely)
 
@@ -1171,7 +1171,7 @@ jpl_get_actual_jvm_opts(Opts) :-
 
 %! jpl_assert(+Fact:term)
 %
-% Assert a fact listed in jpl_assert_policy/2 with "yes" into the Prolog 
+% Assert a fact listed in jpl_assert_policy/2 with "yes" into the Prolog
 % database.
 %
 % From the SWI-Prolog manual:
@@ -1182,12 +1182,12 @@ jpl_get_actual_jvm_opts(Opts) :-
 % And:
 %
 % > "By default, a predicate declared dynamic (see dynamic/1) is shared by
-% > all threads. Each thread may assert, retract and run the dynamic 
+% > all threads. Each thread may assert, retract and run the dynamic
 % > predicate. Synchronisation inside Prolog guarantees the consistency of
 % > the predicate. Updates are logical: visible clauses are not affected
-% > by assert/retract after a query started on the predicate. In many 
-% > cases primitives from section 10.4 should be used to ensure that 
-% > application invariants on the predicate are maintained. 
+% > by assert/retract after a query started on the predicate. In many
+% > cases primitives from section 10.4 should be used to ensure that
+% > application invariants on the predicate are maintained.
 %
 % @see https://eu.swi-prolog.org/pldoc/man?section=db
 % @see https://eu.swi-prolog.org/pldoc/man?section=threadlocal
@@ -1199,7 +1199,7 @@ jpl_assert(Fact) :-
     ).
 
 % ---
-% policies 
+% policies
 % ---
 
 jpl_assert_policy(jpl_field_spec_cache(_,_,_,_,_,_), yes).
@@ -2442,7 +2442,7 @@ jpl_classname_to_class(EntityName, Class) :-
 % =========================================================
 % Java Entity Name (atom) <----> JPL Type (Prolog term)
 % =========================================================
-    
+
 %! jpl_entityname_to_type(+EntityName:atom, -Type:jpl_type)
 %
 % `EntityName` is the entity name (an atom) denoting a Java type,
@@ -2456,7 +2456,7 @@ jpl_classname_to_class(EntityName, Class) :-
 % class, interface), and array type or a primitive, including "void".
 %
 % Examples:
-% 
+%
 % ~~~
 % int                       int
 % integer                   class([],[integer])
@@ -2478,17 +2478,17 @@ jpl_classname_to_class(EntityName, Class) :-
 
 jpl_entityname_to_type(EntityName, Type) :-
     assertion(atomic(EntityName)),
-    (jpl_classname_type_cache(EntityName, Tx) 
+    (jpl_classname_type_cache(EntityName, Tx)
     ->  (Tx = Type)
     ;   jpl_entityname_to_type_with_caching(EntityName, Type)).
 
-jpl_entityname_to_type_with_caching(EN, T) :- 
+jpl_entityname_to_type_with_caching(EN, T) :-
     (atom_codes(EN,Cs),phrase(jpl_entityname(T), Cs))
     ->  jpl_assert(jpl_classname_type_cache(EN,T)).
 
 %! jpl_type_to_entityname(+Type:jpl_type, -EntityName:atom)
 %
-% This is the converse of jpl_entityname_to_type/2 
+% This is the converse of jpl_entityname_to_type/2
 
 jpl_type_to_entityname(Type, EntityName) :-
     assertion(ground(Type)),
@@ -2503,9 +2503,9 @@ jpl_type_to_entityname(Type, EntityName) :-
 % instead of just class names.
 %
 % Use jpl_entityname_to_type/2 in preference.
- 
-jpl_classname_to_type(EntityName, Type) :- 
-   jpl_entityname_to_type(EntityName, Type). 
+
+jpl_classname_to_type(EntityName, Type) :-
+   jpl_entityname_to_type(EntityName, Type).
 
 %! jpl_type_to_classname(+Type:jpl_type, -EntityName:atom)
 %
@@ -2516,7 +2516,7 @@ jpl_classname_to_type(EntityName, Type) :-
 %
 % Use jpl_type_to_entityname/2 in preference.
 
-% N.B. This predicate is exported, but internally it is only used to generate 
+% N.B. This predicate is exported, but internally it is only used to generate
 % exception information.
 
 jpl_type_to_classname(Type, EntityName) :-
@@ -2591,7 +2591,7 @@ jpl_datums_to_types([D|Ds], [T|Ts]) :-
 %! jpl_ground_is_type(+X:jpl_type)
 %
 % `X`, known to be ground, is (or at least superficially resembles :-) a JPL type.
-% 
+%
 % A (more complete) alternative would be to try to transfrom the `X` into its
 % entityname and see whether that works.
 
@@ -2716,7 +2716,7 @@ jpl_primitive_type(boolean).
 jpl_primitive_type(char).
 jpl_primitive_type(byte).
 jpl_primitive_type(short).
-jpl_primitive_type(int).   % N.B. "int" not "integer" 
+jpl_primitive_type(int).   % N.B. "int" not "integer"
 jpl_primitive_type(long).
 jpl_primitive_type(float).
 jpl_primitive_type(double).
@@ -2964,7 +2964,7 @@ jpl_type_to_canonical_type(P, P) :-
 %! jpl_type_to_class(+Type:jpl_type, -Class:jref)
 %
 % `Type` is the JPL type, a ground term designating a class or an array type.
-% 
+%
 % Incomplete types are now never cached (or otherwise passed around).
 %
 % jFindClass throws an exception if FCN can't be found.
@@ -2975,7 +2975,7 @@ jpl_type_to_class(Type, Class) :-
     ; throwme(jpl_type_to_class,arg1_is_var)), % outta here if not ground
     (jpl_class_tag_type_cache(RefB, Type)
     ->  true
-    ;   (   jpl_type_to_java_findclass_descriptor(Type, FCN) 
+    ;   (   jpl_type_to_java_findclass_descriptor(Type, FCN)
         ->  jFindClass(FCN, RefB),       % which caches type of RefB
             jpl_cache_type_of_ref(class([java,lang],['Class']), RefB)    % 9/Nov/2004 bugfix (?)
         ),
@@ -4202,8 +4202,8 @@ dir_per_line([H|T]) -->
 
 % ===
 % PRINCIPLE
-% 
-% We process list of character codes in the DCG (as opposed to lists of 
+%
+% We process list of character codes in the DCG (as opposed to lists of
 % characters)
 %
 % In SWI Prolog the character codes are the Unicode code values - the DCGs
@@ -4217,7 +4217,7 @@ dir_per_line([H|T]) -->
 %
 % However, Jab Wielmaker says:
 %
-% "Please use "string" for terminals in DCGs. The SWI-Prolog DCG compiler 
+% "Please use "string" for terminals in DCGs. The SWI-Prolog DCG compiler
 %  handles these correctly and this retains compatibility."
 %
 % So we do that.
@@ -4227,15 +4227,15 @@ dir_per_line([H|T]) -->
 %
 % Relate a Java-side "entity name" (a String as returned by Class.getName())
 % (in the DCG accumulator as a list of Unicode code values) to JPL's
-% Prolog-side "type term". 
-% 
+% Prolog-side "type term".
+%
 % For example:
 %
 % ~~~
 %       Java-side "entity name"  <----->   JPL Prolog-side "type term"
 %         "java.util.Date"                 class([java,util],['Date'])
 % ~~~
-% 
+%
 % @see https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Class.html#getName()
 %
 % Example for getName() calls generating entity names
@@ -4249,7 +4249,7 @@ dir_per_line([H|T]) -->
 %      System.out.println(Void.TYPE.getName());         // void
 %      System.out.println(Void.class.getName());        // java.lang.Void
 %
-%      System.out.println(char.class.getName());        // char 
+%      System.out.println(char.class.getName());        // char
 %      System.out.println(Character.TYPE.getName());    // char
 %      System.out.println(Character.class.getName());   // java.lang.Character
 %      System.out.println(Character.valueOf('x').getClass().getName());  // java.lang.Character
@@ -4269,17 +4269,17 @@ dir_per_line([H|T]) -->
 %   }
 % }
 % ~~~
-% 
+%
 % Note that We can list the possible "jpl type terms" directly in the head of
 % jpl_entityname//1 (except for the primitives). This helps in clause selection
-% and documentation. Note that the fact that the last two clauses T are not tagged as 
+% and documentation. Note that the fact that the last two clauses T are not tagged as
 % "primitive()" makes this representation nonuniform; should be fixed at some time.
 % ---
 
 jpl_entityname(class(Ps,Cs)) --> jpl_classname(class(Ps,Cs),dotty),!.
 jpl_entityname(array(T))     --> jpl_array_type_descriptor(array(T),dotty),!.
 jpl_entityname(void)         --> "void",!.
-jpl_entityname(P)            --> jpl_primitive_entityname(P). 
+jpl_entityname(P)            --> jpl_primitive_entityname(P).
 
 % ---
 % The "findclass descriptor" is used for the JNI function FindClass and is
@@ -4358,12 +4358,12 @@ jpl_package_parts([],_)          --> [].
 % ---
 
 jpl_class_parts(Cs) --> { nonvar(Cs), ! },                 % guard
-                        { atomic_list_concat(Cs,'$',A) },  % fuse known Cs with '$'  
+                        { atomic_list_concat(Cs,'$',A) },  % fuse known Cs with '$'
                         jpl_java_type_id(A).               % verify it & insert it into list
 
 jpl_class_parts(Cs) --> { var(Cs), ! },                % guard
                         jpl_java_type_id(A),           % grab an id including its '$'
-                        { messy_dollar_split(A,Cs) }.  % split it along '$' 
+                        { messy_dollar_split(A,Cs) }.  % split it along '$'
 
 
 % ---
@@ -4380,7 +4380,7 @@ jpl_reference_type_descriptor(class(Ps,Cs),Mode) --> "L", jpl_classname(class(Ps
 jpl_array_type_descriptor(array(T),Mode) --> "[", jpl_field_descriptor(T,Mode).
 
 % ---
-% Breaking a bare classname at the '$' 
+% Breaking a bare classname at the '$'
 % ---
 % Heuristic: Only a '$' flanked to the left by a valid character
 % that is a non-dollar and to the right by a valid character that
@@ -4448,7 +4448,7 @@ jpl_java_id_raw(A) --> { atom(A),! },  % guard
                        { atom_codes(A,[C|Cs]) }, % explode A
                        { jpl_java_id_start_char(C) },
                        [C],
-                       jpl_java_id_part_chars(Cs). 
+                       jpl_java_id_part_chars(Cs).
 
 % building X from the character code list
 
@@ -4873,21 +4873,21 @@ throwme_help(Count,_,LookupPred,LookupTerm) :-
 %
 % Note that the fact that we adhere to ISO standard atoms instead of defining
 % our own for JPL has the advantage that exception-printing handlers on the
-% toplevel still work but the generated text is confusing: for example the 
-% exception-generating handler receives a "type_error" (which is meant to 
+% toplevel still work but the generated text is confusing: for example the
+% exception-generating handler receives a "type_error" (which is meant to
 % indicate a type problem inside a Prolog program, but here is also used to
 % indicate a type problem of a very different nature, e.g. the caller wants
 % to instantiate a Java interface) and the argument passed in the formal is
 % the name of the Java class as an atom. Then the printing handler will say
 % this: "there is a problem because this is an atom: 'foo.bar.Interface'" and
 % only by reading the cleartext message will the actual problem be revealed:
-% "you tried to instantiate an interface". 
+% "you tried to instantiate an interface".
 % ---
 
 safe_type_to_classname(Type,CN) :-
    catch(
-      (jpl_type_to_classname(Type,CN) 
-       -> true 
+      (jpl_type_to_classname(Type,CN)
+       -> true
        ;  with_output_to(atom(CN),format("~q",[Type]))),
       _DontCareCatcher,
       CN='???').
