@@ -4615,6 +4615,7 @@ Java_org_jpl7_fli_Prolog_attach_1pool_1engine(JNIEnv *env, jclass jProlog)
     { if ( !engines[i] )
       { if ( !(engines[i] = PL_create_engine(NULL)) )
 	{ Sdprintf("JPL: Failed to create engine %d\n", i);
+	  UNLOCK_ENGINES();
 	  return NULL;
 	}
 
