@@ -37,6 +37,7 @@ if(NOT JAVA_HOME)
 
     exec_program(${PROG_JAVA_HOME} ARGS ${jdatamodel}
 		 OUTPUT_VARIABLE jhome
+		 OUTPUT_STRIP_TRAILING_WHITESPACE
 		 RETURN_VALUE jhome_ret)
     if(jhome_ret EQUAL 0)
       set(JAVA_HOME ${jhome} CACHE FILEPATH "Home of Java")
