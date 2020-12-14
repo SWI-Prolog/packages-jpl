@@ -29,10 +29,12 @@ if(NOT JAVA_HOME)
   if(PROG_JAVA_HOME)
     message("-- Find Java home using ${PROG_JAVA_HOME}")
 
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(jdatamodel -d64)
-    else()
-      set(jdatamodel -d32)
+    if(NOT APPLE)
+      if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(jdatamodel -d64)
+      else()
+        set(jdatamodel -d32)
+      endif()
     endif()
 
     exec_program(${PROG_JAVA_HOME} ARGS ${jdatamodel}
