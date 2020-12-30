@@ -4,15 +4,17 @@
 			<meta charset="utf-8">
 			<title>JPL - {{page.title}}</title>
 			<style>
+				* {
+					box-sizing: border-box; /* widths include padding & border (but not margin, which we avoid in layout) */
+				}
 				html {
 					height: 100%; /* https://www.kirupa.com/html5/make_body_take_up_full_browser_height.htm */
-					overflow-x: hidden; /* clip content if necessary; no scrollbars */
-					overflow-y: auto;
 				}
 				body {
-					color: #000000;
+					background-color: #FFFFFF; /* override browser default */
+					color: #000000; /* black text, except where overridden e.g. in headbar */
+					height: 100%; /* https://www.kirupa.com/html5/make_body_take_up_full_browser_height.htm */
 					line-height: 1.4; /* cosmetic experiment */
-					min-height: 100%; /* https://www.kirupa.com/html5/make_body_take_up_full_browser_height.htm */
 					margin: 0 0 0 0; /* override browser defaults */
 					padding: 0 0 0 0; /* override browser defaults */
 					width: 100%;
@@ -21,184 +23,197 @@
 				button { /* button seems not to inherit font-family from body, at least in Firefox */
 					font-family: Arial,Helvetica,sans-serif;
 				}
-				.mainbar { /* avoids nav */
-					background-color: #FFFFFF;
+				.tiles { /* limits width (and centres) in wide viewports */
+					bottom: 0;
+					left: 0;
+					margin-left: auto;
+					margin-right: auto;
+					position: fixed;
+					right: 0;
+					top: 0;
+					width: 1000px;
+				}
+				@media all and (max-width: 1000px) {
+					.tiles {
+						width: 100%;
+					}
+				}
+				.headbar {
+					background-color: #E0E0FF;
 					border: 1px solid #808080;
-					margin: 0 auto 0 auto; /* horiz centred */
-					max-width: 773px; /* 1000 - (10 + 215) padding - (1 + 1) border*/
-					padding-top: 50px; /* as headbar2.height */
-					padding-right: 215px; /* gutter + navbar3.width */
-					padding-bottom: 5px; /* cosmetic */
-					padding-left: 10px; /* cosmetic */
-				}
-				@media all and (max-width: 800px) {
-					.mainbar {
-						border: 0 none;
-						padding-right: 5px; /* don't leave space for nav */
-						padding-left: 5px;
-					}
-				}
-				.mainbar > h1 { /* embedded in headbar; not shown in mainbar */
-					display: none;
-				}
-				@media print {
-					.mainbar {
-						max-width: none;
-						padding: 0 0 0 0;
-					}
-					.mainbar > h1 {
-						display: block; /* show this instead of (per-page) headbar */
-					}
-				}
-				.headbar1 { /* IE11 needs this separate fixed top-aligned frame-of-reference for headbar2 */
-					left: 0; /* full width from here (IE8+) */
-					position: fixed; /* doesn't scroll with content */
-					right: 0; /* ...to here (IE8+) */
-					top: 0; /* at very top of viewport */
-				}
-				@media print {
-					.headbar1 {
-						display:  none;
-					}
-				}
-				.headbar2 { /* limited width, centred */
-					background-color: #E0E0FF; /* same as tailbar */
-					border-top: 1px solid #808080;
-					border-bottom: 1px solid #808080;
 					color: #000080; /* dark blue */
-					height: 48px; /* body.padding-top - (1 + 1) border */
-					margin: 0 auto 0 auto; /* horiz centred */
-					max-width: 998px; /* lie within mainbar border */
+					height: 50px;
+					left: 0;
+					position: absolute; /* doesn't scroll with content */
+					right: 0;
+					top: 0; /* at very top of .tiles */
 				}
-				.headbar2 > div.banner {
+				.headbar > div.banner { /* "JPL" */
 					display: table;
 					float: left;
 					font-size: 300%;
 					line-height: 1em;
-					padding: 0 20px 0 10px; /* LH matches content in mainbar */
+					padding: 0 20px 0 10px; /* padding-left matches mainbar's */
 				}
-				.headbar2 > div.strapline {
+				.headbar > div.strapline {
 					font-size: 85%;
 					font-style: italic;
 					line-height: 1em;
 					padding: 2px 0 0 0;
 				}
-				.headbar2 > div.breadcrumb { /* banner text */
+				.headbar > div.breadcrumb { /* banner text */
 					font-size: 200%;
 					line-height: 1em;
 					padding-left: 5px; /* cosmetic */
 				}
-				.headbar2 > div.icon { /* menu burger icon */
-					display: none; /* shown only below 800px viewport width */
+				.headbar > div.icon { /* menu burger icon */
+					display: none; /* shown only below threshold viewport width */
 				}
-				@media all and (max-width: 800px) {
-					.headbar2 {
+				@media all and (max-width: 1000px) {
+					.headbar {
 						border-top: 0 none;
 						border-bottom: 0 none;
+						padding-right: 50px; /* so strapline avoids burger icon */
 					}
-					.headbar2 > div.icon {
+					.headbar > div.breadcrumb { /* banner text */
+						display: none;
+					}
+					.headbar > div.icon {
 						background: #FFFFFF;
 						cursor: pointer; /* it's clickable, so fake this link styling */
-						display: block; /* show below 800px */
+						display: block; /* show below 1000px */
 						padding: 4px 5px 2px 5px;
 						position: fixed;
 						right: 4px;
 						top: 3px;
 					}
 				}
-				.headbar2 > div.icon:hover {
+				.headbar > div.icon:hover {
 					background-color: #C0C0C0;
 				}
-				.headbar2 > div.icon > div.bar { /* each of three bars for "burger" icon lookalike */
+				.headbar > div.icon > div.bar { /* each of three bars for "burger" icon lookalike */
 					background-color: #0067D8;
 					height: 3px;
 					margin: 3px auto 0 auto;
 					width: 18px;
 				}
-				.headbar2 > div.icon:hover > div.bar {
+				.headbar > div.icon:hover > div.bar {
 					background-color: #FF0000;
 				}
-				.headbar2 > div.icon > div.legend { /* the word "menu", in case it isn't obvious ;-) */
+				.headbar > div.icon > div.legend { /* the word "menu", in case it isn't obvious ;-) */
 					color: #0067D8;
 					display: block;
 					font-size: 10px;
 					padding: 3px 0 0 0;
 					text-align: center;
 				}
-				.headbar2 > div.icon:hover > div.legend {
+				.headbar > div.icon:hover > div.legend {
 					color: #FF0000;
 				}
-				.navbar1 { /* IE11 needs this separate fixed top-aligned frame-of-reference for navbar2 */
+				.midbar {
+					bottom: 0;
+					position: absolute;
+					top: 50px;
+					width: 100%;
+				}
+				.mainbar { /* left of navbar */
+					border-bottom: 1px solid #808080;
+					border-left: 1px solid #808080;
+					height: 100%;
 					left: 0;
-					position: fixed; /* does not scroll with content */
-					right: 0;
-					top: 0;
-					visibility: hidden; /* don't mask mainbar links; https://blog.lysender.com/2014/09/css-elements-covered-by-a-container-div-not-clickable */
+					overflow-y: auto;
+					position: absolute;
+					padding-top: 5px; /* cosmetic */
+					padding-right: 10px; /* cosmetic */
+					padding-bottom: 5px; /* cosmetic */
+					padding-left: 10px; /* cosmetic */
+					width: 800px;
 				}
-				.navbar2 { /* invisible frame-of-reference for .navbar3 */
-					margin: 0 auto 0 auto; /* horiz centred below headbar */
-					max-width: 1000px;
+				.mainbar > h1 { /* embedded in headbar; not shown in mainbar */
+					display: none;
 				}
-				.navbar3 { /* navigation sidebar */
-					background: #F0F0FF; /* mask mainbar in narrow viewports */
-					border: 1px solid #808080;
-					float: right; /* to RH edge of navbar2 */
-					margin: 0 0 0 0; /* override ul defaults; within 1px border */
-					padding: 0 0 0 0; /* override ul defaults */
-					visibility: visible; /* only this navbar part is visible, to avoid masking mainbar links beneath */
-					width: 198px; /* 200 - (1 + 1) border; matches mainbar padding */
-				}
-				@media all and (max-width: 800px) {
-					.navbar3 {
-						border: 1px solid #808080;
-						margin-top: 49px; /* 1px below borderless headbar */
+				@media all and (max-width: 1000px) {
+					.mainbar {
+						border: 0 none;
+						padding-right: 5px; /* don't leave space for nav */
+						padding-left: 5px;
+						width: 100%;
 					}
-					.navbar3.closed {
+					.mainbar > h1 { /* show in mainbar */
+						display: block;
+					}
+				}
+				.navbar { /* right of mainbar */
+					background: #F0F0FF; /* mask mainbar in narrow viewports */
+					border-left: 1px solid #808080;
+					border-right: 1px solid #808080;
+					border-bottom: 1px solid #808080;
+					height: 100%; /* cosmetic */
+					left: 800px; /* abuts mainbar */
+					overflow-y: auto; /* scrollbar iff content requires */
+					position: absolute;
+					width: 200px; /* including borders */
+				}
+				.navbar > ul { /* navigation sidebar */
+					margin: 0 0 0 0; /* override ul defaults */
+					padding: 0 0 0 0; /* override ul defaults */
+				}
+				@media all and (max-width: 1000px) {
+					.navbar {
+						border: 1px solid #808080;
+						border-radius: 5px;
+						bottom: 0;
+						left: auto;
+						position: fixed;
+						right: 0;
+						top: 50px;
+					}
+					.navbar.closed {
 						display: none; /* normally shown */
 					}
 				}
-				.navbar3 > li { /* navigation sidebar item */
+				.navbar > ul > li { /* navigation sidebar item */
 					list-style: none;
 				}
-				.navbar3 > li > * { /* navigation sidebar item content */
+				.navbar > ul > li > * { /* navigation sidebar item content */
 					display: block; /* enable top & bottom padding, maximise clickable area */
 					line-height: 1em; /* experiment */
 					margin: 0 0 0 0; /* override (any?) defaults */
 					padding: 3px 0 3px 5px;
 					text-decoration: none; /* suppress default */
 				}
-				.navbar3 > li.level2 > a { /* indented navigation sidebar item content */
+				.navbar > ul > li.level2 > a { /* indented navigation sidebar item content */
 					font-size: 90%;
 					padding-left: 15px; /* 5 + 10 */
 				}
-				.navbar3 > li > a, /* level 1 & 2 links */
-				.navbar3 > li > a:visited { /* ditto once visited */
+				.navbar > ul > li > a, /* level 1 & 2 links */
+				.navbar > ul > li > a:visited { /* ditto once visited */
 					color: #000000;
 				}
-				.navbar3 > li.level3,
-				.navbar3 > li.level4 { /* some pages have internal links */
+				.navbar > ul > li.level3,
+				.navbar > ul > li.level4 { /* some pages have internal links */
 					display: none; /* normally not shown... */
 				}
-				.navbar3 > li.level3.shown,
-				.navbar3 > li.level4.shown {
+				.navbar > ul > li.level3.shown,
+				.navbar > ul > li.level4.shown {
 					display: block; /* ...unless given this class at page load */
 				}
-				.navbar3 > li.level3 > div,
-				.navbar3 > li.level4 > div { /* indented navigation sidebar item content */
+				.navbar > ul > li.level3 > div,
+				.navbar > ul > li.level4 > div { /* indented navigation sidebar item content */
 					color: #800000; /* distinguish from page links */
 					cursor: pointer; /* fake link appearance */
 					font-size: 80%;
 				}
-				.navbar3 > li.level3 > div { /* indented navigation sidebar item content */
+				.navbar > ul > li.level3 > div { /* indented navigation sidebar item content */
 					padding-left: 25px; /* 5 + 10 + 10 */
 				}
-				.navbar3 > li.level4 > div { /* indented navigation sidebar item content */
+				.navbar > ul > li.level4 > div { /* indented navigation sidebar item content */
 					padding-left: 35px; /* 5 + 10 + 10 + 10 */
 				}
-				.navbar3 > li > a:focus {
+				.navbar > ul > li > a:focus {
 					outline: 1px solid #FFC0C0; /* thinner focus outline looks better against (nearly) black background */
 				}
-				.navbar3 > li > :hover {
+				.navbar > ul > li > :hover {
 					background-color: #FFF0F0; /* faint pink, distinct from background */
 					text-decoration: underline; /* lest it's a link */
 				}
@@ -266,7 +281,7 @@
 				pre.highlight {
 					background: #F6F8FA;
 					display: table;
-				  padding: 3px 5px 3px 5px;
+					padding: 3px 5px 3px 5px;
 				}
 				.mainbar > table {
 					border-collapse: collapse;
@@ -279,26 +294,47 @@
 					border: 1px solid #808080;
 					padding: 1px 3px 1px 3px;
 				}
+				@media print {
+					.tiles {
+						position: static;
+					}
+					.headbar {
+						display: none;
+					}
+					.midbar {
+						position: static;
+					}
+					.mainbar {
+						padding: 0 0 0 0;
+						position: static;
+					}
+					.mainbar > h1 {
+						display: block; /* show this instead of (per-page) headbar */
+					}
+					.navbar {
+						display: none;
+					}
+				}
 			</style>
 			<script type="text/javascript">
 				document.addEventListener('DOMContentLoaded', function(event) { /* akin to jQuery document.ready() */
-					document.querySelector('.headbar2 > .icon').addEventListener('click', function(event) {
-						document.querySelector('.navbar3').classList.toggle('closed');
+					document.querySelector('.headbar > .icon').addEventListener('click', function(event) {
+						document.querySelector('.navbar').classList.toggle('closed');
 						event.stopPropagation();
 						event.preventDefault();
 					});
 					document.querySelector('body').addEventListener('click', function(event) { /* click anywhere... */
-						document.querySelector('.navbar3').classList.add('closed'); /* ...hides navbar in narrow viewports */
+						document.querySelector('.navbar').classList.add('closed'); /* ...hides navbar in narrow viewports */
 					});
 					// document.querySelector('.headbar2,.mainbar').addEventListener('click', function() {});
 					var basename = '{{page.path}}'.replace(/\.[^/.]+$/, ""); /* stackoverflow 4250364 */
 					if (window.NodeList && !NodeList.prototype.forEach) { // forEach polyfill for e.g. IE11
 						NodeList.prototype.forEach = Array.prototype.forEach;
 					}
-					document.querySelectorAll('.navbar3 > .level3.nav' + basename).forEach(function(e) {
+					document.querySelectorAll('.navbar > .level3.nav' + basename).forEach(function(e) {
 						e.classList.add('shown'); // show all level3 pseudo-links relevant to current page
 					});
-					document.querySelectorAll('.navbar3 > .level4.nav' + basename).forEach(function(e) {
+					document.querySelectorAll('.navbar > .level4.nav' + basename).forEach(function(e) {
 						e.classList.add('shown'); // show all level4 pseudo-links relevant to current page
 					});
 					if (document.location.hash !== '') { // this page was loaded by URL with a hash
@@ -316,139 +352,140 @@
 			</script>
 		</head>
 		<body>
-			<div class="mainbar">
-				{{ content }}
-			</div>
-			<div class="headbar1">
-				<div class="headbar2">
-					<div class="banner">
-						JPL
-					</div>
-					<div class="icon">
-						<div class="bar"></div>
-						<div class="bar"></div>
-						<div class="bar"></div>
-						<div class="legend">menu</div>
-					</div>
-					<div class="strapline">
-						an API between SWI-Prolog and the Java Virtual Machine -
-						<a href="https://github.com/SWI-Prolog/packages-jpl/">hosted on GitHub</a>
-					</div>
-					<div class="breadcrumb">
-						{{page.title}}
-					</div>
+		<div class="tiles">
+			<div class="headbar">
+				<div class="banner">
+					JPL
+				</div>
+				<div class="icon">
+					<div class="bar"></div>
+					<div class="bar"></div>
+					<div class="bar"></div>
+					<div class="legend">menu</div>
+				</div>
+				<div class="strapline">
+					an API between SWI-Prolog and the Java Virtual Machine -
+					<a href="https://github.com/SWI-Prolog/packages-jpl/">hosted on GitHub</a>
+				</div>
+				<div class="breadcrumb">
+					Tutorials - Java-calls-Prolog
 				</div>
 			</div>
-			<div class="navbar1">
-				<div class="navbar2">
-					<ul class="navbar3 closed">
-						<li class="level1"><a href="index">Introduction</a></li>
-						<li class="level1"><a href="PrologApi">Prolog API</a></li>
-						<li class="level2 navPrologApiOverview"><a href="PrologApiOverview" title="Prolog API overview">Overview</a></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('introduction')">Introduction</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('jpl-types')">JPL types</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('java-values-and-references')">Java values and references</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('java-types-structured-notation')">Java types: structured notation</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('java-types-descriptor-notation')">Java types: descriptor notation</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('java-types-classname-notation')">Java types: classname notation</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('creating-java-objects')">Creating Java objects</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('calling-java-methods')">Calling Java methods</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('fetching-java-field-values')">Fetching Java field values</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('setting-java-field-values')">Setting Java field values</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('a-slightly-longer-example')">A slightly longer example</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('exceptions-thrown-by-java')">Exceptions thrown by Java</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('naming-static-nested-classes')">Naming static nested classes</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('instantiating-a-non-static-member-class')">Instantiating a non-static member class</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('enums-are-static-nested-classes')">Enums are static nested classes</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('calling-parameterless-methods')">Calling parameterless methods</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('calling-void-methods')">Calling void methods</div></li>
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('exiting-the-jvm')">Exiting the JVM</div></li>
+			<div class="midbar">
+				<div class="mainbar">
+				{{ content }}
+				</div>
+			</div>
+			<div class="navbar">
+				<ul class="closed">
+					<li class="level1"><a href="index">Introduction</a></li>
+					<li class="level1"><a href="PrologApi">Prolog API</a></li>
+					<li class="level2 navPrologApiOverview"><a href="PrologApiOverview" title="Prolog API overview">Overview</a></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('introduction')">Introduction</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('jpl-types')">JPL types</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('java-values-and-references')">Java values and references</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('java-types-structured-notation')">Java types: structured notation</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('java-types-descriptor-notation')">Java types: descriptor notation</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('java-types-classname-notation')">Java types: classname notation</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('creating-java-objects')">Creating Java objects</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('calling-java-methods')">Calling Java methods</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('fetching-java-field-values')">Fetching Java field values</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('setting-java-field-values')">Setting Java field values</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('a-slightly-longer-example')">A slightly longer example</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('exceptions-thrown-by-java')">Exceptions thrown by Java</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('naming-static-nested-classes')">Naming static nested classes</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('instantiating-a-non-static-member-class')">Instantiating a non-static member class</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('enums-are-static-nested-classes')">Enums are static nested classes</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('calling-parameterless-methods')">Calling parameterless methods</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('calling-void-methods')">Calling void methods</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('exiting-the-jvm')">Exiting the JVM</div></li>
 
-						<li class="level3 navPrologApiOverview"><div onclick="scrollToId('to-do')">To do</div></li>
+					<li class="level3 navPrologApiOverview"><div onclick="scrollToId('to-do')">To do</div></li>
 
-						<li class="level2"><a href="PrologApiReference">Reference</a></li>
-						<li class="level3 navPrologApiReference"><div onclick="scrollToId('jpl_newx-args--v')">jpl_new/3</div></li>
-						<li class="level3 navPrologApiReference"><div onclick="scrollToId('jpl_callx-method-args--v')">jpl_call/4</div></li>
-						<li class="level3 navPrologApiReference"><div onclick="scrollToId('jpl_setx-field-v')">jpl_set/3</div></li>
-						<li class="level3 navPrologApiReference"><div onclick="scrollToId('jpl_getx-field--v')">jpl_get/3</div></li>
-						<li class="level3 navPrologApiReference"><div onclick="scrollToId('java-inspection')">Java inspection</div></li>
-						<li class="level3 navPrologApiReference"><div onclick="scrollToId('utilities')">Utilities</div></li>
-						<li class="level3 navPrologApiReference"><div onclick="scrollToId('miscellaneous')">Miscellaneous</div></li>
+					<li class="level2"><a href="PrologApiReference">Reference</a></li>
+					<li class="level3 navPrologApiReference"><div onclick="scrollToId('jpl_newx-args--v')">jpl_new/3</div></li>
+					<li class="level3 navPrologApiReference"><div onclick="scrollToId('jpl_callx-method-args--v')">jpl_call/4</div></li>
+					<li class="level3 navPrologApiReference"><div onclick="scrollToId('jpl_setx-field-v')">jpl_set/3</div></li>
+					<li class="level3 navPrologApiReference"><div onclick="scrollToId('jpl_getx-field--v')">jpl_get/3</div></li>
+					<li class="level3 navPrologApiReference"><div onclick="scrollToId('java-inspection')">Java inspection</div></li>
+					<li class="level3 navPrologApiReference"><div onclick="scrollToId('utilities')">Utilities</div></li>
+					<li class="level3 navPrologApiReference"><div onclick="scrollToId('miscellaneous')">Miscellaneous</div></li>
 
-						<li class="level1"><a href="JavaApi">Java API</a></li>
-						<li class="level2"><a href="JavaApiOverview" title="Java API overview">Overview</a></li>
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('the-class-hierarchy')">The class hierarchy</div></li>
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('initializing-and-terminating-prolog')">Initializing and terminating Prolog</div></li>
+					<li class="level1"><a href="JavaApi">Java API</a></li>
+					<li class="level2"><a href="JavaApiOverview" title="Java API overview">Overview</a></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('the-class-hierarchy')">The class hierarchy</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('initializing-and-terminating-prolog')">Initializing and terminating Prolog</div></li>
 
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('creating-terms')">Creating terms</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('atoms')">Atoms</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('integers')">Integers</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('rationals')">Rationals</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('floats')">Floats</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('variables')">Variables</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('compound-terms')">Compound terms</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('lists')">Lists</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('dictionaries')">Dictionaries</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('java-objects')">Java objects</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('creating-terms')">Creating terms</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('atoms')">Atoms</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('integers')">Integers</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('rationals')">Rationals</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('floats')">Floats</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('variables')">Variables</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('compound-terms')">Compound terms</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('lists')">Lists</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('dictionaries')">Dictionaries</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('java-objects')">Java objects</div></li>
 
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('creating-queries')">Creating queries</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('creating-queries')">Creating queries</div></li>
 
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('querying-prolog')">Querying Prolog</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('obtaining-one-solution')">Obtaining one solution</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('obtaining-all-solutions')">Obtaining all solutions</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('ground-queries')">Ground queries</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('terminating-queries')">Terminating queries</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('querying-prolog')">Querying Prolog</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('obtaining-one-solution')">Obtaining one solution</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('obtaining-all-solutions')">Obtaining all solutions</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('ground-queries')">Ground queries</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('terminating-queries')">Terminating queries</div></li>
 
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('queries-from-multi-threaded-applications')">Queries from multi-threaded applications</div></li>
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('exceptions')">Exceptions</div></li>
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('debugging')">Debugging</div></li>
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('version-information')">Version information</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('queries-from-multi-threaded-applications')">Queries from multi-threaded applications</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('exceptions')">Exceptions</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('debugging')">Debugging</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('version-information')">Version information</div></li>
 
-						<li class="level3 navJavaApiOverview"><div onclick="scrollToId('gotchas')">Gotchas</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('argument-numbering')">Argument numbering</div></li>
-						<li class="level4 navJavaApiOverview"><div onclick="scrollToId('all-solutions-of-a-query-with-no-solutions')">All solutions of a Query with no solutions</div></li>
+					<li class="level3 navJavaApiOverview"><div onclick="scrollToId('gotchas')">Gotchas</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('argument-numbering')">Argument numbering</div></li>
+					<li class="level4 navJavaApiOverview"><div onclick="scrollToId('all-solutions-of-a-query-with-no-solutions')">All solutions of a Query with no solutions</div></li>
 <!--
-						<li class="level2"><a href="http://www.swi-prolog.org/pldoc/jpl/java_api/javadoc/index.html">JavaDoc</a></li>
+					<li class="level2"><a href="http://www.swi-prolog.org/pldoc/jpl/java_api/javadoc/index.html">JavaDoc</a></li>
 -->
-						<li class="level2"><a href="javadoc/index.html" target="_blank" title="Java API - JavaDoc (opens in new window or tab)">JavaDoc</a></li>
+					<li class="level2"><a href="javadoc/index.html" target="_blank" title="Java API - JavaDoc (opens in new window or tab)">JavaDoc</a></li>
 
-						<li class="level1"><a href="Tutorial">Tutorials</a></li>
-						<li class="level2"><a href="TutorialResources">Environment variables</a></li>
-						<li class="level2"><a href="TutorialInitializing">Initializing Prolog engine</a></li>
-						<li class="level2"><a href="TutorialJavaCallsProlog">Java calls Prolog</a></li>
-						<li class="level2"><a href="TutorialTypesOfQueries">Types of queries</a></li>
-						<li class="level2"><a href="TutorialMultithreaded">Multi-threaded Java</a></li>
+					<li class="level1"><a href="Tutorial">Tutorials</a></li>
+					<li class="level2"><a href="TutorialResources">Environment variables</a></li>
+					<li class="level2"><a href="TutorialInitializing">Initializing Prolog engine</a></li>
+					<li class="level2"><a href="TutorialJavaCallsProlog">Java calls Prolog</a></li>
+					<li class="level2"><a href="TutorialTypesOfQueries">Types of queries</a></li>
+					<li class="level2"><a href="TutorialMultithreaded">Multi-threaded Java</a></li>
 
-						<li class="level1"><a href="Deployment">Deploying for users</a></li>
-						<li class="level2"><a href="DeploymentJava">on Java</a></li>
-						<li class="level2"><a href="DeploymentLinux">on Linux</a></li>
-						<li class="level2"><a href="DeploymentWindows">on Windows</a></li>
-						<li class="level2"><a href="DeploymentMacos">on MacOS</a></li>
+					<li class="level1"><a href="Deployment">Deploying for users</a></li>
+					<li class="level2"><a href="DeploymentJava">on Java</a></li>
+					<li class="level2"><a href="DeploymentLinux">on Linux</a></li>
+					<li class="level2"><a href="DeploymentWindows">on Windows</a></li>
+					<li class="level2"><a href="DeploymentMacos">on MacOS</a></li>
 
-						<li class="level1"><a href="DevelopmentJPL">Developing JPL</a></li>
-						<li class="level2"><a href="DevelopmentJPL-Arch">JPL architecture</a></li>
-						<li class="level2"><a href="DevelopmentJPL-Setup">Setting up for development</a></li>
-						<li class="level2"><a href="DevelopmentJPL-Test">Testing</a></li>
-						<li class="level2"><a href="DevelopmentJPL-Live">Using the live devel tree</a></li>
-						<li class="level2"><a href="DevelopmentJPL-Devel">Develop & Contribute</a></li>
+					<li class="level1"><a href="DevelopmentJPL">Developing JPL</a></li>
+					<li class="level2"><a href="DevelopmentJPL-Arch">JPL architecture</a></li>
+					<li class="level2"><a href="DevelopmentJPL-Setup">Setting up for development</a></li>
+					<li class="level2"><a href="DevelopmentJPL-Test">Testing</a></li>
+					<li class="level2"><a href="DevelopmentJPL-Live">Using the live devel tree</a></li>
+					<li class="level2"><a href="DevelopmentJPL-Devel">Develop & Contribute</a></li>
 
 
-						<li class="level1"><a href="ReleaseNotes">Release notes</a></li>
-						<li class="level2"><a href="ReleaseNotes761">7.6.1</a></li>
-						<li class="level2"><a href="ReleaseNotes760">7.6.0</a></li>
-						<li class="level2"><a href="ReleaseNotes750">7.5.0</a></li>
-						<li class="level2"><a href="ReleaseNotes740">7.4.0</a></li>
-						<li class="level2"><a href="ReleaseNotes701">7.0.1</a></li>
-						<li class="level2"><a href="ReleaseNotes303">3.0.3</a></li>
-						<li class="level2"><a href="ReleaseNotes302">3.0.2</a></li>
-						<li class="level2"><a href="ReleaseNotes300">3.0.0</a></li>
-						<li class="level2"><a href="ReleaseNotes202">2.0.2</a></li>
+					<li class="level1"><a href="ReleaseNotes">Release notes</a></li>
+					<li class="level2"><a href="ReleaseNotes761">7.6.1</a></li>
+					<li class="level2"><a href="ReleaseNotes760">7.6.0</a></li>
+					<li class="level2"><a href="ReleaseNotes750">7.5.0</a></li>
+					<li class="level2"><a href="ReleaseNotes740">7.4.0</a></li>
+					<li class="level2"><a href="ReleaseNotes701">7.0.1</a></li>
+					<li class="level2"><a href="ReleaseNotes303">3.0.3</a></li>
+					<li class="level2"><a href="ReleaseNotes302">3.0.2</a></li>
+					<li class="level2"><a href="ReleaseNotes300">3.0.0</a></li>
+					<li class="level2"><a href="ReleaseNotes202">2.0.2</a></li>
 
-						<li class="level1"><a href="https://github.com/SWI-Prolog/packages-jpl/blob/master/LICENSE">LICENSE</a></li>
+					<li class="level1"><a href="https://github.com/SWI-Prolog/packages-jpl/blob/master/LICENSE">LICENSE</a></li>
 
-						<li class="level1"><a href="ToDo">To do</a></li>
+					<li class="level1"><a href="ToDo">To do</a></li>
 					</ul>
 				</div>
 			</div>
-		</body>
+		</div>
+	</body>
 </html>
