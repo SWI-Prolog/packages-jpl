@@ -331,10 +331,10 @@
 					if (window.NodeList && !NodeList.prototype.forEach) { // forEach polyfill for e.g. IE11
 						NodeList.prototype.forEach = Array.prototype.forEach;
 					}
-					document.querySelectorAll('.navbar > .level3.nav' + basename).forEach(function(e) {
+					document.querySelectorAll('.navbar > ul > li.level3.nav' + basename).forEach(function(e) {
 						e.classList.add('shown'); // show all level3 pseudo-links relevant to current page
 					});
-					document.querySelectorAll('.navbar > .level4.nav' + basename).forEach(function(e) {
+					document.querySelectorAll('.navbar > ul > li.level4.nav' + basename).forEach(function(e) {
 						e.classList.add('shown'); // show all level4 pseudo-links relevant to current page
 					});
 					if (document.location.hash !== '') { // this page was loaded by URL with a hash
