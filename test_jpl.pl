@@ -1144,12 +1144,10 @@ test(
 
 test(
         set_get_array_element_long_2,
-        [       setup((
+        [       condition(current_prolog_flag(bounded, false)),
+		setup((
                         jpl_new(array(long), 3, A),
-                        (       current_prolog_flag(bounded, true)
-                        ->      current_prolog_flag(max_integer, V)
-                        ;       V is 2**63
-                        )
+                        V is 2**63
                 )),
                 throws(
                         error(
