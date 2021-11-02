@@ -1047,22 +1047,29 @@ jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a)
   return *a != 0;
 }
 
+/* Branching on len to silence GCC-11 */
+
 static bool
 jni_new_string(JNIEnv *env, const char *s, size_t len, jobject *obj)
-{ jchar tmp[FASTJCHAR];
-  jchar *js;
-  size_t i;
+{ if ( len <= FASTJCHAR )
+  { jchar tmp[FASTJCHAR];
+    size_t i;
 
-  js = len <= FASTJCHAR ? tmp : malloc(sizeof(jchar) * len);
-  if ( !js )
-    return FALSE;
+    for (i = 0; i < len; i++)
+      tmp[i] = s[i] & 0xff;
 
-  for (i = 0; i < len; i++)
-    js[i] = s[i] & 0xff;
+    *obj = (*env)->NewString(env, tmp, len);
+  } else
+  { jchar *js;
+    size_t i;
 
-  *obj = (*env)->NewString(env, js, len);
-  if ( js != tmp )
-    free(js);
+    if ( (js=malloc(sizeof(jchar) * len)) )
+    { for (i = 0; i < len; i++)
+	js[i] = s[i] & 0xff;
+      *obj = (*env)->NewString(env, js, len);
+      free(js);
+    }
+  }
 
   return (*obj != NULL);
 }
@@ -1074,20 +1081,25 @@ jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
 #if SIZEOF_WCHAR_T == 2
   return (*obj = (*env)->NewString(env, s, len)) != NULL;
 #else
-  jchar tmp[FASTJCHAR];
-  jchar *js;
-  size_t i;
+  if ( len <= FASTJCHAR )
+  { jchar tmp[FASTJCHAR];
+    size_t i;
 
-  js = len <= FASTJCHAR ? tmp : malloc(sizeof(jchar) * len);
-  if ( !js )
-    return FALSE;
+    for (i = 0; i < len; i++)
+      tmp[i] = s[i];
 
-  for (i = 0; i < len; i++)
-    js[i] = s[i];
+    *obj = (*env)->NewString(env, tmp, len);
+  } else
+  { jchar *js;
+    size_t i;
 
-  *obj = (*env)->NewString(env, js, len);
-  if ( js != tmp )
-    free(js);
+    if ( (js=malloc(sizeof(jchar) * len)) )
+    { for (i = 0; i < len; i++)
+	js[i] = s[i];
+      *obj = (*env)->NewString(env, js, len);
+      free(js);
+    }
+  }
 
   return (*obj != NULL);
 #endif
