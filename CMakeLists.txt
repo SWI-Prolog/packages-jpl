@@ -144,18 +144,19 @@ if(JNI_FOUND AND Java_FOUND)
 
 
         # Add testing pack on Java code calling Prolog (class org.jpl7.JPLTestSuiteRunne)
-        add_test(
-            NAME jpl:prolog_in_java
-            COMMAND env
-                CLASSPATH=src/main/java/jpl.jar
-                SWI_HOME_DIR=${swihome}
-                SWIPL_BOOT_FILE=${swibootfile}
-                SOURCE_DIR=${PROJECT_SOURCE_DIR}
-                ${Java_JAVA_EXECUTABLE}
-                 -Djava.library.path=.
-                         -classpath ${JUNIT_JAR}:${HAMCREST}:src/main/java/jpl.jar:src/test/java/jpltest.jar
-                         org.jpl7.JPLTestSuiteRunner)
-
+	if(HAMCREST)
+	  add_test(
+	      NAME jpl:prolog_in_java
+	      COMMAND env
+		  CLASSPATH=src/main/java/jpl.jar
+		  SWI_HOME_DIR=${swihome}
+		  SWIPL_BOOT_FILE=${swibootfile}
+		  SOURCE_DIR=${PROJECT_SOURCE_DIR}
+		  ${Java_JAVA_EXECUTABLE}
+		   -Djava.library.path=.
+			   -classpath ${JUNIT_JAR}:${HAMCREST}:src/main/java/jpl.jar:src/test/java/jpltest.jar
+			   org.jpl7.JPLTestSuiteRunner)
+	endif()
 
         # Add testing pack on Prolog code calling Java
         # test_lib is a script defined in packages/cmake/PrologPackage.cmake that installs tests via
