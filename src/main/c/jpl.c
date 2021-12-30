@@ -3380,7 +3380,12 @@ getFunctorValue(JNIEnv *env, jobject jlong_holder, functor_t *f)
 
 static bool
 getQIDValue(JNIEnv *env, jobject jlong_holder, qid_t *q)
-{ return getUIntPtrValue(env, jlong_holder, q);
+{ uintptr_t i;
+  if ( getUIntPtrValue(env, jlong_holder, &i) )
+  { *q = (qid_t)i;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static bool
@@ -3781,7 +3786,7 @@ Java_org_jpl7_fli_Prolog_current_1query(JNIEnv *env, jclass jProlog)
   if ( jpl_ensure_pvm_init(env) &&
        (qid = PL_current_query()) &&
        (rval = (*env)->AllocObject(env, jQidT_c)) &&
-       setUIntPtrValue(env, rval, qid) )
+       setUIntPtrValue(env, rval, (uintptr_t)qid) )
     return rval;
 
   return NULL;                                  /* oughta throw exception */
@@ -4240,7 +4245,7 @@ Java_org_jpl7_fli_Prolog_open_1query(JNIEnv *env, jclass jProlog,
               (jqid = (*env)->AllocObject(env, jQidT_c)) != NULL &&
               (DEBUG(1, Sdprintf("  ok: AllocObject(env,jQidT_c)=%p\n", jqid)),
                TRUE) &&
-              setUIntPtrValue(env, jqid, qid) &&
+              setUIntPtrValue(env, jqid, (uintptr_t)qid) &&
               (DEBUG(1,
                      Sdprintf("  ok: setUIntPtrValue(env,%p,%p)\n", jqid, qid)),
                TRUE) &&
