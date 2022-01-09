@@ -3701,7 +3701,7 @@ Java_org_jpl7_fli_Prolog_close_1query(JNIEnv *env, jclass jProlog, jobject jqid)
   if ( jpl_ensure_pvm_init(env) &&
        getQIDValue(env, jqid, &qid) )
   { PL_close_query(qid);
-    DEBUG(1, Sdprintf("  ok: PL_close_query(%lu)\n", (long)qid));
+    DEBUG(1, Sdprintf("  ok: PL_close_query(%p)\n", (void*)qid));
   }
 }
 
@@ -4187,11 +4187,11 @@ Java_org_jpl7_fli_Prolog_next_1solution(JNIEnv *env, jclass jProlog,
   if ( jpl_ensure_pvm_init(env) &&
        getQIDValue(env, jqid, &qid) &&
        PL_next_solution(qid) )
-  { DEBUG(1, Sdprintf(" ok: PL_next_solution(qid=%lu)=TRUE\n", (long)qid));
+  { DEBUG(1, Sdprintf(" ok: PL_next_solution(qid=%p)=TRUE\n", (void*)qid));
     return TRUE;
   }
 
-  DEBUG(1, Sdprintf("   ok: PL_next_solution(qid=%lu)=FALSE\n", (long)qid));
+  DEBUG(1, Sdprintf("   ok: PL_next_solution(qid=%p)=FALSE\n", (void*)qid));
   return FALSE;
 }
 
