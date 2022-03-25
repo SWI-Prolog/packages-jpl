@@ -19,7 +19,7 @@ sudo apt-get install \
         libxext-dev libice-dev libjpeg-dev libxinerama-dev libxft-dev \
         libxpm-dev libxt-dev \
         libdb-dev \
-        libpcre3-dev \
+        libpcre2-dev \
         libyaml-dev \
         openjdk-11-jdk junit \
         make ninja-build \
@@ -37,7 +37,7 @@ As explained in `fnogatz`'s [swivm](https://github.com/fnogatz/swivm) repo, if y
 - `libssl-dev`: Without, you have no SSL (and HTTPS) support.
 - `libgmp-dev`: Without, you lack unbounded integer support, rational numbers, good random number generators, etc.
 - `libarchive-dev`: Without, you can not unpack and install add-ons.
-- `libpcre3-dev`: Without, you have no regular expression support ([library(pcre)](http://www.swi-prolog.org/pldoc/doc/_SWI_/library/pcre.pl)).
+- `libpcre2-dev`: Without, you have no regular expression support ([library(pcre)](http://www.swi-prolog.org/pldoc/doc/_SWI_/library/pcre.pl)).
 - `libyaml-dev`: Without, you have no YAML support ([library(yaml)](http://www.swi-prolog.org/pldoc/doc/_SWI_/library/yaml.pl)).
 
 
