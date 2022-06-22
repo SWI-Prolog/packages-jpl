@@ -1504,7 +1504,7 @@ maplist_java_id_part_char_but_not_start_char(ListIn,ListOut) :-
 
 :- begin_tests(identifier_chars).
 
-test("characters allowed at start of an identifier") :-
+test("characters allowed at start of an identifier", [blocked('awaits understanding')]) :-
    maplist_java_id_start_char(`abcdefghijklöüä`,R),
    debug(identifier_chars,"Result for 'characters allowed at start of an identifier': ~q",[R]),
    all_true(R).
@@ -1816,11 +1816,11 @@ test("JPL type to Java field descriptor") :-
    the_dcg(DCG),
    maplist({DCG}/[q(FD,T)]>>assertion((dcg_mangle(Out,'',DCG,T),Out == FD)),L).
 
-test("no void on the left") :-
+test("no void on the left", [blocked('awaits understanding')]) :-
    the_dcg(DCG),
    dcg_mangle(void,_,DCG,_).
 
-test("no void on the right") :-
+test("no void on the right", [blocked('awaits understanding')]) :-
    the_dcg(DCG),
    dcg_mangle(v_,_,DCG,void).
 
