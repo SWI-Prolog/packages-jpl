@@ -29,28 +29,12 @@ public class Test_Atom extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
             reportTest(description);
         }
     };
-
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
-
 
     @Test
     public void testAtom1() {
@@ -145,7 +129,6 @@ public class Test_Atom extends JPLTest {
                 new Atom(name).hasFunctor(name, 1));
     }
 
-
     @Test
     public void testAtomEquality2() {
         Atom a = new Atom("a");
@@ -153,9 +136,8 @@ public class Test_Atom extends JPLTest {
         assertEquals("two references to an Atom are equal by .equals()", a, a);
     }
 
+    @Test
     public void testAtomEquality3() {
         assertEquals("two distinct, same-named Atoms are equal by .equals()", new Atom("a"), new Atom("a"));
     }
-
-
 }

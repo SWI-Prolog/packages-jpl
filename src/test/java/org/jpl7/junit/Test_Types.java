@@ -29,24 +29,12 @@ public class Test_Types extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
             reportTest(description);
         }
     };
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testIsJNull1() {
@@ -145,6 +133,4 @@ public class Test_Types extends JPLTest {
     public void testTypeName3() {
         assertEquals("Y = f(x) binds Y to a Compound", Query.oneSolution("Y = f(x)").get("Y").typeName(), "Compound");
     }
-
-
 }

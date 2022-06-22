@@ -37,7 +37,6 @@ public class Test_GetSolution extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
@@ -45,49 +44,43 @@ public class Test_GetSolution extends JPLTest {
         }
     };
 
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
-
     @Test
     public void testGetSolution1() {
-        Query q = new Query("fail");
-        q.open();
-        if (q.hasMoreSolutions()) q.nextSolution();
+        Query q = new Query("fail"); // this query has no solutions
+        while (q.hasMoreSolutions()) {
+        	q.nextSolution();
+        }
+        assertFalse("A query has exhausted all solutions but it is still open", q.isOpen());
+    }
+
+    @Test
+    public void testGetSolution1b() {
+        Query q = new Query("member(_, [a,b,c])"); // this query has three solutions
+        while (q.hasMoreSolutions()) {
+        	q.nextSolution();
+        }
         assertFalse("A query has exhausted all solutions but it is still open", q.isOpen());
     }
 
     @Test
     public void testGetSolution2() {
         Query q = new Query("fail"); // this query has no solutions
-        q.open(); // this opens the query
         try {
-            q.nextSolution(); // this call is invalid, as the query is closed
-
-            // shouldn't get to here
-            fail("jpl.Query#nextSolution() should have thrown JPLException");
+            q.nextSolution(); // this call is invalid, as there is  no solution
+            fail("jpl.Query#nextSolution() should have thrown JPLException"); // shouldn't get to here
         } catch (NoSuchElementException e) {
-            // all good, right exception threw
+            // all good, right exception threw (hopefully, "Query has already yielded all solutions")
         } catch (Exception e) {
             fail("jpl.Query#nextSolution() threw wrong class of exception: " + e);
         }
     }
 
-
     @Test
     public void testOpenGetClose2() {
-        Query q = new Query("dummy"); // we're not going to open this...
+        Query q = new Query("dummy"); // predicate dummy/0 does not exist
         try {
-            q.nextSolution(); // should throw exception (query not open)
-            fail("nextSolution() succeeds on unopened Query"); // shouldn't get
-            // to here
+            q.nextSolution(); // should throw JPLException ("existence_error")
+            fail("nextSolution() succeeds on bad Query");
         } catch (JPLException e) { // expected exception class
             if (e.getMessage().contains("existence_error")) {
                 // OK: an appropriate exception was thrown
@@ -101,14 +94,11 @@ public class Test_GetSolution extends JPLTest {
 
     @Test
     public void testOpenGetClose1() {
-        StringBuffer sb = new StringBuffer();
-        Query q = new Query("atom_chars(prolog, Cs), member(C, Cs)");
-        Map<String, Term> soln;
-        q.open();
+        StringBuffer sb = new StringBuffer(); // for reconstructing "prolog"
+        Query q = new Query("atom_chars(prolog, Cs), member(C, Cs)"); // binds C successively to 'p', 'r', 'o', 'l', 'o', 'g'
         while (q.hasMoreSolutions()) {
             sb.append(((Atom) q.nextSolution().get("C")).name());
         }
-        q.close();
         assertEquals("prolog", sb.toString());
     }
 
@@ -116,10 +106,8 @@ public class Test_GetSolution extends JPLTest {
     public void testStackedQueries1() {
         StringBuffer sb = new StringBuffer();
         Query q = new Query("atom_chars(prolog, Cs), member(C, Cs)");
-        Map<String, Term> soln;
-        q.open();
         while (q.hasMoreSolutions()) {
-            soln = q.nextSolution();
+        	Map<String, Term> soln = q.nextSolution();
             Atom a = (Atom) soln.get("C");
             if (Query.hasSolution("memberchk(?, [l,o,r])", new Term[] { a })) {
                 // this query opens and closes while an earlier query is still open
@@ -129,11 +117,6 @@ public class Test_GetSolution extends JPLTest {
         assertFalse(q.isOpen()); // q will have been closed by solution exhaustion
         assertEquals("rolo", sb.toString());
     }
-
-
-
-
-
 
     @Test
     public void testStaticQueryAllSolutions1() {
@@ -183,6 +166,4 @@ public class Test_GetSolution extends JPLTest {
         assertEquals("a", hs[0].get("X").name());
         assertEquals("b", hs[0].get("Y").name());
     }
-
-
 }

@@ -28,11 +28,9 @@ public class Test_JRef extends JPLTest {
     @BeforeClass
     public static void setUp() {
         setUpClass();
-
         consultTestFile();  // load the test_jpl.pl file
         useJPLmodule();     // consult the jpl.pl module
     }
-
 
     @Rule
     public TestRule watcher = new TestWatcher() {
@@ -40,20 +38,6 @@ public class Test_JRef extends JPLTest {
             reportTest(description);
         }
     };
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
-
 
     @Test
     public void testJRef1() {
@@ -93,8 +77,6 @@ public class Test_JRef extends JPLTest {
         assertEquals(((StringBuffer) (a.object())).toString(), token);
     }
 
-
-
     @Test
     public void testRef6() {
         Term nullJRef = JPL.newJRef(null);
@@ -102,24 +84,17 @@ public class Test_JRef extends JPLTest {
         assertNull("JPL null Term yields a null object", nullObject);
     }
 
-
     @Test(expected = JPLException.class)
     public void testRef7() {
         Term badJRef = new Compound("hello", new Term[] { new Atom("foobar") }); // term hello(foobar)
-
         try {
             badJRef.object(); // should throw exception
             fail("@(foobar).object() should thrown JPLException"); // shouldn't get to here
         } catch (JPLException e) { // expected exception class
-            // From JUNIT 4.5 would be good to use assertThat
-            // check http://junit.sourceforge.net/doc/ReleaseNotes4.4.html for assertTahat
-//            assertThat(e.getMessage(), is("term is neither a JRef nor a Compound representing @(null)"));
-
-
+            // From JUNIT 4.5 would be good to use assertThat(e.getMessage(), is("term is neither a JRef nor a Compound representing @(null)"));
+            // check http://junit.sourceforge.net/doc/ReleaseNotes4.4.html for assertThat
             assertEquals("Exception text does not match", "term is neither a JRef nor a Compound representing @(null)", e.getMessage());
             throw e;    // All good, keep throwing it so that the @Test directive catches it
         }
     }
-
-
 }

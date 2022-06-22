@@ -37,7 +37,6 @@ public class Tests extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
@@ -45,33 +44,19 @@ public class Tests extends JPLTest {
         }
     };
 
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
-
     @Test
     public void testSameLibVersions1() {
         String java_lib_version = JPL.version_string();
         String c_lib_version = Prolog.get_c_lib_version();
-
         String msg = String.format("java_lib_version(%s) is same as c_lib_version(%s)",  java_lib_version, c_lib_version);
         assertEquals(msg, java_lib_version, c_lib_version);
     }
 
-//    @Test
+    @Test
     public void testSameLibVersions2() {
         String java_lib_version = JPL.version_string();
-
         useJPLmodule();
         String pl_lib_version = Query.oneSolution("jpl_pl_lib_version(V)").get("V").name();
-
         String msg = String.format("java_lib_version(%s) is same as pl_lib_version(%s)", java_lib_version, pl_lib_version);
         assertEquals(msg, java_lib_version, pl_lib_version);
     }
@@ -90,15 +75,15 @@ public class Tests extends JPLTest {
         Thread t = new Thread(new Runnable() {
             public void run() {
                 try {
-                    System.out.println("q.hasSolution() ... ");
-                    System.out.println(q.hasSolution() ? "finished" : "failed");
+                    reportNoise("q.hasSolution() ... ");
+                    reportNoise(q.hasSolution() ? "finished" : "failed");
                 } catch (Exception e) {
-                    System.out.println("q.hasSolution() threw " + e);
+                    reportNoise("q.hasSolution() threw " + e);
                 }
             }
         });
         t.start(); // call the query in a separate thread
-        System.out.println("pausing for 2 secs...");
+        reportNoise("pausing for 2 secs...");
         try {
             Thread.sleep(2000);
         } catch (InterruptedException ignored) {
@@ -110,7 +95,6 @@ public class Tests extends JPLTest {
 //        q.abort();
         System.err.println();
     }
-
 
     @Test
     public void testSyntaxSet1() {
@@ -141,10 +125,6 @@ public class Tests extends JPLTest {
         assertTrue((new Query("assert(diagnose_declaration(_,_,_,[not,a,real,error]))")).hasSolution());
     }
 
-
-
-
-
     @Test
     public void testPrologException1() {
         try {
@@ -156,7 +136,6 @@ public class Tests extends JPLTest {
         }
         fail("new Query(\"p(]\") oughta throw a PrologException");
     }
-
 
     @Test
     public void testSingleton1() {
@@ -202,26 +181,24 @@ public class Tests extends JPLTest {
 
 	@Test
     public void testStaticQueryNSolutions1() {
-        String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
-        int n = 5;
+        String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])"; // has 10 solutions
+        int n = 5; // we ask for 5 at most; should get 5
         assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions", Query.nSolutions(goal, n).length, n);
     }
 
 	@Test
     public void testStaticQueryNSolutions2() {
-        String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
-        int n = 0;
+        String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])"; // has 10 solutions
+        int n = 0; // we ask for 0 at most; should get 0
         assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions", Query.nSolutions(goal, n).length, n);
     }
 
 	@Test
     public void testStaticQueryNSolutions3() {
-        String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
-        int n = 20;
+        String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])"; // has 10 solutions
+        int n = 20; // we ask for 20 at most; should get 10
         assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns 10 solutions", 10, Query.nSolutions(goal, n).length);
     }
-
-
 
 	@Test
     public void testBerhhard1() {
@@ -242,15 +219,12 @@ public class Tests extends JPLTest {
         assertEquals(n, ((Integer) result).longValue());
     }
 
-
 	@Test
     public void testForeignFrame1() {
         int ls1 = Query.oneSolution("statistics(localused,LS)").get("LS").intValue();
         int ls2 = Query.oneSolution("statistics(localused,LS)").get("LS").intValue();
         assertEquals("local stack size unchanged after query", ls1, ls2);
     }
-
-
 
 	@Test
     public void testOpen1() {
@@ -264,6 +238,4 @@ public class Tests extends JPLTest {
         q.open();
         assertTrue("a newly opened query which has no solutions is open", q.isOpen());
     }
-
-
 }

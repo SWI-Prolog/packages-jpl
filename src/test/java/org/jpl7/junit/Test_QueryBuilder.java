@@ -30,22 +30,12 @@ public class Test_QueryBuilder extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
             reportTest(description);
         }
     };
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
 
     ///////////////////////////////////////////////////////////////////////////////
     // TESTS
@@ -64,24 +54,15 @@ public class Test_QueryBuilder extends JPLTest {
     public void testTermErr1() {
         Term t = new Float(1.23);
         try {
-            Query q = new Query(t);
+            new Query(t);
             fail("Query should have given JPLException");
-        } catch (JPLException e) {
+        } catch (JPLException e) { // expect "a Query's goal must be an Atom or Compound (not a Float)"
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (Exception e) {
             fail("Query should have given JPLException");
         }
     }
-
-
-
-
-
-
-
-
-
 
     @Test
     public void testString1() {
@@ -98,7 +79,6 @@ public class Test_QueryBuilder extends JPLTest {
     @Test
     public void testString3() {
         Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
-
         Query q = new Query("member(?, ?)", args);
         assertTrue("Query should have succeded, but it did not!", q.hasSolution());
     }
@@ -106,7 +86,6 @@ public class Test_QueryBuilder extends JPLTest {
     @Test
     public void testString4() {
         Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
-
         Query q = new Query("member", args);
         assertTrue("Query should have succeded, but it did not!", q.hasSolution());
     }
@@ -117,18 +96,16 @@ public class Test_QueryBuilder extends JPLTest {
         assertTrue("Query should have succeded, but it did not!", q.hasSolution());
     }
 
-
-
     // Query term is not an Atom or Compound, but an Integer!
     @Test
     public void testStringErr1() {
         try {
-            Query q = new Query("112");
+            new Query("112");
             fail("Query should have given JPLException");
-        } catch (JPLException e) {
+        } catch (JPLException e) { // expect "a Query's goal must be an Atom or Compound (not an Integer)"
             // all good!
-            System.out.println("\t" + e.getMessage());
-        } catch (Exception e) {
+            reportNoise("\t" + e.getMessage());
+         } catch (Exception e) {
             fail("Query should have given JPLException");
         }
     }
@@ -137,11 +114,11 @@ public class Test_QueryBuilder extends JPLTest {
     @Test
     public void testStringErr2() {
         try {
-            Query q = new Query("112(sas,23");
+            new Query("112(sas,23");
             fail("Query should have given PrologException: malformed query");
-        } catch (PrologException e) {
+        } catch (PrologException e) { // expect it to match error(syntax_error(_), _)
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (JPLException e) {
             fail("Should have been caught before because JPLException is a subclass of PrologException");
         } catch (Exception e) {
@@ -149,36 +126,33 @@ public class Test_QueryBuilder extends JPLTest {
         }
     }
 
-    // Error in number of placeholder matching arguments (too many terms)
+    // Error in number of placeholder matching arguments (too few)
     @Test
     public void testStringErr3() {
         Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
-
         try {
-            Query q = new Query("member(?, ?, ?)", args);
+            new Query("member(?, ?, ?)", args);
             fail("Query should have given JPLException");
-        } catch (JPLException e) {
+        } catch (JPLException e) { // expect "fewer actual params than formal params"
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (Exception e) {
             fail("Query should have given JPLException");
         }
     }
 
-    // Error in number of placeholder matching arguments (too many terms)
+    // Error in number of placeholder matching arguments (too many)
     @Test
     public void testStringErr4() {
         Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
-
         try {
-            Query q = new Query("member(?)", args);
+            new Query("member(?)", args);
             fail("Query should have given JPLException");
-        } catch (JPLException e) {
+        } catch (JPLException e) { // expect "more actual params than formal"
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (Exception e) {
             fail("Query should have given JPLException");
         }
     }
-
 }

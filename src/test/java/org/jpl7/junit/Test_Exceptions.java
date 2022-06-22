@@ -31,28 +31,12 @@ public class Test_Exceptions extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
             reportTest(description);
         }
     };
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
-
-
 
     @Test
     public void test0() {
@@ -91,13 +75,13 @@ public class Test_Exceptions extends JPLTest {
     public void test4() {
         final String[] wrongRationals = {"121", "22r", "r33", "ss", "-12r", "r-21"};
         final String expectedError = "incorrect format for rational number";
-
-        try {
-            Rational rat = new Rational("22r");
-        } catch (JPLException e) {
-            machExceptionError(e, expectedError);
+        for (String s : wrongRationals) {
+	        try {
+	            new Rational(s);
+	            fail("new Rational(" + s + ") should have thrown \"incorrect format for rational number\"");
+	        } catch (JPLException e) {
+	            machExceptionError(e, expectedError);
+	        }
         }
     }
-
-
 }

@@ -9,6 +9,9 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         Test_Atom.class,
         Test_Data.class,
+        Test_Dict.class,
+        Test_Equals.class,
+        Test_Exceptions.class,
         Test_GetSolution.class,
         Test_Integer.class,
         Test_List.class,
@@ -23,8 +26,6 @@ import org.junit.runners.Suite;
         Test_Unicode.class,
         Test_Variables.class,
         Tests.class,
-        Test_Equals.class,
-        Test_Dict.class,
 })
 
 public class JPLTestSuite {

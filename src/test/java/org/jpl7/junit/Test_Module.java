@@ -28,10 +28,8 @@ public class Test_Module extends JPLTest {
     @BeforeClass
     public static void setUp() {
         setUpClass();
-
         useJPLmodule();     // consult the jpl.pl module
     }
-
 
     @Rule
     public TestRule watcher = new TestWatcher() {
@@ -39,21 +37,6 @@ public class Test_Module extends JPLTest {
             reportTest(description);
         }
     };
-
-
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testGoalWithModulePrefix1() {
@@ -69,13 +52,10 @@ public class Test_Module extends JPLTest {
 
     @Test
     public void testGoalWithModulePrefix3() {
-        String goal = "3:length([],0)";
+        String goal = "3:length([],0)"; // invalid module prefix (numeric)
         try {
             Query.hasSolution(goal); // should throw exception
-            fail(goal + " (numeric module prefix) didn't throw exception"); // shouldn't
-            // get
-            // to
-            // here
+            fail(goal + " (numeric module prefix) didn't throw exception");
         } catch (PrologException e) { // expected exception class
             if (e.term().hasFunctor("error", 2) && e.term().arg(1).hasFunctor("type_error", 2)
                     && e.term().arg(1).arg(1).hasFunctor("atom", 0)) {
@@ -90,13 +70,10 @@ public class Test_Module extends JPLTest {
 
     @Test
     public void testGoalWithModulePrefix4() {
-        String goal = "_:length([],0)";
+        String goal = "_:length([],0)"; // invalid module prefix (unbound)
         try {
             Query.hasSolution(goal); // should throw exception
-            fail(goal + " (unbound module prefix) wrongly succeeded"); // shouldn't
-            // get
-            // to
-            // here
+            fail(goal + " (unbound module prefix) wrongly succeeded");
         } catch (PrologException e) { // expected exception class
             if (e.term().hasFunctor("error", 2) && e.term().arg(1).hasFunctor("instantiation_error", 0)) {
                 // OK: an appropriate exception was thrown
@@ -110,13 +87,10 @@ public class Test_Module extends JPLTest {
 
     @Test
     public void testGoalWithModulePrefix5() {
-        String goal = "f(x):length([],0)";
+        String goal = "f(x):length([],0)"; // invalid module prefix (compound)
         try {
             Query.hasSolution(goal); // should throw exception
-            fail(goal + " (compound module prefix) wrongly succeeded"); // shouldn't
-            // get
-            // to
-            // here
+            fail(goal + " (compound module prefix) wrongly succeeded");
         } catch (PrologException e) { // correct exception class
             if (e.term().hasFunctor("error", 2) && e.term().arg(1).hasFunctor("type_error", 2)
                     && e.term().arg(1).arg(1).hasFunctor("atom", 0)) {
@@ -131,13 +105,10 @@ public class Test_Module extends JPLTest {
 
     @Test
     public void testGoalWithModulePrefix6() {
-        String goal = "no_such_module:no_such_predicate(0)";
+        String goal = "no_such_module:no_such_predicate(0)"; // invalid module prefix (nonexistent)
         try {
             Query.hasSolution(goal); // should throw exception
-            fail(goal + " (nonexistent module prefix) wrongly succeeded"); // shouldn't
-            // get
-            // to
-            // here
+            fail(goal + " (nonexistent module prefix) wrongly succeeded");
         } catch (PrologException e) { // expected exception class
             if (e.term().hasFunctor("error", 2) && e.term().arg(1).hasFunctor("existence_error", 2)
                     && e.term().arg(1).arg(1).hasFunctor("procedure", 0)) {
@@ -150,11 +121,8 @@ public class Test_Module extends JPLTest {
         }
     }
 
-
-
     @Test
     public void testModulePrefix1() {
         assertTrue(Query.hasSolution("call(user:true)"));
     }
-
 }
