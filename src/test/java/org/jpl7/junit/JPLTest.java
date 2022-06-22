@@ -64,6 +64,13 @@ abstract class JPLTest {
                     description.getTestClass().getSimpleName()));
         }
     };
+    
+    // allow/suppress additional noise from successful tests
+    protected void reportNoise(String msg) {
+    	if (report) {
+    		System.out.println(msg);
+    	}
+    }
 
     protected static void consultTestFile() {
 //        Query q_load_test_jplnew Query("consult", new Term[] { new Atom(test_jpl) })

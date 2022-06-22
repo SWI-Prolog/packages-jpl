@@ -68,7 +68,7 @@ public class Test_QueryBuilder extends JPLTest {
             fail("Query should have given JPLException");
         } catch (JPLException e) {
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (Exception e) {
             fail("Query should have given JPLException");
         }
@@ -127,7 +127,7 @@ public class Test_QueryBuilder extends JPLTest {
             fail("Query should have given JPLException");
         } catch (JPLException e) {
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (Exception e) {
             fail("Query should have given JPLException");
         }
@@ -141,7 +141,7 @@ public class Test_QueryBuilder extends JPLTest {
             fail("Query should have given PrologException: malformed query");
         } catch (PrologException e) {
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (JPLException e) {
             fail("Should have been caught before because JPLException is a subclass of PrologException");
         } catch (Exception e) {
@@ -159,7 +159,7 @@ public class Test_QueryBuilder extends JPLTest {
             fail("Query should have given JPLException");
         } catch (JPLException e) {
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (Exception e) {
             fail("Query should have given JPLException");
         }
@@ -175,7 +175,7 @@ public class Test_QueryBuilder extends JPLTest {
             fail("Query should have given JPLException");
         } catch (JPLException e) {
             // all good!
-            System.out.println("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage());
         } catch (Exception e) {
             fail("Query should have given JPLException");
         }

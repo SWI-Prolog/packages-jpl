@@ -48,7 +48,7 @@ public class Test_Report extends JPLTest {
         q.open();
         while (q.hasMoreSolutions()) {
             Map<String,Term> sol = q.nextSolution();
-            System.out.println(String.format("\t Value of %s: %s",
+            reportNoise(String.format("\t Value of %s: %s",
                     sol.get("X").toString(), sol.get(("Y").toString())));
         }
         q.close();
@@ -58,36 +58,36 @@ public class Test_Report extends JPLTest {
 
     @Test
     public void reportConfiguration() {
-        System.out.println("\t JPL testing under the following configuration:");
+        reportNoise("\t JPL testing under the following configuration:");
 
 //        Query.hasSolution("use_module(library(jpl))"); // only because we call e.g. jpl_pl_syntax/1 below
         useJPLmodule();
 
         Term swi = Query.oneSolution("current_prolog_flag(version_data,Swi)").get("Swi");
-        System.out.println("\t swipl.version = " +
+        reportNoise("\t swipl.version = " +
                 swi.arg(1) + "." + swi.arg(2) + "." + swi.arg(3));
 
 //      This is the problematic one as it wil trigger loading library(jpl)
-        System.out.println("\t swipl.syntax = " +
+        reportNoise("\t swipl.syntax = " +
                 Query.oneSolution("jpl_pl_syntax(Syntax)").get("Syntax"));
 
-        System.out.println("\t swipl.home = " +
+        reportNoise("\t swipl.home = " +
                 Query.oneSolution("current_prolog_flag(home,Home)").get("Home").name());
-        System.out.println("\t jpl.jar = " + JPL.version_string());
-        System.out.println("\t jpl.dll = " + org.jpl7.fli.Prolog.get_c_lib_version());
-        System.out.println("\t jpl.pl = " +
+        reportNoise("\t jpl.jar = " + JPL.version_string());
+        reportNoise("\t jpl.dll = " + org.jpl7.fli.Prolog.get_c_lib_version());
+        reportNoise("\t jpl.pl = " +
                 Query.oneSolution("jpl_pl_lib_version(V)").get("V").name());
 
-        System.out.println("\t java.version = " + System.getProperty("java.version"));
-        System.out.println("\t java_lib_version = " + JPL.version_string());
-        System.out.println("\t c_lib_version = " + org.jpl7.fli.Prolog.get_c_lib_version());
-        System.out.println("\t pl_lib_version = " +
+        reportNoise("\t java.version = " + System.getProperty("java.version"));
+        reportNoise("\t java_lib_version = " + JPL.version_string());
+        reportNoise("\t c_lib_version = " + org.jpl7.fli.Prolog.get_c_lib_version());
+        reportNoise("\t pl_lib_version = " +
                 Query.oneSolution("jpl:jpl_pl_lib_version(V)").get("V").name() + " " +
                 Query.oneSolution("module_property(jpl, file(F))").get("F").name());
 
-        System.out.println("\t os.name = " + System.getProperty("os.name"));
-        System.out.println("\t os.arch = " + System.getProperty("os.arch"));
-        System.out.println("\t os.version = " + System.getProperty("os.version"));
+        reportNoise("\t os.name = " + System.getProperty("os.name"));
+        reportNoise("\t os.arch = " + System.getProperty("os.arch"));
+        reportNoise("\t os.version = " + System.getProperty("os.version"));
 
     }
 
@@ -105,7 +105,7 @@ public class Test_Report extends JPLTest {
         for (int i = 0; i < args.length; i++) {
             s = s + args[i] + " ";
         }
-        System.out.println(String.format("\t %s_init_args = %s", which, s));
+        reportNoise(String.format("\t %s_init_args = %s", which, s));
     }
 
 

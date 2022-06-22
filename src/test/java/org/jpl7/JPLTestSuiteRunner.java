@@ -14,7 +14,20 @@ public class JPLTestSuiteRunner {
             failure.getException().printStackTrace();
         }
 
-        System.out.println("********* Test successful? " + result.wasSuccessful());
+//        System.out.println("********* Test successful? " + result.wasSuccessful());
+        if (result.wasSuccessful()) {
+        	System.out.println("++ OK ++");
+        	System.out.println("all " + result.getRunCount() + " tests succeeded");
+        } else {
+        	System.out.println("-- FAIL --");
+        	System.out.println("only " + result.getRunCount() + " tests succeeded");
+        }
+        if (result.getFailureCount() > 0) {
+        	System.out.println("failed: " + result.getFailureCount());
+        }
+        if (result.getIgnoreCount() > 0) {
+        	System.out.println("ignored: " + result.getIgnoreCount());
+        }
     }
 }
 

@@ -90,15 +90,15 @@ public class Tests extends JPLTest {
         Thread t = new Thread(new Runnable() {
             public void run() {
                 try {
-                    System.out.println("q.hasSolution() ... ");
-                    System.out.println(q.hasSolution() ? "finished" : "failed");
+                    reportNoise("q.hasSolution() ... ");
+                    reportNoise(q.hasSolution() ? "finished" : "failed");
                 } catch (Exception e) {
-                    System.out.println("q.hasSolution() threw " + e);
+                    reportNoise("q.hasSolution() threw " + e);
                 }
             }
         });
         t.start(); // call the query in a separate thread
-        System.out.println("pausing for 2 secs...");
+        reportNoise("pausing for 2 secs...");
         try {
             Thread.sleep(2000);
         } catch (InterruptedException ignored) {

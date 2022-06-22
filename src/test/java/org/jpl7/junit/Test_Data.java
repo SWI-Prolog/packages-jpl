@@ -115,7 +115,7 @@ public class Test_Data extends JPLTest {
             sol = new Query(String.format("quoted_name(%s,S)", tests[solutionIndex])).oneSolution();
 
             //noinspection ConstantConditions
-            System.out.println("\t The solution for S is: " + sol.get("S").toString());
+            reportNoise("\t The solution for S is: " + sol.get("S").toString());
             assertEquals(expectedSolutions[solutionIndex], sol.get("S").toString());
         }
     }
