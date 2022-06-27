@@ -11,6 +11,7 @@ abstract class JPLTest {
     public static final String home =
             (System.getenv("SWI_HOME_DIR") == null ? "../../build/home/"
                     : System.getenv("SWI_HOME_DIR"));
+    
     public static final String startup  =
             (System.getenv("SWIPL_BOOT_FILE") == null ? String.format("%s/boot.prc", home)
                     : System.getenv("SWIPL_BOOT_FILE"));
@@ -23,18 +24,20 @@ abstract class JPLTest {
     public static final String syntax =
             (System.getenv("SWIPL_SYNTAX") == null ? "modern"
                     : System.getenv("SWIPL_SYNTAX"));
+    
     public static final String source_dir =
             System.getenv("SOURCE_DIR") == null ? "." : System.getenv("SOURCE_DIR");
+    
     public static final String test_dir = String.format("%s/src/test/java/org/jpl7", source_dir);
 
     // test_jpl is the main testing file for jpl, used also for java_in_prolog
     //  it is in the original source tree (not in the build), but ../../packages/jpl = current dir so it works
     //      both for CMAKE and for development in packags/jpl (e.g., IntelliJ)
     public static final String test_jpl = String.format("%s/test_jpl.pl", source_dir);
+    
     public static final boolean report =
             (System.getenv("REPORT") == null ? true
                     : "true".equalsIgnoreCase(System.getenv("REPORT")));
-
 
     protected static void setUpClass() {
         if (syntax.equals("traditional")) {
@@ -55,7 +58,6 @@ abstract class JPLTest {
 //        Prolog.set_default_init_args(init_swi_config.split("\\s+"));
     }
 
-
     // This is how the test is reported
     protected void reportTest(Description description) {
         if (report) {
@@ -73,18 +75,12 @@ abstract class JPLTest {
     }
 
     protected static void consultTestFile() {
-//        Query q_load_test_jplnew Query("consult", new Term[] { new Atom(test_jpl) })
-        Query q_load_test_jpl = new Query(String.format("consult('%s')", test_jpl));
-        q_load_test_jpl.hasSolution();
+        (new Query(String.format("consult('%s')", test_jpl))).hasSolution();
     }
 
     protected static void useJPLmodule() {
         Query.hasSolution("use_module(library(jpl))"); // only because we call e.g. jpl_pl_syntax/1 below
-
-//        Query q_load_jpl = new Query("use_module(library(jpl))");
-//        q_load_jpl.hasSolution();
     }
-
 
     protected static void machExceptionError(Exception e, String expectedError) {
         if (e.getMessage().contains(expectedError)) {
@@ -94,12 +90,4 @@ abstract class JPLTest {
             fail(msg);
         }
     }
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-
 }

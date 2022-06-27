@@ -31,28 +31,12 @@ public class Test_String extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
             reportTest(description);
         }
     };
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
-
-
 
     @Test
     public void testStringXput1() {
@@ -65,14 +49,11 @@ public class Test_String extends JPLTest {
     public void testStringXput2() {
         String s1 = "\u0000\u007F\u0080\u00FF";
         String s2 = "\u0100\u7FFF\u8000\uFFFF";
-        String s = s1 + s2; // concatenate in Java
-        Term a = Query.oneSolution("string_concat(?,?,S)", new Term[]{new Atom(s1), new Atom(s2)}).get("S"); // concatenate
-        // in
-        // Prolog
+        String s = s1 + s2; // catenate in Java
+        Term a1 = new Atom(s1);
+        Term a2 = new Atom(s2);
+        Term a = Query.oneSolution("string_concat(?,?,S)", new Term[]{a1, a2}).get("S"); // catenate in Prolog
         assertEquals(s, a.name());
         assertEquals("string", a.atomType());
     }
-
-
-
 }

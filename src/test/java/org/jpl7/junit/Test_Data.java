@@ -27,11 +27,9 @@ public class Test_Data extends JPLTest {
      */
     @BeforeClass
     public static void setUp() {
-
         setUpClass();
         Query.hasSolution(String.format("consult('%s/test_quoted_module.pl')", test_dir)); // .pl file to be used
     }
-
 
     @Rule
     public TestRule watcher = new TestWatcher() {
@@ -40,45 +38,21 @@ public class Test_Data extends JPLTest {
         }
     };
 
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
-
     @Test
     public void quotedName1() {
-        String text_t;
-        String name;
-        Term t;
-
-//        name = "org.jpl7.PrologException: PrologException: error(existence_error(procedure, '/'(pepe, 1)), context(':'(system, '/'('$c_call_prolog', 0)), _0))";
-
-        //name = "existence_error(procedure, '/'(pepe, 1))";
-        //name = "'/'(pepe, 1)";
-        name = "'$c_call_prolog'";
-        t = Term.textToTerm(name);
+        String name = "'$c_call_prolog'";
+        Term t = Term.textToTerm(name);
         assert t != null;
         assertEquals("matching text-term", name, t.toString());
     }
 
     @Test
     public void errorTermTranslation1() {
-        String text_t;
-        String name;
-        Term t;
-
-        t = new Compound("error", new Term[] {
+        Term t = new Compound("error", new Term[] {
                 new Atom("existence_error"),
                 new Atom("context")});
-
         try {
-            boolean x = Query.hasSolution(t);
+            Query.hasSolution(t);
         } catch (PrologException e) {
             assertTrue("PrologException has to be existence error", e.getMessage().contains("existence_error"));
         } catch (Exception e) {
@@ -86,40 +60,18 @@ public class Test_Data extends JPLTest {
         }
     }
 
-
-    private Term quotedQuery(String name) {
-        return new Compound(":", new Term[]{
-                new Atom("moduleTest"),
-                new Compound("quoted_name", new Term[]{
-                        new Atom(name),
-                        new Variable("S")
-                })
-        });
-
-    }
-
     @Test
     public void quotedName2() {
-        String text_t;
-        String name;
-        Term t;
-        Map<String, Term> sol;
-
         final String[] tests = { "hello", "hello(world)", "[1,2,3]" };
         final String[] expectedSolutions = { "hello", "\'hello(world)\'", "'[1,2,3]'" };
-
-
         int l = tests.length;
         for (int solutionIndex = 0; solutionIndex < l; solutionIndex++) {
-//            t = quotedQuery(tests[solutionIndex]);
-            sol = new Query(String.format("quoted_name(%s,S)", tests[solutionIndex])).oneSolution();
-
+        	Map<String, Term> sol = new Query(String.format("quoted_name(%s,S)", tests[solutionIndex])).oneSolution();
             //noinspection ConstantConditions
             reportNoise("\t The solution for S is: " + sol.get("S").toString());
             assertEquals(expectedSolutions[solutionIndex], sol.get("S").toString());
         }
     }
-
 
     @Test
     public void testEmptyParentheses() {
@@ -130,9 +82,6 @@ public class Test_Data extends JPLTest {
         assertTrue("T is not bound to an atom", t.isAtom());
         assertEquals("the atom's name is not \"a\"", "a", t.name());
     }
-
-
-
 
     @Test
     public void testCompoundZeroArity1() {
@@ -146,16 +95,9 @@ public class Test_Data extends JPLTest {
     @Test
     public void testCompoundZeroArity2() {
         Term t = Query.oneSolution("T = foo()").get("T");
-        // System.out.println("type = " + t.typeName());
         assertEquals("foo", t.name());
         assertEquals(0, t.arity());
     }
-
-    // public void testCompoundZeroArity3() {
-    // Term t = Query.oneSolution("T = foo()").get("T");
-    // assertTrue("term is a compound", t.isCompound());
-    // assertFalse("term is an atom", t.isAtom());
-    // }
 
     @Test
     public void testUtilListToTermArray1() {
@@ -173,8 +115,6 @@ public class Test_Data extends JPLTest {
         assertTrue(array[2].isAtom() && array[2].name().equals("c"));
     }
 
-
-
     @Test
     public void testTextToTerm1() {
         String text = "fred(B,p(A))";
@@ -184,8 +124,6 @@ public class Test_Data extends JPLTest {
                         && t.arg(2).hasFunctor("p", 1) && t.arg(2).arg(1).isVariable()
                         && t.arg(2).arg(1).name().equals("A"));
     }
-
-
 
     @Test
     public void testTextToTerm2() {
@@ -201,21 +139,17 @@ public class Test_Data extends JPLTest {
                         && t.arg(3).name().equals("A"));
     }
 
-
-
     // issue #13: https://github.com/SWI-Prolog/packages-jpl/issues/13
     @Test
     public void testWeirdCompound() {
         Term t = new Query("A = 'age(mary)'(1,2,3)").oneSolution().get("A");
-
         assertEquals("'age(mary)'(1, 2, 3)", t.toString());
     }
 
     // issue #13: https://github.com/SWI-Prolog/packages-jpl/issues/13
     @Test
     public void testWeirdCompound2() {
-        Map sol = new Query("A = '[1,2,3]'(a,b,c), A =.. [B1|B2]").oneSolution();
-
+    	Map<String, Term> sol = new Query("A = '[1,2,3]'(a,b,c), A =.. [B1|B2]").oneSolution();
         assertEquals("'[1,2,3]'(a, b, c)", sol.get("A").toString());
         assertEquals("'[1,2,3]'", sol.get("B1").toString());
         assertEquals("[a, b, c]", sol.get("B2").toString());

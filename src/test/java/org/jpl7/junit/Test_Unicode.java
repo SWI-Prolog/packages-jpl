@@ -31,25 +31,12 @@ public class Test_Unicode extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
             reportTest(description);
         }
     };
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testUnicode0() {
@@ -102,7 +89,4 @@ public class Test_Unicode extends JPLTest {
         assertTrue(Query.hasSolution("atom_codes(?,[256,32767,32768,65535])",
                 new Term[]{new Atom("\u0100\u7FFF\u8000\uFFFF")}));
     }
-
-
-
 }

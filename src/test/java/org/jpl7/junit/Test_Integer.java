@@ -32,24 +32,12 @@ public class Test_Integer extends JPLTest {
         setUpClass();
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
             reportTest(description);
         }
     };
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testIntegerFromByte1() {
@@ -61,7 +49,6 @@ public class Test_Integer extends JPLTest {
     @Test
     public void testIntegerFromChar1() {
         char c = (char) 64; // 0..65535
-        // System.out.println("c = " + c);
         Integer i = new Integer(c);
         assertEquals(i.intValue(), c);
     }
@@ -69,8 +56,7 @@ public class Test_Integer extends JPLTest {
     @Test
     public void testInteger1() {
         try {
-            Term i = Query.oneSolution("I is 2**40").get("I"); // long but not
-            // int
+            Term i = Query.oneSolution("I is 2**40").get("I"); // long but not int
             i.intValue();
             fail("intValue() of bigger-than-int value failed to throw an exception");
         } catch (JPLException e) {
@@ -84,15 +70,12 @@ public class Test_Integer extends JPLTest {
         }
     }
 
-
     @Test
     public void testBigInteger1() {
         BigInteger a = new BigInteger(Long.toString(51L));
         BigInteger b = a.pow(51); // 51**51, too big for a long
         Term x = Query.oneSolution("X is 51**51").get("X");
         assertTrue("X is an org.jpl7.Integer", x.isInteger());
-        // System.out.println("X.bigValue() = " + x.bigValue().toString());
-        // System.out.println("b.bigValue() = " + b.toString());
         assertTrue("X is a big integer", x.isBigInteger());
         assertEquals("X's big value is 51**51", x.bigValue(), b);
     }
@@ -107,6 +90,4 @@ public class Test_Integer extends JPLTest {
         assertTrue("X is a big org.jpl7.Integer", x.isBigInteger());
         assertEquals("X's value is as expected", x.bigValue(), b);
     }
-
-
 }

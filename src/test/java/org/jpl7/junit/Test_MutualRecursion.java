@@ -23,18 +23,15 @@ public class Test_MutualRecursion extends JPLTest {
 //        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
     }
 
-
     /**
      * This is done at the class loading, before any test is run
      */
     @BeforeClass
     public static void setUp() {
         setUpClass();
-
         consultTestFile();
 //        useJPLmodule();     // consult the jpl.pl module
     }
-
 
     @Rule
     public TestRule watcher = new TestWatcher() {
@@ -43,20 +40,14 @@ public class Test_MutualRecursion extends JPLTest {
         }
     };
 
-
-
-
-
     ///////////////////////////////////////////////////////////////////////////////
     // SUPPORTING CODE
     ///////////////////////////////////////////////////////////////////////////////
 
-    public static long fac(long n) { // complements
-        // jpl:jpl_test_fac(+integer,-integer);
-        // indirectly supports
-        // testMutualRecursion
+    // complements jpl:jpl_test_fac(+integer,-integer);
+    // indirectly supports testMutualRecursion
+    public static long fac(long n) {
         consultTestFile();
-
         if (n == 1) {
             return 1;
         } else if (n > 1) {
@@ -67,12 +58,6 @@ public class Test_MutualRecursion extends JPLTest {
         }
     }
 
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
-
     private void testMutualRecursion(int n, long f) {
         // f is the expected result for call fac(n) which uses Prolog
         try {
@@ -81,6 +66,10 @@ public class Test_MutualRecursion extends JPLTest {
             fail(String.format("fac(%d) threw %s", n, e));
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // TESTS
+    ///////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testMutualRecursion01() {
@@ -101,6 +90,4 @@ public class Test_MutualRecursion extends JPLTest {
     public void testMutualRecursion10() {
         testMutualRecursion(10, 3628800);
     }
-
-
 }
