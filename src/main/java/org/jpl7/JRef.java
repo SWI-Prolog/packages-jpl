@@ -102,19 +102,6 @@ public class JRef extends Term {
 	}
 
 	/**
-	 * To convert a JRef to a term, we put its Object field (.ref) into the term_t as a &lt;jref&gt;(0x01DF800) blob.
-	 *
-	 * @param varnames_to_vars
-	 *            A Map from variable names to Prolog variables.
-	 * @param term
-	 *            A (newly created) term_t which is to be set to a Prolog &lt;jref&gt;(0x01DF800) blob denoting the .ref of this JRef
-	 *            instance
-	 */
-	protected final void put(Map<String, term_t> varnames_to_vars, term_t term) {
-		Prolog.put_jref(term, object);
-	}
-
-	/**
 	 * @deprecated {@link  JRef#object()}
 	 */
 	@Deprecated

@@ -49,6 +49,30 @@ import org.jpl7.fli.term_t;
  * @version $Revision$
  */
 public abstract class Term {
+	
+	public static class PutTask {
+		public int n; // 0 -> put t into term; 1+ -> put t.arg(n) into term[n-1]
+		public Term t; // the term to be put, if n == 0, else whose n-th arg is to be put
+		public term_t term; // the term ref into which the term (or an arg) is to  be put
+		public term_t termP; // if not null and n == t.arity() then cons_functor_v from t.name()/t.arity() and term0 into term
+		public PutTask prev; // the next task down the stack, if any, else null
+
+		PutTask(int n, Term t, term_t term) {
+			this.n = n;
+			this.t = t;
+			this.term = term;
+			this.termP = null;
+			this.prev = null;
+		}
+
+		PutTask(int n, Term t, term_t term, term_t termP, PutTask prev) {
+			this.n = n;
+			this.t = t;
+			this.term = term;
+			this.termP = termP;
+			this.prev = prev;
+		}
+	}
 
 	/**
 	 * This default constructor enables subclasses to define their own default constructors
@@ -651,20 +675,99 @@ public abstract class Term {
 	// ==================================================================/
 
 	protected void put(term_t term) { // was public
-		put(new HashMap<String, term_t>(), term);
+		putTerm(this, new HashMap<String, term_t>(), term);
 	}
 
-	/**
-	 * Cache the reference to the Prolog term_t here.
-	 *
-	 * @param varnames_to_vars
-	 *            A Map from variable names to JPL Variables.
-	 * @param term
-	 *            A (previously created) term_t which is to be put with a Prolog term-type appropriate to the Term type
-	 *            (e.g., Atom, Variable, Compound, etc.) on which the method is invoked.)
-	 */
-	protected abstract void put(Map<String, term_t> varnames_to_vars, term_t term);
+	protected static void putTerm(Term t, Map<String, term_t> varnames_to_vars, term_t term) {
+		putLoop(new PutTask(0, t, term), varnames_to_vars);
+	}
 
+	protected static void putLoop(PutTask task0, Map<String, term_t> varnames_to_vars) {
+		PutTask top = task0; // initially, our stack is just the given task
+		while (top != null) { // while there's a (top-most) task to do
+			if (top.n > top.t.arity()) { // we have populated a vector of term refs for a Compound, and (only) now can we cons it 
+				if (top.termP != null) { // it's time to stash the populated Compound into this "parent" term ref
+					Prolog.cons_functor_v(top.termP, Prolog.new_functor(Prolog.new_atom(top.t.name()), top.t.arity()), top.term);
+				} else {
+					// we were presumably just stashing args for Query.open()
+				}
+				top = top.prev; // pop this completed task and iterate
+			} else {
+				Term t; // the Term which the switch will deal with in this iteration
+				term_t term; // the term ref into which the switch will put t in this iteration
+				if (top.n == 0) { // put t into term
+					t = top.t; // the Term to be put
+					term = top.term; // the term ref to put it in
+					top = top.prev; // pop this imminently completed task now lest we enstack a Compound task
+				} else { // put n-th arg of t into corresponding element of (0-based) term ref array
+					t = top.t.arg(top.n); // Term.arg() is 1-based
+					if (top.n == 1) {
+						term = top.term; // put t into the given term ref
+					} else { // top.n > 1
+						term = new term_t(); // there isn't a term_t(long value) constructor :-/
+						term.value = top.term.value + (top.n - 1); // n is 1-based but term ref array is 0-based
+					}
+					top.n++; // increment n for a subsequent iteration (safe: not referred to in switch) 
+				}
+				switch (t.type()) {
+				case Prolog.ATOM:
+					if (t.equals(JPL.LIST_NIL)) {
+						Prolog.put_nil(term);
+					} else {
+						Prolog.put_atom_chars(term, t.name());
+					}
+					break;
+				case Prolog.COMPOUND:
+					top = new PutTask(1, t, Prolog.new_term_refs(t.arity()), term, top); // push a new task, to put t's args starting with the first
+					break;
+				case Prolog.DICT:
+					Prolog.put_rational(term, t.toString()); // works because it is purely syntactic
+					break;
+				case Prolog.FLOAT:
+					Prolog.put_float(term, t.floatValue());
+					break;
+				case Prolog.INTEGER:
+					if (t.isBig()) {
+						Prolog.put_integer_big(term, t.bigValue().toString());
+					} else {
+						Prolog.put_integer(term, t.longValue());
+					}
+					break;
+				case Prolog.JREF:
+					Prolog.put_jref(term, t.object());
+					break;
+				case Prolog.RATIONAL:
+					Prolog.put_rational(term, t.toString());
+					break;
+				case Prolog.VARIABLE:
+					// To put a Variable, we must check whether a (non-anonymous) variable with
+					// the same name has already been put from this Term. If one has, then the
+					// corresponding Prolog variable has been stashed in the varnames_to_vars
+					// Map, keyed by the Variable's name, so we can look it up and reuse it (this
+					// way, the sharing of variables in the Prolog term reflects the sharing of
+					// Variable names in the Term). If a non-anonymous Variable's name has not
+					// already been seen in the Term, then we put a new Prolog variable and add
+					// it into the Map (keyed by this Variable's name).
+					term_t var;
+					if (t.name().equals("_") || (var = varnames_to_vars.get(t.name())) == null) {
+						((Variable) t).term_ = term;
+						((Variable) t).index = varnames_to_vars.size(); // i.e. first var in is #0 etc.
+						Prolog.put_variable(term);
+						if (!t.name().equals("_")) {
+							varnames_to_vars.put(t.name(), term);
+						}
+					} else {
+						((Variable) t).term_ = var;
+						Prolog.put_term(term, var);
+					}
+					break;
+				default:
+					throw(new JPLException("bad term type in Term.putLoop/2"));
+				}
+			}
+		}
+	}
+	
 	/**
 	 * This internal method is public because it needs to be callable via JNI, but it is not part of JPL's public API
 	 * and should not be used by applications.
@@ -716,40 +819,60 @@ public abstract class Term {
 		return ts2;
 	}
 
-	// experiment: for jni_jobject_to_term_byval/2 in jpl.c
+	// called by jni_jobject_to_term_byval/2 in jpl.c, hence necessarily public
 	public static void putTerm(Object obj, term_t termref) {
 		if (obj instanceof Term) {
-			((Term) obj).put(termref);
+			putTerm((Term) obj, new HashMap<String, term_t>(), termref);
 		} else {
 			throw new JPLException("not a Term");
 		}
 	}
 
 	/**
-	 * This static method converts an array of Terms to a *consecutive* sequence of term_t objects. Note that the first
+	 * Called only from Query.open(), this static method puts the arguments of a goal (Term) into *consecutive* term_t objects. Note that the first
 	 * term_t object returned is a term_t class (structure); the succeeding term_t objects are consecutive references
 	 * obtained by incrementing the *value* field of the term_t.
 	 *
 	 * @param varnames_to_vars
 	 *            Map from variable names to JPL Variables.
-	 * @param args
+	 * @param t
 	 *            An array of org.jpl7.Term references.
-	 * @return consecutive term_t references (first of which is a structure)
+	 * @return a term_t wrapping the first of t.arity() term refs into which t's args have now been put
 	 */
-	protected static term_t putTerms(Map<String, term_t> varnames_to_vars, Term[] args) {
+	protected static term_t putArgs(Term t, Map<String, term_t> varnames_to_vars) {
 		// First create a sequence of term_ts.
-		// The 0th term_t will be a org.jpl7.fli.term_t.
+		// The 0th term_t will be wrapped in an org.jpl7.fli.term_t.
 		// Successive Prolog term_t references will reside in the Prolog engine, and can be obtained by term0.value+i.
-		term_t term0 = Prolog.new_term_refs(args.length);
-		// For each new term ref, construct a Prolog term by putting an appropriate Prolog type into the ref.
-		long ith_term_t = term0.value;
-		for (int i = 0; i < args.length; ++i, ++ith_term_t) {
-			term_t term = new term_t();
-			term.value = ith_term_t;
-			args[i].put(varnames_to_vars, term); // each subclass defines its own put()
-		}
+		term_t term0 = Prolog.new_term_refs(t.arity());
+		putLoop(new PutTask(1, t, term0), varnames_to_vars);
 		return term0;
 	}
+
+//	/**
+//	 * This static method converts an array of Terms to a *consecutive* sequence of term_t objects. Note that the first
+//	 * term_t object returned is a term_t class (structure); the succeeding term_t objects are consecutive references
+//	 * obtained by incrementing the *value* field of the term_t.
+//	 *
+//	 * @param varnames_to_vars
+//	 *            Map from variable names to JPL Variables.
+//	 * @param args
+//	 *            An array of org.jpl7.Term references.
+//	 * @return consecutive term_t references (first of which is a structure)
+//	 */
+//	protected static term_t putTerms(Map<String, term_t> varnames_to_vars, Term[] args) {
+//		// First create a sequence of term_ts.
+//		// The 0th term_t will be a org.jpl7.fli.term_t.
+//		// Successive Prolog term_t references will reside in the Prolog engine, and can be obtained by term0.value+i.
+//		term_t term0 = Prolog.new_term_refs(args.length);
+//		// For each new term ref, construct a Prolog term by putting an appropriate Prolog type into the ref.
+//		long ith_term_t = term0.value;
+//		for (int i = 0; i < args.length; ++i, ++ith_term_t) {
+//			term_t term = new term_t();
+//			term.value = ith_term_t;
+//			putTerm(args[i], varnames_to_vars, term);
+//		}
+//		return term0;
+//	}
 
 	/**
 	 * The (non-null, non-String) object which this org.jpl7.JRef references.

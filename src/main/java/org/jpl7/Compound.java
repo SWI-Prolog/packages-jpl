@@ -262,21 +262,6 @@ public class Compound extends Term {
 	}
 
 	/**
-	 * To put a Compound in a term, we create a sequence of term_t references from the Term.terms_to_term_ts() method,
-	 * and then use the Prolog.cons_functor_v() method to create a Prolog compound term.
-	 *
-	 * @param varnames_to_vars
-	 *            A Map from variable names to Prolog variables
-	 * @param term
-	 *            A (previously created) term_t which is to be set to a Prolog term corresponding to the Term subtype
-	 *            (Atom, Variable, Compound, etc.) on which the method is invoked.
-	 */
-	protected void put(Map<String, term_t> varnames_to_vars, term_t term) {
-		Prolog.cons_functor_v(term, Prolog.new_functor(Prolog.new_atom(name), args.length),
-				Term.putTerms(varnames_to_vars, args));
-	}
-
-	/**
 	 * Sets the i-th (from 1) arg of this Compound to the given Term instance. This method, along with the
 	 * Compound(name,arity) constructor, serves the new, native Prolog-term-to-Java-term routine, and is public only so
 	 * as to be accessible via JNI: it is not intended for general use.

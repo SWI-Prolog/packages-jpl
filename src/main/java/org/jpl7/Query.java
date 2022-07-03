@@ -400,7 +400,7 @@ public class Query implements Iterable<Map<String, Term>>, Iterator<Map<String, 
 																			// hostModule
 		fid = Prolog.open_foreign_frame();
 		Map<String, term_t> varnames_to_vars = new HashMap<String, term_t>();
-		term0 = Term.putTerms(varnames_to_vars, goal.args());
+		term0 = Term.putArgs(goal, varnames_to_vars);
 		// THINKS: invert varnames_to_Vars and use it when getting
 		// substitutions?
 		qid = Prolog.open_query(Prolog.new_module(Prolog.new_atom(module)), Prolog.Q_CATCH_EXCEPTION, predicate,
