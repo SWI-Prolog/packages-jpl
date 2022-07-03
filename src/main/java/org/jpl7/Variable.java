@@ -202,40 +202,6 @@ public class Variable extends Term {
 		this.name = name;
 	}
 
-
-	/**
-	 * To put a Variable, we must check whether a (non-anonymous) variable with
-	 * the same name has already been put in the Term. If one has, then the
-	 * corresponding Prolog variable has been stashed in the varnames_to_vars
-	 * Map, keyed by the Variable name, so we can look it up and reuse it (this
-	 * way, the sharing of variables in the Prolog term reflects the sharing of
-	 * Variable names in the Term. Otherwise, if this Variable name has not
-	 * already been seen in the Term, then we put a new Prolog variable and add
-	 * it into the Map (keyed by this Variable name).
-	 *
-	 * @param varnames_to_vars
-	 *            A Map from variable names to Prolog variables.
-	 * @param term
-	 *            A (previously created) term_t which is to be set to a (new or
-	 *            reused) Prolog variable.
-	 */
-	protected final void put(Map<String, term_t> varnames_to_vars, term_t term) {
-		term_t var;
-		// if this var is anonymous or as yet unseen, put a new Prolog variable
-		if (this.name.equals("_") || (var = varnames_to_vars.get(this.name)) == null) {
-			this.term_ = term;
-			this.index = varnames_to_vars.size(); // i.e. first var in is #0
-													// etc.
-			Prolog.put_variable(term);
-			if (!this.name.equals("_")) {
-				varnames_to_vars.put(this.name, term);
-			}
-		} else {
-			this.term_ = var;
-			Prolog.put_term(term, var);
-		}
-	}
-
 	/**
 	 * whether, according to prevailing policy and this Variable's name, its
 	 * binding (if any) should be returned in a substitution (i.e. unless it's

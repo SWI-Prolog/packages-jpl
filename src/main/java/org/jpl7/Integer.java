@@ -218,22 +218,6 @@ public class Integer extends Term {
 	}
 
 	/**
-	 * To convert an Integer into a Prolog term, we put its value into the term_t.
-	 *
-	 * @param varnames_to_vars
-	 *            A Map from variable names to Prolog variables.
-	 * @param term
-	 *            A (previously created) term_t which is to be set to a Prolog integer
-	 */
-	protected final void put(Map<String, term_t> varnames_to_vars, term_t term) {
-		if (isBig()) {
-			Prolog.put_integer_big(term, bigValue.toString());
-		} else {
-			Prolog.put_integer(term, value);
-		}
-	}
-
-	/**
 	 * a Prolog source text representation of this Integer's value
 	 *
 	 * @return a Prolog source text representation of this Integer's value

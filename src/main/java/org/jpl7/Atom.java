@@ -165,24 +165,6 @@ public class Atom extends Term {
 	}
 
 	/**
-	 * To put an Atom in a term, we create a sequence of term_t references from the Term.terms_to_term_ts() method, and
-	 * then use the Prolog.cons_functor_v() method to create a Prolog compound term.
-	 *
-	 * @param varnames_to_vars
-	 *            A Map from variable names to Prolog variables
-	 * @param term
-	 *            A (previously created) term_t which is to be set to a Prolog term corresponding to the Term subtype
-	 *            (Atom, Variable, Compound, etc.) on which the method is invoked.
-	 */
-	protected void put(Map<String, term_t> varnames_to_vars, term_t term) {
-		if (this.equals(JPL.LIST_NIL)) {
-			Prolog.put_nil(term);
-		} else {
-			Prolog.put_atom_chars(term, name);
-		}
-	}
-
-	/**
 	 * an Atom's name is quoted if it is not a simple identifier.
 	 *
 	 * @return string representation of an Atom

@@ -236,6 +236,24 @@ public class Test_List extends JPLTest {
     // }
 
     @Test
+    public void testPutShortList1() {
+    	final int nA = 50;
+    	int[] a = new int[nA];
+    	Term t = Term.intArrayToList(a);
+    	Map<String, Term> soln = Query.oneSolution("length(?,Nb)", new Term[] {t});
+    	assertEquals("list of " + nA + " integers has expected length", nA, soln.get("Nb").intValue());
+    }
+
+    @Test
+    public void testPutLongList1() {
+    	final int nA = 5000;
+    	int[] a = new int[nA];
+    	Term t = Term.intArrayToList(a);
+    	Map<String, Term> soln = Query.oneSolution("length(?,Nb)", new Term[] {t});
+    	assertEquals("list of " + nA + " integers has expected length", nA, soln.get("Nb").intValue());
+    }
+
+    @Test
     public void test_textToTerm_and_toString() {
         final String[] options = { "[]", "[1,2,3]", "[1]", "[1,g(2,3,5),[1,2,3],abc,[1],a,[],b]", "[[1,2,3]]" };
         final String[] options2 = { "[]", "[1, 2, 3]", "[1]", "[1, g(2, 3, 5), [1, 2, 3], abc, [1], a, [], b]", "[[1, 2, 3]]" };

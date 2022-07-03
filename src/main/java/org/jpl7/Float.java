@@ -142,20 +142,6 @@ public class Float extends Term {
 	}
 
 	/**
-	 * To convert a JPL Float to a Prolog term, we put its value field into the
-	 * term_t as a float.
-	 *
-	 * @param varnames_to_vars
-	 *            A Map from variable names to Prolog variables.
-	 * @param term
-	 *            A (previously created) term_t which is to be set to a Prolog
-	 *            float corresponding to this Float's value
-	 */
-	protected final void put(Map<String, term_t> varnames_to_vars, term_t term) {
-		Prolog.put_float(term, value);
-	}
-
-	/**
 	 * Returns a Prolog source text representation of this Float
 	 *
 	 * @return a Prolog source text representation of this Float
