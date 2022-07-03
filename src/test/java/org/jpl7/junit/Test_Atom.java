@@ -136,6 +136,7 @@ public class Test_Atom extends JPLTest {
         assertEquals("two references to an Atom are equal by .equals()", a, a);
     }
 
+    @Test
     public void testAtomEquality3() {
         assertEquals("two distinct, same-named Atoms are equal by .equals()", new Atom("a"), new Atom("a"));
     }
