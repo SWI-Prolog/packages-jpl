@@ -54,7 +54,7 @@ public class Dict extends Term {
 	/**
 	 * The tag of the dictionary - an Atom or a Variable
 	 */
-	protected final Term tag;
+	protected Term tag; // was final, but non-recursive Term.get needs to set it later
 
 	/**
 	 * 	The mapping of the dictionary

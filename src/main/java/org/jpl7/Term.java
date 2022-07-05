@@ -11,6 +11,7 @@ import org.jpl7.fli.IntHolder;
 import org.jpl7.fli.ObjectHolder;
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.StringHolder;
+import org.jpl7.fli.TermHolder;
 import org.jpl7.fli.term_t;
 
 /**
@@ -20,7 +21,7 @@ import org.jpl7.fli.term_t;
  * text representation.
  *
  * <hr>
- * Copyright (C) 2004 Paul Singleton
+ * Copyright (C) 2020,2004 Paul Singleton
  * <p>
  * Copyright (C) 1998 Fred Dushin
  * <p>
@@ -70,6 +71,33 @@ public abstract class Term {
 			this.t = t;
 			this.term = term;
 			this.termP = termP;
+			this.prev = prev;
+		}
+	}
+	
+	public static class GetTask {
+		public int n; // <0 -> get (-n)th dict entry into hTerm.value's map; 0 -> get term into hTerm.value; >0 -> get nth arg of term into hTerm.value.args[n-1]
+		public TermHolder hTerm; // holds a new Compound or Dict whose args or entries are being got, or (if n == 0) will hold a got Term 
+		public term_t term; // FLI ref to a dict, compound or (if n == 0) anything else
+		public int arity; // the arity of a dict, if n < 0, else undefined
+		public Term value; // the value of a dict entry whose key is to be got, else undefined
+		public GetTask prev; // next task down on stack, if any, else null
+		
+		GetTask(int n, TermHolder hTerm, term_t term) {
+			this.n = n;
+			this.hTerm = hTerm;
+			this.term = term;
+			this.arity = 0;
+			this.value = null;
+			this.prev = null;
+		}
+
+		GetTask(int n, TermHolder hTerm, term_t term, int arity, GetTask prev) {
+			this.n = n;
+			this.hTerm = hTerm;
+			this.term = term;
+			this.arity = arity;
+			this.value = null;
 			this.prev = prev;
 		}
 	}
@@ -298,123 +326,7 @@ public abstract class Term {
 	 * @return The converted Term subclass instance.
 	 */
 	protected static Term getTerm(Map<term_t, Variable> vars_to_Vars, term_t term) {
-		StringHolder hString;
-		IntHolder hInt;
-		Int64Holder hInt64;
-		ObjectHolder hObject;
-		Term[] args;
-		switch (Prolog.term_type(term)) {
-			case Prolog.VARIABLE: // 1
-				for (Iterator<term_t> i = vars_to_Vars.keySet().iterator(); i.hasNext();) {
-					term_t varX = i.next(); // a previously seen Prolog
-					// variable
-					if (Prolog.compare(varX, term) == 0) { // identical Prolog
-						// variables?
-						return (Term) vars_to_Vars.get(varX); // return the
-						// associated JPL
-						// Variable
-					}
-				}
-				// otherwise, the Prolog variable in term has not been seen before
-				Variable Var = new Variable(); // allocate a new (sequentially
-				// named) Variable to represent it
-				Var.term_ = term; // this should become redundant...
-				vars_to_Vars.put(term, Var); // use Hashtable(var,null), but only
-				// need set(var)
-				return Var;
-			case Prolog.ATOM: // 2
-				hString = new StringHolder();
-				Prolog.get_atom_chars(term, hString); // ignore return val; assume
-				// success...
-				return new Atom(hString.value, "text");
-			case Prolog.STRING: // 5
-				hString = new StringHolder();
-				Prolog.get_string_chars(term, hString); // ignore return val; assume
-				// success...
-				return new Atom(hString.value, "string");
-			case Prolog.INTEGER: // 3
-				hInt64 = new Int64Holder();
-				if (Prolog.get_integer(term, hInt64)) { // assume it fails if Prolog
-					// integer is bigger than a
-					// Java long...
-					return new org.jpl7.Integer(hInt64.value);
-				} else {
-					hString = new StringHolder();
-					if (Prolog.get_integer_big(term, hString)) {
-						// System.out.println("bigint = " + hString.value);
-						return new org.jpl7.Integer(new java.math.BigInteger(hString.value));
-					} else {
-						return new org.jpl7.Integer(-3); // arbitrary
-					}
-				}
-			case Prolog.RATIONAL: // 4
-				hString = new StringHolder();
-				if (Prolog.get_rational(term, hString)) {
-					// System.out.println("bigint = " + hString.value);
-					return new org.jpl7.Rational(hString.value);
-				} else {
-					return new org.jpl7.Integer(-3); // arbitrary
-				}
-			case Prolog.FLOAT: // 5
-				DoubleHolder hFloatValue = new DoubleHolder();
-				Prolog.get_float(term, hFloatValue); // assume it succeeds...
-				return new org.jpl7.Float(hFloatValue.value);
-			case Prolog.COMPOUND: // 6
-			case Prolog.LIST_PAIR: // 9
-				hString = new StringHolder();
-				hInt = new IntHolder();
-				Prolog.get_name_arity(term, hString, hInt); // assume it succeeds
-				args = new Term[hInt.value];
-				// term_t term1 = Prolog.new_term_refs(hArity.value);
-				for (int i = 1; i <= hInt.value; i++) {
-					term_t termi = Prolog.new_term_ref();
-					Prolog.get_arg(i, term, termi);
-					args[i - 1] = Term.getTerm(vars_to_Vars, termi);
-				}
-				return new Compound(hString.value, args);
-			case Prolog.LIST_NIL: // 7
-				return JPL.LIST_NIL;
-			case Prolog.BLOB: // 8
-				hObject = new ObjectHolder();
-				if (Prolog.get_jref_object(term, hObject)) {
-					if (hObject.value == null) {
-						return JPL.JNULL;
-					} else {
-						return new JRef(hObject.value);
-					}
-				} else {
-					throw new JPLException("unsupported blob type passed from Prolog");
-				}
-			case Prolog.DICT: // 44
-				hString = new StringHolder();
-				hInt = new IntHolder();
-				Prolog.get_name_arity(term, hString, hInt);
-				// assume it succeeds hString = "dict" / term = dict(tag, v1, key1, v2, key2, ...)
-
-				// first get the tag name of the dictionary
-				term_t term_tag = Prolog.new_term_ref();
-				Prolog.get_arg(1, term, term_tag);
-				Term tagAtomOrVar = Term.getTerm(vars_to_Vars, term_tag);
-
-				Map<Atom, Term> map = new HashMap<Atom, Term>();
-				for (int i = 2; i <= hInt.value-1; i = i + 2) {
-					// get the value
-					term_t termValue = Prolog.new_term_ref();
-					Prolog.get_arg(i, term, termValue);
-					Term value = Term.getTerm(vars_to_Vars, termValue);
-
-					// Get the key
-					term_t termKey = Prolog.new_term_ref();
-					Prolog.get_arg(i+1, term, termKey);
-					Atom key = (Atom) Term.getTerm(vars_to_Vars, termKey);
-
-					// add key-value to mapping
-					map.put(key, value);
-				}
-				return new Dict(tagAtomOrVar, map);
-			default: // should never happen
-				throw new JPLException("unknown term type=" + Prolog.term_type(term));
-		}
+		return getLoop(new GetTask(0, new TermHolder(), term), vars_to_Vars);
 	}
 
 	protected static Term getTerm(term_t term) {
@@ -848,32 +760,6 @@ public abstract class Term {
 		return term0;
 	}
 
-//	/**
-//	 * This static method converts an array of Terms to a *consecutive* sequence of term_t objects. Note that the first
-//	 * term_t object returned is a term_t class (structure); the succeeding term_t objects are consecutive references
-//	 * obtained by incrementing the *value* field of the term_t.
-//	 *
-//	 * @param varnames_to_vars
-//	 *            Map from variable names to JPL Variables.
-//	 * @param args
-//	 *            An array of org.jpl7.Term references.
-//	 * @return consecutive term_t references (first of which is a structure)
-//	 */
-//	protected static term_t putTerms(Map<String, term_t> varnames_to_vars, Term[] args) {
-//		// First create a sequence of term_ts.
-//		// The 0th term_t will be a org.jpl7.fli.term_t.
-//		// Successive Prolog term_t references will reside in the Prolog engine, and can be obtained by term0.value+i.
-//		term_t term0 = Prolog.new_term_refs(args.length);
-//		// For each new term ref, construct a Prolog term by putting an appropriate Prolog type into the ref.
-//		long ith_term_t = term0.value;
-//		for (int i = 0; i < args.length; ++i, ++ith_term_t) {
-//			term_t term = new term_t();
-//			term.value = ith_term_t;
-//			putTerm(args[i], varnames_to_vars, term);
-//		}
-//		return term0;
-//	}
-
 	/**
 	 * The (non-null, non-String) object which this org.jpl7.JRef references.
 	 *
@@ -1195,6 +1081,150 @@ public abstract class Term {
 	@Deprecated
 	public final Term[] toTermArray() {
 		return listToTermArray();
+	}
+
+	protected static Term getLoop(GetTask task0, Map<term_t, Variable> vars_to_Vars) {
+		GetTask top = task0; // initially, our stack is just the given task
+		StringHolder hString = new StringHolder(); // used & reused within switch
+		StringHolder hName = new StringHolder(); // used & reused within switch
+		IntHolder hArity = new IntHolder(); // used & reused within switch
+		Int64Holder hInt64 = new Int64Holder(); // used & reused within switch
+		DoubleHolder hDouble = new DoubleHolder(); // used & reused within switch
+		ObjectHolder hObject = new ObjectHolder(); // used & reused within switch
+		while (top != null) { // there is a top-most task to do next
+			GetTask task = top; // in case we pop or push before we've finished referring to it
+			term_t term; // temp for a term ref for the switch, set appropriately before
+			Term t; // temp for a Term from the switch, stashed appropriately after
+			// set up term for the switch, according to task, and pop task if complete this cycle
+			if (task.n > 0) { // get n-th arg of compound in task.term
+				term = Prolog.new_term_ref();
+				Prolog.get_arg(task.n, task.term, term); // set up term as ref to the n-th arg of compound
+				if (task.n == task.arity) { // this recurrent task gets the last arg of a compound
+					top = top.prev; // pop this recurrent args-of-compound task (complete this cycle)
+				}
+			} else if (top.n < 0) { // get (-n)th arg of dict in task.term
+				term = Prolog.new_term_ref();
+				Prolog.get_arg(-task.n, task.term, term); // set up term as ref to (-n)-th arg of dict
+				if (-task.n == task.arity) { // this recurrent task gets the last arg of a dict
+					top = top.prev; // pop this recurrent args-of-dict task (complete this cycle)
+				}
+			} else { // special, initial case: just get a term
+				term = task.term; // get the term in task.term
+				top = top.prev; // pop this simple task (complete this cycle)
+			}
+			switch (Prolog.term_type(term)) { // get term into t (to be stashed appropriately later)
+			case Prolog.VARIABLE:
+				t = null; // provisionally, until/unless set within this for loop
+				for (Iterator<term_t> it = vars_to_Vars.keySet().iterator(); it.hasNext();) {
+					term_t varX = it.next(); // a previously seen Prolog variable
+					if (Prolog.compare(varX, term) == 0) { // referenced variables are identical
+						t = (Term) vars_to_Vars.get(varX); // yield this (reused) Variable
+						break; // out of enclosing for loop
+					}
+				}
+				if (t == null) { // the Prolog variable in term has not been seen so far in this get
+					Variable Var = new Variable(); // allocate a new (sequentially named, e.g. "_163") Variable
+					Var.term_ = term; // TODO understand this :-/
+					vars_to_Vars.put(term, Var); // enmap new Variable, keyed by term ref, lest we see it again
+					t = Var; // yield this new Variable
+				} // else a reused Variable was assigned to t in the for loop above
+				break;
+			case Prolog.ATOM: // specifically a "text" atom (see also Prolog.BLOB)
+				if (Prolog.get_atom_chars(term, hString)) {
+					t = new Atom(hString.value, "text");
+				} else {
+					throw new JPLException("Prolog.get_atom_chars failed");
+				}
+				break;
+			case Prolog.STRING:
+				if (Prolog.get_string_chars(term, hString)) {
+					t = new Atom(hString.value, "string");
+				} else {
+					throw new JPLException("Prolog.get_string_chars failed");
+				}
+				break;
+			case Prolog.INTEGER:
+				if (Prolog.get_integer(term, hInt64)) { // assume failure means it's too big for a Java long
+					t = new org.jpl7.Integer(hInt64.value); // fully qualified to avoid java.lang.Integer
+				} else {
+					if (Prolog.get_integer_big(term, hString)) {
+						t = new org.jpl7.Integer(new java.math.BigInteger(hString.value)); // ditto
+					} else {
+						throw new JPLException("Prolog.get_integer and Prolog.get_integer_big failed");
+					}
+				}
+				break;
+			case Prolog.BLOB:
+				if (Prolog.get_jref_object(term, hObject)) {
+					t = (hObject.value == null ? JPL.JNULL : new JRef(hObject.value));
+				} else {
+					throw new JPLException("unsupported blob type passed from Prolog");
+				}
+				break;
+			case Prolog.COMPOUND:
+			case Prolog.LIST_PAIR:
+				if (Prolog.get_name_arity(term, hName, hArity)) {
+					t = new Compound(hName.value, new Term[hArity.value]);
+					if (hArity.value > 0) { // since SWIPL7, compounds can have zero arity :-/
+						top = new GetTask(1, new TermHolder(t), term, hArity.value, top); // push recurring args-of-compound task
+					}
+				} else {
+					throw new JPLException("Prolog.get_name_arity failed");
+				}
+				break;
+			case Prolog.DICT: // term is dict(tag,value1,key1,value2,key2,..); TODO: keys can also be "small" integers
+				if (Prolog.get_name_arity(term, hName, hArity)) {
+					t = new Dict(null, new HashMap<Atom, Term>((hArity.value-1)/2)); // tag will be set by args-of-dict task
+					top = new GetTask(-1, new TermHolder(t), term, hArity.value, top); // push recurring args-of-dict task
+				} else {
+					throw new JPLException("Prolog.get_name_arity failed on a dict");
+				}
+				break;
+			case Prolog.FLOAT:
+				if (Prolog.get_float(term, hDouble)) {
+					t = new org.jpl7.Float(hDouble.value); // fully qualified to avoid java.lang.Float
+				} else {
+					throw new JPLException("Prolog.get_float failed");
+				}
+				break;
+			case Prolog.LIST_NIL:
+				t = JPL.LIST_NIL;
+				break;
+			case Prolog.RATIONAL:
+				if (Prolog.get_rational(term, hString)) {
+					t = new Rational(hString.value);
+				} else {
+					throw new JPLException("Prolog.get_rational failed");
+				}
+				break;
+			default: // should never happen
+				throw new JPLException("unknown term type=" + Prolog.term_type(term));
+			}
+			if (task.n > 0) { // we've just got, into t, the n-th arg of the Compound already (skeletally) in hTerm
+				task.hTerm.t.args()[task.n-1] = t; // stash the just-got Term t into the appropriate element of the skeletal Compound's (0-based) Term[] args
+				if (task.n < task.arity) { // there are more args to be got
+					task.n++; // update this recurrent task to get the next arg
+				}
+			} else if (task.n < 0) { // we're getting the args (tag, value or key) of a dict
+				if (-task.n == 1) { // we just got the tag (either an Atom or a Variable)
+					((Dict) task.hTerm.t).tag = t; // set the tag of the already-created, but skeletal, Dict
+					if (-task.n < task.arity) { // this dict has at least one entry
+						top.n--; // update this recurrent task to get the first value 
+					}
+				} else if ((-task.n)%2 == 0) { // we got a value (n is even)
+					task.n--; // update task to get this value's key
+					task.value = t; // save it in the task until next cycle
+				} else { // we got a key into t (odd n)
+					((Dict) task.hTerm.t).map.put((Atom) t, task.value); // value from previous cycle
+					if (-task.n < task.arity) { // not the last entry
+						task.n--; // update task to get the next value
+					}
+				}
+			} else { // simple (initial) task; we got a term 
+				task.hTerm.t = t;
+			}
+		}
+		return task0.hTerm.t; // when all tasks are complete, overall Term is in here
 	}
 
 
