@@ -3,6 +3,7 @@ package org.jpl7.junit;
 import org.jpl7.*;
 import org.jpl7.Integer;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -216,24 +217,25 @@ public class Test_List extends JPLTest {
         assertTrue((new Query("findall(foo(N),between(0,500,N),L)")).hasSolution());
     }
 
-    // public void testFetchLongList2c() { /* leads to stack overflow */
-    //	assertTrue((new Query("findall(foo(N),between(0,1023,N),L)")).hasSolution());
-    //}
+    @Test
+    public void testFetchLongList2c() {
+    	assertTrue((new Query("findall(foo(N),between(0,1000,N),L)")).hasSolution());
+    }
 
-    // public void testFetchLongList2a() {
-    // assertTrue((new
-    // Query("findall(foo(N),between(0,2000,N),L)")).hasSolution());
-    // }
+    @Test
+    public void testFetchLongList2a() {
+        assertTrue((new Query("findall(foo(N),between(0,2000,N),L)")).hasSolution());
+    }
     
-    // public void testFetchLongList2b() {
-    // assertTrue((new
-    // Query("findall(foo(N),between(0,3000,N),L)")).hasSolution());
-    // }
+    @Test
+    public void testFetchLongList2b() {
+        assertTrue((new Query("findall(foo(N),between(0,3000,N),L)")).hasSolution());
+    }
     
-    // public void testFetchLongList3() {
-    // assertTrue((new
-    // Query("findall(foo(N),between(0,10000,N),L)")).hasSolution());
-    // }
+    @Test
+    public void testFetchLongList3() {
+        assertTrue((new Query("findall(foo(N),between(0,10000,N),L)")).hasSolution());
+    }
 
     @Test
     public void testPutShortList1() {
