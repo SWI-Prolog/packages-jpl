@@ -1,45 +1,17 @@
 package org.jpl7.junit;
 
 import org.jpl7.*;
-import org.jpl7.Float;
-import org.jpl7.Integer;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
+import org.jpl7.Float; // prefer to java.lang.Float
+import org.jpl7.Integer; // prefer to java.lang.Integer
 import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class Test_QueryBuilder extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.junit.Test_QueryBuilder");
-
-        // should work from static class but gives error
-//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
+        org.junit.runner.JUnitCore.main(Test_QueryBuilder.class.getName()); // full name with package
     }
-
-    /**
-     * This is done at the class loading, before any test is run
-     */
-    @BeforeClass
-    public static void setUp() {
-        setUpClass();
-    }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testTerm1() {
@@ -49,12 +21,10 @@ public class Test_QueryBuilder extends JPLTest {
         assertTrue("Query should have succeded, but it did not!", q.hasSolution());
     }
 
-    // Query term is not an Atom or Compound, but an Float!
     @Test
     public void testTermErr1() {
-        Term t = new Float(1.23);
         try {
-            new Query(t);
+            new Query(new Float(1.23)); // unsuitable goal (neither Atom nor Integer)
             fail("Query should have given JPLException");
         } catch (JPLException e) { // expect "a Query's goal must be an Atom or Compound (not a Float)"
             // all good!
@@ -96,11 +66,10 @@ public class Test_QueryBuilder extends JPLTest {
         assertTrue("Query should have succeded, but it did not!", q.hasSolution());
     }
 
-    // Query term is not an Atom or Compound, but an Integer!
     @Test
     public void testStringErr1() {
         try {
-            new Query("112");
+            new Query("112"); // unsuitable goal (neither Atom nor Integer)
             fail("Query should have given JPLException");
         } catch (JPLException e) { // expect "a Query's goal must be an Atom or Compound (not an Integer)"
             // all good!
@@ -114,7 +83,7 @@ public class Test_QueryBuilder extends JPLTest {
     @Test
     public void testStringErr2() {
         try {
-            new Query("112(sas,23");
+            new Query("112(sas,23"); // unsuitable goal (not a Term)
             fail("Query should have given PrologException: malformed query");
         } catch (PrologException e) { // expect it to match error(syntax_error(_), _)
             // all good!
@@ -126,12 +95,11 @@ public class Test_QueryBuilder extends JPLTest {
         }
     }
 
-    // Error in number of placeholder matching arguments (too few)
     @Test
     public void testStringErr3() {
         Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
         try {
-            new Query("member(?, ?, ?)", args);
+            new Query("member(?, ?, ?)", args); // too few args
             fail("Query should have given JPLException");
         } catch (JPLException e) { // expect "fewer actual params than formal params"
             // all good!
@@ -141,16 +109,15 @@ public class Test_QueryBuilder extends JPLTest {
         }
     }
 
-    // Error in number of placeholder matching arguments (too many)
     @Test
     public void testStringErr4() {
         Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
         try {
-            new Query("member(?)", args);
+            new Query("member(?)", args); // too many args
             fail("Query should have given JPLException");
         } catch (JPLException e) { // expect "more actual params than formal"
             // all good!
-            reportNoise("\t" + e.getMessage());
+            reportNoise("\t" + e.getMessage()); // spurious success noise
         } catch (Exception e) {
             fail("Query should have given JPLException");
         }

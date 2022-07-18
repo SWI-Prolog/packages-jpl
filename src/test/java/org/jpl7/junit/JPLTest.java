@@ -1,11 +1,13 @@
 package org.jpl7.junit;
 
-
 import org.jpl7.JPL;
 import org.jpl7.Query;
-import org.junit.runner.Description;
-
 import static org.junit.Assert.fail;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 abstract class JPLTest {
     public static final String home =
@@ -16,7 +18,6 @@ abstract class JPLTest {
             (System.getenv("SWIPL_BOOT_FILE") == null ? String.format("%s/boot.prc", home)
                     : System.getenv("SWIPL_BOOT_FILE"));
 
-    //    public static final String swi_exec = String.format("%s/../src/swipl", home);
     // Somehow Windows requires libswipl.dll (https://github.com/SWI-Prolog/packages-jpl/issues/32)
     //  but if we use that in Linux, then swipl.rc does not load the search paths correctly
     public static final String swi_exec = String.format("%s/../src/swipl", home);
@@ -36,14 +37,18 @@ abstract class JPLTest {
     public static final String test_jpl = String.format("%s/test_jpl.pl", source_dir);
     
     public static final boolean report =
-            (System.getenv("REPORT") == null ? true
+            (System.getenv("REPORT") == null ? false // PS 12/Jul/2022 was true
                     : "true".equalsIgnoreCase(System.getenv("REPORT")));
+
+    @BeforeClass
+    public static void setUp() { // overridden where inadequate
+        setUpClass();
+    }
 
     protected static void setUpClass() {
         if (syntax.equals("traditional")) {
             JPL.setTraditional();
         }
-
         // CLI options for SWI: https://www.swi-prolog.org/pldoc/man?section=cmdline
         // This is how the SWI engine will be configured/set-up
         //  See this issue on how this line came up: https://github.com/SWI-Prolog/packages-jpl/issues/32
@@ -52,11 +57,16 @@ abstract class JPLTest {
         String init_swi_config =
                 String.format("%s -x %s -F swipl --home=%s -f none -g true -q --no-signals --no-packs",
                         swi_exec, startup, home);
-
-        // Configure the SWI engine before starting - both statements are equivalent
+        // Configure the SWI engine before starting
         JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));
-//        Prolog.set_default_init_args(init_swi_config.split("\\s+"));
     }
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        protected void starting(Description description) {
+            reportTest(description);
+        }
+    };
 
     // This is how the test is reported
     protected void reportTest(Description description) {
