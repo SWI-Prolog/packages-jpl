@@ -210,7 +210,7 @@ public class Variable extends Term {
 	 * @return whether, according to prevailing policy and this Variable's name,
 	 *         its binding (if any) should be returned in a substitution
 	 */
-	private boolean tellThem() {
+	protected boolean tellThem() {
 		return !(this.name.equals("_") || org.jpl7.JPL.modeDontTellMe && this.name.charAt(0) == '_');
 	}
 
