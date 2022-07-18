@@ -102,6 +102,18 @@ public abstract class Term {
 		}
 	}
 
+	public static class GetSubstsTask {
+		public int n; // update varnames_to_Terms from args[n]
+		public Term[] args;
+		public GetSubstsTask prev;
+		
+		GetSubstsTask(int n, Term[] args, GetSubstsTask prev) {
+			this.n = n;
+			this.args = args;
+			this.prev = prev;
+		}
+	}
+	
 	/**
 	 * This default constructor enables subclasses to define their own default constructors
 	 */
@@ -835,9 +847,7 @@ public abstract class Term {
 	 */
 	protected static void getSubsts(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars,
 									Term[] args) {
-		for (int i = 0; i < args.length; ++i) {
-			args[i].getSubst(varnames_to_Terms, vars_to_Vars);
-		}
+		getSubstsLoop(varnames_to_Terms, vars_to_Vars, args);
 	}
 
 	/**
@@ -1227,5 +1237,45 @@ public abstract class Term {
 		return task0.hTerm.t; // when all tasks are complete, overall Term is in here
 	}
 
+	protected static void getSubstsLoop(Map<String, Term> varnames_to_Terms, Map<term_t, Variable> vars_to_Vars, Term[] args) {
+		GetSubstsTask top = (args.length > 0 ? new GetSubstsTask(0, args, null) : null); // prime the stack
+		while (top != null) {
+			GetSubstsTask task = top;
+			Term t = task.args[task.n];
+			if (task.n+1 < task.args.length) { // there are further args to scan
+				task.n++; // update this recurrent task for next arg and leave it on the stack
+			} else {
+				top = top.prev; // pop this now-completed recurrent task
+			}
+			switch (t.type()) {
+			case Prolog.VARIABLE:
+				Variable v = (Variable) t;
+				if (v.tellThem() && varnames_to_Terms.get(v.name) == null) {
+					varnames_to_Terms.put(v.name, Term.getTerm(vars_to_Vars, v.term_));
+				}
+				break;
+			case Prolog.COMPOUND:
+			case Prolog.LIST_PAIR:
+				if (t.args().length > 0) { // this Compound has at least one arg
+					top = new GetSubstsTask(0, t.args(), top);
+				} else {
+					// zero-arity Compound; no subterms to traverse
+				}
+				break;
+			case Prolog.ATOM:
+			case Prolog.BLOB:
+			case Prolog.DICT:
+			case Prolog.FLOAT:
+			case Prolog.INTEGER:
+			case Prolog.JREF:
+			case Prolog.LIST_NIL:
+			case Prolog.RATIONAL:
+			case Prolog.STRING:
+				break; // nothing to do for these term types
+			default: // should never happen
+				throw new JPLException("unknown term type=" + t.type());
+			}
+		}
+	}
 
 }
