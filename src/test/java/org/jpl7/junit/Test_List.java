@@ -1,49 +1,19 @@
 package org.jpl7.junit;
 
-import org.jpl7.*;
-import org.jpl7.Integer;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
 import java.util.Arrays;
 import java.util.Map;
-
+import org.jpl7.*;
+import org.jpl7.Integer; // prefer to java.lang.Integer
 import static org.junit.Assert.*;
-
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class Test_List extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.junit.Test_List");
-
-        // should work from static class but gives error
-//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
+        org.junit.runner.JUnitCore.main(Test_List.class.getName()); // full name with package
     }
-
-    /**
-     * This is done at the class loading, before any test is run
-     */
-    @BeforeClass
-    public static void setUp() {
-        setUpClass();
-    }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // SUPPORTING CODE
-    ///////////////////////////////////////////////////////////////////////////////
 
     private static Term[] terms_pair_integers = new Term[]{new Integer(1), new Integer(2)};
     private static Term[] terms_integers = new Term[]{new Integer(1), new Integer(2), new Integer(3)};
@@ -55,10 +25,6 @@ public class Test_List extends JPLTest {
     private static Term list_complex = Term.textToTerm("[1, [1,2,3], 3]");
 //  private static Term[] lists_many = new Term[]{list_empty, list_unit, list_unit_complex, list_simple, list_complex}; // not (yet) used
     private static Term[] lists_many_noempty = new Term[]{list_unit, list_unit_complex, list_simple, list_complex};
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // TESTS
-    ///////////////////////////////////////////////////////////////////////////////
 
     @Test
     public void testListNil1() {
@@ -197,10 +163,11 @@ public class Test_List extends JPLTest {
         assertEquals(goal + " has 6 solutions", 6, Query.allSolutions(goal).length);
     }
 
-//    @Test
-//    public void testFetchCyclicTerm(){
-//        assertTrue((new Query("X=f(X)")).hasSolution()); // causes a stack overflow in JVM :-/
-//    }
+    @Ignore
+    @Test
+    public void testFetchCyclicTerm(){
+        assertTrue((new Query("X=f(X)")).hasSolution()); // causes a stack overflow in JVM :-/
+    }
     
     @Test
     public void testFetchLongList0() {

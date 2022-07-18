@@ -1,42 +1,15 @@
 package org.jpl7.junit;
 
-import org.jpl7.PrologException;
-import org.jpl7.Query;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
+import org.jpl7.*;
 import static org.junit.Assert.*;
-
+import org.junit.Test;
 
 public class Test_Module extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.junit.Test_Module");
-
-        // should work from static class but gives error
-//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
+        org.junit.runner.JUnitCore.main(Test_Module.class.getName()); // full name with package
     }
-
-    /**
-     * This is done at the class loading, before any test is run
-     */
-    @BeforeClass
-    public static void setUp() {
-        setUpClass();
-        useJPLmodule();     // consult the jpl.pl module
-    }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
 
     @Test
     public void testGoalWithModulePrefix1() {

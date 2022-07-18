@@ -1,43 +1,23 @@
 package org.jpl7.junit;
 
 import org.jpl7.*;
-import org.jpl7.Integer;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
+import org.jpl7.Integer; // prefer to java.lang.Integer
 import static org.junit.Assert.*;
-
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class Test_JRef extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.junit.Test_JRef");
-
-        // should work from static class but gives error
-//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
+        org.junit.runner.JUnitCore.main(Test_JRef.class.getName()); // full name with package
     }
 
-    /**
-     * This is done at the class loading, before any test is run
-     */
     @BeforeClass
     public static void setUp() {
         setUpClass();
         consultTestFile();  // load the test_jpl.pl file
-        useJPLmodule();     // consult the jpl.pl module
     }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
 
     @Test
     public void testJRef1() {

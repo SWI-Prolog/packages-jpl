@@ -1,42 +1,23 @@
 package org.jpl7.junit;
 
-import org.jpl7.*;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
 import java.util.Map;
-
+import org.jpl7.*;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class Test_Data extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.junit.Test_Data");
-
-        // should work from static class but gives error
-//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
+        org.junit.runner.JUnitCore.main(Test_Data.class.getName()); // full name with package
     }
 
-    /**
-     * This is done at the class loading, before any test is run
-     */
     @BeforeClass
     public static void setUp() {
         setUpClass();
         Query.hasSolution(String.format("consult('%s/test_quoted_module.pl')", test_dir)); // .pl file to be used
     }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
 
     @Test
     public void quotedName1() {

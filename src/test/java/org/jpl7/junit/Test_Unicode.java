@@ -1,42 +1,16 @@
 package org.jpl7.junit;
 
-import org.jpl7.Atom;
-import org.jpl7.Query;
-import org.jpl7.Term;
-import org.junit.BeforeClass;
-import org.junit.Rule;
+import org.jpl7.*;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 
 import static org.junit.Assert.*;
-
 
 public class Test_Unicode extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.junit.Test_Unicode");
-
-        // should work from static class but gives error
-//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
+        org.junit.runner.JUnitCore.main(Test_Unicode.class.getName()); // full name with package
     }
-
-    /**
-     * This is done at the class loading, before any test is run
-     */
-    @BeforeClass
-    public static void setUp() {
-        setUpClass();
-    }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
 
     @Test
     public void testUnicode0() {

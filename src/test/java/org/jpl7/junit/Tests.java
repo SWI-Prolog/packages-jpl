@@ -1,48 +1,19 @@
 package org.jpl7.junit;
 
-import org.jpl7.Integer;
-import org.jpl7.*;
-import org.jpl7.fli.Prolog;
-
-// This is the original testbed ported to  JUNIT Version 4:
-// https://junit.org/junit4/faq.html
-//https://objectcomputing.com/resources/publications/sett/august-2007-migrating-from-junit-3-to-junit-4-nothing-but-good-news
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
 import java.util.Map;
-
+import org.jpl7.*;
+import org.jpl7.Integer; // prefer to java.lang.Integer
+import org.jpl7.fli.Prolog;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
+import org.junit.Test;
 
-// This class defines all the tests which are run from Java.
 public class Tests extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.junit.Tests");
-
-        // should work from static class but gives error
-//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
+        org.junit.runner.JUnitCore.main(Tests.class.getName()); // full name with package
     }
-
-    /**
-     * This is done at the class loading, before any test is run
-     */
-    @BeforeClass
-    public static void setUp() {
-        setUpClass();
-    }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
 
     @Test
     public void testSameLibVersions1() {
@@ -61,15 +32,8 @@ public class Tests extends JPLTest {
         assertEquals(msg, java_lib_version, pl_lib_version);
     }
 
-
-    // the tests; all public void test*()
-
-    /**
-     * TEST DISABLED!
-     *
-     * This test is meant to abort a query that is taking too long but Query.abort() does not exists!
-     */
-//    @Test
+    @Ignore
+    @Test
     public void testSlowGoal() {
         final Query q = new Query("sleep(10)"); // 10 successive sleep(1)
         Thread t = new Thread(new Runnable() {
@@ -92,7 +56,7 @@ public class Tests extends JPLTest {
         // (new Query("set_prolog_flag(abort_with_exception,
         // true)")).hasSolution();
         System.err.println("calling q.abort()...");
-//        q.abort();
+//        q.abort(); // not yet implemented
         System.err.println();
     }
 

@@ -1,48 +1,18 @@
 package org.jpl7.junit;
 
-import org.jpl7.*;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
+import org.jpl7.*;
 import static org.junit.Assert.*;
+import org.junit.Test;
 
-// This is the original testbed ported to  JUNIT Version 4:
-// https://junit.org/junit4/faq.html
-//https://objectcomputing.com/resources/publications/sett/august-2007-migrating-from-junit-3-to-junit-4-nothing-but-good-news
-
-// This class defines all the tests which are run from Java.
 public class Test_Variables extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main("org.jpl7.junit.Test_Variables");
-
-        // should work from static class but gives error
-//        org.junit.runner.JUnitCore.main( GetSolution.class.getName()); // full name with package
+        org.junit.runner.JUnitCore.main(Test_Variables.class.getName()); // full name with package
     }
-
-    /**
-     * This is done at the class loading, before any test is run
-     */
-    @BeforeClass
-    public static void setUp() {
-        setUpClass();
-    }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
 
     @Test
     public void test_variable_binding1() {
