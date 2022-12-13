@@ -11,7 +11,7 @@ To use JPL under Linux one must have the following in place (here showing the lo
    * The C Native JPL Library `libjpl.so` at `$SWI_HOME_DIR/lib/x86_64-linux/libjpl.so`.
    * The Java API JAR file `jpl.jar` in `$SWI_HOME_DIR/lib/jpl.jar`.
    * The Prolog API as an SWIPL source module `jpl.pl` at `$SWI_HOME_DIR/library`.
-   
+
 **_What does an embedded application need to find?_**
 
 * The Java API via `jpl.jar`. This needs to be in the `CLASSPATH`.
@@ -19,9 +19,8 @@ To use JPL under Linux one must have the following in place (here showing the lo
 * All C Native libraries `.so`, including `libjpl.so`. For that, `LD_LIBRARY_PATH` needs to be given.
 * If doing Prolog-calls-Java, `libjvm.so`'s directory needs to be in `LD_LIBRARY_PATH` for the JVM shared objects to be found.
 
- 
 ## Which SWIPL version to (not) use?
-  
+
 JPL is **generally distributed with official Linux**. For example, in Ubuntu-based systems, JPL is provided via package `swi-prolog-java`. That package includes the C library `libjpl.so`, the Java API `jpl.jar`, the Prolog module `jpl.pl` as well as all associated documentation. However, these distribution-based packages are **highly out-of-date**. There are two solutions to get more up to date SWIPL:
 
 1. For Debian-based systems (Debian, Ubuntu, Mint, ...) you can get the latest stable and development versions via [this PPAs](http://www.swi-prolog.org/build/PPA.txt) provided directly by SWI-Prolog.
@@ -29,9 +28,8 @@ JPL is **generally distributed with official Linux**. For example, in Ubuntu-bas
 
 2. Manually compile & install from sources at [SWI-devel repo](https://github.com/SWI-Prolog/swipl-devel) using CMAKE. See instructions below.
 
+If you want to have more than one SWIPL installed (your locally compiled system and the distribution one), you may want to use  `fnogatz`'s [swivm](https://github.com/fnogatz/swivm) to various SWIPL installs.
 
-If you want to have more than one SWIPL installed (your locally compiled system and the distribution one), you may want to use  `fnogatz`'s [swivm](https://github.com/fnogatz/swivm) to manage them.
-   
 ## Configuring environment variables
 
 When embedding SWIPL into a Java, one may need to "tell" the Java application the right information, via environment variables, so that SWIPL is initialized properly and can find all resources (`.pl` and `.so` libraries).
@@ -40,15 +38,14 @@ In general, if the Java application will use the default executable of the syste
 
 However, if your embedded application must use an SWIPL & JPL version that is _not_ the executable default in the system, one needs to provide the right paths to find SWIPL's home dir _and_ SWIPL's C native `.so` libraries.
 
-
 ### Using stable distribution versions of SWIPL
 
 To use the SWIPL install in the **standard distribution** install location:
 
-```bash
+```shell
 SWI_HOME_DIR=/usr/lib/swi-prolog/   # if default binary not pointing to this version
-LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/x86_64-linux/   # to find all .so, including libjpl.so
-CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar # Java API
+LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/x86_64-linux/:$LD_LIBRARY_PATH   # to find all .so, including libjpl.so
+CLASSPATH=/usr/lib/swi-prolog/lib/jpl.jar:$CLASSPATH # Java API
 LD_PRELOAD=/usr/lib/libswipl.so  # core SWIPL
 ```
 
@@ -56,24 +53,36 @@ LD_PRELOAD=/usr/lib/libswipl.so  # core SWIPL
 
 Alternatively, if you have **compiled and installed** an SWIPL system, say, under directory `/usr/local/swipl-git/`, then:
 
-```bash
+```shell
 SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/  # if binary exec not pointing to this SWIPL
-LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/     # to find all .so, including libjpl.so
-CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar
+LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/:$LD_LIBRARY_PATH     # to find all .so, including libjpl.so
+CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar:$CLASSPATH
 LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so  # see below for explanation
 ```
 
 or in one line (for IDE Run configurations, for example):
 
-```bash
+```shell
 CLASSPATH=/usr/local/swipl-git/lib/swipl/lib/jpl.jar;LD_LIBRARY_PATH=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/;LD_PRELOAD=/usr/local/swipl-git/lib/swipl/lib/x86_64-linux/libswipl.so;SWI_HOME_DIR=/usr/local/swipl-git/lib/swipl/
 ```
 
-If you want to run your application against a development source tree of SWIPL & JPL that is not yet installed in the system, then refer to [Developing JPL](TutorialDeveloping.md) guide.
+You can run that local install of SWIPL as follows:
 
+```shell
+$ /usr/local/swipl-git/lib/swipl/bin/x86_64-linux/swipl
+Welcome to SWI-Prolog (threaded, 64 bits, version 9.1.1-11-gd1252fcda)
+SWI-Prolog comes with ABSOLUTELY NO WARRANTY. This is free software.
+Please run ?- license. for legal details.
 
-Again, you can check `fnogatz`'s [swivm](https://github.com/fnogatz/swivm) system to manage many SWIPL.
+For online help and background, visit https://www.swi-prolog.org
+For built-in help, use ?- help(Topic). or ?- apropos(Word).
 
+?-
+```
+
+### Using locally compiled, but not yet installed, version of SWIPL
+
+If you want to run your application against a development source tree of SWIPL & JPL that is not yet installed in the system, then refer to [Developing JPL](DevelopmentJPL-Live.md) guide.
 
 ## Troubleshooting
 
@@ -94,7 +103,7 @@ true.
 
 Do a `locate libjvm.so` to find where it is and add the path to `LD_LIBRARY_PATH` so that Java VM shard objects can be found:
 
-```bash
+```shell
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/jvm/java-11-openjdk-amd64/lib/server
 ```
 
@@ -111,7 +120,7 @@ Make sure `LD_LIBRARY_PATH` and `SWI_HOME_DIR` are correctly set (see above).
 
 You need to tell the system to pre-load SWI main library:
 
-```bash
+```shell
 export LD_PRELOAD=/home/ssardina/git/soft/prolog/swipl-devel.git/build/src/libswipl.so
 ```
 
