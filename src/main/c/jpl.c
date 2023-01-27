@@ -439,7 +439,7 @@ write_jref_handle(IOSTREAM *s, atom_t jref, int flags)
 { jref_handle *ref = PL_blob_data(jref, NULL, NULL);
   (void)flags;
 
-  Sfprintf(s, "<jref>(%p)", ref->iref);
+  Sfprintf(s, "<jref>(%p)", (void*)(ref->iref));
   return TRUE;
 }
 
@@ -458,7 +458,7 @@ release_jref_handle(atom_t jref)
   { if (!jni_free_iref(env, ref->iref))
       DEBUG(0, Sdprintf("[JPL: garbage-collected jref<%p> is bogus (not in "
 			"HashedRefs)]\n",
-			ref->iref));
+			(void*)(ref->iref)));
   }
 
   return TRUE;
@@ -998,7 +998,7 @@ jni_free_iref(JNIEnv *env, pointer iref)
 { if (jni_hr_del(env, iref)) /* iref matched a hashedref table entry?
 				(in which case, was deleted) */
   { if (!jni_tidy_iref_type_cache(iref))
-      DEBUG(0, Sdprintf("[JPL: jni_tidy_iref_type_cache(%u) failed]\n", iref));
+      DEBUG(0, Sdprintf("[JPL: jni_tidy_iref_type_cache(%" PRIuPTR ") failed]\n", iref));
     hr_del_count++;
     return TRUE;
   } else
@@ -1386,7 +1386,7 @@ jni_hr_del_unlocked(JNIEnv *env, pointer iref)
   HrEntry * ep;    /* pointer to a HashedRef table entry */
   HrEntry **epp;   /* pointer to ep's handle, in case it needs updating */
 
-  DEBUG(1, Sdprintf("[removing possible object reference %u]\n", iref));
+  DEBUG(1, Sdprintf("[removing possible object reference %" PRIuPTR "]\n", iref));
   for (index = 0; index < hr_table->length; index++) /* for each slot */
   { for (epp = &(hr_table->slots[index]), ep = *epp; ep != NULL;
 	 epp = &(ep->next), ep = *epp)
@@ -1398,14 +1398,14 @@ jni_hr_del_unlocked(JNIEnv *env, pointer iref)
 	hr_table->count--;                /* adjust table's entry count */
 	DEBUG(1,
 	      Sdprintf(
-		  "[found & removed hashtable entry for object reference %u]\n",
+		  "[found & removed hashtable entry for object reference %" PRIuPTR "]\n",
 		  iref));
 	return TRUE; /* entry found and removed */
       }
     }
   }
   DEBUG(1, Sdprintf("[JPL: failed to find hashtable entry for (presumably "
-		    "bogus) object reference %u]\n",
+		    "bogus) object reference %" PRIuPTR "]\n",
 		    iref));
   return FALSE;
 }
@@ -3721,7 +3721,7 @@ Java_org_jpl7_fli_Prolog_compare(JNIEnv *env, jclass jProlog,
   if ( jpl_ensure_pvm_init(env) &&
        getTermValue(env, jterm1, &term1) &&
        getTermValue(env, jterm2, &term2) )
-  { DEBUG(1, Sdprintf("> PL_compare( %u, %u)", term1, term2));
+  { DEBUG(1, Sdprintf("> PL_compare( %" PRIuPTR ", %" PRIuPTR ")", term1, term2));
     return PL_compare(term1, term2); /* returns -1, 0 or 1 */
   } else
   { return -2; /* oughta throw an exception... */
@@ -4154,7 +4154,7 @@ Java_org_jpl7_fli_Prolog_new_1term_1refs(JNIEnv *env, jclass jProlog, jint jn)
 { jobject rval;
   term_t  trefs;
 
-  DEBUG(1, Sdprintf(">new_term_refs(env=%p,jProlog=%p,jn=%p)...\n", env,
+  DEBUG(1, Sdprintf(">new_term_refs(env=%p,jProlog=%p,jn=%" PRId32 ")...\n", env,
 		    jProlog, jn));
 
   if ( jpl_ensure_pvm_init(env) &&
@@ -4214,7 +4214,7 @@ Java_org_jpl7_fli_Prolog_open_1query(JNIEnv *env, jclass jProlog,
   qid_t       qid;
   jobject     jqid; /* for returned new QidT object */
 
-  DEBUG(1, Sdprintf(">open_query(env=%lu,jProlog=%p,jmodule=%p,jflags=%p,"
+  DEBUG(1, Sdprintf(">open_query(env=%p,jProlog=%p,jmodule=%p,jflags=%" PRId32 ","
 		    "jpredicate=%p,jterm0=%p)...\n",
 		    env, jProlog, jmodule, jflags, jpredicate, jterm0));
   return (
@@ -4238,8 +4238,8 @@ Java_org_jpl7_fli_Prolog_open_1query(JNIEnv *env, jclass jProlog,
 	      && ((qid = PL_open_query(module, jflags, predicate, term0)),
 		  TRUE) /* NULL module is OK (?) [ISSUE] */
 	      && (DEBUG(1, Sdprintf("  ok: "
-				    "PL_open_query(module=%p,jflags=%u,"
-				    "predicate=%p,term0=%p)=%p\n",
+				    "PL_open_query(module=%p,jflags=%" PRIu32 ","
+				    "predicate=%p,term0=0x%" PRIxPTR ")=%p\n",
 				    module, jflags, predicate, term0, qid)),
 		  TRUE) &&
 	      (jqid = (*env)->AllocObject(env, jQidT_c)) != NULL &&
@@ -4279,7 +4279,7 @@ Java_org_jpl7_fli_Prolog_predicate(JNIEnv *env, jclass jProlog,
 
   DEBUG(1,
 	Sdprintf(
-	    ">predicate(env=%p,jProlog=%p,jname=%p,jarity=%p,jmodule=%p)...\n",
+	    ">predicate(env=%p,jProlog=%p,jname=%p,jarity=%" PRId32 ",jmodule=%p)...\n",
 	    env, jProlog, jname, jarity, jmodule));
   return (jpl_ensure_pvm_init(env) &&
 		  jni_String_to_atom(env, jname,
@@ -4873,7 +4873,7 @@ jni_set_default_jvm_opts_plc(
       free(jvm_dia);
       jvm_dia = (char **)malloc((n + 1) * sizeof(char **));
     } else
-    { DEBUG(1, Sdprintf("JPL needs [%d] JVM opts as before\n"));
+    { DEBUG(1, Sdprintf("JPL needs [%d] JVM opts as before\n", n));
     }
   }
   head = PL_new_term_ref();      /* variable for the elements */
