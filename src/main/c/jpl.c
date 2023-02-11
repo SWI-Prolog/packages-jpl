@@ -469,7 +469,9 @@ save_jref(atom_t jref, IOSTREAM *fd)
 { jref_handle *ref = PL_blob_data(jref, NULL, NULL);
   (void)fd;
 
-  return PL_warning("Cannot save reference to <jref>(%p)", ref->iref);
+  /* TODO: "%p",(void*)ref->iref should be "0x" PRIxPTR, ref->iref
+           (and elsewhere in this file). */
+  return PL_warning("Cannot save reference to <jref>(%p)", (void*)ref->iref);
 }
 
 static atom_t
