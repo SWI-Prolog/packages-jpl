@@ -4054,6 +4054,7 @@ add_java_to_ldpath.
 %   to %PATH% on this platform.
 
 :- if(current_prolog_flag(windows,true)).
+:- use_module(library(shlib), [win_add_dll_directory/1]).
 extend_dll_search_path(Dir) :-
     win_add_dll_directory(Dir),
     (   current_prolog_flag(wine_version, _)
