@@ -48,13 +48,6 @@ set(JAVA_COMPATIBILITY_VERSION 7 CACHE STRING
 # compatibility.
 
 
-if(JAVA_COMPATIBILITY)
-  set(CMAKE_JAVA_COMPILE_FLAGS
-      -source 7 -target 7 -Xlint:-options)  # https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html
-else()
-  set(CMAKE_JAVA_COMPILE_FLAGS)     # make it empty - no options
-endif()
-
 # Compiles the JPL Java source files into jpl.jar
 add_jar(jpl_jar
 	SOURCES ${CLS} ${FLI}

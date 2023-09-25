@@ -57,13 +57,22 @@ else()
   set(JNI_FOUND ON)
 endif(NOT ANDROID)
 
-#if(JNI_FOUND)
-#  message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
-#  message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
-#endif()
-
 set(Java_JAVAH_EXECUTABLE /bin/true)	    # We do not need this
 find_package(Java COMPONENTS Development)   # https://cmake.org/cmake/help/v3.14/module/FindJava.html
+
+set(JPL_JAVA_COMPAT_SOURCE 8)
+set(JPL_JAVA_COMPAT_TARGET 8)
+
+if(JAVA_COMPATIBILITY)
+# The -Xlint:-options silences the build warning about boot classpath
+# compatibility.
+
+  set(CMAKE_JAVA_COMPILE_FLAGS
+      -source ${JPL_JAVA_COMPAT_SOURCE} -target ${JPL_JAVA_COMPAT_TARGET}
+      -Xlint:-options)
+else()
+  set(CMAKE_JAVA_COMPILE_FLAGS)
+endif()
 
 if(JNI_FOUND AND Java_FOUND)
     include(JUnit)  # load module defined in cmake/JUnit.cmake
