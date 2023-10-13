@@ -85,7 +85,7 @@
         jpl_set_element/2
    ]).
 :- autoload(library(apply),[maplist/2]).
-:- autoload(library(debug),[debugging/1,debug/3]).
+:- use_module(library(debug),[debugging/1,debug/3]).
 :- autoload(library(lists),
 	    [member/2,nth0/3,nth1/3,append/3,flatten/2,select/3]).
 :- autoload(library(shlib),[load_foreign_library/1]).
