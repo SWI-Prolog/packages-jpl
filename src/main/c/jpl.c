@@ -3133,6 +3133,7 @@ jpl_do_pvm_init(JNIEnv *env)
   { msg = "jpl_do_pvm_init(): PL_initialise() failed";
     goto err;
   }
+  PL_set_prolog_flag("gc_thread", PL_BOOL, FALSE);
   /* *don't* free argv (must exist for lifetime of Prolog VM) */
 
   return jpl_post_pvm_init(env, argc, argv); /* TRUE, FALSE or exception */
