@@ -81,6 +81,7 @@ refactoring (trivial):
 /* OS-specific header (SWI-Prolog FLI and Java Invocation API both seem to need
  * this): but not if we use the .NET 2.0 C compiler
  */
+#define _CRT_SECURE_NO_WARNINGS 1
 #include <windows.h>
 #define SIZEOF_WCHAR_T   2
 #define SIZEOF_LONG      4
@@ -392,8 +393,8 @@ jpl_c_lib_version(void)
   if (vp != NULL) /* already set? */
   { return vp;
   }
-  sprintf(v, "%d.%d.%d-%s", JPL_C_LIB_VERSION_MAJOR, JPL_C_LIB_VERSION_MINOR,
-	  JPL_C_LIB_VERSION_PATCH, JPL_C_LIB_VERSION_STATUS);
+  snprintf(v, sizeof(v), "%d.%d.%d-%s", JPL_C_LIB_VERSION_MAJOR, JPL_C_LIB_VERSION_MINOR,
+	   JPL_C_LIB_VERSION_PATCH, JPL_C_LIB_VERSION_STATUS);
   vp = v;
   return vp;
 }
@@ -1060,7 +1061,7 @@ jni_new_string(JNIEnv *env, const char *s, size_t len, jobject *obj)
     for (i = 0; i < len; i++)
       tmp[i] = s[i] & 0xff;
 
-    *obj = (*env)->NewString(env, tmp, len);
+    *obj = (*env)->NewString(env, tmp, (jsize)len);
   } else
   { jchar *js;
     size_t i;
@@ -1068,7 +1069,7 @@ jni_new_string(JNIEnv *env, const char *s, size_t len, jobject *obj)
     if ( (js=malloc(sizeof(jchar) * len)) )
     { for (i = 0; i < len; i++)
 	js[i] = s[i] & 0xff;
-      *obj = (*env)->NewString(env, js, len);
+      *obj = (*env)->NewString(env, js, (jsize)len);
       free(js);
     }
   }
@@ -1081,7 +1082,7 @@ static bool
 jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
 {
 #if SIZEOF_WCHAR_T == 2
-  return (*obj = (*env)->NewString(env, s, len)) != NULL;
+  return (*obj = (*env)->NewString(env, s, (jsize)len)) != NULL;
 #else
   if ( len <= FASTJCHAR )
   { jchar tmp[FASTJCHAR];
