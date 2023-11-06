@@ -46,6 +46,7 @@ public class atom_t extends LongHolder {
 		return Prolog.atom_chars(this);
 	}
 
+	@SuppressWarnings({"deprecation","removal"})
 	protected void finalize() throws Throwable {
 		super.finalize();
 		Prolog.unregister_atom(this);
