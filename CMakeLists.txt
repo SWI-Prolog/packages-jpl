@@ -37,10 +37,10 @@ if(NOT JAVA_HOME)
       endif()
     endif()
 
-    exec_program(${PROG_JAVA_HOME} ARGS ${jdatamodel}
-		 OUTPUT_VARIABLE jhome
-		 OUTPUT_STRIP_TRAILING_WHITESPACE
-		 RETURN_VALUE jhome_ret)
+    execute_process(COMMAND ${PROG_JAVA_HOME} ARGS ${jdatamodel}
+		    OUTPUT_VARIABLE jhome
+		    OUTPUT_STRIP_TRAILING_WHITESPACE
+		    RESULT_VARIABLE jhome_ret)
     if(jhome_ret EQUAL 0)
       set(JAVA_HOME ${jhome} CACHE FILEPATH "Home of Java")
       message("-- ${PROG_JAVA_HOME} claims Java at ${JAVA_HOME}")
