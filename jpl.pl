@@ -3826,7 +3826,7 @@ user:file_search_path(jar, swi(lib)).
 
 classpath(DirOrJar) :-
     getenv('CLASSPATH', ClassPath),
-    search_path_separator(Sep),
+    current_prolog_flag(path_sep, Sep),
     atomic_list_concat(Elems, Sep, ClassPath),
     member(DirOrJar, Elems).
 
@@ -3839,7 +3839,7 @@ classpath(DirOrJar) :-
 
 add_search_path(Path, Dir) :-
     (   getenv(Path, Old)
-    ->  search_path_separator(Sep),
+    ->  current_prolog_flag(path_sep, Sep),
         (   atomic_list_concat(Current, Sep, Old),
             memberchk(Dir, Current)
         ->  true            % already present
@@ -3853,16 +3853,6 @@ add_search_path(Path, Dir) :-
         )
     ;   setenv(Path, Dir)
     ).
-
-%! search_path_separator(-Sep:atom)
-%
-%  Separator  used  the  the  OS    in  =PATH=,  =LD_LIBRARY_PATH=,
-%  =CLASSPATH=, etc.
-
-search_path_separator((;)) :-
-    current_prolog_flag(windows, true),
-    !.
-search_path_separator(:).
 
 env_var_separators('%','%') :-
     current_prolog_flag(windows, true),
@@ -3944,7 +3934,7 @@ libfile(Base, File) :-
 
 library_search_path(Path, EnvVar) :-
     current_prolog_flag(shared_object_search_path, EnvVar),
-    search_path_separator(Sep),
+    current_prolog_flag(path_sep, Sep),
     (   getenv(EnvVar, Env),
         atomic_list_concat(Path, Sep, Env)
     ->  true
@@ -3981,7 +3971,7 @@ add_jpl_to_classpath :-
                        ]),
     !,
     (   getenv('CLASSPATH', Old)
-    ->  search_path_separator(Separator),
+    ->  current_prolog_flag(path_sep, Separator),
         atomic_list_concat([JplJAR, Old], Separator, New)
     ;   New = JplJAR
     ),
@@ -4077,7 +4067,7 @@ extend_java_library_path(OsDir) :-
     jpl_get_default_jvm_opts(Opts0),
     (   select(PathOpt0, Opts0, Rest),
         sub_atom(PathOpt0, 0, _, _, '-Djava.library.path=')
-    ->  search_path_separator(Separator),
+    ->  current_prolog_flag(path_sep, Separator),
         atomic_list_concat([PathOpt0, Separator, OsDir], PathOpt),
         NewOpts = [PathOpt|Rest]
     ;   atom_concat('-Djava.library.path=', OsDir, PathOpt),
