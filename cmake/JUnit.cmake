@@ -21,6 +21,7 @@ if(NOT JUNIT_JAR)
                 ${JAVA_LIB_INSTALL_DIR}/junit-4*.jar
                 /usr/share/java/junit4.jar
                 /usr/share/java/junit-4*.jar
+                /usr/share/java/junit.jar
                 /opt/local/share/java/junit.jar     # Macport
                 /opt/local/share/java/junit4.jar
                 /opt/local/share/java/junit-4*.jar
