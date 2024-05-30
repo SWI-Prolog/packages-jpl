@@ -4811,19 +4811,6 @@ jni_jref_to_term_plc(term_t jref,  /* +term: JRef to a org.jpl7.Term instance */
       ;
 }
 
-static bool
-jni_get_default_jvm_opts_1(term_t args, int i, char **jvm_xia)
-{ term_t tp = PL_new_term_ref();
-
-  if (jvm_xia[i] == NULL)
-  { return PL_unify_nil(args);
-  } else
-  { return PL_unify_list(args, tp, args) &&
-	   PL_unify_term(tp, PL_ATOM, PL_new_atom(jvm_xia[i])) &&
-	   jni_get_default_jvm_opts_1(args, i + 1, jvm_xia);
-  }
-}
-
 static foreign_t
 jni_get_jvm_opts(term_t args, /* -list(atom): the current default JVM
 				 initialisation options */
@@ -4831,7 +4818,19 @@ jni_get_jvm_opts(term_t args, /* -list(atom): the current default JVM
 { if (jvm_xia == NULL)
   { return FALSE;
   } else
-  { return jni_get_default_jvm_opts_1(args, 0, jvm_xia);
+  { term_t tail = PL_copy_term_ref(args);
+    term_t tp = PL_new_term_ref();
+
+    if ( !tail || !tp )
+      return FALSE;
+
+    for(size_t i=0; jvm_xia[i]; i++)
+    { if ( !PL_unify_list(tail, tp, tail) ||
+	   !PL_unify_term(tp, PL_CHARS, jvm_xia[i]) )
+	return FALSE;
+    }
+
+    return PL_unify_nil(tail);
   }
 }
 
