@@ -35,9 +35,10 @@ find_file(HAMCREST
     PATHS
         ${JAVA_LIB_INSTALL_DIR}
         /usr/share/java
-	    /opt/local/share/java
-	    /usr/local/share/java
-	    /opt/local/share/java/)
+	/opt/local/share/java
+	/usr/local/share/java
+	/opt/local/share/java/
+	/usr/lib/java/javapackages-bootstrap)
 MARK_AS_ADVANCED(HAMCREST)
 
 
