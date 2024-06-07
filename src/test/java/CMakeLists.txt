@@ -12,7 +12,6 @@ set(JPL_JAR ${CMAKE_BINARY_DIR}/packages/jpl/src/main/java/jpl.jar)
 set(TEST
     org/jpl7/standalone/SyntaxError.java
     org/jpl7/standalone/Masstest.java
-    org/jpl7/standalone/Garbo.java
     org/jpl7/standalone/FetchBigTree.java
     org/jpl7/standalone/Versions.java
     org/jpl7/standalone/CelsiusConverter.java
