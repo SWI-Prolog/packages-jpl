@@ -153,7 +153,7 @@ if(JNI_FOUND AND Java_FOUND)
 
 
         # Add testing pack on Java code calling Prolog (class org.jpl7.JPLTestSuiteRunne)
-	if(HAMCREST)
+	if(HAMCREST AND NOT CMAKE_BUILD_TYPE STREQUAL "Sanitize")
 	  add_test(
 	      NAME jpl:prolog_in_java
 	      COMMAND env
