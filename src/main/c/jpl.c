@@ -76,6 +76,7 @@ refactoring (trivial):
 #include <config.h>
 #include <SWI-Stream.h>
 #include <SWI-Prolog.h>
+#include <stdbool.h>
 
 #ifdef __WINDOWS__
 /* OS-specific header (SWI-Prolog FLI and Java Invocation API both seem to need
@@ -206,8 +207,6 @@ struct Hr_Table
 };
 
 typedef intptr_t pointer;               /* for JPL */
-typedef int bool;                       /* for JNI/JPL functions returning */
-					/* only TRUE or FALSE */
 
 /*=== JNI constants: sizes of JNI primitive types ========================= */
 
