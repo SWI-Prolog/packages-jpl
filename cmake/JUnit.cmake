@@ -31,13 +31,13 @@ endif()
 MARK_AS_ADVANCED(JUNIT_JAR)
 find_file(HAMCREST
     NAMES
-        hamcrest-core.jar
+        hamcrest-core.jar hamcrest.jar
     PATHS
         ${JAVA_LIB_INSTALL_DIR}
         /usr/share/java
+        /usr/share/java/hamcrest
 	/opt/local/share/java
 	/usr/local/share/java
-	/opt/local/share/java/
 	/usr/lib/java/javapackages-bootstrap)
 MARK_AS_ADVANCED(HAMCREST)
 
