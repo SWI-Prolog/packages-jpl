@@ -15,8 +15,9 @@
 # search for the JAR providing JUNIT version 4
 # Unfortunately GLOB ? means exactly one, so cannot use it to make the - optional!
 ## GLOB EXPRESSION: https://facelessuser.github.io/wcmatch/glob/
+# Unfortunately, find_file() does not allow for wildcarts
 if(NOT JUNIT_JAR)
-  file(GLOB JUNIT_JAR
+  file(GLOB F_JUNIT_JAR
                 ${JAVA_LIB_INSTALL_DIR}/junit4.jar
                 ${JAVA_LIB_INSTALL_DIR}/junit-4*.jar
                 /usr/share/java/junit4.jar
@@ -27,8 +28,17 @@ if(NOT JUNIT_JAR)
                 /opt/local/share/java/junit-4*.jar
                 /usr/local/share/java/junit4.jar
                 /usr/local/share/java/junit-4*.jar)
+  if(F_JUNIT_JAR)
+    message("Found junit at ${F_JUNIT_JAR}")
+  else()
+    message("Could not find junit.jar.")
+  endif()
+  set(JUNIT_JAR ${F_JUNIT_JAR} CACHE FILEPATH
+      "junit4 jar file")
 endif()
 MARK_AS_ADVANCED(JUNIT_JAR)
+
+if(JUNIT_JAR)
 find_file(HAMCREST
     NAMES
         hamcrest-core.jar hamcrest.jar
@@ -40,7 +50,7 @@ find_file(HAMCREST
 	/usr/local/share/java
 	/usr/lib/java/javapackages-bootstrap)
 MARK_AS_ADVANCED(HAMCREST)
-
+endif()
 
 function(add_junit_test TARGET_NAME)
 
