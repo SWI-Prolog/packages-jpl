@@ -18,17 +18,21 @@
 # Unfortunately, find_file() does not allow for wildcarts
 if(NOT JUNIT_JAR)
   file(GLOB F_JUNIT_JAR
-                ${JAVA_LIB_INSTALL_DIR}/junit4.jar
-                ${JAVA_LIB_INSTALL_DIR}/junit-4*.jar
-                /usr/share/java/junit4.jar
-                /usr/share/java/junit-4*.jar
-                /usr/share/java/junit.jar
-                /opt/local/share/java/junit.jar     # Macport
-                /opt/local/share/java/junit4.jar
-                /opt/local/share/java/junit-4*.jar
-                /usr/local/share/java/junit4.jar
-                /usr/local/share/java/junit-4*.jar)
+       ${JAVA_LIB_INSTALL_DIR}/junit4.jar
+       ${JAVA_LIB_INSTALL_DIR}/junit-4*.jar
+       /usr/share/java/junit4.jar
+       /usr/share/java/junit-4*.jar
+       /opt/local/share/java/junit4.jar
+       /opt/local/share/java/junit-4*.jar
+       /usr/local/share/java/junit4.jar
+       /usr/local/share/java/junit-4*.jar)
+  if(NOT F_JUNIT_JAR)
+    file(GLOB F_JUNIT_JAR
+	 /usr/share/java/junit.jar
+	 /opt/local/share/java/junit.jar)
+  endif()
   if(F_JUNIT_JAR)
+    list(GET F_JUNIT_JAR 0 F_JUNIT_JAR)
     message("Found junit at ${F_JUNIT_JAR}")
   else()
     message("Could not find junit.jar.")
