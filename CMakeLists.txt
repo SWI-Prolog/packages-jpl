@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(swipl-jpl)
 
 set(JPL_VERSION 7.6.1)
