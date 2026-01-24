@@ -3,7 +3,7 @@
     Author:        Paul Singleton, Fred Dushin and Jan Wielemaker
     E-mail:        paul@jbgb.com
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2004-2017, Paul Singleton
+    Copyright (c)  2004-2026, Paul Singleton
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -99,8 +99,6 @@ refactoring (trivial):
 #include <jni.h>
 
 /* ANSI/ISO C library header (?): */
-#include <ctype.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -110,6 +108,42 @@ refactoring (trivial):
 #include <pthread.h>
 
 #include <assert.h>
+
+/* UTF-16 encoding/decoding.  Copied from src/os/pl-utf8.h from Prolog
+ */
+
+#define IS_UTF16_LEAD(c)      ((c) >= 0xD800 && (c) <= 0xDBFF)
+#define IS_UTF16_TRAIL(c)     ((c) >= 0xDC00 && (c) <= 0xDFFF)
+
+static inline int
+utf16_decode(int lead, int trail)
+{ int l = (lead-0xD800) << 10;
+  int t = (trail-0xDC00);
+
+  return l+t+0x10000;
+}
+
+static inline void
+utf16_encode(int c, int *lp, int *tp)
+{ c -= 0x10000;
+  *lp = (c>>10)+0xD800;
+  *tp = (c&0X3FF)+0xDC00;
+}
+
+static inline jchar*
+utf16_put_jchar(jchar *out, int chr)
+{ if ( chr <= 0xffff )
+  { *out++ = (jchar)chr;
+  } else
+  { int l, t;
+
+    utf16_encode(chr, &l, &t);
+    *out++ = (jchar)l;
+    *out++ = (jchar)t;
+  }
+
+  return out;
+}
 
 /*=== JNI constants ======================================================= */
 
@@ -1021,25 +1055,32 @@ jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a)
   const jchar *jcp = (*env)->GetStringChars(env, s, NULL);
 
   if ( s == NULL )
-    return FALSE;
+    return false;
 
 #if SIZEOF_WCHAR_T == 2
   { *a = PL_new_atom_wchars(len, jcp); /* easy, huh? (thanks, Jan) */
   }
 #else
   { pl_wchar_t tmp[FASTJCHAR];
-    pl_wchar_t *wp;
-    jsize       i;
+    pl_wchar_t *wp, *wpi;
+    const jchar *jcpi;
 
     wp = len <= FASTJCHAR ? tmp : malloc(sizeof(pl_wchar_t) * len);
     if ( !wp )
     { (*env)->ReleaseStringChars(env, s, jcp);
-      return FALSE;
+      return false;
     }
-    for (i = 0; i < len; i++)
-      wp[i] = jcp[i];
+    for (jcpi=jcp, wpi=wp; jcpi - jcp < len; wpi++, jcpi++)
+    { if ( IS_UTF16_LEAD(*jcpi) && IS_UTF16_TRAIL(*(jcpi+1)) &&
+	   jcpi-jcp < len-1)
+      { *wpi = utf16_decode(*jcpi, *(jcpi+1));
+	jcpi++;
+      } else
+      { *wpi = *jcpi;
+      }
+    }
 
-    *a = PL_new_atom_wchars(len, wp);
+    *a = PL_new_atom_wchars(wpi-wp, wp);
     if ( wp != tmp )
       free(wp);
   }
@@ -1083,22 +1124,21 @@ jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
 #if SIZEOF_WCHAR_T == 2
   return (*obj = (*env)->NewString(env, s, (jsize)len)) != NULL;
 #else
-  if ( len <= FASTJCHAR )
-  { jchar tmp[FASTJCHAR];
-    size_t i;
+  if ( len * 2 <= FASTJCHAR )
+  { jchar tmp[FASTJCHAR], *tmpi;
+    const pl_wchar_t *si;
 
-    for (i = 0; i < len; i++)
-      tmp[i] = s[i];
-
-    *obj = (*env)->NewString(env, tmp, len);
+    for (tmpi=tmp, si=s; si - s < len; si++)
+      tmpi = utf16_put_jchar(tmpi, *s);
+    *obj = (*env)->NewString(env, tmp, (jsize) (tmpi-tmp));
   } else
-  { jchar *js;
-    size_t i;
+  { jchar *js, *jsi;
+    const pl_wchar_t *si;
 
-    if ( (js=malloc(sizeof(jchar) * len)) )
-    { for (i = 0; i < len; i++)
-	js[i] = s[i];
-      *obj = (*env)->NewString(env, js, len);
+    if ( (js=malloc(sizeof(jchar) * len * 2)) )
+    { for (jsi=js, si=s; si - s < len; si++)
+	jsi = utf16_put_jchar(jsi, *s);
+      *obj = (*env)->NewString(env, js, (jsize) (jsi-js));
       free(js);
     }
   }
@@ -1106,7 +1146,6 @@ jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
   return (*obj != NULL);
 #endif
 }
-
 
 
 static bool
@@ -4043,7 +4082,7 @@ Java_org_jpl7_fli_Prolog_get_1name_1arity(
 	   PL_get_name_arity(term, &atom, &arity) &&
 	   jni_atom_to_String(env, atom, &jname) &&
 	   setStringValue(env, jname_holder, jname) &&
-	   setIntValue(env, jarity_holder, arity) );
+	   setIntValue(env, jarity_holder, (jint) arity) ); /* dubious cast */
 }
 
 /*
@@ -4092,7 +4131,7 @@ Java_org_jpl7_fli_Prolog_new_1atom(JNIEnv *env, jclass jProlog, jstring jname)
 JNIEXPORT jobject JNICALL
 Java_org_jpl7_fli_Prolog_new_1functor(JNIEnv *env, jclass jProlog,
 				      jobject jatom, /* read-only */
-				      jint    jarity)
+				      jlong   jarity)
 { atom_t    atom;
   functor_t functor;
   jobject   rval;
@@ -4100,7 +4139,7 @@ Java_org_jpl7_fli_Prolog_new_1functor(JNIEnv *env, jclass jProlog,
   if ( jpl_ensure_pvm_init(env) && jarity >= 0 &&
        getAtomValue(env, jatom, &atom) &&
        (rval = (*env)->AllocObject(env, jFunctorT_c)) &&
-       (functor = PL_new_functor(atom, (int)jarity)) &&
+       (functor = PL_new_functor(atom, (size_t)jarity)) &&
        setUIntPtrValue(env, rval, functor) )
     return rval;
 
@@ -4270,7 +4309,7 @@ Java_org_jpl7_fli_Prolog_open_1query(JNIEnv *env, jclass jProlog,
 JNIEXPORT jobject JNICALL
 Java_org_jpl7_fli_Prolog_predicate(JNIEnv *env, jclass jProlog,
 				   jstring jname,  /* ought not be null */
-				   jint    jarity, /* oughta be >= 0 */
+				   jlong   jarity, /* oughta be >= 0 */
 				   jstring jmodule /* may be null */
 				   )
 { atom_t      pname; /* the predicate's name, as an atom */
@@ -4282,7 +4321,8 @@ Java_org_jpl7_fli_Prolog_predicate(JNIEnv *env, jclass jProlog,
 
   DEBUG(1,
 	Sdprintf(
-	    ">predicate(env=%p,jProlog=%p,jname=%p,jarity=%" PRId32 ",jmodule=%p)...\n",
+	    ">predicate(env=%p,jProlog=%p,jname=%p,jarity=%" PRId64
+	    ",jmodule=%p)...\n",
 	    env, jProlog, jname, jarity, jmodule));
   return (jpl_ensure_pvm_init(env) &&
 		  jni_String_to_atom(env, jname,
