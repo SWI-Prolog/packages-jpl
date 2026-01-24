@@ -77,6 +77,7 @@ refactoring (trivial):
 #include <SWI-Stream.h>
 #include <SWI-Prolog.h>
 #include <stdbool.h>
+#include <os/pl-utf8.h>
 
 #ifdef __WINDOWS__
 /* OS-specific header (SWI-Prolog FLI and Java Invocation API both seem to need
@@ -1021,25 +1022,29 @@ jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a)
   const jchar *jcp = (*env)->GetStringChars(env, s, NULL);
 
   if ( s == NULL )
-    return FALSE;
+    return false;
 
 #if SIZEOF_WCHAR_T == 2
   { *a = PL_new_atom_wchars(len, jcp); /* easy, huh? (thanks, Jan) */
   }
 #else
   { pl_wchar_t tmp[FASTJCHAR];
-    pl_wchar_t *wp;
-    jsize       i;
+    pl_wchar_t *wp, *wpi;
+    const jchar *jcpi;
 
     wp = len <= FASTJCHAR ? tmp : malloc(sizeof(pl_wchar_t) * len);
     if ( !wp )
     { (*env)->ReleaseStringChars(env, s, jcp);
-      return FALSE;
+      return false;
     }
-    for (i = 0; i < len; i++)
-      wp[i] = jcp[i];
+    for (jcpi=jcp, wpi=wp; jcpi - jcp < len; wpi++, jcpi++)
+      if ( IS_UTF16_LEAD(*jcpi) && IS_UTF16_TRAIL(*(jcpi+1)) && jcpi-jcp < len-1)
+      { *wpi = utf16_decode(*jcpi, *(jcpi+1));
+	jcpi++;
+      } else
+        *wpi = *jcpi;
 
-    *a = PL_new_atom_wchars(len, wp);
+    *a = PL_new_atom_wchars(wpi-wp, wp);
     if ( wp != tmp )
       free(wp);
   }
@@ -1083,22 +1088,41 @@ jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
 #if SIZEOF_WCHAR_T == 2
   return (*obj = (*env)->NewString(env, s, (jsize)len)) != NULL;
 #else
-  if ( len <= FASTJCHAR )
-  { jchar tmp[FASTJCHAR];
-    size_t i;
+  if ( len * 2 <= FASTJCHAR )
+  { jchar tmp[FASTJCHAR], *tmpi;
+    const pl_wchar_t *si;
+    pl_wchar_t c;
 
-    for (i = 0; i < len; i++)
-      tmp[i] = s[i];
-
-    *obj = (*env)->NewString(env, tmp, len);
+    for (tmpi=tmp, si=s; si - s < len; si++, tmpi++)
+    { c = *s;
+      if ( c <= 0xffff )
+        *tmpi = (jchar) *si;
+      else
+      { c -= 0x10000;
+	*tmpi = (jchar) ((c>>10)+0xD800);
+	tmpi++;
+	*tmpi = (jchar) ((c&0X3FF)+0xDC00);
+      }
+    }
+    *obj = (*env)->NewString(env, tmp, (jsize) (tmpi-tmp));
   } else
-  { jchar *js;
-    size_t i;
+  { jchar *js, *jsi;
+    const pl_wchar_t *si;
+    pl_wchar_t c;
 
-    if ( (js=malloc(sizeof(jchar) * len)) )
-    { for (i = 0; i < len; i++)
-	js[i] = s[i];
-      *obj = (*env)->NewString(env, js, len);
+    if ( (js=malloc(sizeof(jchar) * len * 2)) )
+    { for (jsi=js, si=s; si - s < len; si++, jsi++)
+      { c = *s;
+        if ( c <= 0xffff )
+          *jsi = (jchar) *si;
+        else
+        { c -= 0x10000;
+          *jsi = (jchar) ((c>>10)+0xD800);
+          jsi++;
+          *jsi = (jchar) ((c&0X3FF)+0xDC00);
+        }
+      }
+      *obj = (*env)->NewString(env, js, (jsize) (jsi-js));
       free(js);
     }
   }
@@ -1106,7 +1130,6 @@ jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
   return (*obj != NULL);
 #endif
 }
-
 
 
 static bool
@@ -3451,11 +3474,13 @@ setPointerValue(JNIEnv *env, jobject jpointer_holder, pointer pv)
  * @param   jint_holder  the IntHolder class instance, or null
  * @param   iv           the new (int) value
  *---------------------------------------------------------------------*/
+/* currently not used
 static bool
 setIntValue(JNIEnv *env, jobject jint_holder, jint iv)
 { return jint_holder != NULL &&
 	 ((*env)->SetIntField(env, jint_holder, jIntHolderValue_f, iv), TRUE);
 }
+*/
 
 /*-----------------------------------------------------------------------
  * setLongValue
@@ -4043,7 +4068,7 @@ Java_org_jpl7_fli_Prolog_get_1name_1arity(
 	   PL_get_name_arity(term, &atom, &arity) &&
 	   jni_atom_to_String(env, atom, &jname) &&
 	   setStringValue(env, jname_holder, jname) &&
-	   setIntValue(env, jarity_holder, arity) );
+	   setLongValue(env, jarity_holder, arity) );
 }
 
 /*
@@ -4092,7 +4117,7 @@ Java_org_jpl7_fli_Prolog_new_1atom(JNIEnv *env, jclass jProlog, jstring jname)
 JNIEXPORT jobject JNICALL
 Java_org_jpl7_fli_Prolog_new_1functor(JNIEnv *env, jclass jProlog,
 				      jobject jatom, /* read-only */
-				      jint    jarity)
+				      jlong    jarity)
 { atom_t    atom;
   functor_t functor;
   jobject   rval;
@@ -4100,7 +4125,7 @@ Java_org_jpl7_fli_Prolog_new_1functor(JNIEnv *env, jclass jProlog,
   if ( jpl_ensure_pvm_init(env) && jarity >= 0 &&
        getAtomValue(env, jatom, &atom) &&
        (rval = (*env)->AllocObject(env, jFunctorT_c)) &&
-       (functor = PL_new_functor(atom, (int)jarity)) &&
+       (functor = PL_new_functor(atom, jarity)) &&
        setUIntPtrValue(env, rval, functor) )
     return rval;
 
@@ -4270,7 +4295,7 @@ Java_org_jpl7_fli_Prolog_open_1query(JNIEnv *env, jclass jProlog,
 JNIEXPORT jobject JNICALL
 Java_org_jpl7_fli_Prolog_predicate(JNIEnv *env, jclass jProlog,
 				   jstring jname,  /* ought not be null */
-				   jint    jarity, /* oughta be >= 0 */
+				   jlong   jarity, /* oughta be >= 0 */
 				   jstring jmodule /* may be null */
 				   )
 { atom_t      pname; /* the predicate's name, as an atom */
@@ -4282,7 +4307,7 @@ Java_org_jpl7_fli_Prolog_predicate(JNIEnv *env, jclass jProlog,
 
   DEBUG(1,
 	Sdprintf(
-	    ">predicate(env=%p,jProlog=%p,jname=%p,jarity=%" PRId32 ",jmodule=%p)...\n",
+	    ">predicate(env=%p,jProlog=%p,jname=%p,jarity=%" PRId64 ",jmodule=%p)...\n",
 	    env, jProlog, jname, jarity, jmodule));
   return (jpl_ensure_pvm_init(env) &&
 		  jni_String_to_atom(env, jname,
