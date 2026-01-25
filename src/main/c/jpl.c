@@ -4066,7 +4066,7 @@ Java_org_jpl7_fli_Prolog_get_1name_1arity(
 	   PL_get_name_arity(term, &atom, &arity) &&
 	   jni_atom_to_String(env, atom, &jname) &&
 	   setStringValue(env, jname_holder, jname) &&
-	   setLongValue(env, jarity_holder, (int) arity) ); /* dubious cast */
+	   setIntValue(env, jarity_holder, (int) arity) ); /* dubious cast */
 }
 
 /*
