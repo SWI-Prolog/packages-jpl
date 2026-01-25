@@ -3474,13 +3474,11 @@ setPointerValue(JNIEnv *env, jobject jpointer_holder, pointer pv)
  * @param   jint_holder  the IntHolder class instance, or null
  * @param   iv           the new (int) value
  *---------------------------------------------------------------------*/
-/* currently not used
 static bool
 setIntValue(JNIEnv *env, jobject jint_holder, jint iv)
 { return jint_holder != NULL &&
 	 ((*env)->SetIntField(env, jint_holder, jIntHolderValue_f, iv), TRUE);
 }
-*/
 
 /*-----------------------------------------------------------------------
  * setLongValue
@@ -4068,7 +4066,7 @@ Java_org_jpl7_fli_Prolog_get_1name_1arity(
 	   PL_get_name_arity(term, &atom, &arity) &&
 	   jni_atom_to_String(env, atom, &jname) &&
 	   setStringValue(env, jname_holder, jname) &&
-	   setLongValue(env, jarity_holder, arity) );
+	   setLongValue(env, jarity_holder, (int) arity) ); /* dubious cast */
 }
 
 /*
