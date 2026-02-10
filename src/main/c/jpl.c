@@ -72,6 +72,10 @@ refactoring (trivial):
 
 /*=== includes ============================================================ */
 
+#ifdef __WINDOWS__
+#define _CRT_SECURE_NO_WARNINGS 1
+#endif
+
 /* SWI-Prolog headers: */
 #include <config.h>
 #include <SWI-Stream.h>
@@ -82,7 +86,6 @@ refactoring (trivial):
 /* OS-specific header (SWI-Prolog FLI and Java Invocation API both seem to need
  * this): but not if we use the .NET 2.0 C compiler
  */
-#define _CRT_SECURE_NO_WARNINGS 1
 #include <windows.h>
 #define SIZEOF_WCHAR_T   2
 #define SIZEOF_LONG      4
