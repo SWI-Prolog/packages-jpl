@@ -40,17 +40,10 @@
           ]).
 % ensure we get the local copies
 
-:- asserta(user:file_search_path(foreign, '.')).
 :- asserta(user:file_search_path(jpl_examples, 'examples/prolog')).
 :- asserta(user:file_search_path(jar, '.')).
 :- asserta(user:file_search_path(jar, foreign('src/main/java'))).
 :- asserta(user:file_search_path(jar, foreign('.'))).
-:- asserta(user:file_search_path(library, '.')).
-:- asserta(user:file_search_path(library, '../plunit')).
-
-% paths for Prolog embedded in Java under CTest
-:- asserta(user:file_search_path(library, '../../../packages/jpl')).
-:- asserta(user:file_search_path(library, '../../../packages/plunit')).
 
 :- use_module(library(jpl)).
 :- use_module(library(plunit)).
