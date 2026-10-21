@@ -112,8 +112,11 @@ refactoring (trivial):
 
 #include <assert.h>
 
-/* UTF-16 encoding/decoding.  Copied from src/os/pl-utf8.h from Prolog
+/* UTF-16 encoding/decoding.  Copied from src/os/pl-utf8.h from Prolog.
+ * Not needed if wchar_t is UTF-16, as on Windows.
  */
+
+#if SIZEOF_WCHAR_T != 2
 
 #define IS_UTF16_LEAD(c)      ((c) >= 0xD800 && (c) <= 0xDBFF)
 #define IS_UTF16_TRAIL(c)     ((c) >= 0xDC00 && (c) <= 0xDFFF)
@@ -147,6 +150,7 @@ utf16_put_jchar(jchar *out, int chr)
 
   return out;
 }
+#endif /*SIZEOF_WCHAR_T != 2*/
 
 /*=== JNI constants ======================================================= */
 
@@ -281,11 +285,9 @@ static atom_t JNI_atom_float;           /* float */
 static atom_t JNI_atom_double;          /* double */
 
 static atom_t JNI_atom_null;            /* null */
-static atom_t JNI_atom_void;            /* void */
 
 static functor_t JNI_functor_at_1;             /* @(_) */
 static functor_t JNI_functor_jbuf_2;           /* jbuf(_,_) */
-static functor_t JNI_functor_jlong_2;          /* jlong(_,_) */
 static functor_t JNI_functor_jfieldID_1;       /* jfieldID(_) */
 static functor_t JNI_functor_jmethodID_1;      /* jmethodID(_) */
 static functor_t JNI_functor_error_2;          /* error(_, _) */
@@ -1054,11 +1056,11 @@ jni_free_iref(JNIEnv *env, pointer iref)
 
 static bool
 jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a)
-{ jsize        len = (*env)->GetStringLength(env, s);
-  const jchar *jcp = (*env)->GetStringChars(env, s, NULL);
-
-  if ( s == NULL )
+{ if ( s == NULL )
     return false;
+
+  jsize        len = (*env)->GetStringLength(env, s);
+  const jchar *jcp = (*env)->GetStringChars(env, s, NULL);
 
 #if SIZEOF_WCHAR_T == 2
   { *a = PL_new_atom_wchars(len, jcp); /* easy, huh? (thanks, Jan) */
@@ -1074,8 +1076,8 @@ jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a)
       return false;
     }
     for (jcpi=jcp, wpi=wp; jcpi - jcp < len; wpi++, jcpi++)
-    { if ( IS_UTF16_LEAD(*jcpi) && IS_UTF16_TRAIL(*(jcpi+1)) &&
-	   jcpi-jcp < len-1)
+    { if ( IS_UTF16_LEAD(*jcpi) && jcpi-jcp < len-1 &&
+	   IS_UTF16_TRAIL(*(jcpi+1)) )
       { *wpi = utf16_decode(*jcpi, *(jcpi+1));
 	jcpi++;
       } else
@@ -1132,7 +1134,7 @@ jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
     const pl_wchar_t *si;
 
     for (tmpi=tmp, si=s; si - s < len; si++)
-      tmpi = utf16_put_jchar(tmpi, *s);
+      tmpi = utf16_put_jchar(tmpi, *si);
     *obj = (*env)->NewString(env, tmp, (jsize) (tmpi-tmp));
   } else
   { jchar *js, *jsi;
@@ -1140,7 +1142,7 @@ jni_new_wstring(JNIEnv *env, const pl_wchar_t *s, size_t len, jobject *obj)
 
     if ( (js=malloc(sizeof(jchar) * len * 2)) )
     { for (jsi=js, si=s; si - s < len; si++)
-	jsi = utf16_put_jchar(jsi, *s);
+	jsi = utf16_put_jchar(jsi, *si);
       *obj = (*env)->NewString(env, js, (jsize) (jsi-js));
       free(js);
     }
@@ -1503,11 +1505,9 @@ jni_init(void)
   JNI_atom_double  = PL_new_atom("double");
 
   JNI_atom_null = PL_new_atom("null");
-  JNI_atom_void = PL_new_atom("void"); /* not yet used properly (?) */
 
   JNI_functor_at_1             = PL_new_functor(PL_new_atom("@"), 1);
   JNI_functor_jbuf_2           = PL_new_functor(PL_new_atom("jbuf"), 2);
-  JNI_functor_jlong_2          = PL_new_functor(PL_new_atom("jlong"), 2);
   JNI_functor_jfieldID_1       = PL_new_functor(PL_new_atom("jfieldID"), 1);
   JNI_functor_jmethodID_1      = PL_new_functor(PL_new_atom("jmethodID"), 1);
   JNI_functor_error_2          = PL_new_functor(PL_new_atom("error"), 2);

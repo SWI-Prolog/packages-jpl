@@ -96,6 +96,20 @@ test(
 ) :-
     catch(jpl_new('java.util.Date', [never], _), E, true).
 
+% Atoms with characters above U+00FF become Java Strings via UTF-16.
+% A non-BMP character takes two UTF-16 units in Java.
+
+test(wide_string_1, [A == X, L == 4]) :-
+    X = 'ab€d',
+    jpl_new('java.lang.StringBuilder', [X], SB),
+    jpl_call(SB, toString, [], A),
+    jpl_call(SB, length, [], L).
+test(wide_string_2, [A == X, L == 4]) :-
+    X = 'x\U0001F600y',
+    jpl_new('java.lang.StringBuilder', [X], SB),
+    jpl_call(SB, toString, [], A),
+    jpl_call(SB, length, [], L).
+
 test(
         array_to_from_terms_1,
         [       true(
