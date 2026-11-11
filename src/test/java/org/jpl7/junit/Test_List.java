@@ -4,15 +4,15 @@ import java.util.Arrays;
 import java.util.Map;
 import org.jpl7.*;
 import org.jpl7.Integer; // prefer to java.lang.Integer
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class Test_List extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_List.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_List.class); // full name with package
     }
 
     private static Term[] terms_pair_integers = new Term[]{new Integer(1), new Integer(2)};
@@ -30,28 +30,26 @@ public class Test_List extends JPLTest {
     public void testListNil1() {
         Term x = Query.oneSolution("X = []").get("X");
         if (syntax.equals("traditional")) {
-            assertTrue("empty list is text atom []",
-                    x.isAtom() && x.atomType().equals("text") && x.name().equals("[]"));
+            assertTrue(x.isAtom() && x.atomType().equals("text") && x.name().equals("[]"), "empty list is text atom []");
         } else {
-            assertTrue("empty list is reserved atom []",
-                    x.isAtom() && x.atomType().equals("reserved_symbol") && x.name().equals("[]"));
+            assertTrue(x.isAtom() && x.atomType().equals("reserved_symbol") && x.name().equals("[]"), "empty list is reserved atom []");
         }
     }
 
     @Test
     public void testListNil2() {
         Term x = Query.oneSolution("X = []").get("X");
-        assertTrue("term should be empty list", x.isListNil());
-        assertTrue("Util.isList on empty list", Term.isList(x));
-        assertFalse("term is not a ListPair", x.isListPair());
+        assertTrue(x.isListNil(), "term should be empty list");
+        assertTrue(Term.isList(x), "Util.isList on empty list");
+        assertFalse(x.isListPair(), "term is not a ListPair");
     }
 
     @Test
     public void testListNil3() {
         Term x = Query.oneSolution("X = [1, 2, 3]").get("X");
-        assertFalse("term should NOT be empty list", x.isListNil());
-        assertTrue("Util.isList on non-empty list", Term.isList(x));
-        assertTrue("term is not a ListPair", x.isListPair());
+        assertFalse(x.isListNil(), "term should NOT be empty list");
+        assertTrue(Term.isList(x), "Util.isList on non-empty list");
+        assertTrue(x.isListPair(), "term is not a ListPair");
     }
 
     @Test
@@ -59,8 +57,8 @@ public class Test_List extends JPLTest {
         final String[] options = { "[]", "[1]", "[1,2,3]", "[1, [a, b, c], 2]", "[[1,2,3]]"};
         for (String opt : options) {
         	Term x = Query.oneSolution(String.format("X = %s", opt)).get("X");
-            assertTrue("term should be empty list - Util", Term.isList(x));
-            assertTrue("term should be empty list - Util", x.isList());
+            assertTrue(Term.isList(x), "term should be empty list - Util");
+            assertTrue(x.isList(), "term should be empty list - Util");
         }
     }
 
@@ -69,15 +67,15 @@ public class Test_List extends JPLTest {
         Term t;
         for (Term t2 : lists_many_noempty) {
             String msg = String.format("term %s should be a pair list", t2.toString());
-            assertTrue(msg, t2.isListPair());
+            assertTrue(t2.isListPair(), msg);
         }
         t = new Compound(JPL.LIST_PAIR, terms_pair_integers);
-        assertTrue("term is a pair list (even though second arg is not a list)", t.isListPair());
-        assertFalse("empty list term is not a list pair", JPL.LIST_NIL.isListPair());
+        assertTrue(t.isListPair(), "term is a pair list (even though second arg is not a list)");
+        assertFalse(JPL.LIST_NIL.isListPair(), "empty list term is not a list pair");
         t = new Compound(JPL.LIST_PAIR, terms_integers);
-        assertFalse("term is not a pair list, has more than two arguments", t.isListPair());
+        assertFalse(t.isListPair(), "term is not a pair list, has more than two arguments");
         t = new Compound("hello", terms_integers);
-        assertFalse("term is not a pair list, not JPL.PAIR_LIST functor", t.isListPair());
+        assertFalse(t.isListPair(), "term is not a pair list, not JPL.PAIR_LIST functor");
     }
 
     @Test
@@ -85,7 +83,7 @@ public class Test_List extends JPLTest {
         Term t = new Compound(JPL.LIST_PAIR,
                 new Term[]{new Integer(1), new Integer(2)});
         String msg = String.format("term %s should be a pair list", t.toString());
-        assertTrue(msg, t.isListPair());
+        assertTrue(t.isListPair(), msg);
         assertEquals("[1, 2]", t.toString());
     }
 
@@ -93,9 +91,9 @@ public class Test_List extends JPLTest {
     public void testListCons1() {
         Term x = Query.oneSolution("X = [a]").get("X");
         if (syntax.equals("traditional")) {
-            assertTrue("list constructor is ./2", x.isCompound() && x.name().equals("."));
+            assertTrue(x.isCompound() && x.name().equals("."), "list constructor is ./2");
         } else {
-            assertTrue("list constructor is [|]/2", x.isCompound() && x.name().equals("[|]"));
+            assertTrue(x.isCompound() && x.name().equals("[|]"), "list constructor is [|]/2");
         }
     }
 
@@ -106,7 +104,7 @@ public class Test_List extends JPLTest {
                         new Atom("d"), new Atom("e")});
         Query q = new Query(new Compound("append",
                 new Term[]{new Variable("Xs"), new Variable("Ys"), l}));
-        assertEquals("append(Xs,Ys,[a,b,c,d,e]) has 6 solutions", 6, q.allSolutions().length);
+        assertEquals(6, q.allSolutions().length, "append(Xs,Ys,[a,b,c,d,e]) has 6 solutions");
     }
 
     @Test
@@ -135,35 +133,34 @@ public class Test_List extends JPLTest {
         for (int i = 0; i < sol.length; i++) {
             String ListX = Arrays.toString(Term.atomListToStringArray(sol[i].get("X")));
             String ListY = Arrays.toString(Term.atomListToStringArray(sol[i].get("Y")));
-            assertEquals("Bad X in append(X, Y, [a, b, c])", expectedSolutionsX[i], ListX);
-            assertEquals("Bad Y in append(X, Y, [a, b, c])", expectedSolutionsY[i], ListY);
+            assertEquals(expectedSolutionsX[i], ListX, "Bad X in append(X, Y, [a, b, c])");
+            assertEquals(expectedSolutionsY[i], ListY, "Bad Y in append(X, Y, [a, b, c])");
         }
     }
 
     @Test
     public void testStringToList() {
         String goal = "append(Xs,Ys,[a,b,c,d,e])";
-        assertEquals(goal + " has 6 solutions", 6, Query.allSolutions(goal).length);
+        assertEquals(6, Query.allSolutions(goal).length, goal + " has 6 solutions");
     }
 
     @Test
     public void testLength1() {
         Query q5 = new Query(new Compound("length", new Term[]{new Variable("Zs"), new Integer(2)}));
         Term zs = q5.oneSolution().get("Zs");
-        assertTrue("length(Zs,2) binds Zs to a list of two distinct variables " + zs.toString(),
-                zs.isListPair() && zs.arg(1).isVariable() &&
+        assertTrue(zs.isListPair() && zs.arg(1).isVariable() &&
                         zs.arg(2).isListPair() && zs.arg(2).arg(1).isVariable()
                         && zs.arg(2).arg(2).isListNil() &&
-                        !zs.arg(1).name().equals(zs.arg(2).arg(1).name()));
+                        !zs.arg(1).name().equals(zs.arg(2).arg(1).name()), "length(Zs,2) binds Zs to a list of two distinct variables " + zs.toString());
     }
 
     @Test
     public void testGenerate1() {
         String goal = "append(Xs,Ys,[_,_,_,_,_])";
-        assertEquals(goal + " has 6 solutions", 6, Query.allSolutions(goal).length);
+        assertEquals(6, Query.allSolutions(goal).length, goal + " has 6 solutions");
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testFetchCyclicTerm(){
         assertTrue((new Query("X=f(X)")).hasSolution()); // causes a stack overflow in JVM :-/
@@ -210,7 +207,7 @@ public class Test_List extends JPLTest {
     	int[] a = new int[nA];
     	Term t = Term.intArrayToList(a);
     	Map<String, Term> soln = Query.oneSolution("length(?,Nb)", new Term[] {t});
-    	assertEquals("list of " + nA + " integers has expected length", nA, soln.get("Nb").intValue());
+    	assertEquals(nA, soln.get("Nb").intValue(), "list of " + nA + " integers has expected length");
     }
 
     @Test
@@ -219,7 +216,7 @@ public class Test_List extends JPLTest {
     	int[] a = new int[nA];
     	Term t = Term.intArrayToList(a);
     	Map<String, Term> soln = Query.oneSolution("length(?,Nb)", new Term[] {t});
-    	assertEquals("list of " + nA + " integers has expected length", nA, soln.get("Nb").intValue());
+    	assertEquals(nA, soln.get("Nb").intValue(), "list of " + nA + " integers has expected length");
     }
 
     @Test
@@ -231,11 +228,11 @@ public class Test_List extends JPLTest {
         	String msg = String.format("test Term.textToTerm on: %s", opt);
         	Term t = Term.textToTerm(opt);
         	Term s = Query.oneSolution(String.format("X = %s", opt)).get("X");
-            assertTrue(msg, t.isList());
+            assertTrue(t.isList(), msg);
             assertEquals(t, s);
             String opt2 = options2[i];
             String msg2 = String.format("test Term.toString() on: %s", opt);
-            assertEquals(msg2, opt2, s.toString());
+            assertEquals(opt2, s.toString(), msg2);
         }
     }
 }

@@ -1,26 +1,26 @@
 package org.jpl7.junit;
 
 import org.jpl7.*;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class Test_Module extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Module.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Module.class); // full name with package
     }
 
     @Test
     public void testGoalWithModulePrefix1() {
         String goal = "jpl:jpl_modifier_bit(volatile,I)";
-        assertTrue(goal + " binds I to an integer", Query.oneSolution(goal).get("I").isInteger());
+        assertTrue(Query.oneSolution(goal).get("I").isInteger(), goal + " binds I to an integer");
     }
 
     @Test
     public void testGoalWithModulePrefix2() {
         String goal = "user:length([],0)";
-        assertTrue(goal + " succeeds", Query.hasSolution(goal));
+        assertTrue(Query.hasSolution(goal), goal + " succeeds");
     }
 
     @Test

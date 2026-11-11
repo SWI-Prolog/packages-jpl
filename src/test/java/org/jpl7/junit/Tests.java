@@ -4,15 +4,15 @@ import java.util.Map;
 import org.jpl7.*;
 import org.jpl7.Integer; // prefer to java.lang.Integer
 import org.jpl7.fli.Prolog;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class Tests extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Tests.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Tests.class); // full name with package
     }
 
     @Test
@@ -20,7 +20,7 @@ public class Tests extends JPLTest {
         String java_lib_version = JPL.version_string();
         String c_lib_version = Prolog.get_c_lib_version();
         String msg = String.format("java_lib_version(%s) is same as c_lib_version(%s)",  java_lib_version, c_lib_version);
-        assertEquals(msg, java_lib_version, c_lib_version);
+        assertEquals(java_lib_version, c_lib_version, msg);
     }
 
     @Test
@@ -29,10 +29,10 @@ public class Tests extends JPLTest {
         useJPLmodule();
         String pl_lib_version = Query.oneSolution("jpl_pl_lib_version(V)").get("V").name();
         String msg = String.format("java_lib_version(%s) is same as pl_lib_version(%s)", java_lib_version, pl_lib_version);
-        assertEquals(msg, java_lib_version, pl_lib_version);
+        assertEquals(java_lib_version, pl_lib_version, msg);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testSlowGoal() {
         final Query q = new Query("sleep(10)"); // 10 successive sleep(1)
@@ -95,7 +95,7 @@ public class Tests extends JPLTest {
             new Query("p(]"); // writes junk to stderr and enters debugger
             // unless flag debug_on_error = false
         } catch (PrologException e) {
-            assertTrue("new Query(\"p(]\") throws a PrologException " + e.toString(), true);
+            assertTrue(true, "new Query(\"p(]\") throws a PrologException " + e.toString());
             return;
         }
         fail("new Query(\"p(]\") oughta throw a PrologException");
@@ -147,21 +147,21 @@ public class Tests extends JPLTest {
     public void testStaticQueryNSolutions1() {
         String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])"; // has 10 solutions
         int n = 5; // we ask for 5 at most; should get 5
-        assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions", Query.nSolutions(goal, n).length, n);
+        assertEquals(Query.nSolutions(goal, n).length, n, "Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions");
     }
 
 	@Test
     public void testStaticQueryNSolutions2() {
         String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])"; // has 10 solutions
         int n = 0; // we ask for 0 at most; should get 0
-        assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions", Query.nSolutions(goal, n).length, n);
+        assertEquals(Query.nSolutions(goal, n).length, n, "Query.nSolutions(" + goal + ", " + n + ") returns " + n + " solutions");
     }
 
 	@Test
     public void testStaticQueryNSolutions3() {
         String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])"; // has 10 solutions
         int n = 20; // we ask for 20 at most; should get 10
-        assertEquals("Query.nSolutions(" + goal + ", " + n + ") returns 10 solutions", 10, Query.nSolutions(goal, n).length);
+        assertEquals(10, Query.nSolutions(goal, n).length, "Query.nSolutions(" + goal + ", " + n + ") returns 10 solutions");
     }
 
 	@Test
@@ -187,19 +187,19 @@ public class Tests extends JPLTest {
     public void testForeignFrame1() {
         int ls1 = Query.oneSolution("statistics(localused,LS)").get("LS").intValue();
         int ls2 = Query.oneSolution("statistics(localused,LS)").get("LS").intValue();
-        assertEquals("local stack size unchanged after query", ls1, ls2);
+        assertEquals(ls1, ls2, "local stack size unchanged after query");
     }
 
 	@Test
     public void testOpen1() {
         Query q = new Query("dummy");
-        assertFalse("a newly created query is not open", q.isOpen());
+        assertFalse(q.isOpen(), "a newly created query is not open");
     }
 
 	@Test
     public void testOpen2() {
         Query q = new Query("fail");
         q.open();
-        assertTrue("a newly opened query which has no solutions is open", q.isOpen());
+        assertTrue(q.isOpen(), "a newly opened query which has no solutions is open");
     }
 }

@@ -2,12 +2,10 @@ package org.jpl7.junit;
 
 import org.jpl7.JPL;
 import org.jpl7.Query;
-import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 
 abstract class JPLTest {
     public static final String home =
@@ -40,7 +38,7 @@ abstract class JPLTest {
             (System.getenv("REPORT") == null ? false // PS 12/Jul/2022 was true
                     : "true".equalsIgnoreCase(System.getenv("REPORT")));
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() { // overridden where inadequate
         setUpClass();
     }
@@ -61,21 +59,15 @@ abstract class JPLTest {
         JPL.setDefaultInitArgs(init_swi_config.split("\\s+"));
     }
 
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            reportTest(description);
-        }
-    };
-
     // This is how the test is reported
-    protected void reportTest(Description description) {
+    @BeforeEach
+    protected void reportTest(TestInfo info) {
         if (report) {
             System.out.println(String.format("Starting test: %s (%s)",
-                    description.getMethodName(),
-                    description.getTestClass().getSimpleName()));
+                    info.getTestMethod().map(m -> m.getName()).orElse("?"),
+                    info.getTestClass().map(c -> c.getSimpleName()).orElse("?")));
         }
-    };
+    }
     
     // allow/suppress additional noise from successful tests
     protected void reportNoise(String msg) {

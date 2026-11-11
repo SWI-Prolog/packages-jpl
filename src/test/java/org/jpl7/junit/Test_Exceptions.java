@@ -1,14 +1,14 @@
 package org.jpl7.junit;
 
 import org.jpl7.*;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class Test_Exceptions extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Exceptions.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Exceptions.class); // full name with package
     }
 
     @Test

@@ -5,14 +5,14 @@ import java.util.Map;
 import org.jpl7.*;
 import org.jpl7.Integer; // prefer to java.lang.Integer
 import org.jpl7.fli.Prolog;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class Test_Dict extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Dict.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Dict.class); // full name with package
     }
 
     @Test

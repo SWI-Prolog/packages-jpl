@@ -2,17 +2,17 @@ package org.jpl7.junit;
 
 import org.jpl7.*;
 import org.jpl7.Integer;
-import static org.junit.Assert.*;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class Test_MutualRecursion extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_MutualRecursion.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_MutualRecursion.class); // full name with package
     }
 
     /**
@@ -37,7 +37,7 @@ public class Test_MutualRecursion extends JPLTest {
      */
     private void testMutualRecursion(int n, long f) {
         try {
-            assertEquals(String.format("Mutual recursive Java<->Prolog factorial: fac(%d) = %d", n, f), f, fac(n));
+            assertEquals(f, fac(n), String.format("Mutual recursive Java<->Prolog factorial: fac(%d) = %d", n, f));
         } catch (Exception e) {
             fail(String.format("fac(%d) threw %s", n, e));
         }

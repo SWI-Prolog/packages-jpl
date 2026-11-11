@@ -21,15 +21,15 @@ sudo apt-get install \
         libdb-dev \
         libpcre2-dev \
         libyaml-dev \
-        openjdk-17-jdk junit \
+        openjdk-17-jdk \
         make ninja-build \
-        junit4 \
+        junit5 \
         cmake
 ```
 
 Since we want to get JPL it is mandatory to have:
 - `openjdk-17-jdk` or any package that can provide `java` and the compiler `javac`. (Run `javac -version` to test).
-- `junit4`, for running Java unit testing (via `ctest -V -R jpl`)
+- `junit5` (JUnit 5 or 6, the Jupiter API), for running Java unit testing (via `ctest -V -R jpl`)
 
 As explained in `fnogatz`'s [swivm](https://github.com/fnogatz/swivm) repo, if you want to reduce resources, the following packages listed above are optional:
 
@@ -98,7 +98,7 @@ $ ctest -V -R jpl:java_in_prolog  # run test of SWI calling Java
 $ ctest -V -R jpl # run all JPL tests
 ```
 
-If no tests are found (message "No tests were found!!!"), it may be you are missing `junit4` in the system.
+If no tests are found (message "No tests were found!!!"), it may be you are missing JUnit 5 or 6 (`junit5`) in the system.
 
 Finally, to **install** SWIPL in the system at `/usr/local/swipl-git`:
 

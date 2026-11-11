@@ -148,12 +148,17 @@ if(JNI_FOUND AND Java_FOUND)
 
     set(swihome ../../home)
     #set(swihome ${PROJECT_BINARY_DIR}/../../home)
-    if(JUNIT_JAR)
+    if(JUNIT_JARS)
         set(swibootfile ${swihome}/boot.prc)
+        if(WIN32)			# a plain ; would split the command
+          set(JPL_CP_SEP "$<SEMICOLON>")
+        else()
+          set(JPL_CP_SEP ":")
+        endif()
+        string(REPLACE ";" "${JPL_CP_SEP}" JUNIT_CLASSPATH "${JUNIT_JARS}")
 
-
-        # Add testing pack on Java code calling Prolog (class org.jpl7.JPLTestSuiteRunne)
-	if(HAMCREST AND NOT CMAKE_BUILD_TYPE STREQUAL "Sanitize")
+        # Add testing pack on Java code calling Prolog (class org.jpl7.JPLTestSuiteRunner)
+	if(NOT CMAKE_BUILD_TYPE STREQUAL "Sanitize")
 	  add_test(
 	      NAME jpl:prolog_in_java
 	      COMMAND env
@@ -163,7 +168,7 @@ if(JNI_FOUND AND Java_FOUND)
 		  SOURCE_DIR=${PROJECT_SOURCE_DIR}
 		  ${Java_JAVA_EXECUTABLE}
 		   -Djava.library.path=.
-			   -classpath ${JUNIT_JAR}:${HAMCREST}:src/main/java/jpl.jar:src/test/java/jpltest.jar
+			   -classpath ${JUNIT_CLASSPATH}${JPL_CP_SEP}src/main/java/jpl.jar${JPL_CP_SEP}src/test/java/jpltest.jar
 			   org.jpl7.JPLTestSuiteRunner)
 	endif()
 
@@ -181,9 +186,9 @@ if(JNI_FOUND AND Java_FOUND)
 		  DESTINATION ${INSTALL_TESTS_DIR}/packages/jpl/src/test/java
 		  COMPONENT Tests)
         endif()
-    else(JUNIT_JAR)
-      message("-- No junit.jar. Make sure junit.jar points to junit4.jar  Dropping JPL tests.")
-    endif(JUNIT_JAR)
+    else()
+      message("-- No JUnit 5 or 6 (Jupiter) found.  Dropping JPL tests.")
+    endif()
 
     ################
     # Install pack of Java and Prolog examples

@@ -1,102 +1,103 @@
 #
-# This file provides functions for JUnit support.
+# Find JUnit 5 or 6 (the JUnit Platform with the Jupiter engine) for
+# the JPL Java tests.
 #
-# Available Functions:
+# Sets JUNIT_JARS to the list of jars needed to compile and run the
+# tests, or to the empty list if JUnit is not found.  The tests are
+# written against the Jupiter API (org.junit.jupiter.api), which is the
+# same for JUnit 5 and 6, and run using org.jpl7.JPLTestSuiteRunner,
+# which uses the JUnit Platform launcher API.
 #
-#   add_junit_test(<target name>
-#       CLASSPATH [path1 ...]
-#       TESTS [class1 ...]
-#   )
+# We prefer junit-platform-console-standalone.jar, which contains
+# everything.  Otherwise we need the individual jars.  Distributions
+# install these in different places:
 #
-#   This command creates a target for executing JUnit test classes
-#   using the specified class path.
-#
+#   - Debian/Ubuntu (junit5):	/usr/share/java
+#   - Fedora (junit5):		/usr/share/java/junit5
+#   - MacPorts (junit):		/opt/local/share/java/junit
+#				(opentest4j and apiguardian in the parent)
 
-# search for the JAR providing JUNIT version 4
-# Unfortunately GLOB ? means exactly one, so cannot use it to make the - optional!
-## GLOB EXPRESSION: https://facelessuser.github.io/wcmatch/glob/
-# Unfortunately, find_file() does not allow for wildcarts
-if(NOT JUNIT_JAR)
-  file(GLOB F_JUNIT_JAR
-       ${JAVA_LIB_INSTALL_DIR}/junit4.jar
-       ${JAVA_LIB_INSTALL_DIR}/junit-4*.jar
-       /usr/share/java/junit4.jar
-       /usr/share/java/junit-4*.jar
-       /opt/local/share/java/junit4.jar
-       /opt/local/share/java/junit-4*.jar
-       /usr/local/share/java/junit4.jar
-       /usr/local/share/java/junit-4*.jar)
-  if(NOT F_JUNIT_JAR)
-    file(GLOB F_JUNIT_JAR
-	 /usr/share/java/junit.jar
-	 /opt/local/share/java/junit.jar)
+include_guard(GLOBAL)			# included from two directories
+include(FindPackageMessage)
+
+set(JUNIT_SEARCH_PATHS
+    ${JAVA_LIB_INSTALL_DIR}
+    /usr/share/java/junit5
+    /usr/share/java/junit
+    /usr/share/java
+    /opt/local/share/java/junit
+    /opt/local/share/java
+    /usr/local/share/java/junit5
+    /usr/local/share/java/junit
+    /usr/local/share/java
+    /opt/homebrew/share/java)
+
+# find_jar(VAR NAME ...) searches for NAME.jar or NAME-<version>.jar.
+# A cached result that no longer exists, e.g., because the package
+# manager replaced JUnit, is searched for again.
+
+function(junit_find_jar var)
+  if(${var} AND NOT EXISTS "${${var}}")
+    unset(${var} CACHE)
   endif()
-  if(F_JUNIT_JAR)
-    list(GET F_JUNIT_JAR 0 F_JUNIT_JAR)
-    message("Found junit at ${F_JUNIT_JAR}")
-  else()
-    message("Could not find junit.jar.")
+  if(NOT ${var})
+    set(found)
+    foreach(name ${ARGN})
+      foreach(dir ${JUNIT_SEARCH_PATHS})
+	file(GLOB found ${dir}/${name}.jar ${dir}/${name}-[0-9]*.jar)
+	if(found)
+	  list(GET found 0 found)
+	  break()
+	endif()
+      endforeach()
+      if(found)
+	break()
+      endif()
+    endforeach()
+    if(found)
+      set(${var} ${found} CACHE FILEPATH "JUnit jar ${ARGV1}" FORCE)
+    else()
+      set(${var} "" CACHE FILEPATH "JUnit jar ${ARGV1}" FORCE)
+    endif()
+    mark_as_advanced(${var})
   endif()
-  set(JUNIT_JAR ${F_JUNIT_JAR} CACHE FILEPATH
-      "junit4 jar file")
+endfunction()
+
+set(JUNIT_JARS)
+junit_find_jar(JUNIT_CONSOLE_STANDALONE_JAR
+	       junit-platform-console-standalone)
+if(JUNIT_CONSOLE_STANDALONE_JAR)
+  set(JUNIT_JARS ${JUNIT_CONSOLE_STANDALONE_JAR})
+else()
+  set(JUNIT_REQUIRED
+      JUNIT_JUPITER_API_JAR:junit-jupiter-api
+      JUNIT_JUPITER_ENGINE_JAR:junit-jupiter-engine
+      JUNIT_PLATFORM_LAUNCHER_JAR:junit-platform-launcher
+      JUNIT_PLATFORM_ENGINE_JAR:junit-platform-engine
+      JUNIT_PLATFORM_COMMONS_JAR:junit-platform-commons
+      JUNIT_OPENTEST4J_JAR:opentest4j)
+  set(JUNIT_COMPLETE ON)
+  foreach(req ${JUNIT_REQUIRED})
+    string(REPLACE ":" ";" req ${req})
+    list(GET req 0 var)
+    list(GET req 1 name)
+    junit_find_jar(${var} ${name})
+    if(${var})
+      list(APPEND JUNIT_JARS ${${var}})
+    else()
+      set(JUNIT_COMPLETE OFF)
+    endif()
+  endforeach()
+  junit_find_jar(JUNIT_APIGUARDIAN_JAR apiguardian-api apiguardian)
+  if(JUNIT_APIGUARDIAN_JAR)		# only annotations, optional
+    list(APPEND JUNIT_JARS ${JUNIT_APIGUARDIAN_JAR})
+  endif()
+  if(NOT JUNIT_COMPLETE)
+    set(JUNIT_JARS)
+  endif()
 endif()
-MARK_AS_ADVANCED(JUNIT_JAR)
 
-if(JUNIT_JAR)
-find_file(HAMCREST
-    NAMES
-        hamcrest-core.jar hamcrest.jar
-    PATHS
-        ${JAVA_LIB_INSTALL_DIR}
-        /usr/share/java
-        /usr/share/java/hamcrest
-	/opt/local/share/java
-	/usr/local/share/java
-	/usr/lib/java/javapackages-bootstrap)
-MARK_AS_ADVANCED(HAMCREST)
+if(JUNIT_JARS)				# only prints if the result changed
+  find_package_message(JUnit "Found JUnit (Jupiter): ${JUNIT_JARS}"
+		       "${JUNIT_JARS}")
 endif()
-
-function(add_junit_test TARGET_NAME)
-
-    if (WIN32 AND NOT CYGWIN)
-        set(SEPARATOR ";")
-    else (WIN32 AND NOT CYGWIN)
-        set(SEPARATOR ":")
-    endif(WIN32 AND NOT CYGWIN)
-
-    set(REPORTS_DIR "reports")
-
-    foreach (ARG ${ARGN})
-        if (ARG MATCHES "(CLASSPATH|TESTS|REPORTS_DIR)")
-            set(TYPE ${ARG})
-
-        else (ARG MATCHES "(CLASSPATH|TESTS|REPORTS_DIR)")
-
-            if (TYPE MATCHES "CLASSPATH")
-                set(CLASSPATH "${CLASSPATH}${SEPARATOR}${ARG}")
-
-            elseif (TYPE MATCHES "TESTS")
-                set(TESTS ${TESTS} ${ARG})
-
-            elseif (TYPE MATCHES "REPORTS_DIR")
-                set(REPORTS_DIR ${ARG})
-
-            endif(TYPE MATCHES "CLASSPATH")
-
-        endif(ARG MATCHES "(CLASSPATH|TESTS|REPORTS_DIR)")
-
-    endforeach(ARG)
-
-    # this may be obsolete or not corret for the new JUnit4 version (rather than 3.8)
-    add_custom_target(${TARGET_NAME}
-        COMMAND
-            mkdir -p "${REPORTS_DIR}"
-        COMMAND
-            ${Java_JAVA_EXECUTABLE}
-            -Djunit.reports.dir=${REPORTS_DIR}
-            -classpath ${CLASSPATH}
-            com.netscape.test.TestRunner
-            ${TESTS}
-    )
-
-endfunction(add_junit_test)

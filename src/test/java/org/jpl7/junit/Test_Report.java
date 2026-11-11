@@ -2,13 +2,13 @@ package org.jpl7.junit;
 
 import java.util.Map;
 import org.jpl7.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class Test_Report extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Report.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Report.class); // full name with package
     }
 
     @Test

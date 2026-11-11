@@ -66,11 +66,19 @@
 
     <!-- ######################### DEPENDENCIES ######################### -->
     <dependencies>
-        <!-- JUNIT testing framework -->
+        <!-- JUnit Jupiter testing framework (JUnit 5; the tests also
+             compile and run with JUnit 6) -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <!--<scope>test</scope>-->
+        </dependency>
+        <!-- Needed by org.jpl7.JPLTestSuiteRunner -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.10.2</version>
             <!--<scope>test</scope>-->
         </dependency>
 

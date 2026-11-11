@@ -2,18 +2,18 @@ package org.jpl7.junit;
 
 import java.util.Map;
 import org.jpl7.*;
-import static org.junit.Assert.*;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class Test_Data extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Data.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Data.class); // full name with package
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         setUpClass();
         Query.hasSolution(String.format("consult('%s/test_quoted_module.pl')", test_dir)); // .pl file to be used
@@ -24,7 +24,7 @@ public class Test_Data extends JPLTest {
         String name = "'$c_call_prolog'";
         Term t = Term.textToTerm(name);
         assert t != null;
-        assertEquals("matching text-term", name, t.toString());
+        assertEquals(name, t.toString(), "matching text-term");
     }
 
     @Test
@@ -35,7 +35,7 @@ public class Test_Data extends JPLTest {
         try {
             Query.hasSolution(t);
         } catch (PrologException e) {
-            assertTrue("PrologException has to be existence error", e.getMessage().contains("existence_error"));
+            assertTrue(e.getMessage().contains("existence_error"), "PrologException has to be existence error");
         } catch (Exception e) {
             fail("Wrong exception type; should be PrologException but it is: " + e);
         }
@@ -60,8 +60,8 @@ public class Test_Data extends JPLTest {
         // traditional and
         // modern syntax in SWI
         // Prolog 7.x
-        assertTrue("T is not bound to an atom", t.isAtom());
-        assertEquals("the atom's name is not \"a\"", "a", t.name());
+        assertTrue(t.isAtom(), "T is not bound to an atom");
+        assertEquals("a", t.name(), "the atom's name is not \"a\"");
     }
 
     @Test
@@ -100,10 +100,9 @@ public class Test_Data extends JPLTest {
     public void testTextToTerm1() {
         String text = "fred(B,p(A))";
         Term t = Term.textToTerm(text);
-        assertTrue("Term.textToTerm() converts \"fred(B,p(A))\" to a corresponding Term",
-                t.hasFunctor("fred", 2) && t.arg(1).isVariable() && t.arg(1).name().equals("B")
+        assertTrue(t.hasFunctor("fred", 2) && t.arg(1).isVariable() && t.arg(1).name().equals("B")
                         && t.arg(2).hasFunctor("p", 1) && t.arg(2).arg(1).isVariable()
-                        && t.arg(2).arg(1).name().equals("A"));
+                        && t.arg(2).arg(1).name().equals("A"), "Term.textToTerm() converts \"fred(B,p(A))\" to a corresponding Term");
     }
 
     @Test
@@ -114,10 +113,9 @@ public class Test_Data extends JPLTest {
         @SuppressWarnings("ConstantConditions") Term[] ps = plist.listToTermArray();
         //noinspection ConstantConditions
         Term t = Term.textToTerm(text1).putParams(ps);
-        assertTrue("fred(?,2,?) .putParams( [first(x,y),A] )",
-                t.hasFunctor("fred", 3) && t.arg(1).hasFunctor("first", 2) && t.arg(1).arg(1).hasFunctor("x", 0)
+        assertTrue(t.hasFunctor("fred", 3) && t.arg(1).hasFunctor("first", 2) && t.arg(1).arg(1).hasFunctor("x", 0)
                         && t.arg(1).arg(2).hasFunctor("y", 0) && t.arg(2).hasFunctor(2, 0) && t.arg(3).isVariable()
-                        && t.arg(3).name().equals("A"));
+                        && t.arg(3).name().equals("A"), "fred(?,2,?) .putParams( [first(x,y),A] )");
     }
 
     // issue #13: https://github.com/SWI-Prolog/packages-jpl/issues/13

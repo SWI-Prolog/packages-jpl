@@ -4,14 +4,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jpl7.*;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class Test_Variables extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Variables.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Variables.class); // full name with package
     }
 
     @Test
@@ -20,8 +20,7 @@ public class Test_Variables extends JPLTest {
         Term rhs = new Compound("p", new Term[]{new Atom("a"), new Atom("b")}); // p(a,b)
         Term goal = new Compound("=", new Term[]{lhs, rhs}); // p(X,Y) = p(a,b)
         Map<String, Term> soln = new Query(goal).oneSolution();
-        assertTrue("two Variables with different names can bind to distinct atoms",
-                soln != null && (soln.get("X")).name().equals("a") && (soln.get("Y")).name().equals("b"));
+        assertTrue(soln != null && (soln.get("X")).name().equals("a") && (soln.get("Y")).name().equals("b"), "two Variables with different names can bind to distinct atoms");
     }
 
     @Test
@@ -29,8 +28,7 @@ public class Test_Variables extends JPLTest {
         Term lhs = new Compound("p", new Term[]{new Variable("X"), new Variable("X")});
         Term rhs = new Compound("p", new Term[]{new Atom("a"), new Atom("b")});
         Term goal = new Compound("=", new Term[]{lhs, rhs});
-        assertFalse("two distinct Variables with same name cannot unify with distinct atoms",
-                new Query(goal).hasSolution());
+        assertFalse(new Query(goal).hasSolution(), "two distinct Variables with same name cannot unify with distinct atoms");
     }
 
     @Test
@@ -39,8 +37,7 @@ public class Test_Variables extends JPLTest {
         Term lhs = new Compound("p", new Term[]{X, X});
         Term rhs = new Compound("p", new Term[]{new Atom("a"), new Atom("b")});
         Term goal = new Compound("=", new Term[]{lhs, rhs});
-        assertFalse("two references to the same (named) Variable cannot unify with differing atoms",
-                new Query(goal).hasSolution());
+        assertFalse(new Query(goal).hasSolution(), "two references to the same (named) Variable cannot unify with differing atoms");
     }
 
     @Test
@@ -48,7 +45,7 @@ public class Test_Variables extends JPLTest {
         Term lhs = new Compound("p", new Term[]{new Variable("_"), new Variable("_")});
         Term rhs = new Compound("p", new Term[]{new Atom("a"), new Atom("b")});
         Term goal = new Compound("=", new Term[]{lhs, rhs});
-        assertTrue("two distinct anonymous Variables can unify with distinct atoms", new Query(goal).hasSolution());
+        assertTrue(new Query(goal).hasSolution(), "two distinct anonymous Variables can unify with distinct atoms");
     }
 
     @Test
@@ -57,26 +54,24 @@ public class Test_Variables extends JPLTest {
         Term lhs = new Compound("p", new Term[]{Anon, Anon});
         Term rhs = new Compound("p", new Term[]{new Atom("a"), new Atom("b")});
         Term goal = new Compound("=", new Term[]{lhs, rhs});
-        assertTrue("two references to an anonymous Variable can unify with differing atoms",
-                new Query(goal).hasSolution());
+        assertTrue(new Query(goal).hasSolution(), "two references to an anonymous Variable can unify with differing atoms");
     }
 
     @Test
     public void test_variable_binding6() {
         Variable v = new Variable("X");
         Term t1 = new Query("? = 5", v).oneSolution().get("X");
-        assertEquals("Variable X must be bound to JPL Integer 5", 5, t1.intValue());
+        assertEquals(5, t1.intValue(), "Variable X must be bound to JPL Integer 5");
         // Variable v is re-used for another query, no problem
         Term t2 = new Query("? = 10", v).oneSolution().get("X");
-        assertEquals("Variable X must be bound to JPL Integer 10", 10, t2.intValue());
+        assertEquals(10, t2.intValue(), "Variable X must be bound to JPL Integer 10");
     }
 
     @Test
     public void test_free_variable1() {
         Query q = new Query("append([X],[_,_],[_,_,_])");
         Map<String, Term> sol = q.oneSolution();
-        assertEquals("Variable X must remain free after query",
-                sol.get("X").typeName(), "Variable");
+        assertEquals(sol.get("X").typeName(), "Variable", "Variable X must remain free after query");
     }
 
     @Test
@@ -85,9 +80,9 @@ public class Test_Variables extends JPLTest {
         Variable VarY = new Variable("Y");
         Query q = new Query(new Compound("=", new Term[]{VarX, VarY}));
         Map<String, Term> sol = q.oneSolution();
-        assertEquals("X must be bound to a variable", sol.get("X").typeName(), "Variable");
-        assertEquals("Y must be bound to a variable", sol.get("Y").typeName(), "Variable");
-        assertEquals("X and Y must be bound to the same new variable", sol.get("X"), sol.get("Y"));
+        assertEquals(sol.get("X").typeName(), "Variable", "X must be bound to a variable");
+        assertEquals(sol.get("Y").typeName(), "Variable", "Y must be bound to a variable");
+        assertEquals(sol.get("X"), sol.get("Y"), "X and Y must be bound to the same new variable");
     }
 
     @Test
@@ -96,8 +91,8 @@ public class Test_Variables extends JPLTest {
         Variable v2 = new Variable("X");
         Term s1 = new Query("? = 5", v1).oneSolution().get("X");
         Term s2 = new Query("? = 15", v2).oneSolution().get("X");
-        assertTrue("Variables are equal textually despite different bindings", v1.equals(v2));   // evaluates to True
-        assertFalse("Bindings are the same", s1.equals(s2)); // evaluates to False
+        assertTrue(v1.equals(v2), "Variables are equal textually despite different bindings");   // evaluates to True
+        assertFalse(s1.equals(s2), "Bindings are the same"); // evaluates to False
     }
 
     @Test
@@ -106,7 +101,7 @@ public class Test_Variables extends JPLTest {
         Term q2 = Term.textToTerm("X = 15");
         Variable v1 = (Variable) q1.arg(1);
         Variable v2 = (Variable) q2.arg(1);
-        assertEquals("name of var is X", "X", v1.name());
+        assertEquals("X", v1.name(), "name of var is X");
         assertNotEquals("should be different variables, despite = names", v1.equals(v2));
     }
 
@@ -117,8 +112,8 @@ public class Test_Variables extends JPLTest {
         Term v3 = new Variable();
         Set<Term> boxes = new HashSet<>();
         boxes.add(v1);
-        assertTrue("v2 should not be contained in set (<> hash)", boxes.contains(v2));
-        assertFalse("v3 should not be contained in set (<> hash)", boxes.contains(v3));
+        assertTrue(boxes.contains(v2), "v2 should not be contained in set (<> hash)");
+        assertFalse(boxes.contains(v3), "v3 should not be contained in set (<> hash)");
     }
 
     @Test
@@ -126,9 +121,9 @@ public class Test_Variables extends JPLTest {
         Term v1 = new Variable();
         Term v2 = new Variable("X");
         Term v3 = new Variable("_X");
-        assertTrue("anonymous var is equal to itself", v1.equals(v1));
-        assertTrue("dont-tell var is equal to itself", v1.equals(v1));
-        assertFalse("anonymous var is not equal to any var", v1.equals(v2) || v1.equals(v3));
+        assertTrue(v1.equals(v1), "anonymous var is equal to itself");
+        assertTrue(v1.equals(v1), "dont-tell var is equal to itself");
+        assertFalse(v1.equals(v2) || v1.equals(v3), "anonymous var is not equal to any var");
     }
 
     @Test
@@ -169,8 +164,8 @@ public class Test_Variables extends JPLTest {
     public void test_variable_equal_anonymous6() {
         Variable v = new Variable("_");
         Variable v1 = new Variable();
-        assertNotEquals("The anonymous var _ is not equal to itself", v, v);
-        assertNotEquals("The anonymous var _ is not equal to dont tell vars", v, v1);
+        assertNotEquals(v, v, "The anonymous var _ is not equal to itself");
+        assertNotEquals(v, v1, "The anonymous var _ is not equal to dont tell vars");
     }
 
     @Test

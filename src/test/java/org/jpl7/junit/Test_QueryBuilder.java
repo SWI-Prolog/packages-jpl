@@ -3,14 +3,14 @@ package org.jpl7.junit;
 import org.jpl7.*;
 import org.jpl7.Float; // prefer to java.lang.Float
 import org.jpl7.Integer; // prefer to java.lang.Integer
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class Test_QueryBuilder extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_QueryBuilder.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_QueryBuilder.class); // full name with package
     }
 
     @Test
@@ -18,7 +18,7 @@ public class Test_QueryBuilder extends JPLTest {
         Term args = Term.textToTerm("[1,2,3,4,5]");
         Term t = new Compound("member", new Term[] { new Integer(1), args } );
         Query q = new Query(t);
-        assertTrue("Query should have succeded, but it did not!", q.hasSolution());
+        assertTrue(q.hasSolution(), "Query should have succeded, but it did not!");
     }
 
     @Test
@@ -37,33 +37,33 @@ public class Test_QueryBuilder extends JPLTest {
     @Test
     public void testString1() {
         Query q = new Query("member(1, [1,2,3])");
-        assertTrue("Query should have succeded, but it did not!", q.hasSolution());
+        assertTrue(q.hasSolution(), "Query should have succeded, but it did not!");
     }
 
     @Test
     public void testString2() {
         Query q = new Query("atom(?)", new Atom("hello"));
-        assertTrue("Query should have succeded, but it did not!", q.hasSolution());
+        assertTrue(q.hasSolution(), "Query should have succeded, but it did not!");
     }
 
     @Test
     public void testString3() {
         Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
         Query q = new Query("member(?, ?)", args);
-        assertTrue("Query should have succeded, but it did not!", q.hasSolution());
+        assertTrue(q.hasSolution(), "Query should have succeded, but it did not!");
     }
 
     @Test
     public void testString4() {
         Term[] args = new Term[] { new Integer(1), Term.textToTerm("[1,2,3,4,5]") };
         Query q = new Query("member", args);
-        assertTrue("Query should have succeded, but it did not!", q.hasSolution());
+        assertTrue(q.hasSolution(), "Query should have succeded, but it did not!");
     }
 
     @Test
     public void testString5() {
         Query q = new Query("atom", new Atom("hello"));
-        assertTrue("Query should have succeded, but it did not!", q.hasSolution());
+        assertTrue(q.hasSolution(), "Query should have succeded, but it did not!");
     }
 
     @Test

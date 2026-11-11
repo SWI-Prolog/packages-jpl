@@ -3,14 +3,14 @@ package org.jpl7.junit;
 import org.jpl7.Atom;
 import org.jpl7.Query;
 import org.jpl7.Term;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class Test_String extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_String.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_String.class); // full name with package
     }
 
     @Test

@@ -4,7 +4,7 @@ Once you have the SWIPL compiled, it is time to test it. To do so, we use CMAKE 
  * `jpl:java_in_prolog`, for testing Prolog-calls-Java; and 
  * `jpl:prolog_in_java` (for testing Java-calls-Prolog).
 
-**NOTE:** to have the tests built at compile time, one should have JUNIT4 available. In Ubuntu, it is provided via package `junit4`. Otherwise, when running CMAKE, it will yield the message "`-- No junit.jar. Make sure junit.jar points to junit4.jar  Dropping JPL tests.`" and no unit test will be available.
+**NOTE:** to have the tests built at compile time, one should have JUnit 5 or 6 (Jupiter) available. In Ubuntu, it is provided via package `junit5`. CMake looks for `junit-platform-console-standalone.jar` or the individual Jupiter and Platform jars (see `cmake/JUnit.cmake`). Otherwise, when running CMAKE, it will yield the message "`-- No JUnit 5 or 6 (Jupiter) found.  Dropping JPL tests.`" and no unit test will be available.
 
 
 To run the tests with minimal output:

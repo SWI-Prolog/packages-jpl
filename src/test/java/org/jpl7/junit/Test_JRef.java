@@ -2,18 +2,18 @@ package org.jpl7.junit;
 
 import org.jpl7.*;
 import org.jpl7.Integer; // prefer to java.lang.Integer
-import static org.junit.Assert.*;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class Test_JRef extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_JRef.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_JRef.class); // full name with package
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         setUpClass();
         consultTestFile();  // load the test_jpl.pl file
@@ -61,20 +61,15 @@ public class Test_JRef extends JPLTest {
     public void testRef6() {
         Term nullJRef = JPL.newJRef(null);
         Object nullObject = nullJRef.object();
-        assertNull("JPL null Term yields a null object", nullObject);
+        assertNull(nullObject, "JPL null Term yields a null object");
     }
 
-    @Test(expected = JPLException.class)
+    @Test
     public void testRef7() {
         Term badJRef = new Compound("hello", new Term[] { new Atom("foobar") }); // term hello(foobar)
-        try {
-            badJRef.object(); // should throw exception
-            fail("@(foobar).object() should thrown JPLException"); // shouldn't get to here
-        } catch (JPLException e) { // expected exception class
-            // From JUNIT 4.5 would be good to use assertThat(e.getMessage(), is("term is neither a JRef nor a Compound representing @(null)"));
-            // check http://junit.sourceforge.net/doc/ReleaseNotes4.4.html for assertThat
-            assertEquals("Exception text does not match", "term is neither a JRef nor a Compound representing @(null)", e.getMessage());
-            throw e;    // All good, keep throwing it so that the @Test directive catches it
-        }
+        JPLException e = assertThrows(JPLException.class, () -> badJRef.object(),
+                                      "@(foobar).object() should throw JPLException");
+        assertEquals("term is neither a JRef nor a Compound representing @(null)", e.getMessage(),
+                     "Exception text does not match");
     }
 }

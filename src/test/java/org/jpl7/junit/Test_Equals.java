@@ -5,8 +5,8 @@ import java.util.Set;
 import org.jpl7.*;
 import org.jpl7.Float; // prefer to java.lang.Float
 import org.jpl7.Integer; // prefer to java.lang.Integer
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * If we override .equals() we must also override .hascode()
@@ -18,7 +18,7 @@ public class Test_Equals extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Equals.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Equals.class); // full name with package
     }
 
     @Test
@@ -26,8 +26,8 @@ public class Test_Equals extends JPLTest {
         Term i1 = new Integer(1212);
         Term i2 = new Integer(1212);
         Term i3 = new Integer(212);
-        assertEquals("should be = integers", i1, i2);
-        assertNotEquals("should be <> integers", i1, i3);
+        assertEquals(i1, i2, "should be = integers");
+        assertNotEquals(i1, i3, "should be <> integers");
     };
 
     // TODO: big integers 
@@ -38,10 +38,10 @@ public class Test_Equals extends JPLTest {
         Term r2 = new Rational(20, 30);
         Term r3 = new Rational("20r30");
         Term r4 = new Rational("21r30");
-        assertEquals("should be = rationals", r1, r2);
-        assertEquals("should be = rationals", r1, r3);
-        assertEquals("should be = rationals", r2, r3);
-        assertNotEquals("should be <> rationals", r1, r4);
+        assertEquals(r1, r2, "should be = rationals");
+        assertEquals(r1, r3, "should be = rationals");
+        assertEquals(r2, r3, "should be = rationals");
+        assertNotEquals(r1, r4, "should be <> rationals");
     };
 
     @Test
@@ -49,8 +49,8 @@ public class Test_Equals extends JPLTest {
         Term f1 = new Float(1212.23);
         Term f2 = new Float(1212.23);
         Term f3 = new Float(212);
-        assertEquals("should be = floats", f1, f2);
-        assertNotEquals("should be <> float", f1, f3);
+        assertEquals(f1, f2, "should be = floats");
+        assertNotEquals(f1, f3, "should be <> float");
     };
 
     @Test
@@ -59,44 +59,44 @@ public class Test_Equals extends JPLTest {
         Term i2 = new Integer(1212);
         Term i3 = new Integer(212);
         Term r2 = new Rational(20, 30);
-        assertEquals("should be = float and integer", f3, i3);
-        assertNotEquals("should be <> float and integer", f3, i2);
-        assertNotEquals("should be <> float and rational", f3, r2);
+        assertEquals(f3, i3, "should be = float and integer");
+        assertNotEquals(f3, i2, "should be <> float and integer");
+        assertNotEquals(f3, r2, "should be <> float and rational");
     }
 
     @Test
     public void test_atom_equal1() {
         Atom a = new Atom("fred");
         Atom b = new Atom("fred");
-        assertEquals("atoms should be equal", a, b);
+        assertEquals(a, b, "atoms should be equal");
     }
 
     @Test
     public void test_atom_equal2() {
         Atom a = new Atom("age(john)");
         Atom b = new Atom("age(john)");
-        assertEquals("atoms should be equal", a, b);
+        assertEquals(a, b, "atoms should be equal");
     }
 
     @Test
     public void test_atom_equal3() {
         Atom a = new Atom("fred");
         Atom b = new Atom("alice");
-        assertNotEquals("atoms should not be equal", a, b);
+        assertNotEquals(a, b, "atoms should not be equal");
     }
 
     @Test
     public void test_atom_equal4() {
         Atom a = new Atom("age(john)");
         Atom b = new Atom("age(mary)");
-        assertNotEquals("atoms should not be equal", a, b);
+        assertNotEquals(a, b, "atoms should not be equal");
     }
 
     @Test
     public void test_atom_equal5() {
         Atom a = new Atom("here", "text");
         Atom b = new Atom("here", "string");
-        assertNotEquals("should not be equal - different types", a, b);
+        assertNotEquals(a, b, "should not be equal - different types");
     }
 
     @Test
@@ -105,7 +105,7 @@ public class Test_Equals extends JPLTest {
         Atom b = new Atom("age(john)");
         Set<Atom> atomBoxes = new HashSet<>();
         atomBoxes.add(a);
-        assertTrue("b should be contained in set (= hash)", atomBoxes.contains(b));
+        assertTrue(atomBoxes.contains(b), "b should be contained in set (= hash)");
     }
 
     @Test
@@ -114,7 +114,7 @@ public class Test_Equals extends JPLTest {
         Atom b = new Atom("text", "string");
         Set<Atom> atomBoxes = new HashSet<>();
         atomBoxes.add(a);
-        assertFalse("b should NOT be contained in set (<> hash)", atomBoxes.contains(b));
+        assertFalse(atomBoxes.contains(b), "b should NOT be contained in set (<> hash)");
     }
 
     @Test
@@ -123,7 +123,7 @@ public class Test_Equals extends JPLTest {
         Atom b = new Atom("here", "string");
         Set<Atom> atomBoxes = new HashSet<>();
         atomBoxes.add(a);
-        assertFalse("b should NOT be contained in set (<> hash)", atomBoxes.contains(b));
+        assertFalse(atomBoxes.contains(b), "b should NOT be contained in set (<> hash)");
     }
 
     @Test
@@ -131,9 +131,9 @@ public class Test_Equals extends JPLTest {
         Term t1 = Term.textToTerm("mother(rosana,lucia)");
         Term t2 = Term.textToTerm("mother(rosana, lucia)");
         Term t3 = Term.textToTerm("mother(rosana, marcos)");
-        assertNotSame("objects t1 and t2  are not the same", t1, t2);
-        assertEquals("objects t1 and t2 are equal", t1, t2);
-        assertNotEquals("objects t1 and t3 are not equal", t1, t3);
+        assertNotSame(t1, t2, "objects t1 and t2  are not the same");
+        assertEquals(t1, t2, "objects t1 and t2 are equal");
+        assertNotEquals(t1, t3, "objects t1 and t3 are not equal");
     }
 
     @Test
@@ -143,7 +143,7 @@ public class Test_Equals extends JPLTest {
         Term t3 = Term.textToTerm("mother(rosana, marcos)");
         Set<Term> compBoxes = new HashSet<>();
         compBoxes.add(t1);
-        assertTrue("t2 should be contained in set (<> hash)", compBoxes.contains(t2));
-        assertFalse("t3 should NOT be contained in set (<> hash)", compBoxes.contains(t3));
+        assertTrue(compBoxes.contains(t2), "t2 should be contained in set (<> hash)");
+        assertFalse(compBoxes.contains(t3), "t3 should NOT be contained in set (<> hash)");
     }
 }

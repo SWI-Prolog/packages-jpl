@@ -71,4 +71,4 @@ LD_LIBRARY_PATH=../../build/packages/jpl;SWI_HOME_DIR=../../build/home;SWIPL_BOO
 
 Note this assumes your IDE will compile the JPL classes into `target/classes` dir, as default in a Maven project.
 
-Finally, you can create a new Run from the template, it will already inherit the environment variables. The whole JUNIT testing framework is aggregated by class `org.jpl7.test.JPLTestSuite`.
+Finally, you can create a new Run from the template, it will already inherit the environment variables. The whole JUnit (Jupiter) test suite is run by class `org.jpl7.JPLTestSuiteRunner`, which lists the test classes.

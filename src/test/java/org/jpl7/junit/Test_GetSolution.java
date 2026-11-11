@@ -4,14 +4,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import org.jpl7.*;
 import org.jpl7.Integer; // prefer to java.lang.Integer
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class Test_GetSolution extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_GetSolution.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_GetSolution.class); // full name with package
     }
 
     @Test
@@ -20,7 +20,7 @@ public class Test_GetSolution extends JPLTest {
         while (q.hasMoreSolutions()) {
         	q.nextSolution();
         }
-        assertFalse("A query has exhausted all solutions but it is still open", q.isOpen());
+        assertFalse(q.isOpen(), "A query has exhausted all solutions but it is still open");
     }
 
     @Test
@@ -29,7 +29,7 @@ public class Test_GetSolution extends JPLTest {
         while (q.hasMoreSolutions()) {
         	q.nextSolution();
         }
-        assertFalse("A query has exhausted all solutions but it is still open", q.isOpen());
+        assertFalse(q.isOpen(), "A query has exhausted all solutions but it is still open");
     }
 
     @Test
@@ -91,7 +91,7 @@ public class Test_GetSolution extends JPLTest {
     @Test
     public void testStaticQueryAllSolutions1() {
         String goal = "member(X, [0,1,2,3,4,5,6,7,8,9])";
-        assertEquals("Query.allSolutions(" + goal + ") returns 10 solutions", 10, Query.allSolutions(goal).length);
+        assertEquals(10, Query.allSolutions(goal).length, "Query.allSolutions(" + goal + ") returns 10 solutions");
     }
 
     @Test
@@ -112,14 +112,14 @@ public class Test_GetSolution extends JPLTest {
     public void testDontTellMeMode1() {
         final Query q = new Query("setof(_M,current_module(_M),_Ms),length(_Ms,N)");
         JPL.setDTMMode(true);
-        assertEquals("in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for just one variable", 1, q.oneSolution().keySet().size());
+        assertEquals(1, q.oneSolution().keySet().size(), "in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for just one variable");
     }
 
     @Test
     public void testDontTellMeMode2() {
         final Query q = new Query("setof(_M,current_module(_M),_Ms),length(_Ms,N)");
         JPL.setDTMMode(false);
-        assertEquals("not in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for three variables", 3, q.oneSolution().keySet().size());
+        assertEquals(3, q.oneSolution().keySet().size(), "not in dont-tell-me mode, setof(_M,current_module(_M),_Ms),length(_Ms,N) returns binding for three variables");
     }
 
     @Test

@@ -1,15 +1,15 @@
 package org.jpl7.junit;
 
 import org.jpl7.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Test_Unicode extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Unicode.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Unicode.class); // full name with package
     }
 
     @Test

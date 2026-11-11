@@ -3,7 +3,7 @@ project(swipl-jpltest-jar)
 
 find_package(Java COMPONENTS Development)
 include(UseJava)
-include(JUnit) # junit4.jar
+include(JUnit) # JUnit 5 or 6 (Jupiter)
 
 # This is the jpl.jar file that was compiled before this step
 # This is not used anymore as we say "jpl_jar" directly in INCLUDE_JARS below
@@ -39,7 +39,6 @@ set(TEST
     org/jpl7/junit/Test_Module.java
     ##
     org/jpl7/JPLTestSuiteRunner.java
-    org/jpl7/JPLTestSuite.java
     org/jpl7/ShadowA.java
     org/jpl7/ShadowB.java
     org/jpl7/Test.java)
@@ -47,16 +46,16 @@ set(TEST
 option(JAVA_COMPATIBILITY
        "Make jpltest.jar compatible with older Java versions"
        OFF)
-set(JAVA_COMPATIBILITY_VERSION 7 CACHE STRING
+set(JAVA_COMPATIBILITY_VERSION 8 CACHE STRING
     "Java compatibility version for jpltest.jar")
 
 # The -Xlint:-options silences the build warning about boot classpath
 # compatibility.
 
-if(JUNIT_JAR)
+if(JUNIT_JARS)
     # Compiles the test source files into jpltest.jar file
     # from here, CMAKE will infer the dependency on jpl_jar (and will build that one first)
     add_jar(jpltest
         SOURCES ${TEST}
-        INCLUDE_JARS ${JUNIT_JAR} jpl_jar)
+        INCLUDE_JARS ${JUNIT_JARS} jpl_jar)
 endif()

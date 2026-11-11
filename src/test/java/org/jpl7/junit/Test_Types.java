@@ -1,14 +1,14 @@
 package org.jpl7.junit;
 
 import org.jpl7.*;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class Test_Types extends JPLTest {
 
     public static void main(String argv[]) {
         // To be able to call it from CLI without IDE (e.g., by CMAKE)
-        org.junit.runner.JUnitCore.main(Test_Types.class.getName()); // full name with package
+        org.jpl7.JPLTestSuiteRunner.run(Test_Types.class); // full name with package
     }
 
     @Test
@@ -21,91 +21,91 @@ public class Test_Types extends JPLTest {
     @Test
     public void testIsJNull2() {
         Term t = Query.oneSolution("X = @(3)").get("X");
-        assertFalse("@(3) . isJNull() fails", t.isJNull());
+        assertFalse(t.isJNull(), "@(3) . isJNull() fails");
     }
 
     @Test
     public void testIsJNull3() {
         Term t = Query.oneSolution("X = _").get("X");
-        assertFalse("_ . isJNull() fails", t.isJNull());
+        assertFalse(t.isJNull(), "_ . isJNull() fails");
     }
 
     @Test
     public void testIsJNull4() {
         Term t = Query.oneSolution("X = @(true)").get("X");
-        assertFalse("@(true) . isJNull() fails", t.isJNull());
+        assertFalse(t.isJNull(), "@(true) . isJNull() fails");
     }
 
     @Test
     public void testIsJNull5() {
         Term t = Query.oneSolution("X = @(false)").get("X");
-        assertFalse("@(false) . isJNull() fails", t.isJNull());
+        assertFalse(t.isJNull(), "@(false) . isJNull() fails");
     }
 
     @Test
     public void testIsJTrue1() {
         Term t = Query.oneSolution("X = @(true)").get("X");
-        assertTrue("@(true) . isJTrue() succeeds", t.isJTrue());
+        assertTrue(t.isJTrue(), "@(true) . isJTrue() succeeds");
     }
 
     @Test
     public void testIsJTrue2() {
         Term t = Query.oneSolution("X = @(3)").get("X");
-        assertFalse("@(3) . isJTrue() fails", t.isJTrue());
+        assertFalse(t.isJTrue(), "@(3) . isJTrue() fails");
     }
 
     @Test
     public void testIsJTrue3() {
         Term t = Query.oneSolution("X = _").get("X");
-        assertFalse("_ . isJTrue() fails", t.isJTrue());
+        assertFalse(t.isJTrue(), "_ . isJTrue() fails");
     }
 
     @Test
     public void testIsJTrue4() {
         Term t = Query.oneSolution("X = @(false)").get("X");
-        assertFalse("@(false) . isJTrue() fails", t.isJTrue());
+        assertFalse(t.isJTrue(), "@(false) . isJTrue() fails");
     }
 
     @Test
     public void testIsJVoid1() {
         Term t = Query.oneSolution("X = @(void)").get("X");
-        assertTrue("@(void) . isJVoid() succeeds", t.isJVoid());
+        assertTrue(t.isJVoid(), "@(void) . isJVoid() succeeds");
     }
 
     @Test
     public void testIsJVoid2() {
         Term t = Query.oneSolution("X = @(3)").get("X");
-        assertFalse("@(3) . isJVoid() fails", t.isJVoid());
+        assertFalse(t.isJVoid(), "@(3) . isJVoid() fails");
     }
 
     @Test
     public void testIsJVoid3() {
         Term t = Query.oneSolution("X = _").get("X");
-        assertFalse("_ . isJVoid() fails", t.isJVoid());
+        assertFalse(t.isJVoid(), "_ . isJVoid() fails");
     }
 
     @Test
     public void testTypeName1() {
-        assertEquals("Y = foo binds Y to an Atom", Query.oneSolution("Y = foo").get("Y").typeName(), "Atom");
+        assertEquals(Query.oneSolution("Y = foo").get("Y").typeName(), "Atom", "Y = foo binds Y to an Atom");
     }
 
     @Test
     public void testTypeName2() {
-        assertEquals("Y = 3.14159 binds Y to a Float", Query.oneSolution("Y = 3.14159").get("Y").typeName(), "Float");
+        assertEquals(Query.oneSolution("Y = 3.14159").get("Y").typeName(), "Float", "Y = 3.14159 binds Y to a Float");
     }
 
     @Test
     public void testTypeName4() {
-        assertEquals("Y = 6 binds Y to an Integer", Query.oneSolution("Y = 6").get("Y").typeName(), "Integer");
+        assertEquals(Query.oneSolution("Y = 6").get("Y").typeName(), "Integer", "Y = 6 binds Y to an Integer");
     }
 
     @Test
     public void testTypeName5() {
-        assertEquals("Y = _ binds Y to a Variable", Query.oneSolution("Y = _").get("Y").typeName(), "Variable");
+        assertEquals(Query.oneSolution("Y = _").get("Y").typeName(), "Variable", "Y = _ binds Y to a Variable");
     }
 
     @Test
     public void testTypeName3() {
-        assertEquals("Y = f(x) binds Y to a Compound", Query.oneSolution("Y = f(x)").get("Y").typeName(), "Compound");
+        assertEquals(Query.oneSolution("Y = f(x)").get("Y").typeName(), "Compound", "Y = f(x) binds Y to a Compound");
     }
 }
