@@ -458,7 +458,7 @@ jpl_c_lib_version_4_plc(term_t tmajor,  /* -integer: major version number */
 /*=== JNI function prototypes (to resolve unavoidable forward references) = */
 
 static int  jni_hr_add(JNIEnv *, jobject, pointer *);
-static int  jni_hr_del(JNIEnv *, pointer);
+static bool  jni_hr_del(JNIEnv *, pointer);
 static bool jni_free_iref(JNIEnv *env, pointer iref);
 static bool jni_object_to_iref(JNIEnv *env, jobject obj, pointer *iref);
 static bool jni_String_to_atom(JNIEnv *env, jobject s, atom_t *a);
@@ -848,7 +848,7 @@ jni_term_to_double_jarray(term_t t, jdoubleArray *j, JNIEnv *env)
 /* If `t` is term jbuf(Ptr, `type`), extract Ptr to `vp`
  */
 
-static int
+static bool
 jni_term_to_jbuf(term_t t, atom_t type, void **vp)
 { if ( PL_is_functor(t, JNI_functor_jbuf_2) )
   { term_t a;
@@ -1516,7 +1516,7 @@ jni_hr_add(JNIEnv * env, jobject  lref, pointer *iref)
   return rc;
 }
 
-static int
+static bool
 jni_hr_del(JNIEnv * env, pointer iref)
 { int rc;
 
